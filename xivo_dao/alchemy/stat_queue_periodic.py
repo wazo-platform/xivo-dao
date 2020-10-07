@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, TIMESTAMP
+from sqlalchemy.types import Integer, DateTime
 from sqlalchemy.orm import relationship
 
 from xivo_dao.alchemy.stat_queue import StatQueue
@@ -15,7 +15,7 @@ class StatQueuePeriodic(Base):
     __tablename__ = 'stat_queue_periodic'
 
     id = Column(Integer, primary_key=True)
-    time = Column(TIMESTAMP, nullable=False)
+    time = Column(DateTime(timezone=True), nullable=False)
     answered = Column(Integer, nullable=False, server_default='0')
     abandoned = Column(Integer, nullable=False, server_default='0')
     total = Column(Integer, nullable=False, server_default='0')

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, Index
-from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
+from sqlalchemy.types import String, DateTime, Integer, Enum
 from sqlalchemy.orm import relationship
 
 from xivo_dao.alchemy.stat_queue import StatQueue
@@ -20,7 +20,7 @@ class StatCallOnQueue(Base):
 
     id = Column(Integer, primary_key=True)
     callid = Column(String(32), nullable=False)
-    time = Column(TIMESTAMP, nullable=False)
+    time = Column(DateTime(timezone=True), nullable=False)
     ringtime = Column(Integer, nullable=False, server_default='0')
     talktime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer, nullable=False, server_default='0')

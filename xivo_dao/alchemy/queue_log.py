@@ -19,7 +19,7 @@ class QueueLog(Base):
         Index('queue_log__idx_time', 'time'),
     )
 
-    time = Column(DateTime())
+    time = Column(DateTime(timezone=True))
     callid = Column(String(80))
     queuename = Column(String(256))
     agent = Column(Text)
