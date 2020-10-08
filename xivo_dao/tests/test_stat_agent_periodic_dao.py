@@ -5,6 +5,7 @@
 import six
 
 from datetime import datetime as dt
+from datetime import timezone as tz
 from datetime import timedelta
 from sqlalchemy import func
 
@@ -33,7 +34,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent_to_stat_agent()
         _, agent_id_2 = self._insert_agent_to_stat_agent()
         stats = {
-            dt(2012, 1, 1, 1, 0, 0): {
+            dt(2012, 1, 1, 1, 0, 0, tzinfo=tz.utc): {
                 agent_id_1: {
                     'login_time': timedelta(minutes=50),
                     'pause_time': timedelta(minutes=13)
@@ -42,7 +43,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
                     'login_time': ONE_HOUR,
                     'pause_time': timedelta(minutes=13)},
             },
-            dt(2012, 1, 1, 2, 0, 0): {
+            dt(2012, 1, 1, 2, 0, 0, tzinfo=tz.utc): {
                 agent_id_1: {
                     'login_time': timedelta(minutes=20),
                     'pause_time': timedelta(minutes=33)
@@ -52,13 +53,13 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
                     'pause_time': timedelta(minutes=13)
                 },
             },
-            dt(2012, 1, 1, 3, 0, 0): {
+            dt(2012, 1, 1, 3, 0, 0, tzinfo=tz.utc): {
                 agent_id_2: {
                     'login_time': ONE_HOUR,
                     'pause_time': ONE_HOUR
                 },
             },
-            dt(2012, 1, 1, 4, 0, 0): {
+            dt(2012, 1, 1, 4, 0, 0, tzinfo=tz.utc): {
                 agent_id_2: {
                     'login_time': ONE_HOUR,
                     'pause_time': ONE_HOUR
@@ -70,7 +71,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             for period_start, agents_stats in six.iteritems(stats):
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
-        period_start = dt(2012, 1, 1, 1, 0, 0)
+        period_start = dt(2012, 1, 1, 1, 0, 0, tzinfo=tz.utc)
 
         try:
             result = (self.session.query(StatAgentPeriodic)
@@ -90,7 +91,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             },
         }
 
-        stat_agent_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1))
+        stat_agent_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1, tzinfo=tz.utc))
 
         stat_agent_periodic_dao.clean_table(self.session)
 
@@ -101,19 +102,19 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
     def test_remove_after(self):
         _, agent_id = self._insert_agent_to_stat_agent()
         stats = {
-            dt(2012, 1, 1): {
+            dt(2012, 1, 1, tzinfo=tz.utc): {
                 agent_id: {
                     'login_time': timedelta(minutes=15),
                     'pause_time': timedelta(minutes=13)
                 },
             },
-            dt(2012, 1, 2): {
+            dt(2012, 1, 2, tzinfo=tz.utc): {
                 agent_id: {
                     'login_time': timedelta(minutes=20),
                     'pause_time': timedelta(minutes=13)
                 },
             },
-            dt(2012, 1, 3): {
+            dt(2012, 1, 3, tzinfo=tz.utc): {
                 agent_id: {
                     'login_time': timedelta(minutes=25),
                     'pause_time': timedelta(minutes=13)
@@ -125,9 +126,9 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             for period_start, agents_stats in six.iteritems(stats):
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
-        stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2))
+        stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=tz.utc))
 
         res = self.session.query(StatAgentPeriodic.time)
 
         self.assertEqual(res.count(), 1)
-        self.assertEqual(res[0].time, dt(2012, 1, 1))
+        self.assertEqual(res[0].time, dt(2012, 1, 1, tzinfo=tz.utc))
