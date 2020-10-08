@@ -4,10 +4,11 @@
 
 import datetime
 import six
+import pytz
 
 from datetime import datetime as t
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, contains, equal_to, has_properties
 
 from sqlalchemy import func
 
@@ -90,16 +91,184 @@ class TestFillAnsweredCall(DAOTestCase):
         assert_that(count, equal_to(1))
 
 
-class TestStatDAO(DAOTestCase):
-
-    _fn_created = False
+class TestFillSimpleCall(DAOTestCase):
 
     def setUp(self):
         DAOTestCase.setUp(self)
-        if not self._fn_created:
-            self._create_functions()
-        self.start = t(2012, 7, 1)
-        self.end = t(2012, 7, 31, 23, 59, 59, 999999)
+        self._create_functions()
+        self.callid = '1404377805.6457'
+        event = QueueLog(
+            time=t(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC),
+            callid=self.callid,
+            queuename='found_queue',
+            event='FULL',
+        )
+        self.add_me(event)
+        event = QueueLog(
+            time=t(2020, 2, 1, tzinfo=pytz.UTC),
+            callid=self.callid,
+            queuename='ignored_queue',
+            event='CLOSED',
+        )
+        self.add_me(event)
+
+    def test_empty(self):
+        start = t(1999, 1, 1)
+        end = t(1999, 1, 31, 23, 59, 59, 999999)
+        try:
+            stat_dao.fill_simple_calls(self.session, start, end)
+        except Exception:
+            self.fail('fill_simple_calls failed with no data')
+
+    def test_with_specific_range(self):
+        start = t(2020, 1, 1)
+        end = t(2020, 1, 31, 23, 59, 59, 999999)
+
+        stat_dao.fill_simple_calls(self.session, start, end)
+
+        result = self.session.query(StatCallOnQueue).all()
+        assert_that(result, contains(has_properties(status='full')))
+
+    def test_with_specific_timezone(self):
+        # Asia/Shanghai is +08
+        start = t(2020, 1, 1, 1, 0, 0, 0, tzinfo=pytz.timezone('Asia/Shanghai'))
+        end = t(2020, 1, 31, 23, 59, 59, 999999)
+
+        stat_dao.fill_simple_calls(self.session, start, end)
+
+        result = self.session.query(StatCallOnQueue).all()
+        assert_that(result, contains(has_properties(status='full')))
+
+    def _create_functions(self):
+        # WARNING: This functions should always be the same as the one in xivo-manage-db
+        fill_simple_calls_fn = '''\
+DROP FUNCTION IF EXISTS "fill_simple_calls" (timestamptz, timestamptz);
+CREATE FUNCTION "fill_simple_calls"(period_start timestamptz, period_end timestamptz)
+  RETURNS void AS
+$$
+  INSERT INTO "stat_call_on_queue" (callid, "time", stat_queue_id, status)
+    SELECT
+      callid,
+      time,
+      (SELECT id FROM stat_queue WHERE name=queuename) as stat_queue_id,
+      CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
+           WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
+           WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
+           WHEN event = 'CLOSED' THEN 'closed'
+           WHEN event = 'JOINEMPTY' THEN 'joinempty'
+      END as status
+    FROM queue_log
+    WHERE event IN ('FULL', 'DIVERT_CA_RATIO', 'DIVERT_HOLDTIME', 'CLOSED', 'JOINEMPTY') AND
+          "time" BETWEEN $1 AND $2;
+$$
+LANGUAGE SQL;
+'''
+        self.session.execute(fill_simple_calls_fn)
+
+
+class TestFillLeaveEmptyCall(DAOTestCase):
+
+    def setUp(self):
+        DAOTestCase.setUp(self)
+        self._create_functions()
+        self.callid_found = '1404377805.6457'
+        event = QueueLog(
+            time=t(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC),
+            callid=self.callid_found,
+            queuename='found_queue',
+            event='LEAVEEMPTY',
+        )
+        self.add_me(event)
+        event = QueueLog(
+            time=t(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC),
+            callid=self.callid_found,
+            queuename='found_queue',
+            event='ENTERQUEUE',
+        )
+        self.add_me(event)
+        queue = StatQueue(name='found_queue', tenant_uuid=self.default_tenant.uuid)
+        self.add_me(queue)
+
+        self.callid_ignored = '1000000000.0000'
+        event = QueueLog(
+            time=t(2020, 2, 1, tzinfo=pytz.UTC),
+            callid=self.callid_ignored,
+            queuename='ignored_queue',
+            event='LEAVEEMPTY',
+        )
+        self.add_me(event)
+        event = QueueLog(
+            time=t(2020, 2, 1, tzinfo=pytz.UTC),
+            callid=self.callid_ignored,
+            queuename='ignored_queue',
+            event='ENTERQUEUE',
+        )
+        self.add_me(event)
+        queue = StatQueue(name='ignored_queue', tenant_uuid=self.default_tenant.uuid)
+        self.add_me(queue)
+
+    def test_empty(self):
+        start = t(1999, 1, 1)
+        end = t(1999, 1, 31, 23, 59, 59, 999999)
+        try:
+            stat_dao.fill_leaveempty_calls(self.session, start, end)
+        except Exception:
+            self.fail('fill_simple_calls failed with no data')
+
+    def test_with_specific_range(self):
+        start = t(2019, 1, 1)
+        end = t(2020, 1, 31, 23, 59, 59, 999999)
+
+        stat_dao.fill_leaveempty_calls(self.session, start, end)
+
+        result = self.session.query(StatCallOnQueue).all()
+        assert_that(result, contains(has_properties(callid=self.callid_found)))
+
+    def test_with_specific_timezone(self):
+        # Asia/Shanghai is +08
+        start = t(2020, 1, 1, 1, 0, 0, 0, tzinfo=pytz.timezone('Asia/Shanghai'))
+        end = t(2020, 1, 31, 23, 59, 59, 999999)
+
+        stat_dao.fill_leaveempty_calls(self.session, start, end)
+
+        result = self.session.query(StatCallOnQueue).all()
+        assert_that(result, contains(has_properties(callid=self.callid_found)))
+
+    def _create_functions(self):
+        # WARNING: This functions should always be the same as the one in xivo-manage-db
+        fill_leaveempty_calls_fn = '''\
+DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (timestamptz, timestamptz);
+CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start timestamptz, period_end timestamptz)
+  RETURNS void AS
+$$
+INSERT INTO stat_call_on_queue (callid, time, waittime, stat_queue_id, status)
+SELECT
+  callid,
+  enter_time as time,
+  EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
+  stat_queue_id,
+  'leaveempty' AS status
+FROM (SELECT
+        time AS enter_time,
+        (select time from queue_log where callid=main.callid AND event='LEAVEEMPTY' LIMIT 1) AS leave_time,
+        callid,
+        (SELECT id FROM stat_queue WHERE name=queuename) AS stat_queue_id
+      FROM queue_log AS main
+      WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
+            AND event = 'ENTERQUEUE'
+            AND time BETWEEN $1 AND $2) AS first;
+$$
+LANGUAGE SQL;
+'''
+        self.session.execute(fill_leaveempty_calls_fn)
+
+
+class TestStatDAO(DAOTestCase):
+
+    def setUp(self):
+        DAOTestCase.setUp(self)
+        self.start = t(2012, 7, 1, tzinfo=pytz.UTC)
+        self.end = t(2012, 7, 31, 23, 59, 59, 999999, tzinfo=pytz.UTC)
         self.qname1, self.qid1 = self._insert_queue('q1')
         self.qname2, self.qid2 = self._insert_queue('q2')
         self.aname1, self.aid1 = self._insert_agent('a1')
@@ -108,12 +277,6 @@ class TestStatDAO(DAOTestCase):
     @staticmethod
     def _get_expected_call(call_list, callid):
         return [c for c in call_list if c[1] == callid][0]
-
-    def test_fill_simple_calls_empty(self):
-        try:
-            stat_dao.fill_simple_calls(self.session, self.start, self.end)
-        except Exception:
-            self.fail('fill_simple_calls failed with no data')
 
     def test_get_login_intervals_in_range_calls_empty(self):
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
@@ -629,60 +792,6 @@ class TestStatDAO(DAOTestCase):
         self.add_me(q)
 
         return q.name, q.id
-
-    def _create_functions(self):
-        # ## WARNING: These functions should always be the same as the one in xivo-manage-db
-        fill_simple_calls_fn = '''\
-DROP FUNCTION IF EXISTS "fill_saturated_calls" (text, text);
-DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);
-CREATE FUNCTION "fill_simple_calls"(period_start text, period_end text)
-  RETURNS void AS
-$$
-  INSERT INTO "stat_call_on_queue" (callid, "time", stat_queue_id, status)
-    SELECT
-      callid,
-      CAST ("time" AS TIMESTAMP) as "time",
-      (SELECT id FROM stat_queue WHERE name=queuename) as stat_queue_id,
-      CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
-           WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
-           WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
-           WHEN event = 'CLOSED' THEN 'closed'
-           WHEN event = 'JOINEMPTY' THEN 'joinempty'
-      END as status
-    FROM queue_log
-    WHERE event IN ('FULL', 'DIVERT_CA_RATIO', 'DIVERT_HOLDTIME', 'CLOSED', 'JOINEMPTY') AND
-          "time" BETWEEN $1 AND $2;
-$$
-LANGUAGE SQL;
-'''
-        self.session.execute(fill_simple_calls_fn)
-        fill_leaveempty_calls_fn = '''\
-DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (text, text);
-CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start text, period_end text)
-  RETURNS void AS
-$$
-INSERT INTO stat_call_on_queue (callid, time, waittime, stat_queue_id, status)
-SELECT
-  callid,
-  enter_time as time,
-  EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
-  stat_queue_id,
-  'leaveempty' AS status
-FROM (SELECT
-        CAST (time AS TIMESTAMP) AS enter_time,
-        (select CAST (time AS TIMESTAMP) from queue_log where callid=main.callid AND event='LEAVEEMPTY') AS leave_time,
-        callid,
-        (SELECT id FROM stat_queue WHERE name=queuename) AS stat_queue_id
-      FROM queue_log AS main
-      WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
-            AND event = 'ENTERQUEUE'
-            AND time BETWEEN $1 AND $2) AS first;
-$$
-LANGUAGE SQL;
-'''
-        self.session.execute(fill_leaveempty_calls_fn)
-
-        self._fn_created = True
 
     def test_merge_agent_statistics(self):
         stat_1 = {1: [(1, 2),
