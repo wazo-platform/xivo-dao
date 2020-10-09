@@ -5,7 +5,7 @@
 import six
 
 from datetime import datetime as dt
-from datetime import timezone as tz
+from pytz import UTC
 
 from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -20,8 +20,8 @@ class TestStatDAO(DAOTestCase):
     def test_get_completed_logins(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
-        start = dt(2012, 6, 1, tzinfo=tz.utc)
-        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=tz.utc)
+        start = dt(2012, 6, 1, tzinfo=UTC)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
 | time                          | callid   | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
@@ -42,12 +42,12 @@ class TestStatDAO(DAOTestCase):
 
         expected = {
             agent_id_1: [
-                (start, dt(2012, 6, 1, 6, tzinfo=tz.utc)),
-                (dt(2012, 6, 1, 6, 5, tzinfo=tz.utc), dt(2012, 6, 1, 6, 30, tzinfo=tz.utc)),
-                (dt(2012, 6, 1, 6, 40, tzinfo=tz.utc), dt(2012, 6, 1, 6, 45, tzinfo=tz.utc)),
+                (start, dt(2012, 6, 1, 6, tzinfo=UTC)),
+                (dt(2012, 6, 1, 6, 5, tzinfo=UTC), dt(2012, 6, 1, 6, 30, tzinfo=UTC)),
+                (dt(2012, 6, 1, 6, 40, tzinfo=UTC), dt(2012, 6, 1, 6, 45, tzinfo=UTC)),
             ],
             agent_id_2: [
-                (dt(2012, 6, 1, 0, 0, 0, 1, tzinfo=tz.utc), dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=tz.utc)),
+                (dt(2012, 6, 1, 0, 0, 0, 1, tzinfo=UTC), dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=UTC)),
             ],
         }
 
@@ -57,8 +57,8 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
-        start = dt(2012, 5, 31, tzinfo=tz.utc)
-        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=tz.utc)
+        start = dt(2012, 5, 31, tzinfo=UTC)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
 | time                          | callid   | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
@@ -78,8 +78,8 @@ class TestStatDAO(DAOTestCase):
         _, result = stat_dao._get_last_logins_and_logouts(self.session, start, end)
 
         expected = {
-            agent_id_1: dt(2012, 6, 1, 6, 45, tzinfo=tz.utc),
-            agent_id_2: dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=tz.utc),
+            agent_id_1: dt(2012, 6, 1, 6, 45, tzinfo=UTC),
+            agent_id_2: dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=UTC),
         }
 
         self.assertEqual(result, expected)
@@ -88,8 +88,8 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
-        start = dt(2012, 6, 1, tzinfo=tz.utc)
-        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=tz.utc)
+        start = dt(2012, 6, 1, tzinfo=UTC)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
 | time                          | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
@@ -112,9 +112,9 @@ class TestStatDAO(DAOTestCase):
         result, _ = stat_dao._get_last_logins_and_logouts(self.session, start, end)
 
         expected = {
-            agent_id_1: dt(2012, 6, 1, 6, 40, tzinfo=tz.utc),
-            agent_id_2: dt(2012, 6, 1, 9, tzinfo=tz.utc),
-            agent_id_3: dt(2012, 1, 1, 10, tzinfo=tz.utc),
+            agent_id_1: dt(2012, 6, 1, 6, 40, tzinfo=UTC),
+            agent_id_2: dt(2012, 6, 1, 9, tzinfo=UTC),
+            agent_id_3: dt(2012, 1, 1, 10, tzinfo=UTC),
         }
 
         self.assertEqual(result, expected)
@@ -124,8 +124,8 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
         _, agent_id_4 = self._insert_agent('Agent/4')
-        start = dt(2012, 6, 1, tzinfo=tz.utc)
-        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=tz.utc)
+        start = dt(2012, 6, 1, tzinfo=UTC)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
 | time                          | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
@@ -150,7 +150,7 @@ class TestStatDAO(DAOTestCase):
 
         expected = {
             agent_id_2: [
-                (dt(2012, 6, 1, 9, tzinfo=tz.utc), end),
+                (dt(2012, 6, 1, 9, tzinfo=UTC), end),
             ],
             agent_id_3: [
                 (start, end),
@@ -161,8 +161,8 @@ class TestStatDAO(DAOTestCase):
 
     def test_get_pause_intervals_in_range(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
-        start = dt(2012, 7, 1, tzinfo=tz.utc)
-        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=tz.utc)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
 | time                          | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
@@ -181,12 +181,12 @@ class TestStatDAO(DAOTestCase):
         expected = {
             agent_id_1: [
                 (
-                    dt(2012, 7, 21, 9, 59, 9, 999999, tzinfo=tz.utc),
-                    dt(2012, 7, 21, 10, 54, 9, 999999, tzinfo=tz.utc),
+                    dt(2012, 7, 21, 9, 59, 9, 999999, tzinfo=UTC),
+                    dt(2012, 7, 21, 10, 54, 9, 999999, tzinfo=UTC),
                 ),
                 (
-                    dt(2012, 7, 21, 23, 59, 19, 999999, tzinfo=tz.utc),
-                    dt(2012, 7, 22, 2, 2, 19, 999999, tzinfo=tz.utc),
+                    dt(2012, 7, 21, 23, 59, 19, 999999, tzinfo=UTC),
+                    dt(2012, 7, 22, 2, 2, 19, 999999, tzinfo=UTC),
                 )
             ]
         }
@@ -195,8 +195,8 @@ class TestStatDAO(DAOTestCase):
 
     def test_get_pause_intervals_in_range_multiple_pauseall(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
-        start = dt(2012, 7, 1, tzinfo=tz.utc)
-        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=tz.utc)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
 | time                          | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
@@ -216,12 +216,12 @@ class TestStatDAO(DAOTestCase):
         expected = {
             agent_id_1: [
                 (
-                    dt(2012, 7, 21, 9, 54, 9, 999999, tzinfo=tz.utc),
-                    dt(2012, 7, 21, 10, 54, 9, 999999, tzinfo=tz.utc),
+                    dt(2012, 7, 21, 9, 54, 9, 999999, tzinfo=UTC),
+                    dt(2012, 7, 21, 10, 54, 9, 999999, tzinfo=UTC),
                 ),
                 (
-                    dt(2012, 7, 21, 23, 59, 19, 999999, tzinfo=tz.utc),
-                    dt(2012, 7, 22, 2, 2, 19, 999999, tzinfo=tz.utc),
+                    dt(2012, 7, 21, 23, 59, 19, 999999, tzinfo=UTC),
+                    dt(2012, 7, 22, 2, 2, 19, 999999, tzinfo=UTC),
                 )
             ]
         }

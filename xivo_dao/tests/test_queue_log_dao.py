@@ -4,8 +4,9 @@
 
 import random
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from hamcrest import assert_that, has_length, empty, contains_inanyorder
+from pytz import UTC
 
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
@@ -338,7 +339,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(callids, expected)
 
     def test_insert_entry(self):
-        time = datetime.now(timezone.utc)
+        time = datetime.now(UTC)
         queue_log_dao.insert_entry(time, 'callid', 'queue', 'agent', 'event', '1', '2', '3', '4', '5')
 
         result = [r for r in self.session.query(QueueLog).all()][0]

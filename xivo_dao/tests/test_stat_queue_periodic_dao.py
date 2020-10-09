@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
-from datetime import timezone as tz
 from datetime import timedelta
+from pytz import UTC
 
 from sqlalchemy import func
 
@@ -46,7 +46,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def test_insert_periodic_stat(self):
         stats = self._get_stats_for_queue()
-        period_start = dt(2012, 1, 1, 00, 00, 00, tzinfo=tz.utc)
+        period_start = dt(2012, 1, 1, 00, 00, 00, tzinfo=UTC)
 
         with flush_session(self.session):
             stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
@@ -72,7 +72,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         self.assertRaises(LookupError, stat_queue_periodic_dao.get_most_recent_time, self.session)
 
         stats = self._get_stats_for_queue()
-        start = dt(2012, 1, 1, 00, 00, 00, tzinfo=tz.utc)
+        start = dt(2012, 1, 1, 00, 00, 00, tzinfo=UTC)
 
         with flush_session(self.session):
             for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
@@ -93,7 +93,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
                 'total': 10
             }
         }
-        period_start = dt(2012, 1, 1, 00, 00, 00, tzinfo=tz.utc)
+        period_start = dt(2012, 1, 1, 00, 00, 00, tzinfo=UTC)
 
         stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
 
@@ -113,13 +113,13 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         }
 
         with flush_session(self.session):
-            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1, tzinfo=tz.utc))
-            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 2, tzinfo=tz.utc))
-            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 3, tzinfo=tz.utc))
+            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1, tzinfo=UTC))
+            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 2, tzinfo=UTC))
+            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 3, tzinfo=UTC))
 
-        stat_queue_periodic_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=tz.utc))
+        stat_queue_periodic_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=UTC))
 
         res = self.session.query(StatQueuePeriodic.time)
 
         self.assertEqual(res.count(), 1)
-        self.assertEqual(res[0].time, dt(2012, 1, 1, tzinfo=tz.utc))
+        self.assertEqual(res[0].time, dt(2012, 1, 1, tzinfo=UTC))
