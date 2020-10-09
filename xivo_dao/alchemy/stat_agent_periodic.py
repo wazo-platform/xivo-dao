@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, Index, ForeignKey
-from sqlalchemy.types import Integer, TIMESTAMP
+from sqlalchemy.types import Integer, DateTime
 from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.orm import relationship
 
@@ -20,7 +20,7 @@ class StatAgentPeriodic(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    time = Column(TIMESTAMP, nullable=False)
+    time = Column(DateTime(timezone=True), nullable=False)
     login_time = Column(INTERVAL, nullable=False, server_default='0')
     pause_time = Column(INTERVAL, nullable=False, server_default='0')
     wrapup_time = Column(INTERVAL, nullable=False, server_default='0')

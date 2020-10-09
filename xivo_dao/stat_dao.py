@@ -6,7 +6,7 @@ import six
 
 from sqlalchemy.sql import text
 
-_STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
+_STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f%z"
 
 FILL_ANSWERED_CALL_ON_QUEUE_QUERY = text('''\n
 INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_id, stat_agent_id, status)
@@ -61,7 +61,7 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_i
             call_end.callid,
             call_end.queuename,
             call_end.agent,
-            call_start.time::TIMESTAMP,
+            call_start.time,
             call_end.talktime,
             call_end.waittime
         FROM
@@ -75,7 +75,7 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_i
             call_end.callid,
             call_end.queuename,
             call_end.agent,
-            call_end.time::TIMESTAMP
+            call_end.time
                 - (call_end.talktime || ' seconds')::INTERVAL
                 - (call_end.waittime || ' seconds')::INTERVAL
             AS time,
@@ -154,8 +154,8 @@ def _run_sql_function_returning_void(session, start, end, function):
 def get_pause_intervals_in_range(session, start, end):
     pause_in_range = '''\
 SELECT stat_agent.id AS agent,
-       CAST(MIN(pauseall) AS TIMESTAMP) AS pauseall,
-       CAST(unpauseall AS TIMESTAMP)
+       MIN(pauseall) AS pauseall,
+       unpauseall
   FROM (
     SELECT agent, time AS pauseall,
       (
@@ -282,8 +282,8 @@ def _get_completed_logins(session, start, end):
 WITH agent_logins AS (
 SELECT
     agent,
-    CAST(time AS TIMESTAMP) AS logout_timestamp,
-    CAST(time as TIMESTAMP) - (data2 || ' seconds')::INTERVAL AS login_timestamp
+    time AS logout_timestamp,
+    time - (data2 || ' seconds')::INTERVAL AS login_timestamp
 FROM
     queue_log
 WHERE
@@ -356,8 +356,8 @@ def _get_last_logins_and_logouts(session, start, end):
     query = '''\
 SELECT
   stat_agent.id AS agent,
-  CAST(MAX(case when event like '%LOGIN' then time end) AS TIMESTAMP) AS login,
-  CAST(MAX(case when event like '%LOGOFF' then time end) AS TIMESTAMP) AS logout
+  MAX(case when event like '%LOGIN' then time end) AS login,
+  MAX(case when event like '%LOGOFF' then time end) AS logout
 FROM
   stat_agent
 JOIN

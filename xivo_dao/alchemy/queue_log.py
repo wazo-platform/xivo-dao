@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import String, Integer, Text
+from sqlalchemy.types import String, Integer, Text, DateTime
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -19,14 +19,14 @@ class QueueLog(Base):
         Index('queue_log__idx_time', 'time'),
     )
 
-    time = Column(String(26), nullable=False, server_default='')
-    callid = Column(String(32), nullable=False, server_default='')
-    queuename = Column(String(50), nullable=False, server_default='')
-    agent = Column(Text, nullable=False, server_default='')
-    event = Column(String(20), nullable=False, server_default='')
-    data1 = Column(Text, server_default='')
-    data2 = Column(Text, server_default='')
-    data3 = Column(Text, server_default='')
-    data4 = Column(Text, server_default='')
-    data5 = Column(Text, server_default='')
+    time = Column(DateTime(timezone=True))
+    callid = Column(String(80))
+    queuename = Column(String(256))
+    agent = Column(Text)
+    event = Column(String(20))
+    data1 = Column(Text)
+    data2 = Column(Text)
+    data3 = Column(Text)
+    data4 = Column(Text)
+    data5 = Column(Text)
     id = Column(Integer)
