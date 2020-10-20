@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import between, distinct
@@ -7,20 +7,20 @@ from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy.queue_log import QueueLog
-from sqlalchemy import cast, TIMESTAMP, func
+from sqlalchemy import func
 from datetime import timedelta
 from xivo_dao.helpers.db_manager import daosession
 
 
-_STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
+_STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f%z"
 
 
 def get_wrapup_times(session, start, end, interval):
     before_start = start - timedelta(minutes=2)
     wrapup_times_query = '''\
 SELECT
-    CAST(queue_log.time AS TIMESTAMP) AS start,
-    (CAST(queue_log.time AS TIMESTAMP) + (queue_log.data1 || ' seconds')::INTERVAL) AS end,
+    queue_log.time AS start,
+    (queue_log.time + (queue_log.data1 || ' seconds')::INTERVAL) AS end,
     stat_agent.id AS agent_id
 FROM
     queue_log
@@ -33,8 +33,8 @@ AND
 '''
 
     periods = [t for t in _enumerate_periods(start, end, interval)]
-    formatted_start = before_start.strftime('%Y-%m-%d %H:%M:%S')
-    formatted_end = end.strftime('%Y-%m-%d %H:%M:%S')
+    formatted_start = before_start.strftime('%Y-%m-%d %H:%M:%S%z')
+    formatted_end = end.strftime('%Y-%m-%d %H:%M:%S%z')
 
     rows = session.query(
         'start',
@@ -105,7 +105,7 @@ def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
                          QueueLog.callid,
                          QueueLog.queuename,
                          QueueLog.data3,
-                         cast(QueueLog.time, TIMESTAMP).label('time'))
+                         QueueLog.time)
                   .filter(and_(QueueLog.time >= start_str,
                                QueueLog.time < end_str,
                                or_(QueueLog.event == 'ENTERQUEUE',
@@ -163,7 +163,7 @@ def get_queue_timeout_call(session, start, end):
 
 
 def get_first_time(session):
-    res = session.query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
+    res = session.query(min(QueueLog.time)).first()[0]
     if res is None:
         raise LookupError('Table is empty')
     return res
@@ -212,7 +212,7 @@ def hours_with_calls(session, start, end):
     end = end.strftime(_STR_TIME_FMT)
 
     hours = (session
-             .query(distinct(func.date_trunc('hour', cast(QueueLog.time, TIMESTAMP))).label('time'))
+             .query(distinct(func.date_trunc('hour', QueueLog.time)).label('time'))
              .filter(between(QueueLog.time, start, end)))
 
     for hour in hours.all():

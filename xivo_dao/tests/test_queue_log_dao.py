@@ -16,7 +16,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 ONE_HOUR = timedelta(hours=1)
 ONE_MICROSECOND = timedelta(microseconds=1)
-TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f%z"
 
 
 class TestQueueLogDAO(DAOTestCase):
@@ -89,10 +89,6 @@ class TestQueueLogDAO(DAOTestCase):
                                  callid, queuename, agent, d2=talktime)
 
     @staticmethod
-    def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
-        return datetime(year, month, day, hour, minute, second, micro).strftime(TIMESTAMP_FORMAT)
-
-    @staticmethod
     def _build_timestamp(t):
         return t.strftime(TIMESTAMP_FORMAT)
 
@@ -103,28 +99,28 @@ class TestQueueLogDAO(DAOTestCase):
     def test_get_wrapup_time(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
-        start = datetime(2012, 10, 1, 6)
-        end = datetime(2012, 10, 1, 7, 59, 59, 999999)
+        start = datetime(2012, 10, 1, 6, tzinfo=UTC)
+        end = datetime(2012, 10, 1, 7, 59, 59, 999999, tzinfo=UTC)
         queue_log_data = '''\
-| time                       | callid | queuename | agent   | event       | data1 | data2 | data3 | data4 | data5 |
-| 2012-10-01 05:59:50.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
-| 2012-10-01 06:00:10.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    15 |       |       |       |       |
-| 2012-10-01 06:00:15.000000 | NONE   | NONE      | Agent/2 | WRAPUPSTART |    30 |       |       |       |       |
-| 2012-10-01 06:59:50.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    15 |       |       |       |       |
-| 2012-10-01 07:00:10.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
-| 2012-10-01 08:00:10.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
-| 2012-10-01 07:59:40.000000 | NONE   | NONE      | Agent/2 | WRAPUPSTART |    30 |       |       |       |       |
+| time                            | callid | queuename | agent   | event       | data1 | data2 | data3 | data4 | data5 |
+| 2012-10-01 05:59:50.000000+0000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 06:00:10.000000+0000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    15 |       |       |       |       |
+| 2012-10-01 06:00:15.000000+0000 | NONE   | NONE      | Agent/2 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 06:59:50.000000+0000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    15 |       |       |       |       |
+| 2012-10-01 07:00:10.000000+0000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 08:00:10.000000+0000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 07:59:40.000000+0000 | NONE   | NONE      | Agent/2 | WRAPUPSTART |    30 |       |       |       |       |
 '''
         self._insert_queue_log_data(queue_log_data)
 
         result = queue_log_dao.get_wrapup_times(self.session, start, end, ONE_HOUR)
 
         expected = {
-            datetime(2012, 10, 1, 6): {
+            datetime(2012, 10, 1, 6, tzinfo=UTC): {
                 agent_id_1: {'wrapup_time': timedelta(seconds=45)},
                 agent_id_2: {'wrapup_time': timedelta(seconds=30)},
             },
-            datetime(2012, 10, 1, 7): {
+            datetime(2012, 10, 1, 7, tzinfo=UTC): {
                 agent_id_1: {'wrapup_time': timedelta(seconds=35)},
                 agent_id_2: {'wrapup_time': timedelta(seconds=20)},
             },
@@ -137,11 +133,11 @@ class TestQueueLogDAO(DAOTestCase):
 
         queuename = 'q1'
         for minute in [0, 10, 20, 30, 40, 50]:
-            datetimewithmicro = datetime(2012, 1, 1, 0, minute, 59)
+            datetimewithmicro = datetime(2012, 1, 1, 0, minute, 59, tzinfo=UTC)
             callid = str(12345678.123 + minute)
             self._insert_entry_queue_full(datetimewithmicro, callid, queuename)
 
-        expected = datetime(2012, 1, 1, 0, 0, 59)
+        expected = datetime(2012, 1, 1, 0, 0, 59, tzinfo=UTC)
 
         result = queue_log_dao.get_first_time(self.session)
 
@@ -149,8 +145,8 @@ class TestQueueLogDAO(DAOTestCase):
 
     def test_get_queue_names_in_range(self):
         queue_names = sorted(['queue_%s' % x for x in range(10)])
-        t = datetime(2012, 1, 1, 1, 1, 1)
-        timestamp = self._build_date(t.year, t.month, t.day, t.hour, t.minute, t.second)
+        t = datetime(2012, 1, 1, 1, 1, 1, tzinfo=UTC)
+        timestamp = self._build_timestamp(t)
         for queue_name in queue_names:
             self._insert_entry_queue('FULL', timestamp, queue_name, queue_name)
 
@@ -159,7 +155,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result, queue_names)
 
     def test_get_queue_abandoned_call(self):
-        start = datetime(2012, 1, 1, 1, 0, 0)
+        start = datetime(2012, 1, 1, 1, 0, 0, tzinfo=UTC)
         expected = self._insert_abandon(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_abandoned_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
@@ -180,8 +176,8 @@ class TestQueueLogDAO(DAOTestCase):
         for queue_log in queue_logs:
             queue_log_dao.insert_entry(*queue_log)
 
-        abandoned_at_11_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 11), datetime(2015, 5, 6, 11, 59, 59, 999999)))
-        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+        abandoned_at_11_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 11, tzinfo=UTC), datetime(2015, 5, 6, 11, 59, 59, 999999, tzinfo=UTC)))
+        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12, tzinfo=UTC), datetime(2015, 5, 6, 12, 59, 59, 999999, tzinfo=UTC)))
 
         assert_that(abandoned_at_11_oclock, empty())
         assert_that(abandoned_at_12_oclock, has_length(1))
@@ -195,7 +191,7 @@ class TestQueueLogDAO(DAOTestCase):
         for queue_log in queue_logs:
             queue_log_dao.insert_entry(*queue_log)
 
-        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12, tzinfo=UTC), datetime(2015, 5, 6, 12, 59, 59, 999999, tzinfo=UTC)))
 
         assert_that(abandoned_at_12_oclock, has_length(1))
 
@@ -213,14 +209,14 @@ class TestQueueLogDAO(DAOTestCase):
         for queue_log in queue_logs:
             queue_log_dao.insert_entry(*queue_log)
 
-        timeout_at_11_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 11), datetime(2015, 5, 6, 11, 59, 59, 999999)))
-        timeout_at_12_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+        timeout_at_11_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 11, tzinfo=UTC), datetime(2015, 5, 6, 11, 59, 59, 999999, tzinfo=UTC)))
+        timeout_at_12_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 12, tzinfo=UTC), datetime(2015, 5, 6, 12, 59, 59, 999999, tzinfo=UTC)))
 
         assert_that(timeout_at_11_oclock, empty())
         assert_that(timeout_at_12_oclock, has_length(1))
 
     def test_get_queue_timeout_call(self):
-        start = datetime(2012, 1, 1, 1, 0, 0)
+        start = datetime(2012, 1, 1, 1, 0, 0, tzinfo=UTC)
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_timeout_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
@@ -323,10 +319,10 @@ class TestQueueLogDAO(DAOTestCase):
         return expected
 
     def test_delete_event_by_queue_between(self):
-        self._insert_entry_queue_full(datetime(2012, 7, 1, 7, 1, 1), 'delete_between_1', 'q1')
-        self._insert_entry_queue_full(datetime(2012, 7, 1, 8, 1, 1), 'delete_between_2', 'q1')
-        self._insert_entry_queue_full(datetime(2012, 7, 1, 9, 1, 1), 'delete_between_3', 'q1')
-        self._insert_entry_queue_full(datetime(2012, 7, 1, 8, 1, 0), 'delete_between_4', 'q2')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 7, 1, 1, tzinfo=UTC), 'delete_between_1', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 8, 1, 1, tzinfo=UTC), 'delete_between_2', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 9, 1, 1, tzinfo=UTC), 'delete_between_3', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 8, 1, 0, tzinfo=UTC), 'delete_between_4', 'q2')
 
         queue_log_dao.delete_event_by_queue_between(
             'FULL', 'q1', '2012-07-01 08:00:00.000000', '2012-07-01 08:59:59.999999')
@@ -355,7 +351,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result.data5, '5')
 
     def test_hours_with_calls(self):
-        start = datetime(2012, 1, 1)
+        start = datetime(2012, 1, 1, tzinfo=UTC)
         end = datetime(2012, 6, 30, 23, 59, 59, 999999)
         res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
 
@@ -370,8 +366,8 @@ class TestQueueLogDAO(DAOTestCase):
         _insert_at('2012-07-01 00:00:00.000000')
 
         expected = [
-            datetime(2012, 1, 1, 8),
-            datetime(2012, 6, 30, 23)
+            datetime(2012, 1, 1, 8, tzinfo=UTC),
+            datetime(2012, 6, 30, 23, tzinfo=UTC)
         ]
 
         res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
@@ -379,7 +375,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(res, expected)
 
     def test_last_callid_with_event_for_agent(self):
-        t = datetime(2012, 1, 1)
+        t = datetime(2012, 1, 1, tzinfo=UTC)
         event = 'FULL'
         agent = 'Agent/1234'
         queue = 'queue'
