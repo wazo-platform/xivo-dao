@@ -417,6 +417,7 @@ def find_sip_user_settings(session):
     )
 
     lines = query.all()
+    application_mapping = {}
     context_mapping = {}
     extension_mapping = {}
     voicemail_mapping = defaultdict(list)
@@ -426,6 +427,7 @@ def find_sip_user_settings(session):
     for line in lines:
         raw_configs[line.endpoint_sip_uuid] = line.endpoint_sip
         context_mapping[line.endpoint_sip_uuid] = line.context
+        application_mapping[line.endpoint_sip_uuid] = line.application_uuid
         line_mapping[line.endpoint_sip_uuid] = line.id
         if line.extensions:
             extension_mapping[line.endpoint_sip_uuid] = line.extensions[0]
@@ -441,8 +443,16 @@ def find_sip_user_settings(session):
         parents = [get_flat_config(parent) for parent in endpoint.templates]
         base_config = endpoint_to_dict(endpoint)
         context_name = context_mapping.get(endpoint.uuid)
+        application_uuid = application_mapping.get(endpoint.uuid)
+        if application_uuid:
+            outgoing_context = 'stasis-wazo-app-{}'.format(application_uuid)
+        elif context_name:
+            outgoing_context = context_name
+        else:
+            outgoing_context = None
+        if outgoing_context:
+            base_config['endpoint_section_options'].append(['context', outgoing_context])
         if context_name:
-            base_config['endpoint_section_options'].append(['context', context_name])
             base_config['endpoint_section_options'].append(
                 ['set_var', 'TRANSFER_CONTEXT={}'.format(context_name)],
             )
