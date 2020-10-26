@@ -112,6 +112,7 @@ from xivo_dao.alchemy.stats_conf_agent import StatsConfAgent
 from xivo_dao.alchemy.stats_conf_queue import StatsConfQueue
 from xivo_dao.alchemy.stats_conf_xivouser import StatsConfXivoUser
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from xivo_dao.alchemy.user_external_app import UserExternalApp
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -231,6 +232,7 @@ __all__ = [
     "StatsConfQueue",
     "StatsConfXivoUser",
     "TrunkFeatures",
+    "UserExternalApp",
     "UserLine",
     "UserCustom",
     "UserFeatures",
