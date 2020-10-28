@@ -125,7 +125,6 @@ __all__ = [
     "AgentMembershipStatus",
     "AgentFeatures",
     "AgentGlobalParams",
-    "AgentGroup",
     "AgentQueueSkill",
     "Application",
     "ApplicationDestNode",
