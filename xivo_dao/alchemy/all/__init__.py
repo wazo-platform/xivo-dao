@@ -31,6 +31,7 @@ from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.external_app import ExternalApp
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
@@ -150,6 +151,7 @@ __all__ = [
     "EndpointSIPSectionOption",
     "EndpointSIPTemplate",
     "Extension",
+    "ExternalApp",
     "Features",
     "FuncKey",
     "FuncKeyDestAgent",
