@@ -46,6 +46,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.external_app import ExternalApp
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
@@ -1041,6 +1042,13 @@ class ItemInserter(object):
         application = ApplicationDestNode(**kwargs)
         self.add_me(application)
         return application
+
+    def add_external_app(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        external_app = ExternalApp(**kwargs)
+        self.add_me(external_app)
+        return external_app
 
     def add_me(self, obj):
         self.session.add(obj)
