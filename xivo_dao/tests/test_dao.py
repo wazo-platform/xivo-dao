@@ -85,6 +85,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.schedule_time import ScheduleTime
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
@@ -703,6 +704,14 @@ class ItemInserter(object):
         sccpline = SCCPLine(**kwargs)
         self.add_me(sccpline)
         return sccpline
+
+    def add_stat_agent(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+
+        stat_agent = StatAgent(**kwargs)
+        self.add_me(stat_agent)
+        return stat_agent
 
     def add_function_key_to_user(self, **kwargs):
         kwargs.setdefault('iduserfeatures', self._generate_int())
