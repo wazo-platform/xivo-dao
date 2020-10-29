@@ -1249,6 +1249,27 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             )),
         )
 
+    def test_that_the_application_is_used(self):
+        context = self.add_context()
+        application = self.add_application(name='MyApplication')
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_line(
+            endpoint_sip_uuid=endpoint.uuid,
+            application_uuid=application.uuid,
+            context=context.name
+        )
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    contains('context', 'stasis-wazo-app-{}'.format(application.uuid)),
+                    contains('set_var', 'TRANSFER_CONTEXT={}'.format(context.name)),
+                )
+            ))
+        )
+
     def test_that_the_transfer_context_is_added(self):
         context = self.add_context()
         endpoint = self.add_endpoint_sip(template=False)
