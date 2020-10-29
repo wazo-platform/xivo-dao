@@ -49,7 +49,7 @@ class TestGet(DAOTestCase):
         user = self.add_user()
         user_external_app = self.add_user_external_app(user_uuid=user.uuid)
 
-        result = user_external_app_dao.get(user_external_app.name)
+        result = user_external_app_dao.get(user.uuid, user_external_app.name)
 
         assert_that(result.name, equal_to(user_external_app.name))
 
