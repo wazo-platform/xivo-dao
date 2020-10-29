@@ -94,6 +94,7 @@ from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from xivo_dao.alchemy.user_external_app import UserExternalApp
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -1049,6 +1050,12 @@ class ItemInserter(object):
         external_app = ExternalApp(**kwargs)
         self.add_me(external_app)
         return external_app
+
+    def add_user_external_app(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        user_external_app = UserExternalApp(**kwargs)
+        self.add_me(user_external_app)
+        return user_external_app
 
     def add_me(self, obj):
         self.session.add(obj)
