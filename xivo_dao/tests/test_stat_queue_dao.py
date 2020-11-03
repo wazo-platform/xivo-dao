@@ -20,6 +20,11 @@ class TestStatQueueDAO(DAOTestCase):
         self.assertEqual(result, queue.id)
 
     def test_insert_if_missing(self):
+        # queue1: in confd + in cel + in stat
+        # queue2: in confd + not in cel + in stat
+        # queue3: in confd + not in cel + not in stat',
+        # queue4: in confd + in cel + not in stat',
+        # queue5: not in confd + in cel + not in stat',
         confd_queues = [
             {
                 'id': 1,
@@ -45,7 +50,7 @@ class TestStatQueueDAO(DAOTestCase):
         self._insert_queue('queue1', 'tenant1', 1)
         self._insert_queue('queue2', 'tenant2', 2)
 
-        new_queues = ['queue1', 'queue3', 'queue4', 'queue5']
+        new_queues = ['queue1', 'queue4', 'queue5']
         master_tenant = str(uuid.uuid4())
 
         with flush_session(self.session):
