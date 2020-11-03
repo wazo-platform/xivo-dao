@@ -21,7 +21,7 @@ def id_from_name(session, queue_name):
 
 
 def insert_if_missing(session, queuelog_queues, confd_queues, master_tenant):
-    new_queues = set(queuelog_queues)
+    new_queues = set(queuelog_queues + [queue['name'] for queue in confd_queues])
     old_queues = set(r[0] for r in session.query(distinct(StatQueue.name)))
 
     missing_queues = list(new_queues - old_queues)
