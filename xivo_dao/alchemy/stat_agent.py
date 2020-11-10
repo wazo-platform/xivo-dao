@@ -2,8 +2,12 @@
 # Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import func
+from sqlalchemy.sql import case
+
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -21,3 +25,15 @@ class StatAgent(Base):
     name = Column(String(128), nullable=False)
     tenant_uuid = Column(String(36), nullable=False)
     agent_id = Column(Integer)
+
+    @hybrid_property
+    def number(self):
+        if self.name.startswith('Agent/'):
+            return self.name.split('/')[-1]
+
+    @number.expression
+    def number(cls):
+        return case(
+            [(func.substr(cls.name, 0, 7) == 'Agent/', func.substr(cls.name, 7))],
+            else_=None,
+        )
