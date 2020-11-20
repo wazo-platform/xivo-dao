@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Boolean, Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -21,3 +21,4 @@ class StatQueue(Base):
     name = Column(String(128), nullable=False)
     tenant_uuid = Column(String(36), nullable=False)
     queue_id = Column(Integer)
+    deleted = Column(Boolean, nullable=False, server_default='false')
