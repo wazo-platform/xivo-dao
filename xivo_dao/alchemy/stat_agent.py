@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.sql import case
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Boolean, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
@@ -25,6 +25,7 @@ class StatAgent(Base):
     name = Column(String(128), nullable=False)
     tenant_uuid = Column(String(36), nullable=False)
     agent_id = Column(Integer)
+    deleted = Column(Boolean, nullable=False, server_default='false')
 
     @hybrid_property
     def number(self):
