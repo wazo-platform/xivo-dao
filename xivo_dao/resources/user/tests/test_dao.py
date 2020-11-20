@@ -479,15 +479,35 @@ class TestSearchGivenMultipleUsers(TestSearch):
                                           offset=1,
                                           limit=1)
 
-    def test_when_multiple_uuid_then_returns_right_number_of_items(self):
-        expected = SearchResult(2, [self.user2, self.user3])
 
-        multiple_uuid = ','.join([self.user2.uuid, self.user3.uuid])
-        self.assert_search_returns_result(expected, uuid=multiple_uuid)
+class TestSearchMutipleSameCriteria(TestSearch):
+    def test_when_multiple_uuid_then_returns_right_number_of_items(self):
+        self.add_user(firstname='a')
+        user2 = self.add_user(firstname='b')
+        user3 = self.add_user(firstname='c')
+        expected = SearchResult(2, [user2, user3])
+
+        multiple_uuid = ','.join([user2.uuid, user3.uuid])
+        self.assert_search_returns_result(expected, uuid=multiple_uuid, order='firstname')
 
     def test_when_uuid_is_none_then_returns_right_number_of_items(self):
+        self.add_user()
         expected = SearchResult(0, [])
         self.assert_search_returns_result(expected, uuid=None)
+
+    def test_when_multiple_exten_then_returns_right_number_of_items(self):
+        self.add_user_line_with_exten(firstname='a')
+        ule2 = self.add_user_line_with_exten(firstname='b')
+        ule3 = self.add_user_line_with_exten(firstname='c')
+        expected = SearchResult(2, [ule2.user, ule3.user])
+
+        multiple_exten = ','.join([ule2.extension.exten, ule3.extension.exten])
+        self.assert_search_returns_result(expected, exten=multiple_exten, order='firstname')
+
+    def test_when_exten_is_none_then_returns_right_number_of_items(self):
+        self.add_user_line_with_exten()
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, exten=None)
 
 
 class TestCreate(TestUser):
