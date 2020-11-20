@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -59,12 +59,28 @@ class UserSearchSystem(SearchSystem):
             uuids = parameters.pop('uuid').split(',')
             query = self._filter_exact_match_uuids(query, uuids)
 
+        if 'exten' in parameters and isinstance(parameters['exten'], (str, six.text_type)):
+            extens = parameters.pop('exten').split(',')
+            query = self._filter_exact_match_extens(query, extens)
+
+        if 'mobile_phone_number' in parameters and isinstance(parameters['mobile_phone_number'], (str, six.text_type)):
+            extens = parameters.pop('mobile_phone_number').split(',')
+            query = self._filter_exact_match_mobile_phone_numbers(query, extens)
+
         query = self._search_on_extension(query)
         return super(UserSearchSystem, self).search_from_query(query, parameters)
 
     def _filter_exact_match_uuids(self, query, uuids):
         column = self.config.column_for_searching('uuid')
         return query.filter(or_(column == uuid for uuid in uuids))
+
+    def _filter_exact_match_extens(self, query, extens):
+        column = self.config.column_for_searching('exten')
+        return query.filter(or_(column == exten for exten in extens))
+
+    def _filter_exact_match_mobile_phone_numbers(self, query, extens):
+        column = self.config.column_for_searching('mobile_phone_number')
+        return query.filter(or_(column == exten for exten in extens))
 
     def _search_on_extension(self, query):
         return (query
