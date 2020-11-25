@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from sqlalchemy import text
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKey
 from sqlalchemy.types import String, Boolean
@@ -64,4 +65,25 @@ class Tenant(Base):
             # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
             name='tenant_twilio_trunk_sip_template_uuid_fkey',
         ),
+    )
+
+    global_sip_template = relationship(
+        'EndpointSIP',
+        uselist=False,
+        primaryjoin='EndpointSIP.uuid == Tenant.global_sip_template_uuid',
+    )
+    webrtc_sip_template = relationship(
+        'EndpointSIP',
+        uselist=False,
+        primaryjoin='EndpointSIP.uuid == Tenant.webrtc_sip_template_uuid',
+    )
+    webrtc_video_sip_template = relationship(
+        'EndpointSIP',
+        uselist=False,
+        primaryjoin='EndpointSIP.uuid == Tenant.webrtc_video_sip_template_uuid',
+    )
+    registration_trunk_sip_template = relationship(
+        'EndpointSIP',
+        uselist=False,
+        primaryjoin='EndpointSIP.uuid == Tenant.registration_trunk_sip_template_uuid',
     )
