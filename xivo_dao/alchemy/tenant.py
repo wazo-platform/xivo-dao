@@ -71,19 +71,23 @@ class Tenant(Base):
         'EndpointSIP',
         uselist=False,
         primaryjoin='EndpointSIP.uuid == Tenant.global_sip_template_uuid',
+        viewonly=True,
     )
     webrtc_sip_template = relationship(
         'EndpointSIP',
         uselist=False,
         primaryjoin='EndpointSIP.uuid == Tenant.webrtc_sip_template_uuid',
+        viewonly=True,
     )
     webrtc_video_sip_template = relationship(
         'EndpointSIP',
         uselist=False,
         primaryjoin='EndpointSIP.uuid == Tenant.webrtc_video_sip_template_uuid',
+        viewonly=True,
     )
     registration_trunk_sip_template = relationship(
         'EndpointSIP',
         uselist=False,
         primaryjoin='EndpointSIP.uuid == Tenant.registration_trunk_sip_template_uuid',
+        viewonly=True,
     )
