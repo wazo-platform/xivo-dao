@@ -473,6 +473,9 @@ def find_sip_user_settings(session):
             base_config['aor_section_options'].append(
                 ['mailboxes', ','.join(mailboxes)]
             )
+            base_config['endpoint_section_options'].append(
+                ['mailboxes', ','.join(mailboxes)]
+            )
         for user in user_mapping.get(endpoint.uuid, []):
             base_config['endpoint_section_options'].extend([
                 ['set_var', 'XIVO_USERID={}'.format(user.id)],
