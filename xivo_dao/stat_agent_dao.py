@@ -19,6 +19,7 @@ def insert_missing_agents(session, confd_agents):
         new_agent.tenant_uuid = agents_by_name[agent_name]['tenant_uuid']
         new_agent.agent_id = agents_by_name[agent_name]['id']
         session.add(new_agent)
+        session.flush()
 
 
 def clean_table(session):
