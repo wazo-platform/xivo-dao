@@ -60,14 +60,7 @@ class TestStatQueueDAO(DAOTestCase):
         with flush_session(self.session):
             stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
 
-        result = [
-            (name, tenant_uuid, queue_id, deleted)
-            for name, tenant_uuid, queue_id, deleted
-            in self.session.query(
-                StatQueue.name, StatQueue.tenant_uuid, StatQueue.queue_id, StatQueue.deleted
-            ).all()
-        ]
-
+        result = self._fetch_stat_queues()
         self.assertTrue(('queue1', 'tenant1', 1, False) in result)
         self.assertTrue(('queue2', 'tenant2', 2, False) in result)
         self.assertTrue(('queue3', 'tenant3', 3, False) in result)
@@ -77,6 +70,76 @@ class TestStatQueueDAO(DAOTestCase):
         self.assertTrue(('queue7', 'tenant7', 7, True) in result)
         self.assertEquals(len(result), 7)
 
+    def test_when_queue_marked_as_deleted_then_new_one_is_created(self):
+        confd_queues = [{'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}]
+        self._insert_queue('queue', 'tenant', queue_id=999, deleted=True)
+        new_queues = ['queue']
+        master_tenant = str(uuid.uuid4())
+
+        with flush_session(self.session):
+            stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
+
+        result = self._fetch_stat_queues()
+        self.assertTrue(('queue', 'tenant', 1, False) in result)
+        self.assertTrue(('queue_', 'tenant', 999, True) in result)
+        self.assertEquals(len(result), 2)
+
+    def test_mark_recreated_queues_with_same_name_as_deleted(self):
+        confd_queues = {'queue': {'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}}
+        self._insert_queue('queue', 'tenant', queue_id=999, deleted=False)
+
+        with flush_session(self.session):
+            stat_queue_dao._mark_recreated_queues_with_same_name_as_deleted(self.session, confd_queues)
+
+        result = self._fetch_stat_queues()
+        self.assertTrue(('queue', 'tenant', 999, True) in result)
+        self.assertEquals(len(result), 1)
+
+    def test_mark_non_confd_queues_as_deleted(self):
+        confd_queues = [{'id': 1, 'name': 'queue1', 'tenant_uuid': 'tenant'}]
+        self._insert_queue('queue2', 'tenant', queue_id=2, deleted=False)
+        self._insert_queue('queue3', 'tenant', queue_id=None, deleted=False)
+
+        with flush_session(self.session):
+            stat_queue_dao._mark_non_confd_queues_as_deleted(self.session, confd_queues)
+
+        result = self._fetch_stat_queues()
+        self.assertTrue(('queue2', 'tenant', 2, True) in result)
+        self.assertTrue(('queue3', 'tenant', None, True) in result)
+        self.assertEquals(len(result), 2)
+
+    def test_create_missing_queues(self):
+        confd_queues = {
+            'queue1': {'id': 1, 'name': 'queue1', 'tenant_uuid': 'tenant'},
+        }
+        new_queues = ['queue2']
+        master_tenant = str(uuid.uuid4())
+
+        with flush_session(self.session):
+            stat_queue_dao._create_missing_queues(
+                self.session, new_queues, confd_queues, master_tenant
+            )
+
+        result = self._fetch_stat_queues()
+        self.assertTrue(('queue1', 'tenant', 1, False) in result)
+        self.assertTrue(('queue2', master_tenant, None, True) in result)
+        self.assertEquals(len(result), 2)
+
+    def test_rename_deleted_queues_with_duplicate_name(self):
+        confd_queues = {'queue': {'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}}
+        self._insert_queue('queue', 'tenant', queue_id=1, deleted=True)
+        self._insert_queue('queue', 'tenant', queue_id=1, deleted=True)
+
+        with flush_session(self.session):
+            stat_queue_dao._rename_deleted_queues_with_duplicate_name(
+                self.session, confd_queues
+            )
+
+        result = self._fetch_stat_queues()
+        self.assertTrue(('queue_', 'tenant', 1, True) in result)
+        self.assertTrue(('queue__', 'tenant', 1, True) in result)
+        self.assertEquals(len(result), 2)
+
     def test_clean_table(self):
         self._insert_queue('queue1')
 
@@ -84,11 +147,21 @@ class TestStatQueueDAO(DAOTestCase):
 
         self.assertTrue(self.session.query(StatQueue).first() is None)
 
-    def _insert_queue(self, name, tenant_uuid=None, queue_id=None):
+    def _fetch_stat_queues(self):
+        return [
+            (name, tenant_uuid, queue_id, deleted)
+            for name, tenant_uuid, queue_id, deleted
+            in self.session.query(
+                StatQueue.name, StatQueue.tenant_uuid, StatQueue.queue_id, StatQueue.deleted
+            ).all()
+        ]
+
+    def _insert_queue(self, name, tenant_uuid=None, queue_id=None, deleted=False):
         queue = StatQueue()
         queue.name = name
         queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
         queue.queue_id = queue_id
+        queue.deleted = deleted
 
         self.add_me(queue)
 
