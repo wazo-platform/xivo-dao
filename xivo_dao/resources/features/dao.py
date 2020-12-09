@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.features import Features
@@ -43,4 +43,10 @@ def get_value(session, feature_id):
     if not value:
         raise errors.not_found('Features', id=feature_id)
 
+    value = _extract_applicationmap_dtmf(value)
+
     return value
+
+
+def _extract_applicationmap_dtmf(value):
+    return value.split(',', 1)[0]
