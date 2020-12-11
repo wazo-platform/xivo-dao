@@ -112,8 +112,9 @@ class TestStatQueueDAO(DAOTestCase):
         confd_queues = {
             'queue1': {'id': 1, 'name': 'queue1', 'tenant_uuid': 'tenant'},
         }
-        new_queues = ['queue2']
+        new_queues = ['queue2', 'queue3']
         master_tenant = str(uuid.uuid4())
+        self._insert_queue('queue3', 'tenant', deleted=True)
 
         with flush_session(self.session):
             stat_queue_dao._create_missing_queues(
@@ -123,7 +124,8 @@ class TestStatQueueDAO(DAOTestCase):
         result = self._fetch_stat_queues()
         self.assertTrue(('queue1', 'tenant', 1, False) in result)
         self.assertTrue(('queue2', master_tenant, None, True) in result)
-        self.assertEquals(len(result), 2)
+        self.assertTrue(('queue3', 'tenant', None, True) in result)
+        self.assertEquals(len(result), 3)
 
     def test_rename_deleted_queues_with_duplicate_name(self):
         confd_queues = {'queue': {'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}}

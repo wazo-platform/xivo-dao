@@ -64,17 +64,28 @@ def _mark_non_confd_queues_as_deleted(session, confd_queues):
 
 
 def _create_missing_queues(session, queuelog_queues, confd_queues_by_name, master_tenant):
-    new_queue_names = set(queuelog_queues + list(confd_queues_by_name.keys()))
-    db_queue_query = session.query(StatQueue.name).filter(StatQueue.deleted.is_(False))
+    new_queue_names = set(confd_queues_by_name.keys())
+    db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(False))
     old_queue_names = set(queue.name for queue in db_queue_query.all())
     missing_queues = list(new_queue_names - old_queue_names)
     for queue_name in missing_queues:
-        queue = confd_queues_by_name.get(queue_name, {})
+        queue = confd_queues_by_name[queue_name]
         new_queue = StatQueue()
         new_queue.name = queue_name
-        new_queue.tenant_uuid = queue.get('tenant_uuid') or master_tenant
-        new_queue.queue_id = queue.get('id')
-        new_queue.deleted = False if queue else True
+        new_queue.tenant_uuid = queue['tenant_uuid']
+        new_queue.queue_id = queue['id']
+        new_queue.deleted = False
+        session.add(new_queue)
+        session.flush()
+
+    db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(True))
+    old_queue_names = set(queue.name for queue in db_queue_query.all())
+    missing_queues = list(set(queuelog_queues) - old_queue_names - new_queue_names)
+    for queue_name in missing_queues:
+        new_queue = StatQueue()
+        new_queue.name = queue_name
+        new_queue.tenant_uuid = master_tenant
+        new_queue.deleted = True
         session.add(new_queue)
         session.flush()
 
