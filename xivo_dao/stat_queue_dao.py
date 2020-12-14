@@ -22,21 +22,30 @@ def id_from_name(session, queue_name):
 
 
 def insert_if_missing(session, queuelog_queues, confd_queues, master_tenant):
-    new_queue_names = set(queuelog_queues + [queue['name'] for queue in confd_queues])
-    old_queue_names = set(r[0] for r in session.query(distinct(StatQueue.name)))
+    confd_queues_by_name = {queue['name']: queue for queue in confd_queues}
+    _mark_recreated_queues_with_same_name_as_deleted(session, confd_queues_by_name)
+    _mark_non_confd_queues_as_deleted(session, confd_queues)
+    _create_missing_queues(session, queuelog_queues, confd_queues_by_name, master_tenant)
+    _rename_deleted_queues_with_duplicate_name(session, confd_queues_by_name)
 
-    new_queues_by_name = {queue['name']: queue for queue in confd_queues}
-    missing_queues = list(new_queue_names - old_queue_names)
 
-    for queue_name in missing_queues:
-        queue = new_queues_by_name.get(queue_name, {})
-        new_queue = StatQueue()
-        new_queue.name = queue_name
-        new_queue.tenant_uuid = queue.get('tenant_uuid') or master_tenant
-        new_queue.queue_id = queue.get('id')
-        session.add(new_queue)
-        session.flush()
+def _mark_recreated_queues_with_same_name_as_deleted(session, confd_queues_by_name):
+    db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(False))
+    db_queues_by_name = {queue.name: queue for queue in db_queue_query.all()}
 
+    confd_queue_names = set(list(confd_queues_by_name.keys()))
+    db_queue_names = set(list(db_queues_by_name.keys()))
+
+    not_missing_queues = confd_queue_names.intersection(db_queue_names)
+    for queue_name in not_missing_queues:
+        confd_queue = confd_queues_by_name[queue_name]
+        db_queue = db_queues_by_name[queue_name]
+        if db_queue.queue_id != confd_queue['id']:
+            db_queue.deleted = True
+            session.flush()
+
+
+def _mark_non_confd_queues_as_deleted(session, confd_queues):
     active_queue_ids = set([queue['id'] for queue in confd_queues])
     all_queue_ids = set(r[0] for r in session.query(distinct(StatQueue.queue_id)))
     deleted_queues = [queue for queue in list(all_queue_ids - active_queue_ids) if queue]
@@ -51,6 +60,50 @@ def insert_if_missing(session, queuelog_queues, confd_queues, master_tenant):
         .update({'deleted': True}, synchronize_session=False)
 
     )
+    session.flush()
+
+
+def _create_missing_queues(session, queuelog_queues, confd_queues_by_name, master_tenant):
+    new_queue_names = set(confd_queues_by_name.keys())
+    db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(False))
+    old_queue_names = set(queue.name for queue in db_queue_query.all())
+    missing_queues = list(new_queue_names - old_queue_names)
+    for queue_name in missing_queues:
+        queue = confd_queues_by_name[queue_name]
+        new_queue = StatQueue()
+        new_queue.name = queue_name
+        new_queue.tenant_uuid = queue['tenant_uuid']
+        new_queue.queue_id = queue['id']
+        new_queue.deleted = False
+        session.add(new_queue)
+        session.flush()
+
+    db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(True))
+    old_queue_names = set(queue.name for queue in db_queue_query.all())
+    missing_queues = list(set(queuelog_queues) - old_queue_names - new_queue_names)
+    for queue_name in missing_queues:
+        new_queue = StatQueue()
+        new_queue.name = queue_name
+        new_queue.tenant_uuid = master_tenant
+        new_queue.deleted = True
+        session.add(new_queue)
+        session.flush()
+
+
+def _rename_deleted_queues_with_duplicate_name(session, confd_queues_by_name):
+    db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(True))
+    for queue in db_queue_query.all():
+        if queue.name in confd_queues_by_name:
+            queue.name = _find_next_available_name(session, queue.name)
+            session.flush()
+
+
+def _find_next_available_name(session, name):
+    query = session.query(StatQueue).filter(StatQueue.name == name)
+    if query.first():
+        next_name = '{}_'.format(name)
+        return _find_next_available_name(session, next_name)
+    return name
 
 
 def clean_table(session):
