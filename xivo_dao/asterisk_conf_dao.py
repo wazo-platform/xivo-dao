@@ -102,6 +102,7 @@ def find_sccp_line_settings(session):
             context,
             number,
             uuid,
+            enable_online_recording,
         ) = args
 
         line = {
@@ -115,6 +116,7 @@ def find_sccp_line_settings(session):
             'language': language,
             'uuid': uuid,
             'tenant_uuid': tenant_uuid,
+            'enable_online_recording': enable_online_recording,
         }
 
         if allow:
@@ -139,6 +141,7 @@ def find_sccp_line_settings(session):
         LineFeatures.context,
         Extension.exten,
         UserFeatures.uuid,
+        UserFeatures.enableonlinerec,
     ).join(LineFeatures, and_(
         LineFeatures.endpoint_sccp_id == SCCPLine.id,
     )).join(
@@ -483,6 +486,10 @@ def find_sip_user_settings(session):
                 # TODO(pc-m): document WAZO_USER_UUID and deprecate the XIVO one
                 # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
             ])
+            if user.enableonlinerec:
+                base_config['endpoint_section_options'].append(
+                    ['set_var', 'DYNAMIC_FEATURES=togglerecord'],
+                )
         line_id = line_mapping.get(endpoint.uuid)
         if line_id:
             base_config['endpoint_section_options'].append(

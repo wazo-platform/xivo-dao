@@ -649,7 +649,7 @@ class FeaturesPersistor(DestinationPersistor):
 
         if result.var_name == 'parkext':
             return FuncKeyDestParking(feature_id=result.id)
-        elif result.var_name == 'automixmon':
+        elif result.var_name == 'togglerecord':
             return FuncKeyDestOnlineRecording(feature_id=result.id)
 
         transfer = self.TRANSFERS_TO_API[result.var_name]
@@ -671,7 +671,7 @@ class FeaturesPersistor(DestinationPersistor):
         elif destination.type == 'parking':
             return 'parkext'
         elif destination.type == 'onlinerec':
-            return 'automixmon'
+            return 'togglerecord'
 
     def delete(self, func_key_id):
         pass

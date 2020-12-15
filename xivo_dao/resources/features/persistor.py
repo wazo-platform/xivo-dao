@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql.expression import not_
+from sqlalchemy.sql.expression import and_, not_, or_
 
 from xivo_dao.alchemy.features import Features
 
-from .search import FUNC_KEY_FEATUREMAP_FOREIGN_KEY, PARKING_OPTIONS
+from .search import (
+    FUNC_KEY_FEATUREMAP_FOREIGN_KEY,
+    FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY,
+    PARKING_OPTIONS
+)
 
 
 class FeaturesPersistor(object):
@@ -47,12 +51,19 @@ class FeaturesPersistor(object):
         if section == 'featuremap':
             query = query.filter(not_(Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)))
 
+        if section == 'applicationmap':
+            query = query.filter(not_(Features.var_name.in_(FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY)))
+
         query.delete(synchronize_session=False)
 
     def _update_existing_foreign_key_features(self, features):
         query = (self.session.query(Features)
-                 .filter(Features.category == 'featuremap')
-                 .filter(Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)))
+                 .filter(or_(
+                     and_(Features.category == 'featuremap',
+                          Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)),
+                     and_(Features.category == 'applicationmap',
+                          Features.var_name.in_(FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY)),
+                 )))
         old_features = query.all()
 
         results = []
