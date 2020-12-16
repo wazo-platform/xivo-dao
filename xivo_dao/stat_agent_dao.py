@@ -8,13 +8,13 @@ from sqlalchemy.sql.expression import or_
 from xivo_dao.alchemy.stat_agent import StatAgent
 
 
-def insert_missing_agents(session, agentlog_agents, confd_agents, master_tenant):
+def insert_missing_agents(session, confd_agents):
     confd_agents_by_name = {
         'Agent/{number}'.format(number=agent['number']): agent for agent in confd_agents
     }
     _mark_recreated_agents_with_same_number_as_deleted(session, confd_agents_by_name)
     _mark_non_confd_agents_as_deleted(session, confd_agents)
-    _create_missing_agents(session, agentlog_agents, confd_agents_by_name, master_tenant)
+    _create_missing_agents(session, confd_agents_by_name)
     _rename_deleted_agents_with_duplicate_name(session, confd_agents_by_name)
 
 
@@ -52,7 +52,7 @@ def _mark_non_confd_agents_as_deleted(session, confd_agents):
     session.flush()
 
 
-def _create_missing_agents(session, agentlog_agents, confd_agents_by_name, master_tenant):
+def _create_missing_agents(session, confd_agents_by_name):
     new_agent_names = set(confd_agents_by_name.keys())
     db_agent_query = session.query(StatAgent).filter(StatAgent.deleted.is_(False))
     old_agent_names = set(agent.name for agent in db_agent_query.all())
@@ -64,17 +64,6 @@ def _create_missing_agents(session, agentlog_agents, confd_agents_by_name, maste
         new_agent.tenant_uuid = agent['tenant_uuid']
         new_agent.agent_id = agent['id']
         new_agent.deleted = False
-        session.add(new_agent)
-        session.flush()
-
-    db_agent_query = session.query(StatAgent).filter(StatAgent.deleted.is_(True))
-    old_agent_names = set(agent.name for agent in db_agent_query.all())
-    missing_agents = list(set(agentlog_agents) - old_agent_names - new_agent_names)
-    for agent_name in missing_agents:
-        new_agent = StatAgent()
-        new_agent.name = agent_name
-        new_agent.tenant_uuid = master_tenant
-        new_agent.deleted = True
         session.add(new_agent)
         session.flush()
 
