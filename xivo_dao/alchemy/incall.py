@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -24,6 +24,7 @@ from sqlalchemy.types import (
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
 
@@ -135,4 +136,17 @@ class Incall(Base):
                 .where(Dialaction.action == 'user')
                 .where(Dialaction.category == 'incall')
                 .where(Dialaction.categoryval == cast(cls.id, String))
+                .as_scalar())
+
+    @hybrid_property
+    def exten_new(self):
+        for extension in self.extensions:
+            return extension.exten
+        return None
+
+    @exten_new.expression
+    def exten_new(cls):
+        return (select([Extension.exten])
+                .where(Extension.type == 'incall')
+                .where(Extension.typeval == cast(cls.id, String))
                 .as_scalar())
