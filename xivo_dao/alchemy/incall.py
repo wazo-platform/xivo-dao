@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -9,8 +9,6 @@ from sqlalchemy.schema import (
     Column,
     PrimaryKeyConstraint,
     ForeignKey,
-    Index,
-    UniqueConstraint,
 )
 from sqlalchemy.sql import (
     cast,
@@ -24,6 +22,7 @@ from sqlalchemy.types import (
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
 
@@ -33,15 +32,10 @@ class Incall(Base):
     __tablename__ = 'incall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        UniqueConstraint('exten', 'context'),
-        Index('incall__idx__context', 'context'),
-        Index('incall__idx__exten', 'exten'),
     )
 
     id = Column(Integer)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    exten = Column(String(40))
-    context = Column(String(39))
     preprocess_subroutine = Column(String(39))
     greeting_sound = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
@@ -135,4 +129,17 @@ class Incall(Base):
                 .where(Dialaction.action == 'user')
                 .where(Dialaction.category == 'incall')
                 .where(Dialaction.categoryval == cast(cls.id, String))
+                .as_scalar())
+
+    @hybrid_property
+    def exten(self):
+        for extension in self.extensions:
+            return extension.exten
+        return None
+
+    @exten.expression
+    def exten(cls):
+        return (select([Extension.exten])
+                .where(Extension.type == 'incall')
+                .where(Extension.typeval == cast(cls.id, String))
                 .as_scalar())

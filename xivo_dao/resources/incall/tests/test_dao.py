@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -124,13 +124,13 @@ class TestFindBy(DAOTestCase):
 
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
-        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[self.default_tenant.uuid])
+        result = incall_dao.find_by(tenant_uuids=[self.default_tenant.uuid])
         assert_that(result, none())
 
-        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[])
+        result = incall_dao.find_by(tenant_uuids=[])
         assert_that(result, none())
 
-        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        result = incall_dao.find_by(tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(incall))
 
 
@@ -178,15 +178,14 @@ class TestGetBy(DAOTestCase):
 
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
-        self.assertRaises(NotFoundError, incall_dao.get_by, exten=incall.exten, tenant_uuids=[])
+        self.assertRaises(NotFoundError, incall_dao.get_by, tenant_uuids=[])
         self.assertRaises(
             NotFoundError,
             incall_dao.get_by,
-            exten=incall.exten,
             tenant_uuids=[self.default_tenant.uuid],
         )
 
-        result = incall_dao.get_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        result = incall_dao.get_by(tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(incall))
 
 
@@ -249,6 +248,14 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [incall])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_by_exten(self):
+        self.add_incall()
+        incall = self.add_incall()
+        exten = self.add_extension(type='incall', typeval=str(incall.id))
+        expected = SearchResult(1, [incall])
+
+        self.assert_search_returns_result(expected, exten=exten.exten)
 
 
 class TestSearchGivenMultipleIncall(TestSearch):

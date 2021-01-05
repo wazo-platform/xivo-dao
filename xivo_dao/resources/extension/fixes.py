@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import Integer
-from sqlalchemy.sql import and_, cast
-
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.resources.line.fixes import LineFixes
@@ -27,11 +23,6 @@ class ExtensionFixes(object):
         if user_lines:
             for user_line in user_lines:
                 self.adjust_for_user(extension_id, user_line.user_id)
-            return
-
-        incall_id = self.find_incall_id(extension_id)
-        if incall_id:
-            self.adjust_incall(extension_id, incall_id)
             return
 
         self.reset_destination(extension_id)
@@ -64,28 +55,9 @@ class ExtensionFixes(object):
          .update({'type': 'user',
                   'typeval': str(user_id)}))
 
-    def find_incall_id(self, extension_id):
-        return (self.session.query(Incall.id)
-                .join(Extension,
-                      and_(Extension.type == 'incall',
-                           cast(Extension.typeval, Integer) == Incall.id))
-                .filter(Extension.id == extension_id)
-                .scalar())
-
-    def adjust_incall(self, extension_id, incall_id):
-        row = (self.session.query(Extension.exten,
-                                  Extension.context)
-               .filter(Extension.id == extension_id)
-               .first())
-
-        (self.session.query(Incall)
-         .filter(Incall.id == incall_id)
-         .update({'exten': row.exten,
-                  'context': row.context}))
-
     def reset_destination(self, extension_id):
         destination = self.get_destination(extension_id)
-        if destination in ('user', 'incall'):
+        if destination == 'user':
             self.remove_destination_id(extension_id)
 
     def get_destination(self, extension_id):
