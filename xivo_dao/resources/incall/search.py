@@ -14,7 +14,7 @@ config = SearchConfig(
         'greeting_sound': Incall.greeting_sound,
         'user_id': Incall.user_id,
         'description': Incall.description,
-        'exten': Incall.exten_new,
+        'exten': Incall.exten,
     },
     default_sort='id',
 )

@@ -132,13 +132,13 @@ class Incall(Base):
                 .as_scalar())
 
     @hybrid_property
-    def exten_new(self):
+    def exten(self):
         for extension in self.extensions:
             return extension.exten
         return None
 
-    @exten_new.expression
-    def exten_new(cls):
+    @exten.expression
+    def exten(cls):
         return (select([Extension.exten])
                 .where(Extension.type == 'incall')
                 .where(Extension.typeval == cast(cls.id, String))
