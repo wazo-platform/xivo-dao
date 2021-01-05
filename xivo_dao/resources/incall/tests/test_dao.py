@@ -124,13 +124,13 @@ class TestFindBy(DAOTestCase):
 
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
-        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[self.default_tenant.uuid])
+        result = incall_dao.find_by(tenant_uuids=[self.default_tenant.uuid])
         assert_that(result, none())
 
-        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[])
+        result = incall_dao.find_by(tenant_uuids=[])
         assert_that(result, none())
 
-        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        result = incall_dao.find_by(tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(incall))
 
 
@@ -178,15 +178,14 @@ class TestGetBy(DAOTestCase):
 
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
-        self.assertRaises(NotFoundError, incall_dao.get_by, exten=incall.exten, tenant_uuids=[])
+        self.assertRaises(NotFoundError, incall_dao.get_by, tenant_uuids=[])
         self.assertRaises(
             NotFoundError,
             incall_dao.get_by,
-            exten=incall.exten,
             tenant_uuids=[self.default_tenant.uuid],
         )
 
-        result = incall_dao.get_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        result = incall_dao.get_by(tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(incall))
 
 

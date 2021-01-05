@@ -9,8 +9,6 @@ from sqlalchemy.schema import (
     Column,
     PrimaryKeyConstraint,
     ForeignKey,
-    Index,
-    UniqueConstraint,
 )
 from sqlalchemy.sql import (
     cast,
@@ -34,15 +32,10 @@ class Incall(Base):
     __tablename__ = 'incall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        UniqueConstraint('exten', 'context'),
-        Index('incall__idx__context', 'context'),
-        Index('incall__idx__exten', 'exten'),
     )
 
     id = Column(Integer)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    exten = Column(String(40))
-    context = Column(String(39))
     preprocess_subroutine = Column(String(39))
     greeting_sound = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
