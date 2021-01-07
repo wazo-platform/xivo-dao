@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -21,13 +21,13 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.setup_funckeys()
 
     def test_func_key_deleted(self):
-        meetme = self.add_meetmefeatures()
-        func_key_dest_meetme = self.add_conference_destination(meetme.id)
+        conference = self.add_conference()
+        func_key_dest_conference = self.add_conference_destination(conference.id)
 
         row = self.session.query(FuncKey).first()
         assert_that(row, not_none())
 
-        self.session.delete(func_key_dest_meetme)
+        self.session.delete(func_key_dest_conference)
         self.session.flush()
 
         row = self.session.query(FuncKey).first()

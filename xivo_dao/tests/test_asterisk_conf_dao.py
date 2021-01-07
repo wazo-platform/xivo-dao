@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -16,7 +16,6 @@ from hamcrest import (
     equal_to,
     has_entries,
     has_items,
-    has_length,
     has_properties,
     not_,
 )
@@ -452,20 +451,19 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ))
 
     def test_find_exten_conferences_settings(self):
-        conference = self.add_meetmefeatures(context='test')
+        exten = '1234'
+        self.add_extension(exten=exten, context='test', type='conference')
 
-        conference_extens = asterisk_conf_dao.find_exten_conferences_settings('test')
+        extens = asterisk_conf_dao.find_exten_conferences_settings('test')
 
-        assert_that(conference_extens, contains_inanyorder(
-            has_entries(exten=conference.confno),
-        ))
+        assert_that(extens, contains_inanyorder(has_entries(exten=exten)))
 
     def test_find_exten_conferences_settings_different_context(self):
-        self.add_meetmefeatures(context='test')
+        self.add_extension(exten='1234', context='test', type='conference')
 
-        conference_extens = asterisk_conf_dao.find_exten_conferences_settings('default')
+        extens = asterisk_conf_dao.find_exten_conferences_settings('default')
 
-        assert_that(conference_extens, has_length(0))
+        assert_that(extens, empty())
 
     def test_find_exten_xivofeatures_setting(self):
         exten1 = self.add_extension(exten='*25', context='xivo-features')
@@ -791,77 +789,15 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             ),
         ))
 
-    def test_find_meetme_general_settings(self):
-        self.add_meetme_general_settings(category='toto')
-        meetme1 = self.add_meetme_general_settings(category='general')
-        meetme2 = self.add_meetme_general_settings(category='general')
-        self.add_meetme_general_settings(category='general', commented=1)
-
-        meetme_settings = asterisk_conf_dao.find_meetme_general_settings()
-
-        assert_that(meetme_settings, contains_inanyorder(
-            has_entries(
-                category='general',
-                cat_metric=0,
-                filename='meetme.conf',
-                var_metric=0,
-                var_name=meetme1.var_name,
-                var_val=meetme1.var_val,
-                id=meetme1.id,
-                commented=0,
-            ),
-            has_entries(
-                category='general',
-                cat_metric=0,
-                filename='meetme.conf',
-                var_metric=0,
-                var_name=meetme2.var_name,
-                var_val=meetme2.var_val,
-                id=meetme2.id,
-                commented=0,
-            ),
-        ))
-
-    def test_find_meetme_rooms_settings(self):
-        self.add_meetme_general_settings(category='toto')
-        meetme1 = self.add_meetme_general_settings(category='rooms')
-        meetme2 = self.add_meetme_general_settings(category='rooms')
-        self.add_meetme_general_settings(category='rooms', commented=1)
-
-        meetme_settings = asterisk_conf_dao.find_meetme_rooms_settings()
-
-        assert_that(meetme_settings, contains_inanyorder(
-            has_entries(
-                category='rooms',
-                cat_metric=0,
-                filename='meetme.conf',
-                var_metric=0,
-                var_name=meetme1.var_name,
-                var_val=meetme1.var_val,
-                id=meetme1.id,
-                commented=0,
-            ),
-            has_entries(
-                category='rooms',
-                cat_metric=0,
-                filename='meetme.conf',
-                var_metric=0,
-                var_name=meetme2.var_name,
-                var_val=meetme2.var_val,
-                id=meetme2.id,
-                commented=0,
-            ),
-        ))
-
     def test_find_queue_general_settings(self):
         self.add_queue_general_settings(category='toto')
         queue_settings1 = self.add_queue_general_settings(category='general')
         queue_settings2 = self.add_queue_general_settings(category='general')
         self.add_queue_general_settings(category='general', commented=1)
 
-        meetme_settings = asterisk_conf_dao.find_queue_general_settings()
+        settings = asterisk_conf_dao.find_queue_general_settings()
 
-        assert_that(meetme_settings, contains_inanyorder(
+        assert_that(settings, contains_inanyorder(
             has_entries(
                 category='general',
                 cat_metric=0,

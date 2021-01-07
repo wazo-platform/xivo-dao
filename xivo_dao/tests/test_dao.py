@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -61,7 +61,6 @@ from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
@@ -87,7 +86,6 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.staticiax import StaticIAX
-from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
@@ -527,23 +525,6 @@ class ItemInserter(object):
         self.add_me(qi)
         return qi
 
-    def add_meetmefeatures(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('meetmeid', self._generate_int())
-        kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('confno', ''.join(random.choice('0123456789') for _ in range(6)))
-        kwargs.setdefault('context', self._random_name())
-        kwargs.setdefault('admin_identification', 'all')
-        kwargs.setdefault('admin_mode', 'all')
-        kwargs.setdefault('admin_announcejoinleave', 'no')
-        kwargs.setdefault('user_mode', 'all')
-        kwargs.setdefault('user_announcejoinleave', 'no')
-        kwargs.setdefault('emailbody', '')
-        kwargs.setdefault('description', '')
-        meetmefeatures = MeetmeFeatures(**kwargs)
-        self.add_me(meetmefeatures)
-        return meetmefeatures
-
     def add_conference(self, **kwargs):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         conference = Conference(**kwargs)
@@ -798,20 +779,6 @@ class ItemInserter(object):
         iax_callnumberlimits = IAXCallNumberLimits(**kwargs)
         self.add_me(iax_callnumberlimits)
         return iax_callnumberlimits
-
-    def add_meetme_general_settings(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('cat_metric', 0)
-        kwargs.setdefault('var_metric', 0)
-        kwargs.setdefault('commented', 0)
-        kwargs.setdefault('filename', 'meetme.conf')
-        kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', self._random_name())
-        kwargs.setdefault('var_val', self._random_name())
-
-        static_meetme = StaticMeetme(**kwargs)
-        self.add_me(static_meetme)
-        return static_meetme
 
     def add_voicemail_general_settings(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())

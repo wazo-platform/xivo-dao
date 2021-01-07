@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -23,7 +23,6 @@ from sqlalchemy.types import Integer
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -44,7 +43,6 @@ from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
-from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.queue import Queue
@@ -291,7 +289,18 @@ def find_parking_settings(session):
 
 @daosession
 def find_exten_conferences_settings(session, context_name):
-    rows = session.query(MeetmeFeatures.confno).filter(MeetmeFeatures.context == context_name)
+    rows = (
+        session.query(Extension.exten)
+        .filter(
+            and_(
+                Extension.type == 'conference',
+                Extension.context == context_name,
+                Extension.commented == 0,
+            )
+        )
+        .order_by('exten')
+        .all()
+    )
     return [{'exten': row[0]} for row in rows]
 
 
@@ -848,26 +857,6 @@ def find_iax_trunk_settings(session):
 @daosession
 def find_iax_calllimits_settings(session):
     rows = session.query(IAXCallNumberLimits).all()
-
-    return [row.todict() for row in rows]
-
-
-@daosession
-def find_meetme_general_settings(session):
-    rows = session.query(StaticMeetme).filter(and_(
-        StaticMeetme.commented == 0,
-        StaticMeetme.category == 'general',
-    )).all()
-
-    return [row.todict() for row in rows]
-
-
-@daosession
-def find_meetme_rooms_settings(session):
-    rows = session.query(StaticMeetme).filter(and_(
-        StaticMeetme.commented == 0,
-        StaticMeetme.category == 'rooms',
-    )).all()
 
     return [row.todict() for row in rows]
 

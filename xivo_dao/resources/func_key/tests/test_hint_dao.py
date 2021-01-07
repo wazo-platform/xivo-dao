@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -261,35 +261,31 @@ class TestUserHints(TestHints):
 
 class TestConferenceHints(TestHints):
 
-    def prepare_conference(self, commented=0):
-        conf_row = self.add_meetmefeatures(commented=commented)
-        self.add_extension(
-            context=self.context.name,
-            exten=conf_row.confno,
-            type='meetme',
-            typeval=str(conf_row.id),
-        )
-        return conf_row
-
     def test_given_conference_then_returns_conference_hint(self):
-        conf_row = self.prepare_conference()
-        self.add_conference_destination(conf_row.id)
+        exten = '1234'
+        context = 'default'
+        conference = self.add_conference()
+        self.add_extension(
+            context=context,
+            exten=exten,
+            type='conference',
+            typeval=str(conference.id),
+        )
+        self.add_conference_destination(conference.id)
 
-        assert_that(hint_dao.conference_hints(self.context.name), contains(
-            Hint(user_id=None, extension=conf_row.confno, argument=None),
-        ))
-
-    def test_given_commented_conference_then_returns_no_hints(self):
-        conf_row = self.prepare_conference(commented=1)
-        self.add_conference_destination(conf_row.id)
-
-        assert_that(hint_dao.conference_hints(self.context.name), empty())
+        hints = hint_dao.conference_hints(context)
+        assert_that(
+            hints,
+            contains(Hint(user_id=None, extension=exten, argument=None)),
+        )
 
     def test_given_conference_when_querying_different_context_then_returns_no_hints(self):
-        conf_row = self.prepare_conference()
-        self.add_conference_destination(conf_row.id)
+        conference = self.add_conference()
+        self.add_extension(type='conference', typeval=str(conference.id))
+        self.add_conference_destination(conference.id)
 
-        assert_that(hint_dao.conference_hints('othercontext'), empty())
+        hints = hint_dao.conference_hints('othercontext')
+        assert_that(hints, empty())
 
 
 class TestServiceHints(TestHints):

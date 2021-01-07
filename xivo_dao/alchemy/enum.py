@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.types import Enum
@@ -15,7 +15,6 @@ dialaction_action = Enum(
     'user',
     'group',
     'queue',
-    'meetme',
     'voicemail',
     'extension',
     'outcall',
@@ -53,7 +52,6 @@ extenumbers_type = Enum(
     'generalfeatures',
     'group',
     'incall',
-    'meetme',
     'outcall',
     'queue',
     'user',

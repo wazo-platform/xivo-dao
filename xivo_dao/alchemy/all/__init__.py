@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -59,8 +59,6 @@ from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
-from xivo_dao.alchemy.meetmeguest import MeetmeGuest
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.monitoring import Monitoring
 from xivo_dao.alchemy.netiface import Netiface
@@ -103,7 +101,6 @@ from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from xivo_dao.alchemy.stat_switchboard_queue import StatSwitchboardQueue
 from xivo_dao.alchemy.staticiax import StaticIAX
-from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
@@ -179,8 +176,6 @@ __all__ = [
     "LineExtension",
     "LineFeatures",
     "Mail",
-    "MeetmeFeatures",
-    "MeetmeGuest",
     "MOH",
     "Monitoring",
     "Netiface",
@@ -223,7 +218,6 @@ __all__ = [
     "StatQueuePeriodic",
     "StatSwitchboardQueue",
     "StaticIAX",
-    "StaticMeetme",
     "StaticQueue",
     "StaticSIP",
     "StaticVoicemail",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -402,6 +402,25 @@ class TestCreate(TestDao):
                             .count())
         assert_that(dest_queue_count, equal_to(1))
 
+    def test_given_no_conference_func_key_when_created_then_create_new_conference_func_key(self):
+        conference = self.add_conference()
+
+        dest_conference_count = (self.session.query(FuncKeyDestConference)
+                                 .filter(FuncKeyDestConference.conference_id == conference.id)
+                                 .count())
+        assert_that(dest_conference_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestConference(conference_id=conference.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestConference(conference_id=conference.id))
+        dao.create(template)
+
+        dest_conference_count = (self.session.query(FuncKeyDestConference)
+                                 .filter(FuncKeyDestConference.conference_id == conference.id)
+                                 .count())
+        assert_that(dest_conference_count, equal_to(1))
+
     def test_given_no_paging_func_key_when_created_then_create_new_paging_func_key(self):
         paging = self.add_paging()
 
@@ -786,6 +805,33 @@ class TestDelete(TestDao):
                             .filter(FuncKeyDestQueue.queue_id == queue.id)
                             .count())
         assert_that(dest_queue_count, equal_to(1))
+
+    def test_given_template_is_associated_to_conference_when_deleting_template(self):
+        conference = self.add_conference()
+        template = self.build_template_with_key(FuncKeyDestConference(conference_id=conference.id))
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_conference_count = (self.session.query(FuncKeyDestConference)
+                                 .filter(FuncKeyDestConference.conference_id == conference.id)
+                                 .count())
+        assert_that(dest_conference_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_conference_when_deleting_template(self):
+        conference = self.add_conference()
+        template = self.build_template_with_key(FuncKeyDestConference(conference_id=conference.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestConference(conference_id=conference.id))
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_conference_count = (self.session.query(FuncKeyDestConference)
+                                 .filter(FuncKeyDestConference.conference_id == conference.id)
+                                 .count())
+        assert_that(dest_conference_count, equal_to(1))
 
     def test_given_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
