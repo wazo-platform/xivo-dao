@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -542,8 +542,10 @@ class TestCreate(TestUser):
             dnd_enabled=False,
             incallfilter_enabled=False,
             supervision_enabled=True,
-            call_record_enabled=False,
-            online_call_record_enabled=False,
+            call_record_outgoing_external_enabled=False,
+            call_record_outgoing_internal_enabled=False,
+            call_record_incoming_external_enabled=False,
+            call_record_incoming_internal_enabled=False,
             busy_enabled=False,
             busy_destination=None,
             noanswer_enabled=False,
@@ -574,7 +576,6 @@ class TestCreate(TestUser):
             incallfilter=0,
             enablednd=0,
             enableonlinerec=0,
-            callrecord=0,
             enablebusy=0,
             destbusy='',
             enablerna=0,
@@ -609,7 +610,10 @@ class TestCreate(TestUser):
             dnd_enabled=True,
             incallfilter_enabled=True,
             supervision_enabled=False,
-            call_record_enabled=True,
+            call_record_outgoing_external_enabled=True,
+            call_record_outgoing_internal_enabled=True,
+            call_record_incoming_external_enabled=True,
+            call_record_incoming_internal_enabled=True,
             online_call_record_enabled=True,
             busy_enabled=True,
             busy_destination='123',
@@ -650,7 +654,10 @@ class TestCreate(TestUser):
             dnd_enabled=True,
             incallfilter_enabled=True,
             supervision_enabled=False,
-            call_record_enabled=True,
+            call_record_outgoing_external_enabled=True,
+            call_record_outgoing_internal_enabled=True,
+            call_record_incoming_external_enabled=True,
+            call_record_incoming_internal_enabled=True,
             online_call_record_enabled=True,
             busy_enabled=True,
             busy_destination='123',
@@ -681,7 +688,6 @@ class TestCreate(TestUser):
             incallfilter=1,
             enablednd=1,
             enableonlinerec=1,
-            callrecord=1,
             enablebusy=1,
             destbusy='123',
             enablerna=1,
@@ -744,7 +750,10 @@ class TestEdit(TestUser):
         user.dnd_enabled = True
         user.incallfilter_enabled = True
         user.supervision_enabled = False
-        user.call_record_enabled = True
+        user.call_record_outgoing_external_enabled = True
+        user.call_record_outgoing_internal_enabled = True
+        user.call_record_incoming_external_enabled = True
+        user.call_record_incoming_internal_enabled = True
         user.online_call_record_enabled = True
         user.busy_enabled = True
         user.busy_destination = '123'
@@ -781,7 +790,10 @@ class TestEdit(TestUser):
             dnd_enabled=True,
             incallfilter_enabled=True,
             supervision_enabled=False,
-            call_record_enabled=True,
+            call_record_outgoing_external_enabled=True,
+            call_record_outgoing_internal_enabled=True,
+            call_record_incoming_external_enabled=True,
+            call_record_incoming_internal_enabled=True,
             online_call_record_enabled=True,
             busy_enabled=True,
             busy_destination='123',

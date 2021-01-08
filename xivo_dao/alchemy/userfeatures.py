@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -106,7 +106,10 @@ class UserFeatures(Base):
     enablexfer = Column(Integer, nullable=False, server_default='0')
     dtmf_hangup = Column(Integer, nullable=False, server_default='0')
     enableonlinerec = Column(Integer, nullable=False, server_default='0')
-    callrecord = Column(Integer, nullable=False, server_default='0')
+    call_record_outgoing_external_enabled = Column(Boolean, nullable=False, server_default='false')
+    call_record_outgoing_internal_enabled = Column(Boolean, nullable=False, server_default='false')
+    call_record_incoming_external_enabled = Column(Boolean, nullable=False, server_default='false')
+    call_record_incoming_internal_enabled = Column(Boolean, nullable=False, server_default='false')
     incallfilter = Column(Integer, nullable=False, server_default='0')
     enablednd = Column(Integer, nullable=False, server_default='0')
     enableunc = Column(Integer, nullable=False, server_default='0')
@@ -605,16 +608,6 @@ class UserFeatures(Base):
     @dtmf_hangup_enabled.setter
     def dtmf_hangup_enabled(self, value):
         self.dtmf_hangup = int(value == 1) if value is not None else None
-
-    @hybrid_property
-    def call_record_enabled(self):
-        if self.callrecord is None:
-            return None
-        return self.callrecord == 1
-
-    @call_record_enabled.setter
-    def call_record_enabled(self, value):
-        self.callrecord = int(value == 1) if value is not None else None
 
     @hybrid_property
     def online_call_record_enabled(self):
