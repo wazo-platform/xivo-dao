@@ -65,7 +65,6 @@ from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queue import Queue
@@ -693,21 +692,6 @@ class ItemInserter(object):
         stat_agent = StatAgent(**kwargs)
         self.add_me(stat_agent)
         return stat_agent
-
-    def add_function_key_to_user(self, **kwargs):
-        kwargs.setdefault('iduserfeatures', self._generate_int())
-        kwargs.setdefault('fknum', int(''.join(random.choice('123456789') for _ in range(6))))
-        kwargs.setdefault('exten', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
-        kwargs.setdefault('supervision', 0)
-        kwargs.setdefault('label', 'toto')
-        kwargs.setdefault('typeextenumbersright', 'user')
-        kwargs.setdefault('typeextenumbers', None)
-        kwargs.setdefault('typevalextenumbers', None)
-        kwargs.setdefault('progfunckey', '1')
-
-        phone_func_key = PhoneFunckey(**kwargs)
-        self.add_me(phone_func_key)
-        return phone_func_key
 
     def add_sccp_general_settings(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
