@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
 from hamcrest import assert_that, equal_to
 from xivo_dao.alchemy.parking_lot import ParkingLot
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestInSlotsRange(unittest.TestCase):
@@ -36,3 +37,25 @@ class TestInSlotsRange(unittest.TestCase):
     def test_after_range(self):
         result = self.parking_lot.in_slots_range(800)
         assert_that(result, equal_to(False))
+
+
+class TestExten(DAOTestCase):
+
+    def test_getter(self):
+        parking_lot = self.add_parking_lot()
+        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+
+        assert_that(parking_lot.exten, equal_to(extension.exten))
+
+    def test_expression(self):
+        parking_lot = self.add_parking_lot()
+        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+
+        result = (
+            self.session.query(ParkingLot)
+            .filter(ParkingLot.exten == extension.exten)
+            .first()
+        )
+
+        assert_that(result, equal_to(parking_lot))
+        assert_that(result.exten, equal_to(extension.exten))
