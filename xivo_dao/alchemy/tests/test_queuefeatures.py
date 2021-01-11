@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -581,6 +581,28 @@ class TestExtensions(DAOTestCase):
 
         self.session.expire_all()
         assert_that(queue.extensions, contains(extension))
+
+
+class TestExten(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        extension = self.add_extension(type='queue', typeval=queue.id)
+
+        assert_that(queue.exten, equal_to(extension.exten))
+
+    def test_expression(self):
+        queue = self.add_queuefeatures()
+        extension = self.add_extension(type='queue', typeval=queue.id)
+
+        result = (
+            self.session.query(QueueFeatures)
+            .filter(QueueFeatures.exten == extension.exten)
+            .first()
+        )
+
+        assert_that(result, equal_to(queue))
+        assert_that(result.exten, equal_to(extension.exten))
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
