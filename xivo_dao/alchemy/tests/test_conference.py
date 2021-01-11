@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import (assert_that,
-                      none,
-                      contains_inanyorder)
+from hamcrest import (
+    assert_that,
+    contains_inanyorder,
+    equal_to,
+    none,
+)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from ..conference import Conference
 
 
 class TestIncalls(DAOTestCase):
@@ -20,6 +25,28 @@ class TestIncalls(DAOTestCase):
                                                          actionarg1=str(group.id)))
 
         assert_that(group.incalls, contains_inanyorder(incall1, incall2))
+
+
+class TestExten(DAOTestCase):
+
+    def test_getter(self):
+        conference = self.add_conference()
+        extension = self.add_extension(type='conference', typeval=conference.id)
+
+        assert_that(conference.exten, equal_to(extension.exten))
+
+    def test_expression(self):
+        conference = self.add_conference()
+        extension = self.add_extension(type='conference', typeval=conference.id)
+
+        result = (
+            self.session.query(Conference)
+            .filter(Conference.exten == extension.exten)
+            .first()
+        )
+
+        assert_that(result, equal_to(conference))
+        assert_that(result.exten, equal_to(extension.exten))
 
 
 class TestDelete(DAOTestCase):
