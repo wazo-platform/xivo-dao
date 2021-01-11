@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -312,6 +312,28 @@ class TestExtensionQueueMembers(DAOTestCase):
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
+
+
+class TestExten(DAOTestCase):
+
+    def test_getter(self):
+        group = self.add_group()
+        extension = self.add_extension(type='group', typeval=group.id)
+
+        assert_that(group.exten, equal_to(extension.exten))
+
+    def test_expression(self):
+        group = self.add_group()
+        extension = self.add_extension(type='group', typeval=group.id)
+
+        result = (
+            self.session.query(Group)
+            .filter(Group.exten == extension.exten)
+            .first()
+        )
+
+        assert_that(result, equal_to(group))
+        assert_that(result.exten, equal_to(extension.exten))
 
 
 class TestCreate(DAOTestCase):
