@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -9,7 +9,11 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.sql import func
+from sqlalchemy.sql import (
+    cast,
+    func,
+    select,
+)
 from sqlalchemy.schema import (
     Column,
     ForeignKey,
@@ -22,6 +26,7 @@ from sqlalchemy.types import Integer, String
 from xivo_dao.helpers.db_manager import Base
 
 from .callerid import Callerid
+from .extension import Extension
 from .queue import Queue
 from .schedulepath import SchedulePath
 
@@ -383,3 +388,18 @@ class QueueFeatures(Base):
     @mark_answered_elsewhere_bool.setter
     def mark_answered_elsewhere_bool(self, value):
         self.mark_answered_elsewhere = int(value is True)
+
+    @hybrid_property
+    def exten(self):
+        for extension in self.extensions:
+            return extension.exten
+        return None
+
+    @exten.expression
+    def exten(cls):
+        return (
+            select([Extension.exten])
+            .where(Extension.type == 'queue')
+            .where(Extension.typeval == cast(cls.id, String))
+            .as_scalar()
+        )

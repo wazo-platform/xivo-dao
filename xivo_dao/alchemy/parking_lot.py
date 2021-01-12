@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.sql import (
+    cast,
+    select,
+)
 from sqlalchemy.types import Integer, String
-
 from xivo_dao.helpers.db_manager import Base
+
+from .extension import Extension
 
 
 class ParkingLot(Base):
@@ -42,3 +48,18 @@ class ParkingLot(Base):
         if start <= exten <= end:
             return True
         return False
+
+    @hybrid_property
+    def exten(self):
+        for extension in self.extensions:
+            return extension.exten
+        return None
+
+    @exten.expression
+    def exten(cls):
+        return (
+            select([Extension.exten])
+            .where(Extension.type == 'parking')
+            .where(Extension.typeval == cast(cls.id, String))
+            .as_scalar()
+        )

@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     ForeignKey,
     PrimaryKeyConstraint,
+)
+from sqlalchemy.sql import (
+    cast,
+    select,
 )
 from sqlalchemy.types import (
     Integer,
@@ -16,6 +21,8 @@ from sqlalchemy.types import (
 )
 
 from xivo_dao.helpers.db_manager import Base
+
+from .extension import Extension
 
 
 class Conference(Base):
@@ -68,3 +75,18 @@ class Conference(Base):
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
     )
+
+    @hybrid_property
+    def exten(self):
+        for extension in self.extensions:
+            return extension.exten
+        return None
+
+    @exten.expression
+    def exten(cls):
+        return (
+            select([Extension.exten])
+            .where(Extension.type == 'conference')
+            .where(Extension.typeval == cast(cls.id, String))
+            .as_scalar()
+        )
