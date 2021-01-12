@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import ConferencePersistor
@@ -48,12 +47,3 @@ def edit(conference):
 
 def delete(conference):
     _persistor().delete(conference)
-
-
-@daosession
-def exists(session, meetme_id):
-    query = (session.query(MeetmeFeatures)
-             .filter(MeetmeFeatures.id == meetme_id)
-             )
-
-    return query.count() > 0

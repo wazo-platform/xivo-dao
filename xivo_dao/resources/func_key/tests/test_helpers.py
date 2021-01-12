@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
@@ -187,7 +187,7 @@ class FuncKeyHelper(object):
         return self.add_queue_destination(queue_row.id)
 
     def create_conference_func_key(self):
-        conference_row = self.add_meetmefeatures()
+        conference_row = self.add_conference()
         return self.add_conference_destination(conference_row.id)
 
     def create_paging_func_key(self):

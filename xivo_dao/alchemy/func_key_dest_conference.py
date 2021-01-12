@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, CheckConstraint
@@ -7,7 +7,7 @@ from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 
 from xivo_dao.alchemy.func_key import FuncKey
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
+from xivo_dao.alchemy.conference import Conference
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,12 +24,12 @@ class FuncKeyDestConference(Base):
 
     func_key_id = Column(Integer, primary_key=True)
     destination_type_id = Column(Integer, primary_key=True, server_default="{}".format(DESTINATION_TYPE_ID))
-    conference_id = Column(Integer, ForeignKey('meetmefeatures.id'), primary_key=True)
+    conference_id = Column(Integer, ForeignKey('conference.id'), primary_key=True)
 
     type = 'conference'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    conference = relationship(MeetmeFeatures)
+    conference = relationship(Conference)
 
     def to_tuple(self):
         return (('conference_id', self.conference_id),)

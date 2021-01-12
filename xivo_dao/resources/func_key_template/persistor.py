@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
@@ -385,6 +385,9 @@ class GroupMemberPersistor(DestinationPersistor):
 
 class ConferencePersistor(DestinationPersistor):
 
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 4
+
     def get(self, func_key_id):
         query = (self.session.query(FuncKeyDestConference)
                  .filter(FuncKeyDestConference.func_key_id == func_key_id))
@@ -392,13 +395,25 @@ class ConferencePersistor(DestinationPersistor):
         return query.first()
 
     def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestConference)
-                 .filter(FuncKeyDestConference.conference_id == destination.conference_id))
+        destination_row = (self.session.query(FuncKeyDestConference)
+                           .filter(FuncKeyDestConference.conference_id == destination.conference_id)
+                           .first())
 
-        return query.first()
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID,
+                                                self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestConference(func_key_id=func_key_row.id,
+                                                    conference_id=destination.conference_id)
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestConference)
+             .filter(FuncKeyDestConference.func_key_id == func_key_id)
+             .delete())
 
 
 class PagingPersistor(DestinationPersistor):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -27,21 +27,6 @@ from xivo_dao.helpers.exception import (
 )
 from xivo_dao.resources.conference import dao as conference_dao
 from xivo_dao.tests.test_dao import DAOTestCase
-
-
-class TestMeetmeExist(DAOTestCase):
-
-    def test_given_no_meetme_then_returns_false(self):
-        result = conference_dao.exists(1)
-
-        assert_that(result, equal_to(False))
-
-    def test_given_meetme_exists_then_return_true(self):
-        conference_row = self.add_meetmefeatures()
-
-        result = conference_dao.exists(conference_row.id)
-
-        assert_that(result, equal_to(True))
 
 
 class TestFind(DAOTestCase):

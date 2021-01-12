@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import (
@@ -17,6 +17,7 @@ from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
@@ -26,11 +27,9 @@ from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
@@ -169,22 +168,24 @@ def _list_user_arguments(session, user_ids):
 
 @daosession
 def conference_hints(session, context):
-    query = session.query(
-        MeetmeFeatures.confno.label('extension'),
-    ).join(
-        FuncKeyDestConference, FuncKeyDestConference.conference_id == MeetmeFeatures.id,
-    ).join(Extension, sql.and_(
-        Extension.type == 'meetme',
-        Extension.typeval == sql.cast(MeetmeFeatures.id, Unicode),
-    )).filter(and_(
-        MeetmeFeatures.commented == 0,
-        Extension.context == context,
-    )).all()
+    query = (
+        session.query(Extension.exten.label('extension'))
+        .select_from(Conference)
+        .join(FuncKeyDestConference, FuncKeyDestConference.conference_id == Conference.id)
+        .join(
+            Extension,
+            sql.and_(
+                Extension.type == 'conference',
+                Extension.typeval == sql.cast(Conference.id, Unicode)
+            )
+        )
+        .filter(Extension.context == context)
+    )
 
-    return tuple(Hint(user_id=None,
-                      extension=row.extension,
-                      argument=None)
-                 for row in query)
+    return tuple(
+        Hint(user_id=None, extension=row.extension, argument=None)
+        for row in query.all()
+    )
 
 
 @daosession
