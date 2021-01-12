@@ -120,3 +120,44 @@ class TestName(DAOTestCase):
 
         assert_that(result, equal_to(trunk))
         assert_that(result.name, equal_to(None))
+
+
+class TestLabel(DAOTestCase):
+
+    def test_getter_endpoint_sip(self):
+        label = 'my-custom-label'
+        sip = self.add_endpoint_sip(label=label)
+        trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
+
+        assert_that(trunk.label, equal_to(label))
+
+    def test_getter_other(self):
+        trunk = self.add_trunk()
+
+        assert_that(trunk.label, equal_to(None))
+
+    def test_expression_endpoint_sip(self):
+        label = 'my-custom-label'
+        sip = self.add_endpoint_sip(label=label)
+        trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
+
+        result = (
+            self.session.query(Trunk)
+            .filter(Trunk.label == label)
+            .first()
+        )
+
+        assert_that(result, equal_to(trunk))
+        assert_that(result.label, equal_to(label))
+
+    def test_expression_other(self):
+        trunk = self.add_trunk()
+
+        result = (
+            self.session.query(Trunk)
+            .filter(Trunk.label.is_(None))
+            .first()
+        )
+
+        assert_that(result, equal_to(trunk))
+        assert_that(result.label, equal_to(None))

@@ -143,3 +143,23 @@ class TrunkFeatures(Base):
             ],
             else_=None
         )
+
+    @hybrid_property
+    def label(self):
+        if self.endpoint_sip and self.endpoint_sip.label not in ("", None):
+            return self.endpoint_sip.label
+        return None
+
+    @label.expression
+    def label(cls):
+        endpoint_sip_query = (
+            select([EndpointSIP.label])
+            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
+            .as_scalar()
+        )
+        return case(
+            [
+                (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
+            ],
+            else_=None
+        )

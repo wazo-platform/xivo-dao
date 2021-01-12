@@ -13,6 +13,7 @@ config = SearchConfig(
         'context': Trunk.context,
         'description': Trunk.description,
         'name': Trunk.name,
+        'label': Trunk.label,
     },
     default_sort='id',
 )
