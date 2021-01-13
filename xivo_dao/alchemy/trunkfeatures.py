@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
@@ -12,6 +13,7 @@ from sqlalchemy.schema import (
     ForeignKey,
     PrimaryKeyConstraint,
 )
+from sqlalchemy.sql import case, select
 from sqlalchemy.types import (
     Boolean,
     Integer,
@@ -20,7 +22,11 @@ from sqlalchemy.types import (
 )
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
+
+from .endpoint_sip import EndpointSIP
+from .outcalltrunk import OutcallTrunk
+from .usercustom import UserCustom
+from .useriax import UserIAX
 
 
 class TrunkFeatures(Base):
@@ -101,3 +107,59 @@ class TrunkFeatures(Base):
 
         if self.register_iax_id:
             return 'iax'
+
+    @hybrid_property
+    def name(self):
+        if self.endpoint_sip and self.endpoint_sip.name not in ("", None):
+            return self.endpoint_sip.name
+        elif self.endpoint_iax and self.endpoint_iax.name not in ("", None):
+            return self.endpoint_iax.name
+        elif self.endpoint_custom and self.endpoint_custom.interface not in ("", None):
+            return self.endpoint_custom.interface
+        return None
+
+    @name.expression
+    def name(cls):
+        endpoint_sip_query = (
+            select([EndpointSIP.name])
+            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
+            .as_scalar()
+        )
+        endpoint_iax_query = (
+            select([UserIAX.name])
+            .where(UserIAX.id == cls.endpoint_iax_id)
+            .as_scalar()
+        )
+        endpoint_custom_query = (
+            select([UserCustom.interface])
+            .where(UserCustom.id == cls.endpoint_custom_id)
+            .as_scalar()
+        )
+        return case(
+            [
+                (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
+                (cls.endpoint_iax_id.isnot(None), endpoint_iax_query),
+                (cls.endpoint_custom_id.isnot(None), endpoint_custom_query),
+            ],
+            else_=None
+        )
+
+    @hybrid_property
+    def label(self):
+        if self.endpoint_sip and self.endpoint_sip.label not in ("", None):
+            return self.endpoint_sip.label
+        return None
+
+    @label.expression
+    def label(cls):
+        endpoint_sip_query = (
+            select([EndpointSIP.label])
+            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
+            .as_scalar()
+        )
+        return case(
+            [
+                (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
+            ],
+            else_=None
+        )
