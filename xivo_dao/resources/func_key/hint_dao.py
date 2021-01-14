@@ -260,9 +260,7 @@ def custom_hints(session, context):
 
     query = _common_filter(query, context)
 
-    return tuple(Hint(user_id=None,
-                      extension=row.extension,
-                      argument=None)
+    return tuple(Hint(extension=row.extension)
                  for row in query)
 
 
@@ -293,8 +291,7 @@ def bsfilter_hints(session, context):
         Extension.context == context,
     ))
 
-    return tuple(Hint(user_id=None,
-                      extension=bsfilter_extension,
+    return tuple(Hint(extension=bsfilter_extension,
                       argument=row.argument)
                  for row in query)
 
