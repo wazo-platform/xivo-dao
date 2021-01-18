@@ -169,7 +169,10 @@ def _list_user_arguments(session, user_ids):
 @daosession
 def conference_hints(session, context):
     query = (
-        session.query(Extension.exten.label('extension'))
+        session.query(
+            Conference.id.label('conference_id'),
+            Extension.exten.label('extension')
+        )
         .select_from(Conference)
         .join(FuncKeyDestConference, FuncKeyDestConference.conference_id == Conference.id)
         .join(
@@ -183,7 +186,7 @@ def conference_hints(session, context):
     )
 
     return tuple(
-        Hint(user_id=None, extension=row.extension, argument=None)
+        Hint(conference_id=row.conference_id, extension=row.extension)
         for row in query.all()
     )
 
@@ -257,9 +260,7 @@ def custom_hints(session, context):
 
     query = _common_filter(query, context)
 
-    return tuple(Hint(user_id=None,
-                      extension=row.extension,
-                      argument=None)
+    return tuple(Hint(extension=row.extension)
                  for row in query)
 
 
@@ -290,8 +291,7 @@ def bsfilter_hints(session, context):
         Extension.context == context,
     ))
 
-    return tuple(Hint(user_id=None,
-                      extension=bsfilter_extension,
+    return tuple(Hint(extension=bsfilter_extension,
                       argument=row.argument)
                  for row in query)
 

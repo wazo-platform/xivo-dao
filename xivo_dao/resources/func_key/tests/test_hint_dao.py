@@ -276,7 +276,14 @@ class TestConferenceHints(TestHints):
         hints = hint_dao.conference_hints(context)
         assert_that(
             hints,
-            contains(Hint(user_id=None, extension=exten, argument=None)),
+            contains(
+                Hint(
+                    user_id=None,
+                    conference_id=conference.id,
+                    extension=exten,
+                    argument=None,
+                )
+            )
         )
 
     def test_given_conference_when_querying_different_context_then_returns_no_hints(self):
