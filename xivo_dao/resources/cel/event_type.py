@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -19,6 +19,8 @@ class CELEventType(object):
         forward,
         hangup,
         linkedid_end,
+        mixmonitor_start,
+        mixmonitor_stop,
         pickup,
         transfer,  # removed in asterisk 12
         xivo_user_fwd,
@@ -40,6 +42,8 @@ class CELEventType(object):
         'FORWARD',
         'HANGUP',
         'LINKEDID_END',
+        'MIXMONITOR_START',
+        'MIXMONITOR_STOP',
         'PICKUP',
         'TRANSFER',
         'XIVO_USER_FWD',
