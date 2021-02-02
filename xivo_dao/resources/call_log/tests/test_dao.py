@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -83,12 +83,18 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(call_log_rows, contains(has_property('id', id_2)))
 
     def test_delete_all(self):
-        self.add_call_log()
-        self.add_call_log()
-        self.add_call_log()
+        call_log_1 = self.add_call_log()
+        call_log_2 = self.add_call_log()
+        call_log_3 = self.add_call_log()
 
-        call_log_dao.delete()
+        ids_deleted = call_log_dao.delete()
 
+        assert_that(
+            ids_deleted,
+            contains_inanyorder(
+                call_log_1.id, call_log_2.id, call_log_3.id
+            )
+        )
         result = self.session.query(CallLog).all()
         assert_that(result, empty())
 
@@ -96,11 +102,16 @@ class TestCallLogDAO(DAOTestCase):
         now = dt.now()
         older = now - td(hours=1)
         exclude_time = now - td(hours=2)
-        self.add_call_log(date=now)
+        call_log_1 = self.add_call_log(date=now)
         call_log_2 = self.add_call_log(date=exclude_time)
-        self.add_call_log(date=now)
+        call_log_3 = self.add_call_log(date=now)
 
-        call_log_dao.delete(older=older)
+        ids_deleted = call_log_dao.delete(older=older)
 
+        assert_that(ids_deleted, contains_inanyorder(call_log_1.id, call_log_3.id))
         result = self.session.query(CallLog).all()
         assert_that(result, contains(call_log_2))
+
+    def test_delete_empty(self):
+        result = call_log_dao.delete()
+        assert_that(result, empty())

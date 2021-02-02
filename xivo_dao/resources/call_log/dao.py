@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.call_log import CallLog
@@ -43,7 +43,9 @@ def delete_from_list(session, call_log_ids):
 @daosession
 def delete(session, older=None):
     with flush_session(session):
-        query = session.query(CallLog)
+        # NOTE(fblackburn) returning object on DELETE is specific to postgresql
+        query = CallLog.__table__.delete().returning(CallLog.id)
         if older:
-            query = query.filter(CallLog.date >= older)
-        query.delete()
+            query = query.where(CallLog.date >= older)
+        result = [r.id for r in session.execute(query)]
+        return result
