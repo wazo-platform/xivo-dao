@@ -59,6 +59,7 @@ class CallLog(Base):
             CallLogParticipant.call_log_id == CallLog.id,
             CallLogParticipant.role == 'destination'
         )''',
+        order_by='desc(CallLogParticipant.answered)',
         viewonly=True,
         uselist=False,
     )

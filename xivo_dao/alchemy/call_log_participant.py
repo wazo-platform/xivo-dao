@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import Enum
@@ -9,7 +9,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.schema import Index
 from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import case, select
 
@@ -33,6 +33,7 @@ class CallLogParticipant(Base):
     line_id = Column(Integer)
     role = Column('role', Enum('source', 'destination', name='call_log_participant_role'), nullable=False)
     tags = Column(ARRAY(String(128)), nullable=False, server_default='{}')
+    answered = Column(Boolean, nullable=False, server_default='false')
 
     call_log = relationship(
         'CallLog',
