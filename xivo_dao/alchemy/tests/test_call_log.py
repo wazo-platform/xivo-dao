@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -105,3 +105,22 @@ class TestCallLogs(DAOTestCase):
     def test_direction_constraint_valid(self):
         call_log = self.add_call_log(direction='internal')
         assert_that(call_log)
+
+    def test_destination_participant_order_by_answered(self):
+        call_log = self.add_call_log()
+        self.add_call_log_participant(
+            call_log_id=call_log.id,
+            user_uuid='alice_uuid',
+            role='destination',
+            answered=False,
+        )
+        self.add_call_log_participant(
+            call_log_id=call_log.id,
+            user_uuid='bob_uuid',
+            role='destination',
+            answered=True,
+        )
+
+        row = self.session.query(CallLog).first()
+
+        assert_that(row.destination_user_uuid, equal_to('bob_uuid'))
