@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -22,6 +22,14 @@ def get(session, user_id):
     else:
         result = session.query(UserFeatures).filter(UserFeatures.uuid == user_id).first()
     if result is None:
+        raise LookupError()
+    return result
+
+
+@daosession
+def get_user_by_agent_id(session, agent_id):
+    result = session.query(UserFeatures).filter(UserFeatures.agent_id == agent_id).first()
+    if not result:
         raise LookupError()
     return result
 
