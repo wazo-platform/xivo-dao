@@ -6,6 +6,7 @@ import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
@@ -14,6 +15,7 @@ from sqlalchemy.sql import (
     select,
 )
 from sqlalchemy.types import Integer, String
+from sqlalchemy import text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -30,9 +32,11 @@ class GroupFeatures(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         Index('groupfeatures__idx__name', 'name'),
+        Index('groupfeatures__idx__uuid', 'uuid'),
     )
 
     id = Column(Integer)
+    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), nullable=False)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
     transfer_user = Column(Integer, nullable=False, server_default='0')
