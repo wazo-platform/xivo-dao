@@ -9,11 +9,6 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def find_all(session):
-    return session.query(CallLog).all()
-
-
-@daosession
 def create_from_list(session, call_logs):
     with flush_session(session):
         for call_log in call_logs:

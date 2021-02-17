@@ -9,7 +9,6 @@ from hamcrest import assert_that
 from hamcrest import contains
 from hamcrest import contains_inanyorder
 from hamcrest import empty
-from hamcrest import equal_to
 from hamcrest import has_length
 from hamcrest import has_property
 
@@ -24,21 +23,6 @@ class TestCallLogDAO(DAOTestCase):
     def setUp(self):
         super(TestCallLogDAO, self).setUp()
         self.call_log_rows = []
-
-    def test_find_all_not_found(self):
-        expected_result = []
-
-        result = call_log_dao.find_all()
-
-        assert_that(result, equal_to(expected_result))
-
-    def test_find_all_found(self):
-        self.add_call_log()
-        self.add_call_log()
-
-        result = call_log_dao.find_all()
-
-        assert_that(result, has_length(2))
 
     def test_create_call_log(self):
         expected_id = 13
