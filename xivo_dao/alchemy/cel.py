@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, Index, ForeignKeyConstraint
+from sqlalchemy.schema import Column, Index
 from sqlalchemy.types import DateTime, Integer, Text, UnicodeText
 
 from xivo_dao.helpers.db_manager import Base
@@ -13,9 +13,6 @@ class CEL(Base):
 
     __tablename__ = 'cel'
     __table_args__ = (
-        ForeignKeyConstraint(('call_log_id',),
-                             ('call_log.id',),
-                             ondelete='SET NULL'),
         Index('cel__idx__call_log_id', 'call_log_id'),
         Index('cel__idx__eventtime', 'eventtime'),
         Index('cel__idx__linkedid', 'linkedid'),
