@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2016 Avencall
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that
-from hamcrest import equal_to
+from hamcrest import assert_that, calling, equal_to, raises
 
 from xivo_dao import user_dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -27,3 +26,15 @@ class TestUserFeaturesDAO(DAOTestCase):
                                       commented_line=1)
 
         self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
+
+    def test_get_user_by_agent_id(self):
+        agent_id = 42
+        user = self.add_user(agent_id=agent_id)
+
+        result = user_dao.get_user_by_agent_id(agent_id)
+        assert_that(result, equal_to(user))
+
+        assert_that(
+            calling(user_dao.get_user_by_agent_id).with_args(43),
+            raises(LookupError),
+        )
