@@ -47,3 +47,8 @@ Start the database (needed only once):
 Run your tests:
 
     pytest
+
+
+Connecting to the Postgres using the CLI
+
+    psql -h localhost -p $(docker-compose port db 5432 | awk -F':' '{ print $2 }') -U asterisk asterisk
