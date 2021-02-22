@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -33,19 +33,25 @@ from xivo_dao.resources.utils.search import SearchResult
 
 from .. import dao as group_dao
 
+UNKNOWN_UUID = u'99999999-9999-4999-8999-999999999999'
+
 
 class TestFind(DAOTestCase):
 
     def test_find_no_group(self):
         result = group_dao.find(42)
+        assert_that(result, none())
 
+        result = group_dao.find(UNKNOWN_UUID)
         assert_that(result, none())
 
     def test_find(self):
         group_row = self.add_group()
 
         group = group_dao.find(group_row.id)
+        assert_that(group, equal_to(group_row))
 
+        group = group_dao.find(group_row.uuid)
         assert_that(group, equal_to(group_row))
 
     def test_find_multi_tenant(self):
@@ -56,7 +62,13 @@ class TestFind(DAOTestCase):
         result = group_dao.find(group.id, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(group))
 
+        result = group_dao.find(group.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(group))
+
         result = group_dao.find(group.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
+        result = group_dao.find(group.uuid, tenant_uuids=[self.default_tenant.uuid])
         assert_that(result, none())
 
 
@@ -64,12 +76,15 @@ class TestGet(DAOTestCase):
 
     def test_get_no_group(self):
         self.assertRaises(NotFoundError, group_dao.get, 42)
+        self.assertRaises(NotFoundError, group_dao.get, UNKNOWN_UUID)
 
     def test_get(self):
         group_row = self.add_group()
 
         group = group_dao.get(group_row.id)
+        assert_that(group, equal_to(group_row))
 
+        group = group_dao.get(group_row.uuid)
         assert_that(group, equal_to(group_row))
 
     def test_get_multi_tenant(self):
@@ -79,8 +94,12 @@ class TestGet(DAOTestCase):
         group = group_dao.get(group_row.id, tenant_uuids=[tenant.uuid])
         assert_that(group, equal_to(group_row))
 
+        group = group_dao.get(group_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(group, equal_to(group_row))
+
         group_row = self.add_group()
         self.assertRaises(NotFoundError, group_dao.get, group_row.id, tenant_uuids=[tenant.uuid])
+        self.assertRaises(NotFoundError, group_dao.get, group_row.uuid, tenant_uuids=[tenant.uuid])
 
 
 class TestFindBy(DAOTestCase):
@@ -106,7 +125,9 @@ class TestFindBy(DAOTestCase):
 
     def test_given_group_does_not_exist_then_returns_null(self):
         group = group_dao.find_by(id=42)
+        assert_that(group, none())
 
+        group = group_dao.find_by(uuid=UNKNOWN_UUID)
         assert_that(group, none())
 
     def test_find_by_multi_tenant(self):
@@ -144,6 +165,7 @@ class TestGetBy(DAOTestCase):
 
     def test_given_group_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, group_dao.get_by, id='42')
+        self.assertRaises(NotFoundError, group_dao.get_by, uuid=UNKNOWN_UUID)
 
     def test_get_by_multi_tenant(self):
         tenant = self.add_tenant()
@@ -153,9 +175,16 @@ class TestGetBy(DAOTestCase):
             NotFoundError,
             group_dao.get_by, id=group_row.id, tenant_uuids=[tenant.uuid],
         )
+        self.assertRaises(
+            NotFoundError,
+            group_dao.get_by, uuid=group_row.uuid, tenant_uuids=[tenant.uuid],
+        )
 
         group_row = self.add_group(tenant_uuid=tenant.uuid)
         group = group_dao.get_by(id=group_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(group, equal_to(group_row))
+
+        group = group_dao.get_by(uuid=group_row.uuid, tenant_uuids=[tenant.uuid])
         assert_that(group, equal_to(group_row))
 
 
@@ -301,6 +330,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(
             id=is_not(none()),
+            uuid=is_not(none()),
             tenant_uuid=self.default_tenant.uuid,
             name='mygroup',
             caller_id_mode=none(),
@@ -338,6 +368,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(
             id=is_not(none()),
+            uuid=is_not(none()),
             tenant_uuid=self.default_tenant.uuid,
             name='MyGroup',
             caller_id_mode='prepend',
@@ -390,6 +421,7 @@ class TestEdit(DAOTestCase):
         assert_that(group, equal_to(row))
         assert_that(group, has_properties(
             id=is_not(none()),
+            uuid=is_not(none()),
             name='other_name',
             caller_id_mode='overwrite',
             caller_id_name='bob',
