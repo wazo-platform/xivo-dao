@@ -2,7 +2,6 @@
 # Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, Index
 from sqlalchemy.types import DateTime, Integer, Text, UnicodeText
 
@@ -41,5 +40,3 @@ class CEL(Base):
     peer = Column(Text, nullable=False)
     extra = Column(Text)
     call_log_id = Column(Integer)
-
-    call_log = relationship('CallLog')
