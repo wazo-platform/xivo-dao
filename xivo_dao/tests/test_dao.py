@@ -32,8 +32,6 @@ from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
 from xivo_dao.alchemy.callerid import Callerid
-from xivo_dao.alchemy.call_log import CallLog
-from xivo_dao.alchemy.call_log_participant import CallLogParticipant
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cel import CEL as CELSchema
@@ -978,19 +976,6 @@ class ItemInserter(object):
         switchboard = Switchboard(**kwargs)
         self.add_me(switchboard)
         return switchboard
-
-    def add_call_log(self, **kwargs):
-        kwargs.setdefault('date', datetime.datetime.now())
-        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
-        call_log = CallLog(**kwargs)
-        self.add_me(call_log)
-        return call_log
-
-    def add_call_log_participant(self, **kwargs):
-        kwargs.setdefault('role', 'source')
-        call_log_participant = CallLogParticipant(**kwargs)
-        self.add_me(call_log_participant)
-        return call_log_participant
 
     def add_application(self, **kwargs):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
