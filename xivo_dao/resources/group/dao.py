@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from uuid import UUID
 
 from .persistor import GroupPersistor
 from .search import group_search
@@ -15,7 +17,8 @@ def search(session, tenant_uuids=None, **parameters):
 
 @daosession
 def get(session, group_id, tenant_uuids=None):
-    return GroupPersistor(session, group_search, tenant_uuids).get_by({'id': group_id})
+    field, value = _id_to_field_value(group_id)
+    return GroupPersistor(session, group_search, tenant_uuids).get_by({field: value})
 
 
 @daosession
@@ -25,7 +28,8 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 @daosession
 def find(session, group_id, tenant_uuids=None):
-    return GroupPersistor(session, group_search, tenant_uuids).find_by({'id': group_id})
+    field, value = _id_to_field_value(group_id)
+    return GroupPersistor(session, group_search, tenant_uuids).find_by({field: value})
 
 
 @daosession
@@ -71,3 +75,13 @@ def associate_call_permission(session, group, call_permission):
 @daosession
 def dissociate_call_permission(session, group, call_permission):
     GroupPersistor(session, group_search).dissociate_call_permission(group, call_permission)
+
+
+def _id_to_field_value(id_or_uuid):
+    if isinstance(id_or_uuid, UUID):
+        return 'uuid', str(id_or_uuid)
+
+    try:
+        return 'id', int(id_or_uuid)
+    except ValueError:
+        return 'uuid', str(UUID(id_or_uuid))
