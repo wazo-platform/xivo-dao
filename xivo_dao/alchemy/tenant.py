@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -20,6 +20,7 @@ class Tenant(Base):
     )
 
     uuid = Column(String(36), server_default=text('uuid_generate_v4()'))
+    slug = Column(String(10))
     sip_templates_generated = Column(Boolean, nullable=False, server_default='false')
     global_sip_template_uuid = Column(
         UUID(as_uuid=True),
