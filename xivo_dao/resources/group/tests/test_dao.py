@@ -322,7 +322,7 @@ class TestSearchGivenMultipleGroup(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        group = Group(name='mygroup', tenant_uuid=self.default_tenant.uuid)
+        group = Group(name='mygroup', label='mygroup label', tenant_uuid=self.default_tenant.uuid)
         created_group = group_dao.create(group)
 
         row = self.session.query(Group).first()
@@ -333,6 +333,7 @@ class TestCreate(DAOTestCase):
             uuid=is_not(none()),
             tenant_uuid=self.default_tenant.uuid,
             name='mygroup',
+            label='mygroup label',
             caller_id_mode=none(),
             caller_id_name=none(),
             timeout=none(),
@@ -349,6 +350,7 @@ class TestCreate(DAOTestCase):
         group = Group(
             tenant_uuid=self.default_tenant.uuid,
             name='MyGroup',
+            label='my group label',
             caller_id_mode='prepend',
             caller_id_name='toto',
             timeout=60,
@@ -371,6 +373,7 @@ class TestCreate(DAOTestCase):
             uuid=is_not(none()),
             tenant_uuid=self.default_tenant.uuid,
             name='MyGroup',
+            label='my group label',
             caller_id_mode='prepend',
             caller_id_name='toto',
             timeout=60,
@@ -390,6 +393,7 @@ class TestEdit(DAOTestCase):
         group = group_dao.create(Group(
             tenant_uuid=self.default_tenant.uuid,
             name='MyGroup',
+            label='my group label',
             caller_id_mode='prepend',
             caller_id_name='toto',
             timeout=60,
@@ -404,6 +408,7 @@ class TestEdit(DAOTestCase):
 
         group = group_dao.get(group.id)
         group.name = 'other_name'
+        group.label = 'other label'
         group.caller_id_mode = 'overwrite'
         group.caller_id_name = 'bob'
         group.timeout = 5
@@ -423,6 +428,7 @@ class TestEdit(DAOTestCase):
             id=is_not(none()),
             uuid=is_not(none()),
             name='other_name',
+            label='other label',
             caller_id_mode='overwrite',
             caller_id_name='bob',
             timeout=5,
@@ -439,6 +445,7 @@ class TestEdit(DAOTestCase):
         group = group_dao.create(Group(
             tenant_uuid=self.default_tenant.uuid,
             name='MyGroup',
+            label='label',
             caller_id_mode='prepend',
             caller_id_name='toto',
             timeout=0,
@@ -470,20 +477,6 @@ class TestEdit(DAOTestCase):
             user_timeout=none(),
             retry_delay=none(),
         ))
-
-    def test_edit_queue_name(self):
-        group_dao.create(Group(name='MyGroup', tenant_uuid=self.default_tenant.uuid))
-        self.session.expunge_all()
-
-        queue = self.session.query(Queue).first()
-        assert_that(queue.name, equal_to('MyGroup'))
-
-        group = self.session.query(Group).first()
-        group.name = 'OtherName'
-        group_dao.edit(group)
-
-        queue = self.session.query(Queue).first()
-        assert_that(queue.name, equal_to('OtherName'))
 
 
 class TestDelete(DAOTestCase):
