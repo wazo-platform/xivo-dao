@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from uuid import uuid4
 
 from hamcrest import (
     all_of,
@@ -188,4 +190,26 @@ class TestOptions(DAOTestCase):
             setqueueentryvar=1,
             setqueuevar=1,
             random_periodic_announce=1,
+        ))
+
+    def test_label_group(self):
+        group_uuid = uuid4()
+        name = 'grp-mytenant-{}'.format(group_uuid)
+        group = self.add_group(uuid=group_uuid, name=name, label='mylabel')
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(group.queue, has_properties(
+            name=name,
+            label='mylabel',
+        ))
+
+    def test_label_queue(self):
+        queuefeatures = self.add_queuefeatures(name='name', displayname='mylabel')
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queuefeatures._queue, has_properties(
+            name='name',
+            label='mylabel',
         ))
