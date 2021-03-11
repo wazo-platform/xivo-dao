@@ -261,10 +261,10 @@ class TestSearchGivenMultipleGroup(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.group1 = self.add_group(name='Ashton', preprocess_subroutine='resto')
-        self.group2 = self.add_group(name='Beaugarton', preprocess_subroutine='bar')
-        self.group3 = self.add_group(name='Casa', preprocess_subroutine='resto')
-        self.group4 = self.add_group(name='Dunkin', preprocess_subroutine='resto')
+        self.group1 = self.add_group(label='Ashton', preprocess_subroutine='resto')
+        self.group2 = self.add_group(label='Beaugarton', preprocess_subroutine='bar')
+        self.group3 = self.add_group(label='Casa', preprocess_subroutine='resto')
+        self.group4 = self.add_group(label='Dunkin', preprocess_subroutine='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.group2])
@@ -279,24 +279,27 @@ class TestSearchGivenMultipleGroup(TestSearch):
         self.assert_search_returns_result(expected_bar, search='ton', preprocess_subroutine='bar')
 
         expected_all_resto = SearchResult(3, [self.group1, self.group3, self.group4])
-        self.assert_search_returns_result(expected_all_resto, preprocess_subroutine='resto', order='name')
+        self.assert_search_returns_result(expected_all_resto, preprocess_subroutine='resto', order='label')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.group1,
-                                 self.group2,
-                                 self.group3,
-                                 self.group4])
+        expected = SearchResult(4, [
+            self.group1,
+            self.group2,
+            self.group3,
+            self.group4,
+        ])
 
-        self.assert_search_returns_result(expected, order='name')
+        self.assert_search_returns_result(expected, order='label')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.group4,
-                                    self.group3,
-                                    self.group2,
-                                    self.group1])
+        expected = SearchResult(4, [
+            self.group4,
+            self.group3,
+            self.group2,
+            self.group1,
+        ])
 
-        self.assert_search_returns_result(expected, order='name', direction='desc')
+        self.assert_search_returns_result(expected, order='label', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.group1])
@@ -311,12 +314,14 @@ class TestSearchGivenMultipleGroup(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.group2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='label',
+            direction='desc',
+            offset=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
