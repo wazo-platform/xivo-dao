@@ -213,3 +213,22 @@ class TestOptions(DAOTestCase):
             name='name',
             label='mylabel',
         ))
+
+    def test_label_no_group_no_queue(self):
+        queue = self.add_queue(category='group')
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue, has_properties(label='unknown'))
+
+        queue = self.add_queue(category='queue')
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue, has_properties(label='unknown'))
+
+        queue = self.add_queue()
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue, has_properties(label='unknown'))

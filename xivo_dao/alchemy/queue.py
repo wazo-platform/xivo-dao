@@ -125,7 +125,11 @@ class Queue(Base, AsteriskOptionsMixin):
 
     @property
     def label(self):
-        if self.category == 'group':
-            return self.groupfeatures.label
-        elif self.category == 'queue':
-            return self.queuefeatures.displayname
+        try:
+            if self.category == 'group':
+                return self.groupfeatures.label
+            elif self.category == 'queue':
+                return self.queuefeatures.displayname
+        except AttributeError:
+            pass
+        return 'unknown'
