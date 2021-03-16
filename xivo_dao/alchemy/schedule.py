@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -39,11 +39,7 @@ class Schedule(Base):
         cascade='all, delete-orphan',
     )
 
-    schedule_paths = relationship(
-        'SchedulePath',
-        viewonly=True,
-        cascade='all, delete-orphan',
-    )
+    schedule_paths = relationship('SchedulePath', cascade='all, delete-orphan')
 
     schedule_incalls = relationship(
         'SchedulePath',
