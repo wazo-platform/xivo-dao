@@ -20,7 +20,6 @@ from mock import Mock
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
-from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.rightcall import RightCall
@@ -245,8 +244,8 @@ class TestSimpleSearch(TestSearch):
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
 
-        group1 = self.add_group()
-        group2 = self.add_group(tenant_uuid=tenant.uuid)
+        group1 = self.add_group(label='a')
+        group2 = self.add_group(label='b', tenant_uuid=tenant.uuid)
 
         expected = SearchResult(2, [group1, group2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
