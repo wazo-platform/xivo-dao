@@ -828,6 +828,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(
             queue[0],
             has_entries({
+                'label': 'my group',
                 'autopause': 'no',
                 'weight': 0,
                 'autofill': 1,

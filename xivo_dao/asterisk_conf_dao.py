@@ -873,7 +873,13 @@ def find_queue_general_settings(session):
 
 @daosession
 def find_queue_settings(session):
-    rows = session.query(Queue).filter(Queue.commented == 0).all()
+    rows = session.query(
+        Queue
+    ).options(
+        joinedload('groupfeatures')
+    ).options(
+        joinedload('queuefeatures')
+    ).filter(Queue.commented == 0).all()
 
     result = []
     for row in rows:
