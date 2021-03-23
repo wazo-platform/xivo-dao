@@ -873,9 +873,20 @@ def find_queue_general_settings(session):
 
 @daosession
 def find_queue_settings(session):
-    rows = session.query(Queue).filter(Queue.commented == 0).order_by('name').all()
+    rows = session.query(
+        Queue
+    ).options(
+        joinedload('groupfeatures')
+    ).options(
+        joinedload('queuefeatures')
+    ).filter(Queue.commented == 0).all()
 
-    return [row.todict() for row in rows]
+    result = []
+    for row in rows:
+        row_as_dict = row.todict()
+        row_as_dict['label'] = row.label
+        result.append(row_as_dict)
+    return result
 
 
 @daosession

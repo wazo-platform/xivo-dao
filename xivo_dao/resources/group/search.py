@@ -11,10 +11,11 @@ config = SearchConfig(
     columns={
         'id': Group.id,
         'name': Group.name,
+        'label': Group.label,
         'preprocess_subroutine': Group.preprocess_subroutine,
         'exten': Group.exten,
     },
-    default_sort='id',
+    default_sort='label',
 )
 
 group_search = SearchSystem(config)

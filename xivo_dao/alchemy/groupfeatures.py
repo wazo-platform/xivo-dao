@@ -14,7 +14,7 @@ from sqlalchemy.sql import (
     cast,
     select,
 )
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 from sqlalchemy import text
 
 from xivo_dao.helpers.db_manager import Base
@@ -39,6 +39,7 @@ class GroupFeatures(Base):
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), nullable=False)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
+    label = Column(Text, nullable=False)
     transfer_user = Column(Integer, nullable=False, server_default='0')
     transfer_call = Column(Integer, nullable=False, server_default='0')
     write_caller = Column(Integer, nullable=False, server_default='0')

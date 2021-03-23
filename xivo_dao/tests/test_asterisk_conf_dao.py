@@ -821,60 +821,61 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ))
 
     def test_find_queue_settings(self):
-        queue1 = self.add_queue()
+        group = self.add_group(label='my group')
 
         queue = asterisk_conf_dao.find_queue_settings()
 
-        assert_that(queue, contains_inanyorder(
+        assert_that(
+            queue[0],
             has_entries({
+                'label': 'my group',
                 'autopause': 'no',
-                'weight': None,
+                'weight': 0,
                 'autofill': 1,
-                'queue-holdtime': None,
+                'queue-holdtime': 'queue-holdtime',
                 'monitor-type': None,
                 'joinempty': None,
-                'announce-frequency': None,
-                'category': queue1.category,
-                'retry': None,
+                'announce-frequency': 0,
+                'category': 'group',
+                'retry': 5,
                 'setqueueentryvar': 0,
-                'periodic-announce-frequency': None,
+                'periodic-announce-frequency': 0,
                 'defaultrule': None,
-                'strategy': None,
-                'queue-thankyou': None,
+                'strategy': 'ringall',
+                'queue-thankyou': 'queue-thankyou',
                 'random-periodic-announce': 0,
                 'setinterfacevar': 0,
-                'queue-callswaiting': None,
+                'queue-callswaiting': 'queue-callswaiting',
                 'announce': None,
-                'wrapuptime': None,
+                'wrapuptime': 0,
                 'leavewhenempty': None,
                 'reportholdtime': 0,
-                'queue-reporthold': None,
-                'queue-youarenext': None,
-                'timeout': 0,
-                'announce-position': 'yes',
+                'queue-reporthold': 'queue-reporthold',
+                'queue-youarenext': 'queue-youarenext',
+                'timeout': 15,
+                'announce-position': 'no',
                 'setqueuevar': 0,
-                'periodic-announce': None,
+                'periodic-announce': 'queue-periodic-announce',
                 'announce-position-limit': 5,
                 'min-announce-frequency': 60,
-                'queue-thereare': None,
+                'queue-thereare': 'queue-thereare',
                 'membermacro': None,
                 'timeoutpriority': 'app',
-                'announce-round-seconds': None,
-                'memberdelay': None,
+                'announce-round-seconds': 0,
+                'memberdelay': 0,
                 'musicclass': None,
-                'ringinuse': 0,
+                'ringinuse': 1,
                 'timeoutrestart': 0,
                 'monitor-format': None,
-                'name': queue1.name,
-                'queue-minutes': None,
+                'name': group.name,
+                'queue-minutes': 'queue-minutes',
                 'servicelevel': None,
-                'maxlen': None,
+                'maxlen': 0,
                 'context': None,
-                'queue-seconds': None,
-                'commented': 0,
-                'announce-holdtime': None
+                'queue-seconds': 'queue-seconds',
+                'announce-holdtime': 'no',
             }),
-        ))
+        )
 
     def test_find_queue_skillrule_settings(self):
         queue_skill_rule1 = self.add_queue_skill_rule()

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
+from sqlalchemy.orm import relationship
 
 from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
 from xivo_dao.helpers.db_manager import Base
@@ -88,6 +89,22 @@ class Queue(Base, AsteriskOptionsMixin):
     announce_position_limit = Column('announce-position-limit', Integer, nullable=False, server_default='5')
     defaultrule = Column(String(1024))
 
+    groupfeatures = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(Queue.category == 'group',
+                            Queue.name == GroupFeatures.name)""",
+        foreign_keys='Queue.name',
+        uselist=False,
+    )
+
+    queuefeatures = relationship(
+        'QueueFeatures',
+        primaryjoin="""and_(Queue.category == 'queue',
+                            Queue.name == QueueFeatures.name)""",
+        foreign_keys='Queue.name',
+        uselist=False,
+    )
+
     @hybrid_property
     def enabled(self):
         if self.commented is None:
@@ -105,3 +122,14 @@ class Queue(Base, AsteriskOptionsMixin):
     @ring_in_use.setter
     def ring_in_use(self, value):
         self.ringinuse = int(value)
+
+    @property
+    def label(self):
+        try:
+            if self.category == 'group':
+                return self.groupfeatures.label
+            elif self.category == 'queue':
+                return self.queuefeatures.displayname
+        except AttributeError:
+            pass
+        return 'unknown'
