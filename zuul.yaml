@@ -10,8 +10,8 @@
     check:
       jobs:
         - xivo-dao:
-            nodeset: debian10-vm
+            nodeset: vm-debian-10-m1s
     gate:
       jobs:
         - xivo-dao:
-            nodeset: debian10-vm
+            nodeset: vm-debian-10-m1s
