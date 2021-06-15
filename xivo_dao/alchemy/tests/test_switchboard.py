@@ -33,9 +33,7 @@ class TestDelete(DAOTestCase):
     def test_queue_music_on_hold(self):
         moh_name = 'my-moh'
         moh = self.add_moh(name=moh_name)
-
         self.add_switchboard(queue_moh_uuid=moh.uuid)
-        self.session.flush()
 
         row = self.session.query(Switchboard).first()
         assert_that(row.queue_music_on_hold, equal_to(moh_name))
@@ -43,23 +41,19 @@ class TestDelete(DAOTestCase):
     def test_waiting_room_music_on_hold(self):
         moh_name = 'my-moh'
         moh = self.add_moh(name=moh_name)
-
         self.add_switchboard(hold_moh_uuid=moh.uuid)
-        self.session.flush()
 
         row = self.session.query(Switchboard).first()
         assert_that(row.waiting_room_music_on_hold, equal_to(moh_name))
 
     def test_queue_music_on_hold_not_configured(self):
         self.add_switchboard()
-        self.session.flush()
 
         row = self.session.query(Switchboard).first()
         assert_that(row.queue_music_on_hold, is_(none()))
 
     def test_waiting_room_music_on_hold_not_configured(self):
         self.add_switchboard()
-        self.session.flush()
 
         row = self.session.query(Switchboard).first()
         assert_that(row.waiting_room_music_on_hold, is_(none()))
