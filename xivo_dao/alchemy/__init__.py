@@ -35,6 +35,7 @@ from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcall import OutcallTrunk
 from xivo_dao.alchemy.paging import Paging
@@ -97,6 +98,7 @@ __all__ = [
     'Incall',
     'LineExtension',
     'LineFeatures',
+    'MOH',
     'Outcall',
     'OutcallTrunk',
     'Paging',

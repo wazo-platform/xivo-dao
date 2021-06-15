@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -23,6 +23,8 @@ class Switchboard(Base):
     uuid = Column(String(38), nullable=False, default=new_uuid)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
+    hold_moh_uuid = Column(String(38), ForeignKey('moh.uuid', ondelete='SET NULL'))
+    queue_moh_uuid = Column(String(38), ForeignKey('moh.uuid', ondelete='SET NULL'))
 
     incall_dialactions = relationship(
         'Dialaction',
@@ -57,3 +59,14 @@ class Switchboard(Base):
         'switchboard_member_users', 'user',
         creator=lambda _user: SwitchboardMemberUser(user=_user),
     )
+
+    _queue_moh = relationship('MOH', primaryjoin='Switchboard.queue_moh_uuid == MOH.uuid')
+    _hold_moh = relationship('MOH', primaryjoin='Switchboard.hold_moh_uuid == MOH.uuid')
+
+    @property
+    def queue_music_on_hold(self):
+        return self._queue_moh.name if self._queue_moh else None
+
+    @property
+    def waiting_room_music_on_hold(self):
+        return self._hold_moh.name if self._hold_moh else None
