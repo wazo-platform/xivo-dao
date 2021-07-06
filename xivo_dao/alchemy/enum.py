@@ -42,6 +42,7 @@ dialaction_category = Enum(
     'user',
     'ivr',
     'ivr_choice',
+    'switchboard',
     name='dialaction_category',
     metadata=Base.metadata
 )

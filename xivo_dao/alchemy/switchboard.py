@@ -44,7 +44,7 @@ class Switchboard(Base):
 
     switchboard_dialactions = relationship(
         'Dialaction',
-        primaryjoin="""and_(Dialaction.action == 'switchboard',
+        primaryjoin="""and_(Dialaction.category == 'switchboard',
                             Dialaction.categoryval == Switchboard.uuid)""",
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
@@ -104,7 +104,7 @@ class Switchboard(Base):
 
         if event not in self.switchboard_dialactions:
             dialaction.event = event
-            dialaction.category = 'incall'
+            dialaction.category = 'switchboard'
             self.switchboard_dialactions[event] = dialaction
 
         self.switchboard_dialactions[event].action = dialaction.action

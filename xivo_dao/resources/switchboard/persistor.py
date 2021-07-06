@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
-from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.helpers import errors
@@ -27,11 +26,6 @@ class SwitchboardPersistor(CriteriaBuilderMixin):
         query = self.session.query(Switchboard)
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
-
-    def _joinedload_query(self):
-        return (self.session.query(Switchboard)
-                .options(joinedload('incall_dialactions')
-                         .joinedload('incall')))
 
     def get_by(self, criteria):
         switchboard = self.find_by(criteria)
