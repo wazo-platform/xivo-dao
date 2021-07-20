@@ -5,7 +5,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import case, cast, func, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -20,6 +20,7 @@ class RightCall(Base):
     __tablename__ = 'rightcall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        UniqueConstraint('name', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
