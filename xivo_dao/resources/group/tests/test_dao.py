@@ -260,10 +260,10 @@ class TestSearchGivenMultipleGroup(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.group1 = self.add_group(label='Ashton', preprocess_subroutine='resto')
-        self.group2 = self.add_group(label='Beaugarton', preprocess_subroutine='bar')
-        self.group3 = self.add_group(label='Casa', preprocess_subroutine='resto')
-        self.group4 = self.add_group(label='Dunkin', preprocess_subroutine='resto')
+        self.group1 = self.add_group(label='Ashton', name='aaa', preprocess_subroutine='resto')
+        self.group2 = self.add_group(label='Beaugarton', name='bbb', preprocess_subroutine='bar')
+        self.group3 = self.add_group(label='Casa', name='ccc', preprocess_subroutine='resto')
+        self.group4 = self.add_group(label='Dunkin', name='ddd', preprocess_subroutine='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.group2])
