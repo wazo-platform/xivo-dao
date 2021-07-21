@@ -4,7 +4,7 @@
 
 import logging
 
-from sqlalchemy import and_, text, select
+from sqlalchemy import and_, sql, text, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -351,6 +351,20 @@ class EndpointSIP(Base):
         matching_options = self._endpoint_section.find('callerid')
         for key, value in matching_options:
             return value
+
+    @caller_id.expression
+    def caller_id(cls):
+        return (
+            select([EndpointSIPSectionOption.value])
+            .where(
+                and_(
+                    EndpointSIPSectionOption.key == 'callerid',
+                    EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+                    EndpointSIPSection.endpoint_sip_uuid == cls.uuid
+                )
+            )
+            .as_scalar()
+        )
 
     @caller_id.setter
     def caller_id(self, caller_id):

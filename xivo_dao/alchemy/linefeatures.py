@@ -10,6 +10,7 @@ import six
 from sqlalchemy import sql
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import and_, select, text
 from sqlalchemy.types import (
     Integer,
     String,
@@ -28,6 +29,10 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
+from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from .context import Context
 
 
@@ -138,7 +143,7 @@ class LineFeatures(Base):
             (cls.endpoint_custom_id.isnot(None), 'custom'),
         ], else_=None)
 
-    @property
+    @hybrid_property
     def caller_id_name(self):
         if self.endpoint_sip:
             return self._sip_caller_id_name()
@@ -161,6 +166,14 @@ class LineFeatures(Base):
 
     def _sccp_caller_id_name(self):
         return self.endpoint_sccp.cid_name
+
+    @caller_id_name.expression
+    def caller_id_name(cls):
+        regex = '"([^"]+)"\\s+'
+        return sql.case([
+            (cls.endpoint_sip != None, cls._sip_caller_id_query(regex)),
+            # (cls.endpoint_sccp != None, cls._sccp_caller_id_query('cid_name'))
+        ], else_=None)
 
     @caller_id_name.setter
     def caller_id_name(self, value):
@@ -186,7 +199,7 @@ class LineFeatures(Base):
     def _set_sccp_caller_id_name(self, value):
         self.endpoint_sccp.cid_name = value
 
-    @property
+    @hybrid_property
     def caller_id_num(self):
         if self.endpoint_sip:
             return self._sip_caller_id_num()
@@ -209,6 +222,15 @@ class LineFeatures(Base):
 
     def _sccp_caller_id_num(self):
         return self.endpoint_sccp.cid_num
+
+    @caller_id_num.expression
+    def caller_id_num(cls):
+        regex = '<([0-9A-Z]+)?>'
+
+        return sql.case([
+            (cls.endpoint_sip != None, cls._sip_caller_id_query(regex)),
+            # (cls.endpoint_sccp != None, cls._sccp_caller_id_query('cid_num')), 
+        ])
 
     @caller_id_num.setter
     def caller_id_num(self, value):
@@ -322,3 +344,28 @@ class LineFeatures(Base):
 
     def remove_device(self):
         self.device = ''
+
+    @classmethod
+    def _sip_caller_id_query(cls, regex):
+        return (
+            select([
+                text("(regexp_match(endpoint_sip_section_option.value, '{}'))[1]".format(regex))
+            ])
+            .where(
+                and_(
+                    EndpointSIPSectionOption.key == 'callerid',
+                    EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+                    EndpointSIPSection.endpoint_sip_uuid == EndpointSIP.uuid,
+                    EndpointSIP.uuid == cls.endpoint_sip_uuid
+                )
+            )
+            .as_scalar()
+        )
+
+    @classmethod
+    def _sccp_caller_id_query(cls, attr):
+        return (
+            select([getattr(SCCPLine, attr)])
+            .where(SCCPLine.id == cls.endpoint_sccp_id)
+            .as_scalar()
+        )

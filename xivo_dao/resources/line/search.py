@@ -8,14 +8,18 @@ from xivo_dao.resources.utils.search import SearchConfig
 
 
 config = SearchConfig(table=LineFeatures,
-                      columns={'context': LineFeatures.context,
-                               'provisioning_code': LineFeatures.provisioningid,
-                               'provisioning_extension': LineFeatures.provisioningid,
-                               'position': LineFeatures.num,
-                               'device_slot': LineFeatures.num,
-                               'protocol': LineFeatures.protocol,
-                               'device_id': LineFeatures.device,
-                               'name': LineFeatures.name},
+                      columns={
+                            'context': LineFeatures.context,
+                            'provisioning_code': LineFeatures.provisioningid,
+                            'provisioning_extension': LineFeatures.provisioningid,
+                            'position': LineFeatures.num,
+                            'device_slot': LineFeatures.num,
+                            'protocol': LineFeatures.protocol,
+                            'device_id': LineFeatures.device,
+                            'name': LineFeatures.name,
+                            'caller_id_name': LineFeatures.caller_id_name,
+                            'caller_id_num': LineFeatures.caller_id_num
+                      },
                       default_sort='name')
 
 line_search = SearchSystem(config)
