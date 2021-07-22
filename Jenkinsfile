@@ -30,7 +30,7 @@ pipeline {
         build job: 'build-docker', parameters: [
           string(name: 'GIT_URL', value: 'https://github.com/wazo-platform/xivo-manage-db.git'),
           string(name: 'IMAGE', value: 'wazoplatform/wazo-confd-db-test'),
-          string(name: 'DOCKERFILE', 'contribs/docker/wazo-confd-db-test/Dockerfile'),
+          string(name: 'DOCKERFILE', value: 'contribs/docker/wazo-confd-db-test/Dockerfile'),
         ]
       }
     }
