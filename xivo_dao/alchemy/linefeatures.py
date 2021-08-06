@@ -170,8 +170,8 @@ class LineFeatures(Base):
         regex = '"([^"]+)"\\s+'
 
         return sql.case([
-            (cls.endpoint_sip != None, cls._sip_query('callerid', regex_filter=regex)),
-            (cls.endpoint_sccp != None, cls._sccp_query('cid_name'))
+            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query('callerid', regex_filter=regex)),
+            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query('cid_name'))
         ], else_=None)
 
     @caller_id_name.setter
@@ -227,8 +227,8 @@ class LineFeatures(Base):
         regex = '<([0-9A-Z]+)?>'
 
         return sql.case([
-            (cls.endpoint_sip != None, cls._sip_query('callerid', regex_filter=regex)),
-            (cls.endpoint_sccp != None, cls._sccp_query('cid_num')), 
+            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query('callerid', regex_filter=regex)),
+            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query('cid_num')),
         ])
 
     @caller_id_num.setter
@@ -345,7 +345,7 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_query(cls, option, can_inherit = False, regex_filter = None):
+    def _sip_query(cls, option, can_inherit=False, regex_filter=None):
         subquery = (
             EndpointSIP.query_options_value(
                 option,

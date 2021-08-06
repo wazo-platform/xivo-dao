@@ -421,11 +421,11 @@ class EndpointSIP(Base):
 
     @classmethod
     def query_options_value(
-        cls, 
+        cls,
         option,
-        root_uuid = None, 
-        sections = ['endpoint'], 
-        can_inherit = False
+        root_uuid=None,
+        sections=['endpoint'],
+        can_inherit=False
     ):
         check_sections = sections if isinstance(sections, list) else [sections]
         result_set = []
@@ -446,11 +446,9 @@ class EndpointSIP(Base):
                 select([
                     EndpointSIPTemplate.parent_uuid.label('uuid'),
                     (cte.c.level + 1).label('level'),
-                    (cte.c.path + cast(
-                        func.row_number().over(
-                            partition_by='level'
-                        ), String)
-                    ).label('path'),
+                    (cte.c.path
+                     + cast(func.row_number().over(partition_by='level'), String))
+                    .label('path'),
                     (cte.c.root)
                 ])
                 .where(EndpointSIPTemplate.child_uuid == cte.c.uuid)
