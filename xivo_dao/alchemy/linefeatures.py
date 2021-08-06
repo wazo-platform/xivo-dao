@@ -7,10 +7,10 @@ from __future__ import unicode_literals
 import re
 import six
 
-from sqlalchemy import sql
+from sqlalchemy import sql, func
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import and_, select, text
+from sqlalchemy.sql.expression import bindparam, select
 from sqlalchemy.types import (
     Integer,
     String,
@@ -31,8 +31,6 @@ from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
-from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
-from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from .context import Context
 
 
@@ -170,9 +168,10 @@ class LineFeatures(Base):
     @caller_id_name.expression
     def caller_id_name(cls):
         regex = '"([^"]+)"\\s+'
+
         return sql.case([
-            (cls.endpoint_sip != None, cls._sip_caller_id_query(regex)),
-            # (cls.endpoint_sccp != None, cls._sccp_caller_id_query('cid_name'))
+            (cls.endpoint_sip != None, cls._sip_query('callerid', regex_filter=regex)),
+            (cls.endpoint_sccp != None, cls._sccp_query('cid_name'))
         ], else_=None)
 
     @caller_id_name.setter
@@ -228,8 +227,8 @@ class LineFeatures(Base):
         regex = '<([0-9A-Z]+)?>'
 
         return sql.case([
-            (cls.endpoint_sip != None, cls._sip_caller_id_query(regex)),
-            # (cls.endpoint_sccp != None, cls._sccp_caller_id_query('cid_num')), 
+            (cls.endpoint_sip != None, cls._sip_query('callerid', regex_filter=regex)),
+            (cls.endpoint_sccp != None, cls._sccp_query('cid_num')), 
         ])
 
     @caller_id_num.setter
@@ -346,26 +345,44 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_caller_id_query(cls, regex):
-        return (
-            select([
-                text("(regexp_match(endpoint_sip_section_option.value, '{}'))[1]".format(regex))
-            ])
-            .where(
-                and_(
-                    EndpointSIPSectionOption.key == 'callerid',
-                    EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
-                    EndpointSIPSection.endpoint_sip_uuid == EndpointSIP.uuid,
-                    EndpointSIP.uuid == cls.endpoint_sip_uuid
-                )
+    def _sip_query(cls, option, can_inherit = False, regex_filter = None):
+        subquery = (
+            EndpointSIP.query_options_value(
+                option,
+                root_uuid=cls.endpoint_sip_uuid,
+                sections=['endpoint'],
+                can_inherit=can_inherit
             )
+            .alias()
+        )
+
+        return (
+            (
+                select([
+                    func.unnest(
+                        func.regexp_matches(
+                            getattr(subquery.c, option),
+                            bindparam('regexp', regex_filter, unique=True)
+                        )
+                    )
+                    .label(option)
+                ])
+                if regex_filter else select([getattr(subquery.c, option)])
+            )
+            .select_from(subquery)
+            .where(subquery.c.root == cls.endpoint_sip_uuid)
             .as_scalar()
         )
 
     @classmethod
-    def _sccp_caller_id_query(cls, attr):
+    def _sccp_query(cls, attribute):
+        if attribute not in dir(SCCPLine):
+            return
+
         return (
-            select([getattr(SCCPLine, attr)])
+            select([
+                getattr(SCCPLine, attribute)
+            ])
             .where(SCCPLine.id == cls.endpoint_sccp_id)
             .as_scalar()
         )

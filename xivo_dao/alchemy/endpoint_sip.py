@@ -4,13 +4,17 @@
 
 import logging
 
-from sqlalchemy import and_, sql, text, select
+from sqlalchemy import and_, text, select
+from sqlalchemy.dialects.postgresql.ext import aggregate_order_by
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.elements import literal
+from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.functions import array_agg, func
 from sqlalchemy.types import (
     Boolean,
     Integer,
@@ -354,17 +358,7 @@ class EndpointSIP(Base):
 
     @caller_id.expression
     def caller_id(cls):
-        return (
-            select([EndpointSIPSectionOption.value])
-            .where(
-                and_(
-                    EndpointSIPSectionOption.key == 'callerid',
-                    EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
-                    EndpointSIPSection.endpoint_sip_uuid == cls.uuid
-                )
-            )
-            .as_scalar()
-        )
+        return cls.query_options_value('callerid', sections=['endpoint'], can_inherit=False)
 
     @caller_id.setter
     def caller_id(self, caller_id):
@@ -424,3 +418,84 @@ class EndpointSIP(Base):
         matching_options = section.find(key)
         for _, value in matching_options:
             return value
+
+    @classmethod
+    def query_options_value(
+        cls, 
+        option,
+        root_uuid = None, 
+        sections = ['endpoint'], 
+        can_inherit = False
+    ):
+        check_sections = sections if isinstance(sections, list) else [sections]
+        result_set = []
+
+        if can_inherit:
+            cte = (
+                select([
+                    EndpointSIP.uuid.label('uuid'),
+                    literal(0).label('level'),
+                    literal('0', String).label('path'),
+                    cls.uuid.label('root')
+                ])
+                .where(EndpointSIP.uuid == (root_uuid or cls.uuid))
+                .cte(recursive=True)
+            )
+
+            endpoints = cte.union_all(
+                select([
+                    EndpointSIPTemplate.parent_uuid.label('uuid'),
+                    (cte.c.level + 1).label('level'),
+                    (cte.c.path + cast(
+                        func.row_number().over(
+                            partition_by='level'
+                        ), String)
+                    ).label('path'),
+                    (cte.c.root)
+                ])
+                .where(EndpointSIPTemplate.child_uuid == cte.c.uuid)
+            )
+
+            result_set.append(
+                array_agg(
+                    aggregate_order_by(
+                        EndpointSIPSectionOption.value,
+                        endpoints.c.path
+                    )
+                )[1]
+                .label(option)
+            )
+            if root_uuid is not None:
+                result_set.append(endpoints.c.root.label('root'))
+
+            return (
+                select(result_set)
+                .where(
+                    and_(
+                        EndpointSIPSectionOption.key == option,
+                        EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+                        EndpointSIPSection.type.in_(check_sections),
+                        EndpointSIPSection.endpoint_sip_uuid == endpoints.c.uuid,
+                        endpoints.c.root == (root_uuid or cls.uuid)
+                    )
+                )
+                .group_by(endpoints.c.root)
+                .as_scalar()
+            )
+        else:
+            result_set.append(EndpointSIPSectionOption.value.label(option))
+            if root_uuid is not None:
+                result_set.append(root_uuid.label('root'))
+
+            return (
+                select(result_set)
+                .where(
+                    and_(
+                        EndpointSIPSectionOption.key == option,
+                        EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+                        EndpointSIPSection.type.in_(check_sections),
+                        EndpointSIPSection.endpoint_sip_uuid == (root_uuid or cls.uuid),
+                    )
+                )
+                .as_scalar()
+            )
