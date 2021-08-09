@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
@@ -19,9 +19,7 @@ class FuncKeyTemplateSearchSystem(SearchSystem):
         return super(FuncKeyTemplateSearchSystem, self).search_from_query(query, parameters)
 
     def _apply_private_filter(self, query):
-        return (query
-                .filter(FuncKeyTemplate.private == False)
-                )
+        return query.filter(FuncKeyTemplate.private.is_(False))
 
 
 template_search = FuncKeyTemplateSearchSystem(config)

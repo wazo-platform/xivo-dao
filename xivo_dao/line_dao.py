@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -60,7 +60,7 @@ def get_main_extension_context_from_line_id(session, line_id):
                     ExtensionTable.context)
              .join(LineExtension, LineExtension.extension_id == ExtensionTable.id)
              .filter(LineExtension.line_id == line_id)
-             .filter(LineExtension.main_extension == True))
+             .filter(LineExtension.main_extension.is_(True)))
 
     line_row = query.first()
     return line_row

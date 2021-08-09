@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -98,7 +98,7 @@ class SummaryView(View):
                                func.nullif(User.email, '').label('email'),
                                User.enabled.label('enabled'),
                                case([
-                                   (Line.endpoint_custom_id == None, Line.provisioning_code)
+                                   (Line.endpoint_custom_id.is_(None), Line.provisioning_code)
                                ],
                                    else_=None).label('provisioning_code'),
                                Line.protocol.label('protocol'),

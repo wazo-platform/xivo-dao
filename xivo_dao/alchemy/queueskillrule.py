@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -27,7 +27,7 @@ class QueueSkillRule(Base):
 
     @rules.expression
     def rules(cls):
-        return case([(cls.rule == None, [])], else_=func.string_to_array(cls.rule, ';'))
+        return case([(cls.rule.is_(None), [])], else_=func.string_to_array(cls.rule, ';'))
 
     @rules.setter
     def rules(self, value):

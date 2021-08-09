@@ -162,4 +162,4 @@ class Extension(Base):
 
     @feature.expression
     def feature(cls):
-        return case([(cls.is_feature == True, cls.typeval)], else_=None)
+        return case([(cls.is_feature.is_(True), cls.typeval)], else_=None)
