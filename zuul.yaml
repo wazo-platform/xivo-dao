@@ -6,6 +6,7 @@
 
 - project:
     templates:
+      - wazo-tox-linters
       - debian-packaging-template
     check:
       jobs:
