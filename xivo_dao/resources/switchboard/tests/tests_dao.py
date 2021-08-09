@@ -61,6 +61,20 @@ class TestSimpleSearch(TestSearch):
         tenants = [tenant.uuid]
         self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
+    def test_search_by_extension(self):
+        switchboard = self.add_switchboard()
+        incall = self.add_incall()
+        self.add_extension(type='incall',
+                           typeval=str(incall.id),
+                           exten="1000")
+        self.add_dialaction(category='incall',
+                            categoryval=str(incall.id),
+                            action='switchboard',
+                            actionarg1=switchboard.uuid)
+
+        expected = SearchResult(1, [switchboard])
+        self.assert_search_returns_result(expected, search="1000")
+
 
 class TestSearchGivenMultipleSwitchboards(TestSearch):
 
