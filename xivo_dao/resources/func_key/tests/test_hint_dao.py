@@ -32,9 +32,9 @@ class HintMatcher(BaseMatcher):
 
     def _matches(self, item):
         return (
-            item.user_id == self._user_id and
-            item.extension == self._extension and
-            self._argument_matcher.matches(item.argument),
+            item.user_id == self._user_id
+            and item.extension == self._extension
+            and self._argument_matcher.matches(item.argument),
         )
 
     def describe_to(self, description):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -133,9 +133,9 @@ class LineFeatures(Base):
     @protocol.expression
     def protocol(cls):
         return sql.case([
-            (cls.endpoint_sip_uuid != None, 'sip'),
-            (cls.endpoint_sccp_id != None, 'sccp'),
-            (cls.endpoint_custom_id != None, 'custom'),
+            (cls.endpoint_sip_uuid.isnot(None), 'sip'),
+            (cls.endpoint_sccp_id.isnot(None), 'sccp'),
+            (cls.endpoint_custom_id.isnot(None), 'custom'),
         ], else_=None)
 
     @property

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -33,12 +33,13 @@ def find_all_forwards(session, user_id, fwd_type):
 
 @daosession
 def find_users_having_user_destination(session, destination_user):
-    query = (session.query(UserFeatures)
-            .join(FuncKeyMapping,
-                or_(FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-                    FuncKeyMapping.template_id == UserFeatures.func_key_template_id))
-            .join(FuncKeyDestUser, FuncKeyMapping.func_key_id == FuncKeyDestUser.func_key_id)
-            .filter(FuncKeyDestUser.user_id == str(destination_user.id))
+    query = (
+        session.query(UserFeatures)
+        .join(FuncKeyMapping,
+              or_(FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+                  FuncKeyMapping.template_id == UserFeatures.func_key_template_id))
+        .join(FuncKeyDestUser, FuncKeyMapping.func_key_id == FuncKeyDestUser.func_key_id)
+        .filter(FuncKeyDestUser.user_id == str(destination_user.id))
     )
     return query.all()
 

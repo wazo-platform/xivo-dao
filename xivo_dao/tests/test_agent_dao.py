@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -72,7 +72,7 @@ class TestAgentDAO(DAOTestCase):
         assert_that(result.id, equal_to(agent.id))
 
     def test_agent_with_user_uuid_unknown_user(self):
-        agent = self._insert_agent()
+        self._insert_agent()
 
         self.assertRaises(LookupError, agent_dao.agent_with_user_uuid, UNKNOWN_UUID)
 

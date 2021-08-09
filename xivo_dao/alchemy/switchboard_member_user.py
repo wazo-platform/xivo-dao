@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import String
 
 from xivo_dao.helpers.db_manager import Base
 
