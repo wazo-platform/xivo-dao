@@ -8,7 +8,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
-from sqlalchemy.types import String
+from sqlalchemy.types import Integer, String
 from sqlalchemy.sql.schema import ForeignKey
 
 from xivo_dao.helpers.db_manager import Base
@@ -28,6 +28,7 @@ class Switchboard(Base):
     name = Column(String(128), nullable=False)
     hold_moh_uuid = Column(String(38), ForeignKey('moh.uuid', ondelete='SET NULL'))
     queue_moh_uuid = Column(String(38), ForeignKey('moh.uuid', ondelete='SET NULL'))
+    timeout = Column(Integer)
 
     incall_dialactions = relationship(
         'Dialaction',
