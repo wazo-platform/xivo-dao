@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -8,6 +8,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import String
 from sqlalchemy.sql import func
 
+from xivo import dialaction
 from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
 
@@ -155,7 +156,7 @@ class Dialaction(Base):
 
     @hybrid_property
     def type(self):
-        return self.action.split(':', 1)[0] if self.action else self.action
+        return dialaction.action_type(self.action)
 
     @type.expression
     def type(cls):
@@ -163,14 +164,11 @@ class Dialaction(Base):
 
     @type.setter
     def type(self, value):
-        type_ = value if value else ''
-        subtype = self.subtype if self.subtype else ''
-        self._set_action(type_, subtype)
+        self.action = dialaction.action(type_=value, subtype=self.subtype)
 
     @hybrid_property
     def subtype(self):
-        type_subtype = self.action.split(':', 1) if self.action else ''
-        return type_subtype[1] if len(type_subtype) == 2 else None
+        return dialaction.action_subtype(self.action)
 
     @subtype.expression
     def subtype(cls):
@@ -178,13 +176,7 @@ class Dialaction(Base):
 
     @subtype.setter
     def subtype(self, value):
-        type_ = self.type if self.type else ''
-        subtype = value if value else ''
-        self._set_action(type_, subtype)
-
-    def _set_action(self, type_, subtype):
-        subtype = ':{}'.format(subtype) if subtype else ''
-        self.action = '{}{}'.format(type_, subtype)
+        self.action = dialaction.action(type_=self.type, subtype=value)
 
     @property
     def gosub_args(self):
