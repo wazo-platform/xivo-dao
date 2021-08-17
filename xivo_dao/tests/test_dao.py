@@ -84,7 +84,6 @@ from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticqueue import StaticQueue
-from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.tenant import Tenant
@@ -797,20 +796,6 @@ class ItemInserter(object):
     def add_register_iax(self, **kwargs):
         kwargs.setdefault('var_name', 'register')
         return self.add_iax_general_settings(**kwargs)
-
-    def add_sip_general_settings(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('cat_metric', 0)
-        kwargs.setdefault('var_metric', 0)
-        kwargs.setdefault('commented', 0)
-        kwargs.setdefault('filename', 'sip.conf')
-        kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', self._random_name())
-        kwargs.setdefault('var_val', self._random_name())
-
-        static_sip = StaticSIP(**kwargs)
-        self.add_me(static_sip)
-        return static_sip
 
     def add_asterisk_file(self, **kwargs):
         kwargs.setdefault('name', self._random_name())

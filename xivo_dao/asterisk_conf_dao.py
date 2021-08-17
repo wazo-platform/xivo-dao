@@ -30,7 +30,6 @@ from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.context import Context
@@ -376,20 +375,6 @@ def find_voicemail_general_settings(session):
     for row in rows:
         res.append({
             'category': row.category,
-            'var_name': row.var_name,
-            'var_val': row.var_val,
-        })
-
-    return res
-
-
-@daosession
-def find_sip_general_settings(session):
-    rows = session.query(StaticSIP).filter(StaticSIP.commented == 0).all()
-
-    res = []
-    for row in rows:
-        res.append({
             'var_name': row.var_name,
             'var_val': row.var_val,
         })

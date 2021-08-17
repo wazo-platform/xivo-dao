@@ -100,7 +100,6 @@ from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from xivo_dao.alchemy.stat_switchboard_queue import StatSwitchboardQueue
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticqueue import StaticQueue
-from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.stats_conf import StatsConf
 from xivo_dao.alchemy.stats_conf_agent import StatsConfAgent
@@ -216,7 +215,6 @@ __all__ = [
     "StatSwitchboardQueue",
     "StaticIAX",
     "StaticQueue",
-    "StaticSIP",
     "StaticVoicemail",
     "StatsConf",
     "StatsConfAgent",
