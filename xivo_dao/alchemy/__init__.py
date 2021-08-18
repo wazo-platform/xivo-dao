@@ -55,7 +55,6 @@ from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.staticiax import StaticIAX
-from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
 from xivo_dao.alchemy.tenant import Tenant
@@ -118,7 +117,6 @@ __all__ = [
     'SchedulePath',
     'ScheduleTime',
     'StaticIAX',
-    'StaticSIP',
     'Switchboard',
     'SwitchboardMemberUser',
     'Tenant',

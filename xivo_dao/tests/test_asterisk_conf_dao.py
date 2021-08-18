@@ -681,18 +681,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             {'category': 'general', 'var_name': vms2.var_name, 'var_val': vms2.var_val},
         ))
 
-    def test_find_sip_general_settings(self):
-        sip1 = self.add_sip_general_settings()
-        sip2 = self.add_sip_general_settings()
-        self.add_sip_general_settings(commented=1)
-
-        sip_settings = asterisk_conf_dao.find_sip_general_settings()
-
-        assert_that(sip_settings, contains_inanyorder(
-            {'var_name': sip1.var_name, 'var_val': sip1.var_val},
-            {'var_name': sip2.var_name, 'var_val': sip2.var_val},
-        ))
-
     def test_find_iax_general_settings(self):
         iax1 = self.add_iax_general_settings()
         iax2 = self.add_iax_general_settings()
