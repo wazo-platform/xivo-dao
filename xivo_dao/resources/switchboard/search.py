@@ -32,11 +32,12 @@ class SwitchboardSearchSystem(SearchSystem):
     def _search_on_extension(self, query):
         return (
             query
-            .join(Dialaction, and_(Dialaction.action == 'switchboard',
-                                   Dialaction.actionarg1 == Switchboard.uuid))
-            .join(Incall, and_(Dialaction.category == 'incall',
-                               Dialaction.categoryval == cast(Incall.id, String),
-                               Incall.commented == 0))
+            .outerjoin(Dialaction, and_(Dialaction.action == 'switchboard',
+                                        Dialaction.actionarg1 == Switchboard.uuid))
+            .outerjoin(Incall, and_(Dialaction.category == 'incall',
+                                    Dialaction.categoryval == cast(Incall.id, String),
+                                    Incall.commented == 0))
+            .group_by(Switchboard)
         )
 
     def search_from_query(self, query, parameters):
