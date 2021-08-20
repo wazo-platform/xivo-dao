@@ -104,7 +104,6 @@ def user_shared_hints(session):
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
             elif line.endpoint_sip_uuid:
-                # TODO PJSIP migration
                 ifaces.append('pjsip/{}'.format(line.name))
             elif line.endpoint_sccp_id:
                 ifaces.append('sccp/{}'.format(line.name))

@@ -918,14 +918,8 @@ def find_queue_members_settings(session, queue_name):
                 state_interface='hint:{}@usersharedlines'.format(row.uuid),
             )
         else:
-            # TODO clean after pjsip migration
-            if row.interface.startswith('SIP/'):
-                interface = row.interface.replace('SIP', 'PJSIP')
-            else:
-                interface = row.interface
-
             member = Member(
-                interface=interface,
+                interface=row.interface,
                 penalty=str(row.penalty),
                 name='',
                 state_interface='',
