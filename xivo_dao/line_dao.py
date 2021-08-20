@@ -80,7 +80,7 @@ def is_line_owned_by_user(session, user_uuid, line_id):
 
 def _format_interface(row):
     if row.endpoint_sip_uuid:
-        return 'SIP/{}'.format(row.name)
+        return 'PJSIP/{}'.format(row.name)
     elif row.endpoint_sccp_id:
         return 'SCCP/{}'.format(row.name)
     elif row.endpoint_custom_id:

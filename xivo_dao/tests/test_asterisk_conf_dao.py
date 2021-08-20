@@ -915,7 +915,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         self.add_queue_member(
             queue_name=queue_name,
-            interface='SIP/3m6dsc',
+            interface='PJSIP/3m6dsc',
             usertype='user',
             userid=54,
             penalty=5,
@@ -933,7 +933,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         self.add_queue_member(
             queue_name=queue_name,
-            interface='SIP/dsf4rs',
+            interface='PJSIP/dsf4rs',
             usertype='user',
             userid=3,
             penalty=42,
