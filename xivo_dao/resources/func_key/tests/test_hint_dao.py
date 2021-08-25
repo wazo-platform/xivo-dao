@@ -2,56 +2,19 @@
 # Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import six
-
-from itertools import permutations
-
 from hamcrest import (
-    any_of,
     assert_that,
     contains,
     contains_inanyorder,
+    has_properties,
     empty,
     equal_to,
 )
-from hamcrest.core.base_matcher import BaseMatcher
-from hamcrest.core.helpers.wrap_matcher import wrap_matcher
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.resources.func_key import hint_dao
 from xivo_dao.resources.func_key.model import Hint
-
-
-class HintMatcher(BaseMatcher):
-
-    def __init__(self, user_id, extension, argument_matcher):
-        self._user_id = user_id
-        self._extension = extension
-        self._argument_matcher = argument_matcher
-
-    def _matches(self, item):
-        return (
-            item.user_id == self._user_id
-            and item.extension == self._extension
-            and self._argument_matcher.matches(item.argument),
-        )
-
-    def describe_to(self, description):
-        (description.append_text('hint with user_id ')
-                    .append_description_of(self._user_id)
-                    .append_text(' extension ')
-                    .append_description_of(self._extension)
-                    .append_text(' argument ')
-                    .append_description_of(self._argument_matcher))
-
-
-def a_hint(user_id, extension, argument):
-    if isinstance(argument, six.string_types) and '&' in argument:
-        argument_matcher = any_of(*list(map('&'.join, permutations(argument.split('&')))))
-    else:
-        argument_matcher = wrap_matcher(argument)
-    return HintMatcher(user_id, extension, argument_matcher)
 
 
 class TestProgfunckeyExtension(DAOTestCase):
@@ -164,25 +127,40 @@ class TestUserHints(TestHints):
         endpoint_sip_row = self.add_endpoint_sip(name='abcdef')
         user_row = self.add_user_sip_and_func_key(endpoint_sip_row.uuid)
 
-        assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user_row.id, extension='1000', argument='PJSIP/abcdef'),
-        ))
+        assert_that(
+            hint_dao.user_hints(self.context.name),
+            contains(has_properties(
+                user_id=user_row.id,
+                extension='1000',
+                argument='PJSIP/abcdef',
+            )),
+        )
 
     def test_given_user_with_sccp_line_then_returns_user_hint(self):
         sccpline_row = self.add_sccpline(name='1001', context=self.context.name)
         user_row = self.add_user_sccp_and_func_key(sccpline_row.id, '1001')
 
-        assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user_row.id, extension='1001', argument='SCCP/1001'),
-        ))
+        assert_that(
+            hint_dao.user_hints(self.context.name),
+            contains(has_properties(
+                user_id=user_row.id,
+                extension='1001',
+                argument='SCCP/1001',
+            ))
+        )
 
     def test_given_user_with_custom_line_then_returns_user_hint(self):
         custom_row = self.add_usercustom(interface='ghijkl', context=self.context.name)
         user_row = self.add_user_custom_and_func_key(custom_row.id, '1002')
 
-        assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user_row.id, extension='1002', argument='ghijkl'),
-        ))
+        assert_that(
+            hint_dao.user_hints(self.context.name),
+            contains(has_properties(
+                user_id=user_row.id,
+                extension='1002',
+                argument='ghijkl',
+            ))
+        )
 
     def test_given_user_with_commented_line_then_returns_empty_list(self):
         self.add_user_and_func_key(exten='1002', commented=1)
@@ -203,10 +181,13 @@ class TestUserHints(TestHints):
         user1 = self.add_user_and_func_key(self.add_endpoint_sip(name='user1').uuid, '1001')
         user2 = self.add_user_and_func_key(self.add_endpoint_sip(name='user2').uuid, '1002')
 
-        assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
-            a_hint(user_id=user1.id, extension='1001', argument='PJSIP/user1'),
-            a_hint(user_id=user2.id, extension='1002', argument='PJSIP/user2'),
-        ))
+        assert_that(
+            hint_dao.user_hints(self.context.name),
+            contains_inanyorder(
+                has_properties(user_id=user1.id, extension='1001', argument='PJSIP/user1'),
+                has_properties(user_id=user2.id, extension='1002', argument='PJSIP/user2'),
+            )
+        )
 
     def test_given_one_user_two_lines_one_extension_then_returns_user_hint(self):
         user = self.add_user(enablehint=1)
@@ -216,7 +197,7 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
+            has_properties(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
         ))
 
     def test_given_one_user_two_lines_two_extensions_then_returns_user_hint(self):
@@ -228,8 +209,8 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
-            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
-            a_hint(user_id=user.id, extension='1002', argument='PJSIP/line1&PJSIP/line2'),
+            has_properties(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
+            has_properties(user_id=user.id, extension='1002', argument='PJSIP/line1&PJSIP/line2'),
         ))
 
     def test_given_one_user_two_lines_two_extensions_two_contexts_then_returns_user_hint(self):
@@ -241,7 +222,7 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
+            has_properties(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
         ))
 
     def test_given_one_user_three_lines_two_extensions_then_returns_user_hint(self):
@@ -254,8 +235,8 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line3', user.id, extension2.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
-            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&SIP/line2&PJSIP/line3'),
-            a_hint(user_id=user.id, extension='1002', argument='PJSIP/line1&SIP/line2&PJSIP/line3'),
+            has_properties(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2&PJSIP/line3'),
+            has_properties(user_id=user.id, extension='1002', argument='PJSIP/line1&PJSIP/line2&PJSIP/line3'),
         ))
 
 
