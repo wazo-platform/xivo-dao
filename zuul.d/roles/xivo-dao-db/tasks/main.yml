@@ -1,0 +1,20 @@
+---
+- name: Start DB container
+  # become: yes
+  docker_service:
+    project_src: "{{ zuul.project.src_dir }}"
+    state: present
+    services:
+      - db
+- name: Get DB container port
+  command: docker-compose port db 5432
+  register: container_port
+  args:
+    chdir: "{{ zuul.project.src_dir }}"
+- name: Show DB container URL
+  debug:
+    var: tox_environment
+- name: Export DB container port
+  set_fact:
+    tox_environment:
+      XIVO_TEST_DB_URL: "postgresql://asterisk:proformatique@{{ container_port.stdout }}/asterisk"

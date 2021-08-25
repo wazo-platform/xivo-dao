@@ -1,7 +1,11 @@
 - job:
-    parent: base
-    name: xivo-dao
-    description: Test xivo-dao
+    name: wazo-tox-xivo-dao-py27
+    parent: wazo-tox-py27
+    run: zuul.d/run.yaml
+
+- job:
+    name: wazo-tox-xivo-dao-py37
+    parent: wazo-tox-py37
     run: zuul.d/run.yaml
 
 - project:
@@ -10,9 +14,13 @@
       - debian-packaging-template
     check:
       jobs:
-        - xivo-dao:
+        - wazo-tox-xivo-dao-py27:
+            nodeset: vm-debian-10-m1s
+        - wazo-tox-xivo-dao-py37:
             nodeset: vm-debian-10-m1s
     gate:
       jobs:
-        - xivo-dao:
+        - wazo-tox-xivo-dao-py27:
+            nodeset: vm-debian-10-m1s
+        - wazo-tox-xivo-dao-py37:
             nodeset: vm-debian-10-m1s

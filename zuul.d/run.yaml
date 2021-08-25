@@ -1,12 +1,9 @@
 ---
+# This file was copied from sf-jobs/playbooks/wazo-tox.yaml
+# Modification: add role xivo-dao-db to start the DB container
+
 - hosts: all
-  tasks:
-    - name: Run the integration tests # noqa 301
-      become: yes
-      shell: |
-        set -x &&
-        docker-compose up -d db &&
-        export XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker-compose port db 5432)/asterisk &&
-        tox -epy27,py37
-      args:
-        chdir: "{{ zuul.project.src_dir }}"
+  roles:
+      - revoke-sudo
+      - xivo-dao-db
+      - wazo-tox
