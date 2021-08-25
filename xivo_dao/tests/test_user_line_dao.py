@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import user_line_dao
@@ -21,4 +21,4 @@ class TestUserLineDAO(DAOTestCase):
 
         result = user_line_dao.get_line_identity_by_user_id(user_line.user.id)
 
-        self.assertEqual(result, 'sip/a1b2c3')
+        self.assertEqual(result, 'pjsip/a1b2c3')
