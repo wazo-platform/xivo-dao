@@ -165,7 +165,7 @@ class TestUserHints(TestHints):
         user_row = self.add_user_sip_and_func_key(endpoint_sip_row.uuid)
 
         assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user_row.id, extension='1000', argument='SIP/abcdef'),
+            a_hint(user_id=user_row.id, extension='1000', argument='PJSIP/abcdef'),
         ))
 
     def test_given_user_with_sccp_line_then_returns_user_hint(self):
@@ -204,8 +204,8 @@ class TestUserHints(TestHints):
         user2 = self.add_user_and_func_key(self.add_endpoint_sip(name='user2').uuid, '1002')
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
-            a_hint(user_id=user1.id, extension='1001', argument='SIP/user1'),
-            a_hint(user_id=user2.id, extension='1002', argument='SIP/user2'),
+            a_hint(user_id=user1.id, extension='1001', argument='PJSIP/user1'),
+            a_hint(user_id=user2.id, extension='1002', argument='PJSIP/user2'),
         ))
 
     def test_given_one_user_two_lines_one_extension_then_returns_user_hint(self):
@@ -216,7 +216,7 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
+            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
         ))
 
     def test_given_one_user_two_lines_two_extensions_then_returns_user_hint(self):
@@ -228,8 +228,8 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
-            a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
-            a_hint(user_id=user.id, extension='1002', argument='SIP/line1&SIP/line2'),
+            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
+            a_hint(user_id=user.id, extension='1002', argument='PJSIP/line1&PJSIP/line2'),
         ))
 
     def test_given_one_user_two_lines_two_extensions_two_contexts_then_returns_user_hint(self):
@@ -241,7 +241,7 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains(
-            a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
+            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&PJSIP/line2'),
         ))
 
     def test_given_one_user_three_lines_two_extensions_then_returns_user_hint(self):
@@ -254,8 +254,8 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line3', user.id, extension2.id, main_line=False)
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
-            a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2&SIP/line3'),
-            a_hint(user_id=user.id, extension='1002', argument='SIP/line1&SIP/line2&SIP/line3'),
+            a_hint(user_id=user.id, extension='1001', argument='PJSIP/line1&SIP/line2&PJSIP/line3'),
+            a_hint(user_id=user.id, extension='1002', argument='PJSIP/line1&SIP/line2&PJSIP/line3'),
         ))
 
 
