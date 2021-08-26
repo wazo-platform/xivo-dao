@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -224,6 +224,43 @@ class TestSimpleSearch(TestSearch):
         tenants = [tenant.uuid]
         self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
+    def test_search_by_exten(self):
+        ivr = self.add_ivr()
+        incall = self.add_incall()
+        self.add_extension(exten="2000", type="incall", typeval=str(incall.id))
+        self.add_dialaction(
+            action="ivr",
+            actionarg1=str(ivr.id),
+            category="incall",
+            categoryval=str(incall.id)
+        )
+
+        expected = SearchResult(1, [ivr])
+        self.assert_search_returns_result(expected, search="2000")
+        self.assert_search_returns_result(expected, exten="2000")
+
+    def test_search_by_exten_with_multiple_incalls(self):
+        ivr = self.add_ivr()
+        incall1 = self.add_incall()
+        self.add_extension(exten="1001", type="incall", typeval=str(incall1.id))
+        self.add_dialaction(
+            action="ivr",
+            actionarg1=str(ivr.id),
+            category="incall",
+            categoryval=str(incall1.id)
+        )
+        incall2 = self.add_incall()
+        self.add_extension(exten="1002", type="incall", typeval=str(incall2.id))
+        self.add_dialaction(
+            action="ivr",
+            actionarg1=str(ivr.id),
+            category="incall",
+            categoryval=str(incall2.id)
+        )
+
+        expected = SearchResult(1, [ivr])
+        self.assert_search_returns_result(expected, search="100")
+
 
 class TestSearchGivenMultipleIncall(TestSearch):
 
@@ -290,6 +327,17 @@ class TestSearchGivenMultipleIncall(TestSearch):
             offset=1,
             limit=1,
         )
+
+    def test_when_searching_multiple_by_exten(self):
+        incall1 = self.add_incall()
+        incall2 = self.add_incall()
+        self.add_extension(exten="1001", type="incall", typeval=str(incall1.id))
+        self.add_extension(exten="1002", type="incall", typeval=str(incall2.id))
+        self.add_dialaction(action="ivr", actionarg1=str(self.ivr1.id), category="incall", categoryval=str(incall1.id))
+        self.add_dialaction(action="ivr", actionarg1=str(self.ivr2.id), category="incall", categoryval=str(incall2.id))
+
+        expected = SearchResult(1, [self.ivr2])
+        self.assert_search_returns_result(expected, search="1002")
 
 
 class TestCreate(DAOTestCase):
