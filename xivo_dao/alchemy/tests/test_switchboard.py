@@ -4,8 +4,12 @@
 
 from hamcrest import (
     assert_that,
+    empty,
     equal_to,
+    has_key,
+    has_properties,
     is_,
+    is_not,
     none,
 )
 
@@ -57,3 +61,60 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Switchboard).first()
         assert_that(row.waiting_room_music_on_hold, is_(none()))
+
+
+class TestFallbacks(DAOTestCase):
+
+    def test_getter(self):
+        switchboard = self.add_switchboard()
+        dialaction = self.add_dialaction(event='key',
+                                         category='switchboard',
+                                         categoryval=str(switchboard.uuid))
+
+        assert_that(switchboard.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter(self):
+        switchboard = self.add_switchboard()
+        dialaction = Dialaction(action='none')
+
+        switchboard.fallbacks = {'key': dialaction}
+        self.session.flush()
+
+        assert_that(switchboard.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter_to_none(self):
+        switchboard = self.add_switchboard()
+
+        switchboard.fallbacks = {'key': None}
+        self.session.flush()
+
+        assert_that(switchboard.fallbacks, empty())
+
+    def test_setter_existing_key(self):
+        switchboard = self.add_switchboard()
+        dialaction1 = Dialaction(action='none')
+
+        switchboard.fallbacks = {'key': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        switchboard.fallbacks = {'key': dialaction2}
+        self.session.flush()
+
+        assert_that(switchboard.fallbacks['key'], has_properties(action='user',
+                                                                 actionarg1='1'))
+
+    def test_setter_delete_undefined_key(self):
+        switchboard = self.add_switchboard()
+        dialaction1 = Dialaction(action='none')
+
+        switchboard.fallbacks = {'noanswer': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        switchboard.fallbacks = {'busy': dialaction2}
+        self.session.flush()
+
+        assert_that(switchboard.fallbacks, is_not(has_key('noanswer')))
