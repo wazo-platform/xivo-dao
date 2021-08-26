@@ -145,7 +145,12 @@ class TestSearchGivenMultipleSwitchboards(TestSearch):
 
     def test_when_offset_then_returns_right_name_of_items(self):
         expected = SearchResult(
-            4, [self.switchboard2, self.switchboard3, self.switchboard4]
+            4,
+            [
+                self.switchboard2,
+                self.switchboard3,
+                self.switchboard4,
+            ]
         )
 
         self.assert_search_returns_result(expected, offset=1)
@@ -179,7 +184,8 @@ class TestGet(DAOTestCase):
 
         switchboard_row = self.add_switchboard(tenant_uuid=tenant.uuid)
         switchboard = switchboard_dao.get(
-            switchboard_row.uuid, tenant_uuids=[tenant.uuid]
+            switchboard_row.uuid,
+            tenant_uuids=[tenant.uuid],
         )
         assert_that(switchboard, equal_to(switchboard_row))
 
@@ -220,7 +226,8 @@ class TestGetBy(DAOTestCase):
 
         switchboard_row = self.add_switchboard(tenant_uuid=tenant.uuid)
         switchboard = switchboard_dao.get_by(
-            uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid]
+            uuid=switchboard_row.uuid,
+            tenant_uuids=[tenant.uuid],
         )
         assert_that(switchboard, equal_to(switchboard_row))
 
@@ -246,7 +253,8 @@ class TestFind(DAOTestCase):
         assert_that(result, equal_to(switchboard))
 
         result = switchboard_dao.find(
-            switchboard.uuid, tenant_uuids=[self.default_tenant.uuid]
+            switchboard.uuid,
+            tenant_uuids=[self.default_tenant.uuid],
         )
         assert_that(result, none())
 
@@ -273,13 +281,15 @@ class TestFindBy(DAOTestCase):
 
         switchboard_row = self.add_switchboard()
         switchboard = switchboard_dao.find_by(
-            uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid]
+            uuid=switchboard_row.uuid,
+            tenant_uuids=[tenant.uuid],
         )
         assert_that(switchboard, none())
 
         switchboard_row = self.add_switchboard(tenant_uuid=tenant.uuid)
         switchboard = switchboard_dao.find_by(
-            uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid]
+            uuid=switchboard_row.uuid,
+            tenant_uuids=[tenant.uuid],
         )
         assert_that(switchboard, equal_to(switchboard_row))
 
@@ -317,14 +327,16 @@ class TestFindAllBy(DAOTestCase):
         tenants = [tenant.uuid]
         switchboards = switchboard_dao.find_all_by(name="name", tenant_uuids=tenants)
         assert_that(
-            switchboards, all_of(has_items(switchboard1), not_(has_items(switchboard2)))
+            switchboards,
+            all_of(has_items(switchboard1), not_(has_items(switchboard2))),
         )
 
 
 class TestCreate(DAOTestCase):
     def test_create_minimal_fields(self):
         switchboard = Switchboard(
-            name="switchboard", tenant_uuid=self.default_tenant.uuid
+            name="switchboard",
+            tenant_uuid=self.default_tenant.uuid,
         )
 
         switchboard = switchboard_dao.create(switchboard)
