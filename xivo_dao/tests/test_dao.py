@@ -959,6 +959,8 @@ class ItemInserter(object):
         kwargs.setdefault('uuid', str(uuid.uuid4()))
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('name', self._random_name())
+        for fallback, destination in six.iteritems(kwargs.get('fallbacks', {})):
+            kwargs['fallbacks'][fallback] = Dialaction(**destination)
         switchboard = Switchboard(**kwargs)
         self.add_me(switchboard)
         return switchboard
