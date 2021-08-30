@@ -929,7 +929,7 @@ class TestAssociateGroups(DAOTestCase):
         assert_that(user, equal_to(user_row))
         assert_that(user.group_members, contains(
             has_properties(queue_name=group.name,
-                           interface='SIP/sipname',
+                           interface='PJSIP/sipname',
                            channel='SIP',
                            group=has_properties(id=group.id,
                                                 name=group.name))
@@ -963,7 +963,7 @@ class TestAssociateGroups(DAOTestCase):
         user = self.session.query(User).first()
         assert_that(user.group_members, contains(
             has_properties(queue_name=group.name,
-                           interface='SIP/sipname',
+                           interface='PJSIP/sipname',
                            channel='SIP')
         ))
 

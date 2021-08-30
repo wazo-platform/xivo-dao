@@ -545,7 +545,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         assert_that(group.user_queue_members, contains(
             has_properties(
                 queue_name=group.name,
-                interface='SIP/sipname',
+                interface='PJSIP/sipname',
                 channel='SIP',
                 user=has_properties(
                     id=user.id,
@@ -600,7 +600,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         assert_that(group.user_queue_members, contains(
             has_properties(
                 queue_name=group.name,
-                interface='SIP/sipname',
+                interface='PJSIP/sipname',
                 channel='SIP',
             )
         ))

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -608,7 +608,7 @@ class TestAssociateMemberUser(DAOTestCase):
         self.session.expire_all()
         assert_that(queue.user_queue_members, contains(
             has_properties(
-                interface='SIP/sipname',
+                interface='PJSIP/sipname',
                 channel='SIP',
             )
         ))

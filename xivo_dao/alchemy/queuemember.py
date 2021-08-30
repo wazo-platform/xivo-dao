@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -90,7 +90,7 @@ class QueueMember(Base):
         main_line = user.lines[0]
         if main_line.endpoint_sip:
             self.channel = 'SIP'
-            self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
+            self.interface = 'PJSIP/{}'.format(main_line.endpoint_sip.name)
 
         elif main_line.endpoint_sccp:
             self.channel = 'SCCP'
