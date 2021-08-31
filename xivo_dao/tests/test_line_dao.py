@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.tests.test_dao import (
@@ -25,7 +25,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
 
-        self.assertEqual('SIP/abcdef', interface)
+        self.assertEqual('PJSIP/abcdef', interface)
 
     def test_get_interface_from_exten_and_context_sccp(self):
         name = '1001'
@@ -70,7 +70,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         interface = line_dao.get_interface_from_exten_and_context(second_exten, CONTEXT)
 
-        self.assertEqual('SIP/idbehold', interface)
+        self.assertEqual('PJSIP/idbehold', interface)
 
     def test_get_interface_from_exten_and_context_multiple_lines_same_exten(self):
         user = self.add_user()
@@ -89,7 +89,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
 
-        expected = 'SIP/{}'.format(main_line_name)
+        expected = 'PJSIP/{}'.format(main_line_name)
         self.assertEqual(expected, interface)
 
     def test_get_interface_no_matching_exten(self):
@@ -102,7 +102,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         interface = line_dao.get_interface_from_line_id(line.id)
 
-        expected = 'SIP/{}'.format(line_name)
+        expected = 'PJSIP/{}'.format(line_name)
         self.assertEqual(expected, interface)
 
     def test_get_interface_from_line_id_sccp(self):

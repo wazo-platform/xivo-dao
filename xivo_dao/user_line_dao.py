@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import and_
@@ -24,7 +24,7 @@ def get_line_identity_by_user_id(session, user_id):
     if not row:
         raise LookupError('Could not find a line for user %s', user_id)
     elif row.endpoint_sip_uuid:
-        return 'sip/{}'.format(row.name)
+        return 'pjsip/{}'.format(row.name)
     elif row.endpoint_sccp_id:
         return 'sccp/{}'.format(row.name)
     elif row.endpoint_custom_id:

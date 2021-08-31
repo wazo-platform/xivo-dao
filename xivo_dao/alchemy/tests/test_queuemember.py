@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -92,7 +92,7 @@ class TestExten(DAOTestCase):
         assert_that(member.exten, equal_to('123'))
 
     def test_exten_with_no_local(self):
-        member = QueueMember(interface='SIP/123')
+        member = QueueMember(interface='PJSIP/123')
         assert_that(member.exten, is_(none()))
 
 
@@ -112,7 +112,7 @@ class TestContext(DAOTestCase):
         assert_that(member.context, equal_to('default'))
 
     def test_context_with_no_local(self):
-        member = QueueMember(interface='SIP/123')
+        member = QueueMember(interface='PJSIP/123')
         assert_that(member.context, is_(none()))
 
 
@@ -130,7 +130,7 @@ class TestFix(DAOTestCase):
 
         self.session.expire_all()
         assert_that(member, has_properties(
-            interface='SIP/sipname',
+            interface='PJSIP/sipname',
             channel='SIP',
         ))
 

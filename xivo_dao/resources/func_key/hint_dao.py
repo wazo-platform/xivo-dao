@@ -104,7 +104,6 @@ def user_shared_hints(session):
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
             elif line.endpoint_sip_uuid:
-                # TODO PJSIP migration
                 ifaces.append('pjsip/{}'.format(line.name))
             elif line.endpoint_sccp_id:
                 ifaces.append('sccp/{}'.format(line.name))
@@ -143,7 +142,7 @@ def _list_user_arguments(session, user_ids):
     query = session.query(
         UserFeatures.id.label('user_id'),
         sql.func.string_agg(sql.case([
-            (LineFeatures.endpoint_sip_uuid.isnot(None), literal_column("'SIP/'") + EndpointSIP.name),
+            (LineFeatures.endpoint_sip_uuid.isnot(None), literal_column("'PJSIP/'") + EndpointSIP.name),
             (LineFeatures.endpoint_sccp_id.isnot(None), literal_column("'SCCP/'") + SCCPLine.name),
             (LineFeatures.endpoint_custom_id.isnot(None), UserCustom.interface)
         ]), literal_column("'&'")).label('argument'),
