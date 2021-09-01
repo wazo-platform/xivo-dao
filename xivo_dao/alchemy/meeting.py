@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
-from sqlalchemy.schema import Column
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.types import Text, String
-
+from sqlalchemy.types import String, Text
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -50,4 +49,12 @@ class Meeting(Base):
         'owner',
         creator=lambda owner: MeetingOwner(owner=owner)
     )
-    guest_endpoint_sip = relationship('EndpointSIP')
+    guest_endpoint_sip = relationship(
+        'EndpointSIP',
+        cascade='all, delete-orphan',
+        single_parent=True,
+    )
+
+    @property
+    def owner_uuids(self):
+        return [owner.uuid for owner in self.owners]

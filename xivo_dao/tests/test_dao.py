@@ -59,6 +59,7 @@ from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
@@ -501,6 +502,13 @@ class ItemInserter(object):
         group_schedule = SchedulePath(**kwargs)
         self.add_me(group_schedule)
         return group_schedule
+
+    def add_meeting(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        meeting = Meeting(**kwargs)
+        self.add_me(meeting)
+        return meeting
 
     def add_queuefeatures(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
