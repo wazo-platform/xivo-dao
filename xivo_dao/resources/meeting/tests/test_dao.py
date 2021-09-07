@@ -41,6 +41,20 @@ class TestFindBy(DAOTestCase):
 
         assert_that(result.uuid, equal_to(meeting.uuid))
 
+    def test_find_by_owner(self):
+        user_1 = self.add_user()
+        user_2 = self.add_user()
+        user_3 = self.add_user()
+
+        meeting_1 = self.add_meeting(owners=[user_1, user_3])
+        self.add_meeting()
+
+        result = dao.find_by(owner=user_1.uuid)
+        assert_that(result.uuid, equal_to(meeting_1.uuid))
+
+        result = dao.find_by(owner=user_2.uuid)
+        assert_that(result, none())
+
     def test_find_by_multi_tenant(self):
         tenant = self.add_tenant()
 

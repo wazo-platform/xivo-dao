@@ -32,6 +32,11 @@ def get(session, sip_uuid, tenant_uuids=None):
 
 
 @daosession
+def get_by(session, tenant_uuids=None, **criteria):
+    return Persistor(session, meeting_search, tenant_uuids).get_by(criteria)
+
+
+@daosession
 def create(session, sip):
     with flush_session(session):
         return Persistor(session, meeting_search).create(sip)

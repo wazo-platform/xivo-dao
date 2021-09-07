@@ -4,7 +4,7 @@
 
 from sqlalchemy import text
 
-from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.meeting import Meeting, MeetingOwner
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin, SearchResult
 
@@ -33,6 +33,7 @@ class Persistor(CriteriaBuilderMixin):
     def search(self, parameters):
         query = self._search_query()
         query = self._filter_tenant_uuid(query)
+        query = self._filter_owner(query, parameters)
         rows, total = self.search_system.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
@@ -62,9 +63,22 @@ class Persistor(CriteriaBuilderMixin):
 
         return query.filter(Meeting.tenant_uuid.in_(self.tenant_uuids))
 
+    def _filter_owner(self, query, criteria):
+        owner = criteria.pop('owner', None)
+        if not owner:
+            return query
+
+        owner_meeting = self.session.query(
+            MeetingOwner.meeting_uuid
+        ).filter(MeetingOwner.user_uuid == owner)
+        query = query.filter(Meeting.uuid.in_(owner_meeting))
+
+        return query
+
     def _find_query(self, criteria):
         query = self.session.query(Meeting)
         query = self._filter_tenant_uuid(query)
+        query = self._filter_owner(query, criteria)
         return self.build_criteria(query, criteria)
 
     def _search_query(self):
