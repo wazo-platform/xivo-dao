@@ -2,7 +2,6 @@
 # Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.alchemy.extension import Extension
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -13,6 +12,7 @@ from sqlalchemy.sql import cast, not_, and_, select
 from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy.extension import Extension
 
 from . import enum
 from .callerid import Callerid

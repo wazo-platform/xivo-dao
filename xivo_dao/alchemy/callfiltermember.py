@@ -2,8 +2,6 @@
 # Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.callfilter import Callfilter
 from sqlalchemy.sql.elements import and_
 from sqlalchemy.sql.expression import select
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -13,6 +11,7 @@ from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy.callfilter import Callfilter
 
 
 class Callfiltermember(Base):
@@ -35,7 +34,7 @@ class Callfiltermember(Base):
     bstype = Column(enum.generic_bsfilter, nullable=False)
     active = Column(Integer, nullable=False, server_default='0')
 
-    bsfilter_exten = column_property(
+    callfilter_exten = column_property(
         select([Callfilter.exten])
         .where(and_(Callfilter.id == callfilterid, bstype == 'secretary'))
         .correlate_except(Callfilter)

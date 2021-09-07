@@ -298,3 +298,9 @@ class TestExten(DAOTestCase):
         self.add_extension(typeval='bsfilter', exten='_*37')
 
         assert_that(call_filter.exten, equal_to('_*37'))
+
+    def test_dont_get_exten_if_disabled(self):
+        call_filter = self.add_call_filter()
+        self.add_extension(typeval='bsfilter', exten='_*37', commented='1')
+
+        assert_that(call_filter.exten, equal_to(None))

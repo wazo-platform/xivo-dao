@@ -74,12 +74,28 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
 
 class TestExtension(DAOTestCase):
-    def test_get_bsfilter_exten(self):
-        self.add_extension(typeval='bsfilter', exten='_*37')
-        user = self.add_user()
-        call_filter = self.add_call_filter()
-        member = self.add_call_filter_member(
-            callfilterid=call_filter.id, type='user', bstype='secretary'
+
+    def setUp(self):
+        super(TestExtension, self).setUp()
+        self.extension = self.add_extension(typeval='bsfilter', exten='_*37')
+        self.user = self.add_user()
+        self.call_filter = self.add_call_filter()
+        self.member = self.add_call_filter_member(
+            callfilterid=self.call_filter.id, type='user', bstype='secretary'
         )
-        member.user = user
-        assert_that(member.bsfilter_exten, equal_to('_*37'))
+        self.member.user = self.user
+
+    def test_get_callfilter_exten(self):
+        assert_that(self.member.callfilter_exten, equal_to('_*37'))
+
+    def test_get_callfilter_exten_disabled(self):
+        self.extension.commented = '1'
+        self.session.add(self.extension)
+        self.session.flush()
+        assert_that(self.member.callfilter_exten, equal_to(None))
+
+    def test_get_callfilter_exten_only_surrogates(self):
+        self.member.bstype = 'boss'
+        self.session.add(self.member)
+        self.session.flush()
+        assert_that(self.member.callfilter_exten, equal_to(None))
