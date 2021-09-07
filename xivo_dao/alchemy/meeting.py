@@ -41,7 +41,6 @@ class Meeting(Base):
 
     meeting_owners = relationship(
         'MeetingOwner',
-        primaryjoin='Meeting.uuid == MeetingOwner.meeting_uuid',
         cascade='all, delete-orphan',
     )
     owners = association_proxy(
