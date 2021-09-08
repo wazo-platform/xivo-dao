@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -71,3 +71,31 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
         row = self.session.query(FuncKeyDestBSFilter).first()
         assert_that(row, none())
+
+
+class TestExtension(DAOTestCase):
+
+    def setUp(self):
+        super(TestExtension, self).setUp()
+        self.extension = self.add_extension(typeval='bsfilter', exten='_*37')
+        self.user = self.add_user()
+        self.call_filter = self.add_call_filter()
+        self.member = self.add_call_filter_member(
+            callfilterid=self.call_filter.id, type='user', bstype='secretary'
+        )
+        self.member.user = self.user
+
+    def test_get_callfilter_exten(self):
+        assert_that(self.member.callfilter_exten, equal_to('_*37'))
+
+    def test_get_callfilter_exten_disabled(self):
+        self.extension.commented = '1'
+        self.session.add(self.extension)
+        self.session.flush()
+        assert_that(self.member.callfilter_exten, equal_to(None))
+
+    def test_get_callfilter_exten_only_surrogates(self):
+        self.member.bstype = 'boss'
+        self.session.add(self.member)
+        self.session.flush()
+        assert_that(self.member.callfilter_exten, equal_to(None))
