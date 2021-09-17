@@ -413,7 +413,7 @@ def find_sip_meeting_guests_settings(session):
         if endpoint.uuid in flat_configs:
             return flat_configs[endpoint.uuid]
 
-        parents = [get_flat_config(parent, meeting_uuid) for parent in endpoint.templates]
+        parents = [get_flat_config(parent, None) for parent in endpoint.templates]
         base_config = endpoint_to_dict(endpoint)
         if endpoint.transport_uuid:
             base_config['endpoint_section_options'].append(
@@ -441,11 +441,14 @@ def find_sip_meeting_guests_settings(session):
                 ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)]
             )
 
-        builder['endpoint_section_options'].extend([
-            ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
-            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-            ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting_uuid)]
-        ])
+        builder['endpoint_section_options'].append(['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'])
+
+        if meeting_uuid:
+            builder['endpoint_section_options'].extend([
+                ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting_uuid)]
+            ])
+
         if builder['endpoint_section_options']:
             builder['endpoint_section_options'].append(['type', 'endpoint'])
         if builder['aor_section_options']:
