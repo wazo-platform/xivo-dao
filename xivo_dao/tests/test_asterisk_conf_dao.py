@@ -1073,6 +1073,283 @@ class BaseFindSIPSettings(DAOTestCase):
         )
 
 
+class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
+
+    def setUp(self):
+        super(TestFindSipMeetingGuestsSettings, self).setUp()
+        transport_wss = self.add_transport(name='transport-wss')
+        guest_meeting_template_body = {
+            'label': 'Guest meeting',
+            'aor_section_options': [
+                ['max_contacts', '50'],
+                ['remove_existing', 'false']
+            ],
+            'endpoint_section_options': [
+                ['webrtc', 'yes'],
+            ],
+            'template': True,
+        }
+        self.meeting_guest_config_template = self.add_endpoint_sip(
+            transport=transport_wss,
+            **guest_meeting_template_body
+        )
+
+    def test_given_no_sip_accounts_then_returns_empty_list(self):
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_not_associated_then_returns_empty_list(self):
+        self.add_endpoint_sip(template=False)
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_associated_to_trunk_then_returns_empty_list(self):
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(result, contains())
+
+    def test_given_no_endpoint_on_the_meeting_return_empty_list(self):
+        self.add_meeting()
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(result, empty())
+
+    def test_that_templates_are_included(self):
+        endpoint = self.add_endpoint_sip(
+            label='meeting_guest',
+            template=False,
+            templates=[self.general_config_template, self.meeting_guest_config_template],
+            endpoint_section_options=[
+                ['callerid', '"Foo Bar" <101>'],
+            ],
+            auth_section_options=[
+                ['username', 'iddqd'],
+                ['password', 'idbehold'],
+            ],
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(result, contains_inanyorder(
+            has_entries(
+                name=endpoint.name,
+                label=endpoint.label,
+                aor_section_options=has_items(
+                    contains('qualify_frequency', '60'),
+                    contains('maximum_expiration', '3600'),
+                    contains('minimum_expiration', '60'),
+                    contains('default_expiration', '120'),
+                    contains('max_contacts', '50'),
+                    contains('remove_existing', 'false')
+                ),
+                auth_section_options=has_items(
+                    contains('username', 'iddqd'),
+                    contains('password', 'idbehold'),
+                ),
+                endpoint_section_options=has_items(
+                    contains('allow', '!all,ulaw'),
+                    contains('allow_subscribe', 'yes'),
+                    contains('allow_transfer', 'yes'),
+                    contains('use_ptime', 'yes'),
+                    contains('rtp_timeout', '7200'),
+                    contains('rtp_timeout_hold', '0'),
+                    contains('timers_sess_expires', '600'),
+                    contains('timers_min_se', '90'),
+                    contains('trust_id_inbound', 'yes'),
+                    contains('dtmf_mode', 'rfc4733'),
+                    contains('send_rpid', 'yes'),
+                    contains('inband_progress', 'no'),
+                    contains('direct_media', 'no'),
+                    contains('callerid', '"Foo Bar" <101>'),
+                    contains('webrtc', 'yes'),
+                )
+            ),
+        ))
+
+    def test_that_the_transport_is_used_from_endpoint(self):
+        transport = self.add_transport()
+        endpoint = self.add_endpoint_sip(
+            templates=[self.general_config_template, self.meeting_guest_config_template],
+            transport_uuid=transport.uuid,
+            template=False,
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    contains('transport', transport.name),
+                ),
+            )),
+        )
+
+    def test_that_the_transport_is_used_from_a_template(self):
+        endpoint = self.add_endpoint_sip(
+            templates=[self.general_config_template, self.meeting_guest_config_template],
+            template=False,
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    # inherited from the webrtc template
+                    contains('transport', 'transport-wss'),
+                ),
+            )),
+        )
+
+    def test_that_the_xivo_caller_id_var_is_set(self):
+        caller_id = '"Foo" <123>'
+        endpoint = self.add_endpoint_sip(
+            endpoint_section_options=[['callerid', caller_id]],
+            template=False,
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    contains(
+                        'set_var',
+                        'XIVO_ORIGINAL_CALLER_ID={}'.format(caller_id),
+                    ),
+                ),
+            )),
+        )
+
+    def test_that_the_channel_direction_var_is_set(self):
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
+                ),
+            )),
+        )
+
+    def test_that_the_tenant_uuid_var_is_set(self):
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                ),
+            )),
+        )
+
+    def test_that_all_section_reference_are_added(self):
+        endpoint = self.add_endpoint_sip(
+            templates=[self.meeting_guest_config_template],
+            auth_section_options=[['username', 'foo']],
+            template=False,
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                aor_section_options=has_items(
+                    contains('type', 'aor'),
+                ),
+                auth_section_options=has_items(
+                    contains('type', 'auth'),
+                ),
+                endpoint_section_options=has_items(
+                    contains('type', 'endpoint'),
+                    contains('auth', endpoint.name),
+                    contains('aors', endpoint.name),
+                ),
+            )),
+        )
+
+    def test_that_doubles_are_removed(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'true'], ['context', 'wazo-meeting-uuid-guest']]
+        )
+        endpoint = self.add_endpoint_sip(
+            templates=[template],
+            template=False,
+            endpoint_section_options=[
+                ['codecs', '!all,ulaw'],
+                ['webrtc', 'true'],
+            ]
+        )
+        meeting = self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains(
+                has_entries(
+                    endpoint_section_options=contains_inanyorder(
+                        contains('type', 'endpoint'),  # only showed once
+                        contains('codecs', '!all,ulaw'),
+                        contains('webrtc', 'true'),  # only showed once
+                        contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+                        contains('set_var', 'WAZO_MEETING_UUID={}'.format(meeting.uuid)),
+                        contains('context', 'wazo-meeting-uuid-guest'),
+                    )
+                )
+            )
+        )
+
+    def test_that_redefined_options_are_removed(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes']]
+        )
+        endpoint = self.add_endpoint_sip(
+            templates=[template],
+            template=False,
+            endpoint_section_options=[
+                ['webrtc', 'no'],
+            ]
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            all_of(
+                contains(
+                    has_entries(
+                        endpoint_section_options=has_items(
+                            contains('type', 'endpoint'),
+                            contains('webrtc', 'no'),  # From the endpoint
+                        )
+                    )
+                ),
+                not_(
+                    contains(
+                        has_entries(
+                            endpoint_section_options=has_items(
+                                contains('webrtc', 'yes'),  # From the template
+                            )
+                        )
+                    ),
+                )
+            )
+        )
+
+
 class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
 
     def setUp(self):

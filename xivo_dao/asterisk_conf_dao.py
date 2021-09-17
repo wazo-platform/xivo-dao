@@ -42,6 +42,7 @@ from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
+from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.queue import Queue
@@ -380,6 +381,104 @@ def find_voicemail_general_settings(session):
         })
 
     return res
+
+
+@daosession
+def find_sip_meeting_guests_settings(session):
+    query = session.query(
+        Meeting,
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('template_relations').joinedload('parent'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_aor_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_auth_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_endpoint_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_registration_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_registration_outbound_auth_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_identify_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('_outbound_auth_section'),
+    ).options(
+        joinedload('guest_endpoint_sip').joinedload('transport'),
+    ).filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
+
+    meetings = query.all()
+    raw_configs = {}
+    for meeting in meetings:
+        raw_configs[meeting.guest_endpoint_sip_uuid] = meeting.guest_endpoint_sip
+
+    def get_flat_config(endpoint):
+        if endpoint.uuid in flat_configs:
+            return flat_configs[endpoint.uuid]
+
+        parents = [get_flat_config(parent) for parent in endpoint.templates]
+        base_config = endpoint_to_dict(endpoint)
+        if endpoint.transport_uuid:
+            base_config['endpoint_section_options'].append(
+                ['transport', endpoint.transport.name],
+            )
+        builder = {}
+        for parent in parents + [base_config]:
+            for section in [
+                'aor_section_options',
+                'auth_section_options',
+                'endpoint_section_options',
+            ]:
+                builder.setdefault(section, [])
+                parent_options = parent.get(section, [])
+                for option in parent_options:
+                    builder[section].append(option)
+
+        original_caller_id = None
+        for key, value in builder.get('endpoint_section_options', []):
+            if key == 'callerid':
+                original_caller_id = value
+
+        if original_caller_id:
+            builder['endpoint_section_options'].append(
+                ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)]
+            )
+
+        builder['endpoint_section_options'].extend([
+            ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
+            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+            ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting.uuid)]
+        ])
+        if builder['endpoint_section_options']:
+            builder['endpoint_section_options'].append(['type', 'endpoint'])
+        if builder['aor_section_options']:
+            builder['aor_section_options'].append(['type', 'aor'])
+            builder['endpoint_section_options'].append(['aors', endpoint.name])
+        if builder['auth_section_options']:
+            builder['auth_section_options'].append(['type', 'auth'])
+            builder['endpoint_section_options'].append(['auth', endpoint.name])
+        builder.update({
+            'uuid': base_config['uuid'],
+            'name': base_config['name'],
+            'label': base_config['label'],
+            'template': base_config['template'],
+            'asterisk_id': base_config['asterisk_id'],
+        })
+        if builder['template']:
+            flat_configs[builder['uuid']] = builder
+        return builder
+
+    # A flat_config is an endpoint config with all inherited fields merged into a single object
+    flat_configs = {}
+    for uuid, raw_config in raw_configs.items():
+        flat_config = get_flat_config(raw_config)
+        flat_configs[uuid] = flat_config
+
+    return [
+        canonicalize_config(config)
+        for config in flat_configs.values()
+        if config['template'] is False
+    ]
 
 
 @daosession
