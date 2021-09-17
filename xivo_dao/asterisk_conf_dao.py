@@ -408,15 +408,12 @@ def find_sip_meeting_guests_settings(session):
     ).filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
 
     meetings = query.all()
-    raw_configs = {}
-    for meeting in meetings:
-        raw_configs[meeting.guest_endpoint_sip_uuid] = meeting.guest_endpoint_sip
 
-    def get_flat_config(endpoint):
+    def get_flat_config(endpoint, meeting_uuid):
         if endpoint.uuid in flat_configs:
             return flat_configs[endpoint.uuid]
 
-        parents = [get_flat_config(parent) for parent in endpoint.templates]
+        parents = [get_flat_config(parent, meeting_uuid) for parent in endpoint.templates]
         base_config = endpoint_to_dict(endpoint)
         if endpoint.transport_uuid:
             base_config['endpoint_section_options'].append(
@@ -447,7 +444,7 @@ def find_sip_meeting_guests_settings(session):
         builder['endpoint_section_options'].extend([
             ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
             ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-            ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting.uuid)]
+            ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting_uuid)]
         ])
         if builder['endpoint_section_options']:
             builder['endpoint_section_options'].append(['type', 'endpoint'])
@@ -470,9 +467,9 @@ def find_sip_meeting_guests_settings(session):
 
     # A flat_config is an endpoint config with all inherited fields merged into a single object
     flat_configs = {}
-    for uuid, raw_config in raw_configs.items():
-        flat_config = get_flat_config(raw_config)
-        flat_configs[uuid] = flat_config
+    for meeting in meetings:
+        flat_config = get_flat_config(meeting.guest_endpoint_sip, meeting.uuid)
+        flat_configs[meeting.guest_endpoint_sip_uuid] = flat_config
 
     return [
         canonicalize_config(config)
