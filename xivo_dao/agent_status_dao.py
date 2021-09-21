@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import namedtuple
@@ -14,9 +14,22 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 
-_AgentStatus = namedtuple('_AgentStatus', ['agent_id', 'agent_number', 'extension',
-                                           'context', 'interface', 'state_interface',
-                                           'login_at', 'paused', 'paused_reason', 'queues'])
+_AgentStatus = namedtuple(
+    '_AgentStatus',
+    [
+        'agent_id',
+        'agent_number',
+        'extension',
+        'context',
+        'interface',
+        'state_interface',
+        'login_at',
+        'paused',
+        'paused_reason',
+        'queues',
+        'user_ids',
+    ]
+)
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
 
 
@@ -200,16 +213,21 @@ def get_logged_agent_ids(session, tenant_uuids=None):
 
 
 def _to_agent_status(agent_login_status, queues):
-    return _AgentStatus(agent_login_status.agent_id,
-                        agent_login_status.agent_number,
-                        agent_login_status.extension,
-                        agent_login_status.context,
-                        agent_login_status.interface,
-                        agent_login_status.state_interface,
-                        agent_login_status.login_at,
-                        agent_login_status.paused,
-                        agent_login_status.paused_reason,
-                        queues)
+    agent = agent_login_status.agent
+    user_ids = [user.id for user in agent.users] if agent else []
+    return _AgentStatus(
+        agent_login_status.agent_id,
+        agent_login_status.agent_number,
+        agent_login_status.extension,
+        agent_login_status.context,
+        agent_login_status.interface,
+        agent_login_status.state_interface,
+        agent_login_status.login_at,
+        agent_login_status.paused,
+        agent_login_status.paused_reason,
+        queues,
+        user_ids,
+    )
 
 
 @daosession

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import agent_status_dao
@@ -23,6 +23,9 @@ class TestAgentStatusDao(DAOTestCase):
         paused_reason = None
         state_interface = interface
 
+        agent = self.add_agent(id=agent_id, number=agent_number)
+        user = self.add_user(agentid=agent.id)
+
         agent_status_dao.log_in_agent(agent_id, agent_number, extension, context, interface, state_interface)
 
         agent_status = agent_status_dao.get_status(agent_id)
@@ -36,6 +39,32 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(agent_status.paused_reason, paused_reason)
         self.assertEqual(agent_status.interface, interface)
         self.assertEqual(agent_status.state_interface, state_interface)
+        self.assertEqual(agent_status.user_ids, [user.id])
+
+    def test_log_in_agent_no_user(self):
+        agent_id = 1
+        agent_number = '2'
+        extension = '1001'
+        context = 'default'
+        interface = 'sip/abcdef'
+        paused = False
+        paused_reason = None
+        state_interface = interface
+
+        agent_status_dao.log_in_agent(agent_id, agent_number, extension, context, interface, state_interface)
+
+        agent_status = agent_status_dao.get_status(agent_id)
+
+        self.assertEqual(agent_status.agent_id, agent_id)
+        self.assertEqual(agent_status.agent_number, agent_number)
+        self.assertEqual(agent_status.extension, extension)
+        self.assertEqual(agent_status.context, context)
+        self.assertEqual(agent_status.interface, interface)
+        self.assertEqual(agent_status.paused, paused)
+        self.assertEqual(agent_status.paused_reason, paused_reason)
+        self.assertEqual(agent_status.interface, interface)
+        self.assertEqual(agent_status.state_interface, state_interface)
+        self.assertEqual(agent_status.user_ids, [])
 
     def test_log_off_agent(self):
         agent_id = 1
@@ -132,6 +161,7 @@ class TestAgentStatusDao(DAOTestCase):
 
     def test_get_status_by_number_with_logged_agent(self):
         agent = self.add_agent()
+        user = self.add_user(agentid=agent.id)
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
         agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1')
 
@@ -146,6 +176,25 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(len(result.queues), 1)
         self.assertEqual(result.queues[0].id, agent_membership.queue_id)
         self.assertEqual(result.queues[0].name, agent_membership.queue_name)
+        self.assertEqual(result.user_ids, [user.id])
+
+    def test_get_status_by_number_with_logged_agent_no_user(self):
+        agent = self.add_agent()
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1')
+
+        result = agent_status_dao.get_status_by_number(agent.number)
+
+        self.assertEqual(result.agent_id, agent.id)
+        self.assertEqual(result.agent_number, agent.number)
+        self.assertEqual(result.extension, agent_login_status.extension)
+        self.assertEqual(result.context, agent_login_status.context)
+        self.assertEqual(result.interface, agent_login_status.interface)
+        self.assertEqual(result.state_interface, agent_login_status.state_interface)
+        self.assertEqual(len(result.queues), 1)
+        self.assertEqual(result.queues[0].id, agent_membership.queue_id)
+        self.assertEqual(result.queues[0].name, agent_membership.queue_name)
+        self.assertEqual(result.user_ids, [])
 
     def test_get_status_by_number_with_logged_agent_multi_tenant(self):
         tenant = self.add_tenant()
@@ -202,6 +251,7 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(len(result.queues), 1)
         self.assertEqual(result.queues[0].id, agent_membership.queue_id)
         self.assertEqual(result.queues[0].name, agent_membership.queue_name)
+        self.assertEqual(result.user_ids, [user.id])
 
     def test_get_status_by_user_with_logged_agent_multi_tenant(self):
         tenant = self.add_tenant()
