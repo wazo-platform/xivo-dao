@@ -5,7 +5,6 @@
 from hamcrest import assert_that, contains, empty, equal_to, has_properties
 
 from xivo_dao import agent_dao
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 
@@ -21,7 +20,7 @@ class TestAgentDAO(DAOTestCase):
         agent = self.add_agent()
         user = self.add_user(agentid=agent.id)
         queue_member = self._insert_queue_member('foobar', 'Agent/2', agent.id)
-        queue = self._insert_queue(64, queue_member.queue_name)
+        queue = self.add_queuefeatures(id=64, name=queue_member.queue_name)
 
         result = agent_dao.agent_with_id(agent.id)
 
@@ -41,7 +40,7 @@ class TestAgentDAO(DAOTestCase):
     def test_agent_with_id_no_user(self):
         agent = self.add_agent()
         queue_member = self._insert_queue_member('foobar', 'Agent/2', agent.id)
-        queue = self._insert_queue(64, queue_member.queue_name)
+        queue = self.add_queuefeatures(id=64, name=queue_member.queue_name)
 
         result = agent_dao.agent_with_id(agent.id)
 
@@ -189,18 +188,6 @@ class TestAgentDAO(DAOTestCase):
         expected_all = [agent1, agent2]
         result = agent_dao.all(tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
         assert_that(result, equal_to(expected_all))
-
-    def _insert_queue(self, queue_id, name, tenant_uuid=None):
-        queue = QueueFeatures()
-        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
-        queue.id = queue_id
-        queue.name = name
-        queue.displayname = name
-        queue.number = '3000'
-
-        self.add_me(queue)
-
-        return queue
 
     def _insert_queue_member(self, queue_name, member_name, agent_id=1, penalty=0):
         queue_member = QueueMember()
