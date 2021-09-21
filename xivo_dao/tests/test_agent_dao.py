@@ -2,7 +2,7 @@
 # Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that, contains, empty, equal_to
+from hamcrest import assert_that, contains, empty, equal_to, has_properties
 
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -26,13 +26,18 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_id(agent.id)
 
-        self.assertEqual(result.id, agent.id)
-        self.assertEqual(result.number, agent.number)
-        self.assertEqual(len(result.queues), 1)
-        self.assertEqual(result.queues[0].id, queue.id)
-        self.assertEqual(result.queues[0].name, queue_member.queue_name)
-        self.assertEqual(result.queues[0].penalty, queue_member.penalty)
-        self.assertEqual(result.user_ids[0], user.id)
+        assert_that(result, has_properties(
+            id=agent.id,
+            number=agent.number,
+            queues=contains(
+                has_properties(
+                    id=queue.id,
+                    name=queue_member.queue_name,
+                    penalty=queue_member.penalty,
+                )
+            ),
+            user_ids=contains(user.id),
+        ))
 
     def test_agent_with_id_no_user(self):
         agent = self._insert_agent()
@@ -41,13 +46,18 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_id(agent.id)
 
-        self.assertEqual(result.id, agent.id)
-        self.assertEqual(result.number, agent.number)
-        self.assertEqual(len(result.queues), 1)
-        self.assertEqual(result.queues[0].id, queue.id)
-        self.assertEqual(result.queues[0].name, queue_member.queue_name)
-        self.assertEqual(result.queues[0].penalty, queue_member.penalty)
-        self.assertEqual(result.user_ids, [])
+        assert_that(result, has_properties(
+            id=agent.id,
+            number=agent.number,
+            queues=contains(
+                has_properties(
+                    id=queue.id,
+                    name=queue_member.queue_name,
+                    penalty=queue_member.penalty,
+                )
+            ),
+            user_ids=empty(),
+        ))
 
     def test_agent_with_id_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_with_id, 1)
@@ -66,18 +76,22 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_number(agent.number)
 
-        assert_that(result.id, equal_to(agent.id))
-        assert_that(result.number, equal_to(agent.number))
-        assert_that(result.user_ids, contains(user.id))
+        assert_that(result, has_properties(
+            id=agent.id,
+            number=agent.number,
+            user_ids=contains(user.id),
+        ))
 
     def test_agent_with_number_no_user(self):
         agent = self._insert_agent()
 
         result = agent_dao.agent_with_number(agent.number)
 
-        assert_that(result.id, equal_to(agent.id))
-        assert_that(result.number, equal_to(agent.number))
-        assert_that(result.user_ids, empty())
+        assert_that(result, has_properties(
+            id=agent.id,
+            number=agent.number,
+            user_ids=empty(),
+        ))
 
     def test_agent_with_number_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_with_number, '1234')
@@ -88,8 +102,8 @@ class TestAgentDAO(DAOTestCase):
         self.assertRaises(LookupError, agent_dao.agent_with_number, agent.number, tenant_uuids=[self.default_tenant.uuid])
 
         result = agent_dao.agent_with_number(agent.number, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
-        self.assertEqual(result.id, agent.id)
-        self.assertEqual(result.number, agent.number)
+
+        assert_that(result, has_properties(id=agent.id, number=agent.number))
 
     def test_agent_with_user_uuid(self):
         agent = self._insert_agent()
@@ -97,8 +111,7 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_user_uuid(user.uuid)
 
-        assert_that(result.id, equal_to(agent.id))
-        assert_that(result.user_ids, contains(user.id))
+        assert_that(result, has_properties(id=agent.id, user_ids=contains(user.id)))
 
     def test_agent_with_user_uuid_unknown_user(self):
         self._insert_agent()
@@ -120,11 +133,13 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.get(agent.id)
 
-        assert_that(result.id, equal_to(agent.id))
-        assert_that(result.number, equal_to(agent.number))
-        assert_that(result.passwd, equal_to(agent.passwd))
-        assert_that(result.context, equal_to(agent.context))
-        assert_that(result.language, equal_to(agent.language))
+        assert_that(result, has_properties(
+            id=agent.id,
+            number=agent.number,
+            passwd=agent.passwd,
+            context=agent.context,
+            language=agent.language,
+        ))
 
     def test_get_not_exist(self):
         result = agent_dao.get(1)
@@ -157,7 +172,7 @@ class TestAgentDAO(DAOTestCase):
 
     def test_all_empty(self):
         result = agent_dao.all()
-        self.assertEqual([], result)
+        assert_that(result, empty())
 
     def test_all_multi_tenant(self):
         tenant = self.add_tenant()
