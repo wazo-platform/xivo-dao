@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -13,7 +13,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 
-_Agent = namedtuple('_Agent', ['id', 'tenant_uuid', 'number', 'queues'])
+_Agent = namedtuple('_Agent', ['id', 'tenant_uuid', 'number', 'queues', 'user_ids'])
 _Queue = namedtuple('_Queue', ['id', 'tenant_uuid', 'name', 'penalty'])
 
 
@@ -44,7 +44,7 @@ def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
     agent_row = query.first()
     if agent_row is None:
         raise LookupError('no agent found for user %s' % user_uuid)
-    agent = _Agent(agent_row.id, agent_row.tenant_uuid, agent_row.number, [])
+    agent = _Agent(agent_row.id, agent_row.tenant_uuid, agent_row.number, [], [user.id for user in agent_row.users])
     _add_queues_to_agent(session, agent)
     return agent
 
@@ -56,7 +56,7 @@ def _get_agent(session, whereclause, tenant_uuids=None):
     agent = query.first()
     if agent is None:
         raise LookupError('no agent matching clause %s' % whereclause)
-    return _Agent(agent.id, agent.tenant_uuid, agent.number, [])
+    return _Agent(agent.id, agent.tenant_uuid, agent.number, [], [user.id for user in agent.users])
 
 
 def _add_queues_to_agent(session, agent):

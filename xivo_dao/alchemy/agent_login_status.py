@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright (C) 2007-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, DateTime, Boolean
 
@@ -27,3 +28,10 @@ class AgentLoginStatus(Base):
     paused = Column(Boolean, nullable=False, server_default='false')
     paused_reason = Column(String(80))
     login_at = Column(DateTime, nullable=False, server_default=text("(current_timestamp at time zone 'utc')"))
+
+    agent = relationship(
+        'AgentFeatures',
+        primaryjoin='AgentLoginStatus.agent_id == AgentFeatures.id',
+        foreign_keys='AgentFeatures.id',
+        uselist=False,
+    )
