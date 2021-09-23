@@ -58,6 +58,7 @@ from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
+from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.monitoring import Monitoring
 from xivo_dao.alchemy.netiface import Netiface
@@ -172,6 +173,7 @@ __all__ = [
     "LineExtension",
     "LineFeatures",
     "Mail",
+    "Meeting",
     "MOH",
     "Monitoring",
     "Netiface",

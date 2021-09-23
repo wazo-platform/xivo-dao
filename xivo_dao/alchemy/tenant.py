@@ -58,6 +58,15 @@ class Tenant(Base):
             name='tenant_registration_trunk_sip_template_uuid_fkey',
         ),
     )
+    meeting_guest_sip_template_uuid = Column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            'endpoint_sip.uuid',
+            ondelete='SET NULL',
+            # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
+            name='tenant_meeting_guest_sip_template_uuid_fkey',
+        ),
+    )
     twilio_trunk_sip_template_uuid = Column(
         UUID(as_uuid=True),
         ForeignKey(
@@ -90,5 +99,11 @@ class Tenant(Base):
         'EndpointSIP',
         uselist=False,
         primaryjoin='EndpointSIP.uuid == Tenant.registration_trunk_sip_template_uuid',
+        viewonly=True,
+    )
+    meeting_guest_sip_template = relationship(
+        'EndpointSIP',
+        uselist=False,
+        primaryjoin='EndpointSIP.uuid == Tenant.meeting_guest_sip_template_uuid',
         viewonly=True,
     )
