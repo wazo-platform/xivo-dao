@@ -36,7 +36,7 @@ class Meeting(Base):
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
     name = Column(Text)
-    guest_endpoint_sip_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid'))
+    guest_endpoint_sip_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'))
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
 
     meeting_owners = relationship(
