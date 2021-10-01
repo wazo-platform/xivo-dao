@@ -556,11 +556,11 @@ def find_sip_user_settings(session):
             base_config['endpoint_section_options'].append(
                 ['transport', endpoint.transport.name],
             )
-        extension = extension_mapping.get(endpoint.uuid)
-        if extension:
-            base_config['endpoint_section_options'].append(
-                ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)]
-            )
+        # extension = extension_mapping.get(endpoint.uuid)
+        # if extension:
+        #     base_config['endpoint_section_options'].append(
+        #         ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)]
+        #     )
         voicemails = voicemail_mapping.get(endpoint.uuid, [])
         mailboxes = []
         for voicemail in voicemails:
