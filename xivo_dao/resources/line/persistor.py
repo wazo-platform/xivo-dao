@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -12,23 +12,24 @@ from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.helpers.persistor import BasePersistor
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 from xivo_dao.resources.line.search import line_search
 
 
-class LinePersistor(CriteriaBuilderMixin):
+class LinePersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = Line
 
     def __init__(self, session, tenant_uuids=None):
         self.session = session
         self.tenant_uuids = tenant_uuids
+        self.search_system = line_search
 
-    def search(self, params):
-        query = self._search_query()
+    def _find_query(self, criteria):
+        query = self.session.query(Line)
         query = self._filter_tenant_uuid(query)
-        rows, total = line_search.search_from_query(query, params)
-        return SearchResult(total, rows)
+        return self.build_criteria(query, criteria)
 
     def _search_query(self):
         return (self.session
@@ -64,14 +65,6 @@ class LinePersistor(CriteriaBuilderMixin):
         query = self._filter_tenant_uuid(query)
         return query
 
-    def find_by(self, criteria):
-        query = self.build_criteria(self.query(), criteria)
-        return query.first()
-
-    def find_all_by(self, criteria):
-        query = self.build_criteria(self.query(), criteria)
-        return query.all()
-
     def create(self, line):
         if line.provisioning_code is None:
             line.provisioning_code = self.generate_provisioning_code()
@@ -83,10 +76,6 @@ class LinePersistor(CriteriaBuilderMixin):
         self.session.add(line)
         self.session.flush()
         return line
-
-    def edit(self, line):
-        self.session.add(line)
-        self.session.flush()
 
     def delete(self, line):
         if line.endpoint_sip_uuid:
