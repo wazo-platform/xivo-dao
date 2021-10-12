@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -7,48 +7,33 @@ from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import Session
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.helpers.persistor import BasePersistor
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
-class GroupPersistor(CriteriaBuilderMixin):
+class GroupPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = Group
 
     def __init__(self, session, group_search, tenant_uuids=None):
         self.session = session
-        self.group_search = group_search
+        self.search_system = group_search
         self.tenant_uuids = tenant_uuids
 
-    def find_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.first()
-
     def _find_query(self, criteria):
-        query = self._joinedload_query()
+        query = self._search_query()
         query = self.build_criteria(query, criteria)
         if self.tenant_uuids is not None:
             query = query.filter(Group.tenant_uuid.in_(self.tenant_uuids))
         return query
 
     def get_by(self, criteria):
-        group = self.find_by(criteria)
-        if not group:
+        model = self.find_by(criteria)
+        if not model:
             raise errors.not_found('Group', **criteria)
-        return group
+        return model
 
-    def find_all_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.all()
-
-    def search(self, parameters):
-        query = self._joinedload_query()
-        if self.tenant_uuids is not None:
-            query = query.filter(Group.tenant_uuid.in_(self.tenant_uuids))
-
-        rows, total = self.group_search.search_from_query(query, parameters)
-        return SearchResult(total, rows)
-
-    def _joinedload_query(self):
+    def _search_query(self):
         return (self.session.query(Group)
                 .options(joinedload('caller_id'))
                 .options(joinedload('extensions'))
@@ -62,15 +47,6 @@ class GroupPersistor(CriteriaBuilderMixin):
                          .joinedload('schedule'))
                 .options(joinedload('rightcall_members')
                          .joinedload('rightcall')))
-
-    def create(self, group):
-        self.session.add(group)
-        self.session.flush()
-        return group
-
-    def edit(self, group):
-        self.session.add(group)
-        self.session.flush()
 
     def delete(self, group):
         self._delete_associations(group)
