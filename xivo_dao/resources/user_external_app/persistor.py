@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from xivo_dao.alchemy.user_external_app import UserExternalApp
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class UserExternalAppPersistor(CriteriaBuilderMixin):
+class UserExternalAppPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = UserExternalApp
 
@@ -41,16 +42,3 @@ class UserExternalAppPersistor(CriteriaBuilderMixin):
         query = query.filter(UserExternalApp.user_uuid == user_uuid)
         rows, total = self.user_external_app_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
-
-    def create(self, external_app):
-        self.session.add(external_app)
-        self.session.flush()
-        return external_app
-
-    def edit(self, external_app):
-        self.session.add(external_app)
-        self.session.flush()
-
-    def delete(self, external_app):
-        self.session.delete(external_app)
-        self.session.flush()
