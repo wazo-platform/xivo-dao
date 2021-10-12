@@ -1,49 +1,30 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy import text
 
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.helpers.persistor import BasePersistor
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 from xivo_dao.resources.extension.search import extension_search
 
 
-class ExtensionPersistor(CriteriaBuilderMixin):
+class ExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = Extension
 
     def __init__(self, session, tenant_uuids=None):
         self.session = session
         self.tenant_uuids = tenant_uuids
-
-    def find_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.first()
-
-    def find_all_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.all()
-
-    def get_by(self, criteria):
-        user = self.find_by(criteria)
-        if not user:
-            raise errors.not_found('Extension', **criteria)
-        return user
+        self.search_system = extension_search
 
     def _find_query(self, criteria):
         query = self.session.query(Extension)
         query = self.build_criteria(query, criteria)
         query = self._add_tenant_filter(query)
         return query
-
-    def search(self, params):
-        query = self._search_query()
-        query = self._add_tenant_filter(query)
-        rows, total = extension_search.search_from_query(query, params)
-        return SearchResult(total, rows)
 
     def _search_query(self):
         return (self.session
@@ -70,10 +51,6 @@ class ExtensionPersistor(CriteriaBuilderMixin):
             extension.type = 'user'
         if not extension.typeval:
             extension.typeval = '0'
-
-    def edit(self, extension):
-        self.session.add(extension)
-        self.session.flush()
 
     def delete(self, extension):
         self.session.query(Extension).filter(Extension.id == extension.id).delete()
