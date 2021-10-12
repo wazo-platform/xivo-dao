@@ -1,31 +1,24 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
 
-from sqlalchemy import text
-
 from xivo_dao.alchemy.useriax import UserIAX as IAX
 from xivo_dao.helpers import errors, generators
+from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.trunk.fixes import TrunkFixes
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
-class IAXPersistor(CriteriaBuilderMixin):
+class IAXPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = IAX
 
     def __init__(self, session, iax_search, tenant_uuids=None):
         self.session = session
-        self.iax_search = iax_search
+        self.search_system = iax_search
         self.tenant_uuids = tenant_uuids
-
-    def find_by(self, criteria):
-        return self._find_query(criteria).first()
-
-    def find_all_by(self, criteria):
-        return self._find_query(criteria).all()
 
     def _find_query(self, criteria):
         query = self.session.query(IAX)
@@ -38,21 +31,13 @@ class IAXPersistor(CriteriaBuilderMixin):
             raise errors.not_found('IAXEndpoint', id=iax_id)
         return iax
 
-    def search(self, parameters):
-        query = self.session.query(self.iax_search.config.table)
-        query = self._filter_tenant_uuid(query)
-        rows, total = self.iax_search.search_from_query(query, parameters)
-        return SearchResult(total, rows)
+    def _search_query(self):
+        return self.session.query(self.search_system.config.table)
 
     def create(self, iax):
         self.fill_default_values(iax)
         self.persist(iax)
         return self.get(iax.id)
-
-    def persist(self, iax):
-        self.session.add(iax)
-        self.session.flush()
-        self.session.expire(iax)
 
     def edit(self, iax):
         self.persist(iax)
@@ -61,15 +46,6 @@ class IAXPersistor(CriteriaBuilderMixin):
     def delete(self, iax):
         self.session.query(IAX).filter(IAX.id == iax.id).delete()
         self._fix_associated(iax)
-
-    def _filter_tenant_uuid(self, query):
-        if self.tenant_uuids is None:
-            return query
-
-        if not self.tenant_uuids:
-            return query.filter(text('false'))
-
-        return query.filter(IAX.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, iax):
         if iax.trunk_rel:
