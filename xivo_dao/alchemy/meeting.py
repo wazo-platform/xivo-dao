@@ -2,13 +2,19 @@
 # Copyright 2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import datetime
+
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.types import String, Text
+from sqlalchemy.types import (
+    DateTime,
+    String,
+    Text
+)
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -38,6 +44,7 @@ class Meeting(Base):
     name = Column(Text)
     guest_endpoint_sip_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'))
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, server_default=text("(now() at time zone 'utc')"))
 
     meeting_owners = relationship(
         'MeetingOwner',

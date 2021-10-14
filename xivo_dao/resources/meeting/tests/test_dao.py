@@ -11,6 +11,7 @@ from hamcrest import (
     equal_to,
     has_items,
     has_properties,
+    is_not,
     none,
     not_,
     not_none,
@@ -271,6 +272,7 @@ class TestCreate(DAOTestCase):
             tenant_uuid=self.default_tenant.uuid,
             owners=owners,
             guest_endpoint_sip_uuid=endpoint_sip.uuid,
+            created_at=is_not(none()),
         ))
 
 

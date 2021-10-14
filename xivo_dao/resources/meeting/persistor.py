@@ -34,6 +34,7 @@ class Persistor(CriteriaBuilderMixin):
         query = self._search_query()
         query = self._filter_tenant_uuid(query)
         query = self._filter_owner(query, parameters)
+        query = self._filter_created_before(query, parameters)
         rows, total = self.search_system.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
@@ -75,10 +76,18 @@ class Persistor(CriteriaBuilderMixin):
 
         return query
 
+    def _filter_created_before(self, query, criteria):
+        before = criteria.pop('created_before', None)
+        if not before:
+            return query
+
+        return query.filter(Meeting.created_at < before)
+
     def _find_query(self, criteria):
         query = self.session.query(Meeting)
         query = self._filter_tenant_uuid(query)
         query = self._filter_owner(query, criteria)
+        query = self._filter_created_before(query, criteria)
         return self.build_criteria(query, criteria)
 
     def _search_query(self):
