@@ -6,6 +6,7 @@ from hamcrest import (
     assert_that,
     contains_inanyorder,
     empty,
+    equal_to,
     has_properties,
     is_,
     none,
@@ -142,3 +143,22 @@ class TestMeeting(DAOTestCase):
         assert_that(rows, contains_inanyorder(
             has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_2.uuid),
         ))
+
+    def test_ingress_http(self):
+        tenant = self.add_tenant()
+        ingress_http = self.add_ingress_http(tenant_uuid=tenant.uuid)
+        meeting = Meeting(name='My meeting', tenant_uuid=tenant.uuid)
+
+        self.session.add(meeting)
+        self.session.flush()
+
+        assert_that(meeting.ingress_http, equal_to(ingress_http))
+
+    def test_ingress_http_no_config(self):
+        tenant = self.add_tenant()
+        meeting = Meeting(name='My meeting', tenant_uuid=tenant.uuid)
+
+        self.session.add(meeting)
+        self.session.flush()
+
+        assert_that(meeting.ingress_http, equal_to(None))

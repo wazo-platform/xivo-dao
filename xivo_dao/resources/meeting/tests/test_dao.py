@@ -338,3 +338,19 @@ class TestDelete(DAOTestCase):
         dao.delete(model)
 
         assert_that(inspect(model).deleted)
+
+    def test_delete_when_associated_to_an_ingress(self):
+        tenant = self.add_tenant()
+        ingress_http = self.add_ingress_http(tenant_uuid=tenant.uuid)
+        meeting = self.add_meeting(tenant_uuid=tenant.uuid)
+
+        dao.delete(meeting)
+
+        assert_that(inspect(meeting).deleted)
+
+        new_meeting = self.add_meeting(tenant_uuid=tenant.uuid)
+        assert_that(
+            new_meeting.ingress_http,
+            equal_to(ingress_http),
+            'the ingress should not have been deleted',
+        )

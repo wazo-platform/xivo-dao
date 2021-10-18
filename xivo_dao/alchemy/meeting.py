@@ -60,6 +60,13 @@ class Meeting(Base):
         cascade='all, delete-orphan',
         single_parent=True,
     )
+    ingress_http = relationship(
+        'IngressHTTP',
+        foreign_keys='IngressHTTP.tenant_uuid',
+        uselist=False,
+        viewonly=True,
+        primaryjoin='Meeting.tenant_uuid == IngressHTTP.tenant_uuid',
+    )
 
     @property
     def owner_uuids(self):
