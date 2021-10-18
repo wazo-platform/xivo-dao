@@ -55,13 +55,13 @@ from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
+from xivo_dao.alchemy.ingress_http import IngressHTTP
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.moh import MOH
-from xivo_dao.alchemy.network import Network
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
@@ -504,19 +504,19 @@ class ItemInserter(object):
         self.add_me(group_schedule)
         return group_schedule
 
+    def add_ingress_http(self, **kwargs):
+        kwargs.setdefault('uri', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        http_ingress = IngressHTTP(**kwargs)
+        self.add_me(http_ingress)
+        return http_ingress
+
     def add_meeting(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         meeting = Meeting(**kwargs)
         self.add_me(meeting)
         return meeting
-
-    def add_network(self, **kwargs):
-        kwargs.setdefault('public_hostname', self._random_name())
-        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
-        network = Network(**kwargs)
-        self.add_me(network)
-        return network
 
     def add_queuefeatures(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())

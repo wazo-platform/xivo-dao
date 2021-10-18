@@ -5,19 +5,17 @@
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, text
 from sqlalchemy.schema import ForeignKey
-from sqlalchemy.types import Boolean, Integer, String, Text
+from sqlalchemy.types import String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
 
-class Network(Base):
+class IngressHTTP(Base):
 
-    __tablename__ = 'network'
+    __tablename__ = 'ingress_http'
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
-    public_hostname = Column(Text)
-    public_port = Column(Integer)
-    public_https = Column(Boolean)
+    uri = Column(Text)
     tenant_uuid = Column(
         String(36),
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
