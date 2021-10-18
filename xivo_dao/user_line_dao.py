@@ -19,7 +19,7 @@ def get_line_identity_by_user_id(session, user_id):
            .join(UserLine, and_(UserLine.line_id == LineSchema.id,
                                 UserLine.user_id == int(user_id),
                                 UserLine.main_user == True,  # noqa
-                                UserLine.main_line == True))
+                                UserLine.main_line == True))  # noqa
            .first())
     if not row:
         raise LookupError('Could not find a line for user %s', user_id)
