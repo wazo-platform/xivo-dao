@@ -31,6 +31,7 @@ from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.ingress_http import IngressHTTP
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
