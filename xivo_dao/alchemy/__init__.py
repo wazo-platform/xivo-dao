@@ -93,6 +93,7 @@ __all__ = [
     'FuncKeyDestUser',
     'FuncKeyMapping',
     'GroupFeatures',
+    'IngressHTTP',
     'IVR',
     'IVRChoice',
     'Incall',
