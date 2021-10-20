@@ -15,7 +15,7 @@ class IngressHTTP(Base):
     __tablename__ = 'ingress_http'
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
-    uri = Column(Text)
+    uri = Column(Text, nullable=False)
     tenant_uuid = Column(
         String(36),
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
