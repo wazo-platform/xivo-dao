@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class TransportPersistor(CriteriaBuilderMixin):
+class TransportPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = PJSIPTransport
 
     def __init__(self, session, transport_search):
         self.session = session
         self.transport_search = transport_search
-
-    def create(self, transport):
-        self.session.add(transport)
-        self.session.flush()
-        return transport
 
     def delete(self, transport, fallback=None):
         if fallback:
@@ -34,23 +30,11 @@ class TransportPersistor(CriteriaBuilderMixin):
             .update({'transport_uuid': new.uuid})
         )
 
-    def edit(self, transport):
-        self.session.add(transport)
-        self.session.flush()
-
-    def find_all_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.all()
-
-    def find_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.first()
-
     def get_by(self, criteria):
-        transport = self.find_by(criteria)
-        if not transport:
+        model = self.find_by(criteria)
+        if not model:
             raise errors.not_found('Transport', **criteria)
-        return transport
+        return model
 
     def search(self, parameters):
         rows, total = self.transport_search.search(self.session, parameters)

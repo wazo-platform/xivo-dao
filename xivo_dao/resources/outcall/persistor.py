@@ -1,58 +1,30 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from sqlalchemy import text
 
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 
-from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.helpers.persistor import BasePersistor
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
-class OutcallPersistor(CriteriaBuilderMixin):
+class OutcallPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = Outcall
 
     def __init__(self, session, outcall_search, tenant_uuids=None):
         self.session = session
-        self.outcall_search = outcall_search
+        self.search_system = outcall_search
         self.tenant_uuids = tenant_uuids
-
-    def find_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.first()
 
     def _find_query(self, criteria):
         query = self.session.query(Outcall)
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
-    def get_by(self, criteria):
-        outcall = self.find_by(criteria)
-        if not outcall:
-            raise errors.not_found('Outcall', **criteria)
-        return outcall
-
-    def find_all_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.all()
-
-    def search(self, parameters):
-        query = self.session.query(self.outcall_search.config.table)
-        query = self._filter_tenant_uuid(query)
-        rows, total = self.outcall_search.search_from_query(query, parameters)
-        return SearchResult(total, rows)
-
-    def create(self, outcall):
-        self.session.add(outcall)
-        self.session.flush()
-        return outcall
-
-    def edit(self, outcall):
-        self.session.add(outcall)
-        self.session.flush()
+    def _search_query(self):
+        return self.session.query(self.search_system.config.table)
 
     def delete(self, outcall):
         self._delete_associations(outcall)
@@ -80,12 +52,3 @@ class OutcallPersistor(CriteriaBuilderMixin):
             outcall.call_permissions.remove(call_permission)
             self.session.flush()
             self.session.expire(outcall, ['rightcall_members'])
-
-    def _filter_tenant_uuid(self, query):
-        if self.tenant_uuids is None:
-            return query
-
-        if not self.tenant_uuids:
-            return query.filter(text('false'))
-
-        return query.filter(Outcall.tenant_uuid.in_(self.tenant_uuids))

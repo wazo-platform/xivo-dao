@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from sqlalchemy import text
 
 from xivo_dao.alchemy.callfilter import Callfilter as CallFilter
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class CallFilterPersistor(CriteriaBuilderMixin):
+class CallFilterPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = CallFilter
 
@@ -18,24 +17,16 @@ class CallFilterPersistor(CriteriaBuilderMixin):
         self.call_filter_search = call_filter_search
         self.tenant_uuids = tenant_uuids
 
-    def find_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.first()
-
     def _find_query(self, criteria):
         query = self.session.query(CallFilter)
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
-        call_filter = self.find_by(criteria)
-        if not call_filter:
+        model = self.find_by(criteria)
+        if not model:
             raise errors.not_found('CallFilter', **criteria)
-        return call_filter
-
-    def find_all_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.all()
+        return model
 
     def search(self, parameters):
         query = self.session.query(self.call_filter_search.config.table)
@@ -43,28 +34,11 @@ class CallFilterPersistor(CriteriaBuilderMixin):
         rows, total = self.call_filter_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
-    def _filter_tenant_uuid(self, query):
-        if self.tenant_uuids is None:
-            return query
-
-        if not self.tenant_uuids:
-            return query.filter(text('false'))
-
-        return query.filter(CallFilter.tenant_uuid.in_(self.tenant_uuids))
-
     def create(self, call_filter):
         self._fill_default_values(call_filter)
         self.session.add(call_filter)
         self.session.flush()
         return call_filter
-
-    def edit(self, call_filter):
-        self.session.add(call_filter)
-        self.session.flush()
-
-    def delete(self, call_filter):
-        self.session.delete(call_filter)
-        self.session.flush()
 
     def _fill_default_values(self, call_filter):
         call_filter.type = 'bosssecretary'

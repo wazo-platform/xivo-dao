@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.alchemy.voicemail import Voicemail
-
+from xivo_dao.alchemy.ingress_http import IngressHTTP
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
-class VoicemailPersistor(CriteriaBuilderMixin, BasePersistor):
+class Persistor(CriteriaBuilderMixin, BasePersistor):
 
-    _search_table = Voicemail
+    _search_table = IngressHTTP
 
-    def __init__(self, session, voicemail_search, tenant_uuids=None):
+    def __init__(self, session, search_system, tenant_uuids=None):
         self.session = session
-        self.search_system = voicemail_search
+        self.search_system = search_system
         self.tenant_uuids = tenant_uuids
 
     def _find_query(self, criteria):
-        query = self.session.query(Voicemail)
+        query = self.session.query(IngressHTTP)
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
@@ -7,10 +7,11 @@ from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class UserPersistor(CriteriaBuilderMixin):
+class UserPersistor(CriteriaBuilderMixin, BasePersistor):
 
     _search_table = User
 
@@ -43,25 +44,11 @@ class UserPersistor(CriteriaBuilderMixin):
     def find_all_by_agent_id(self, agent_id):
         return self.session.query(User).filter(User.agent.has(id=agent_id)).all()
 
-    def find_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.first()
-
     def _find_query(self, criteria):
         query = self.session.query(User)
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
         return self.build_criteria(query, criteria)
-
-    def get_by(self, criteria):
-        user = self.find_by(criteria)
-        if not user:
-            raise errors.not_found('User', **criteria)
-        return user
-
-    def find_all_by(self, criteria):
-        query = self._find_query(criteria)
-        return query.all()
 
     def search(self, parameters):
         view = self.user_view.select(parameters.get('view'))
@@ -85,14 +72,6 @@ class UserPersistor(CriteriaBuilderMixin):
         if not user.func_key_private_template_id:
             template = FuncKeyTemplate(tenant_uuid=user.tenant_uuid, private=True)
             user.func_key_template_private = template
-
-    def edit(self, user):
-        self.session.add(user)
-        self.session.flush()
-
-    def delete(self, user):
-        self.session.delete(user)
-        self.session.flush()
 
     def associate_all_groups(self, user, groups):
         with Session.no_autoflush:

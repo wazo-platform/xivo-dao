@@ -55,6 +55,7 @@ from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
+from xivo_dao.alchemy.ingress_http import IngressHTTP
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -502,6 +503,13 @@ class ItemInserter(object):
         group_schedule = SchedulePath(**kwargs)
         self.add_me(group_schedule)
         return group_schedule
+
+    def add_ingress_http(self, **kwargs):
+        kwargs.setdefault('uri', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        http_ingress = IngressHTTP(**kwargs)
+        self.add_me(http_ingress)
+        return http_ingress
 
     def add_meeting(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
