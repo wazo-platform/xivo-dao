@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import random
 from hamcrest import (
     assert_that,
     calling,
@@ -15,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..linefeatures import LineFeatures
+from ..endpoint_sip_options_view import EndpointSIPOptionsView
 
 
 class TestConstraint(DAOTestCase):
@@ -61,45 +61,27 @@ class TestApplication(DAOTestCase):
 
 class TestCallerID(DAOTestCase):
 
-    @staticmethod
-    def _caller_id_name(id):
-        return 'Test' + str(id + 1)
+    def test_get_caller_id_by_name(self):
+        sip = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
 
-    @staticmethod
-    def _caller_id_num(id):
-        return str(1000 + id)
+        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_name.ilike("test 1")).first()
+        assert_that(result, equal_to(line))
 
-    def _run_query_test(self, lines, count, filter):
-        for i in range(0, count):
-            id = random.randint(0, count - 1)
-            result = (self.session.query(LineFeatures)
-                      .filter(filter(id))
-                      .first())
-            assert_that(result, equal_to(lines[id]))
+    def test_get_caller_id_by_num(self):
+        sip = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
 
-    def test_caller_id_sql_expression(self):
-        tests_count = 10
-        half = tests_count >> 1
-        tenant = self.add_tenant()
-        context = self.add_context(tenant_uuid=tenant.uuid)
-        line = []
+        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_num.ilike("1000")).first()
+        assert_that(result, equal_to(line))
 
-        sip = [
-            self.add_endpoint_sip(caller_id='"{}" <{}>'.format(self._caller_id_name(i), self._caller_id_num(i)))
-            for i in range(0, half)
-        ]
+    def test_get_inherited_callerid(self):
+        template = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
+        sip = self.add_endpoint_sip(templates=[template])
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
 
-        sccp = [
-            self.add_sccpline(cid_name=self._caller_id_name(i), cid_num=self._caller_id_num(i))
-            for i in range(half, tests_count)
-        ]
-
-        [line.append(self.add_line(context=context.name, endpoint_sip_uuid=sip_.uuid)) for sip_ in sip]
-        [line.append(self.add_line(context=context.name, endpoint_sccp_id=sccp_.id)) for sccp_ in sccp]
-
-        self._run_query_test(line, tests_count, lambda id: LineFeatures.caller_id_name == self._caller_id_name(id))
-        self._run_query_test(line, tests_count, lambda id: LineFeatures.caller_id_num == self._caller_id_num(id))
-        self._run_query_test(line, tests_count, lambda id: and_(
-            LineFeatures.caller_id_name == self._caller_id_name(id),
-            LineFeatures.caller_id_num == self._caller_id_num(id)
-        ))
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_name == "Test 1").first()
+        assert_that(result, equal_to(line))

@@ -29,8 +29,9 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+
+from .sccpline import SCCPLine
+from .endpoint_sip_options_view import EndpointSIPOptionsView
 from .context import Context
 
 
@@ -170,8 +171,8 @@ class LineFeatures(Base):
         regex = '"([^"]+)"\\s+'
 
         return sql.case([
-            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query('callerid', regex_filter=regex)),
-            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query('cid_name'))
+            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query_option('callerid', regex_filter=regex)),
+            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name'))
         ], else_=None)
 
     @caller_id_name.setter
@@ -227,8 +228,8 @@ class LineFeatures(Base):
         regex = '<([0-9A-Z]+)?>'
 
         return sql.case([
-            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query('callerid', regex_filter=regex)),
-            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query('cid_num')),
+            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query_option('callerid', regex_filter=regex)),
+            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
         ])
 
     @caller_id_num.setter
@@ -345,43 +346,27 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_query(cls, option, can_inherit=False, regex_filter=None):
-        subquery = (
-            EndpointSIP.query_options_value(
-                option,
-                root_uuid=cls.endpoint_sip_uuid,
-                sections=['endpoint'],
-                can_inherit=can_inherit
+    def _sip_query_option(cls, option, regex_filter=None):
+        attr = EndpointSIPOptionsView.get_option_value(option)
+        if regex_filter:
+            attr = func.unnest(
+                func.regexp_matches(attr, bindparam('regexp', regex_filter, unique=True))
             )
-            .alias()
-        )
 
         return (
-            (
-                select([
-                    func.unnest(
-                        func.regexp_matches(
-                            getattr(subquery.c, option),
-                            bindparam('regexp', regex_filter, unique=True)
-                        )
-                    )
-                    .label(option)
-                ])
-                if regex_filter else select([getattr(subquery.c, option)])
-            )
-            .select_from(subquery)
-            .where(subquery.c.root == cls.endpoint_sip_uuid)
+            select([attr])
+            .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
             .as_scalar()
         )
 
     @classmethod
-    def _sccp_query(cls, attribute):
-        if attribute not in dir(SCCPLine):
+    def _sccp_query_option(cls, option):
+        if option not in dir(SCCPLine):
             return
 
         return (
             select([
-                getattr(SCCPLine, attribute)
+                getattr(SCCPLine, option)
             ])
             .where(SCCPLine.id == cls.endpoint_sccp_id)
             .as_scalar()

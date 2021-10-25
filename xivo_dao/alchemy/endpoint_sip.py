@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 
 from sqlalchemy import and_, text, select
-from sqlalchemy.dialects.postgresql.ext import aggregate_order_by
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql.elements import literal
-from sqlalchemy.sql.expression import cast
-from sqlalchemy.sql.functions import array_agg, func
 from sqlalchemy.types import (
     Boolean,
     Integer,
@@ -84,7 +80,16 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
-
+    _option_values_view = relationship(
+        'EndpointSIPOptionsView',
+        primaryjoin='EndpointSIP.uuid == foreign(EndpointSIPOptionsView.root)',
+        viewonly=True,
+        uselist=False,
+    )
+    _options = association_proxy(
+        '_option_values_view',
+        'options'
+    )
     _aor_section = relationship(
         'AORSection',
         uselist=False, cascade="all, delete-orphan", passive_deletes=True,
@@ -358,7 +363,7 @@ class EndpointSIP(Base):
 
     @caller_id.expression
     def caller_id(cls):
-        return cls.query_options_value('callerid', sections=['endpoint'], can_inherit=False)
+        return cls._query_option_value('callerid')
 
     @caller_id.setter
     def caller_id(self, caller_id):
@@ -419,81 +424,14 @@ class EndpointSIP(Base):
         for _, value in matching_options:
             return value
 
+    def get_option_value(self, option):
+        if option not in self._options:
+            return None
+        return self._options[option]
+
     @classmethod
-    def query_options_value(
-        cls,
-        option,
-        root_uuid=None,
-        sections=['endpoint'],
-        can_inherit=False
-    ):
-        check_sections = sections if isinstance(sections, list) else [sections]
-        result_set = []
+    def _query_option_value(cls, option):
+        if option is None:
+            return None
 
-        if can_inherit:
-            cte = (
-                select([
-                    EndpointSIP.uuid.label('uuid'),
-                    literal(0).label('level'),
-                    literal('0', String).label('path'),
-                    cls.uuid.label('root')
-                ])
-                .where(EndpointSIP.uuid == (root_uuid or cls.uuid))
-                .cte(recursive=True)
-            )
-
-            endpoints = cte.union_all(
-                select([
-                    EndpointSIPTemplate.parent_uuid.label('uuid'),
-                    (cte.c.level + 1).label('level'),
-                    (cte.c.path
-                     + cast(func.row_number().over(partition_by='level'), String))
-                    .label('path'),
-                    (cte.c.root)
-                ])
-                .where(EndpointSIPTemplate.child_uuid == cte.c.uuid)
-            )
-
-            result_set.append(
-                array_agg(
-                    aggregate_order_by(
-                        EndpointSIPSectionOption.value,
-                        endpoints.c.path
-                    )
-                )[1]
-                .label(option)
-            )
-            if root_uuid is not None:
-                result_set.append(endpoints.c.root.label('root'))
-
-            return (
-                select(result_set)
-                .where(
-                    and_(
-                        EndpointSIPSectionOption.key == option,
-                        EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
-                        EndpointSIPSection.type.in_(check_sections),
-                        EndpointSIPSection.endpoint_sip_uuid == endpoints.c.uuid,
-                        endpoints.c.root == (root_uuid or cls.uuid)
-                    )
-                )
-                .group_by(endpoints.c.root)
-                .as_scalar()
-            )
-        else:
-            result_set.append(EndpointSIPSectionOption.value.label(option))
-            if root_uuid is not None:
-                result_set.append(root_uuid.label('root'))
-
-            return (
-                select(result_set)
-                .where(
-                    and_(
-                        EndpointSIPSectionOption.key == option,
-                        EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
-                        EndpointSIPSection.type.in_(check_sections),
-                        EndpointSIPSection.endpoint_sip_uuid == (root_uuid or cls.uuid),
-                    )
-                )
-                .as_scalar()
-            )
+        return cls._options.remote_attr[option].astext
