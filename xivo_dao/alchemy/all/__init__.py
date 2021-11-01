@@ -40,6 +40,7 @@ from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
+from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
@@ -60,6 +61,7 @@ from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
 from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.meeting import MeetingOwner
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.monitoring import Monitoring
 from xivo_dao.alchemy.netiface import Netiface
@@ -107,6 +109,9 @@ from xivo_dao.alchemy.stats_conf import StatsConf
 from xivo_dao.alchemy.stats_conf_agent import StatsConfAgent
 from xivo_dao.alchemy.stats_conf_queue import StatsConfQueue
 from xivo_dao.alchemy.stats_conf_xivouser import StatsConfXivoUser
+from xivo_dao.alchemy.switchboard import Switchboard
+from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
+from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_external_app import UserExternalApp
 from xivo_dao.alchemy.user_line import UserLine
@@ -156,6 +161,7 @@ __all__ = [
     "FuncKeyDestFeatures",
     "FuncKeyDestForward",
     "FuncKeyDestGroup",
+    "FuncKeyDestGroupMember",
     "FuncKeyDestPaging",
     "FuncKeyDestParkPosition",
     "FuncKeyDestQueue",
@@ -176,6 +182,7 @@ __all__ = [
     "LineFeatures",
     "Mail",
     "Meeting",
+    "MeetingOwner",
     "MOH",
     "Monitoring",
     "Netiface",
@@ -184,7 +191,6 @@ __all__ = [
     "Paging",
     "PagingUser",
     "ParkingLot",
-    "PhoneFunckey",
     "Pickup",
     "PickupMember",
     "PJSIPTransport",
@@ -224,6 +230,9 @@ __all__ = [
     "StatsConfAgent",
     "StatsConfQueue",
     "StatsConfXivoUser",
+    "Switchboard",
+    "SwitchboardMemberUser",
+    "Tenant",
     "TrunkFeatures",
     "UserExternalApp",
     "UserLine",
