@@ -1305,6 +1305,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                         contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains('set_var', 'WAZO_MEETING_UUID={}'.format(meeting.uuid)),
+                        contains('set_var', 'WAZO_MEETING_NAME={}'.format(meeting.name)),
                         contains('context', 'wazo-meeting-uuid-guest'),
                     )
                 )

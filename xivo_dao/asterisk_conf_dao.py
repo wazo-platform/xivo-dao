@@ -409,11 +409,11 @@ def find_sip_meeting_guests_settings(session):
 
     meetings = query.all()
 
-    def get_flat_config(endpoint, meeting_uuid):
+    def get_flat_config(endpoint, meeting_uuid, meeting_name):
         if endpoint.uuid in flat_configs:
             return flat_configs[endpoint.uuid]
 
-        parents = [get_flat_config(parent, None) for parent in endpoint.templates]
+        parents = [get_flat_config(parent, None, None) for parent in endpoint.templates]
         base_config = endpoint_to_dict(endpoint)
         if endpoint.transport_uuid:
             base_config['endpoint_section_options'].append(
@@ -446,7 +446,8 @@ def find_sip_meeting_guests_settings(session):
         if meeting_uuid:
             builder['endpoint_section_options'].extend([
                 ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-                ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting_uuid)]
+                ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting_uuid)],
+                ['set_var', 'WAZO_MEETING_NAME={}'.format(meeting_name)],
             ])
 
         if builder['endpoint_section_options']:
@@ -471,7 +472,7 @@ def find_sip_meeting_guests_settings(session):
     # A flat_config is an endpoint config with all inherited fields merged into a single object
     flat_configs = {}
     for meeting in meetings:
-        flat_config = get_flat_config(meeting.guest_endpoint_sip, meeting.uuid)
+        flat_config = get_flat_config(meeting.guest_endpoint_sip, meeting.uuid, meeting.name)
         flat_configs[meeting.guest_endpoint_sip_uuid] = flat_config
 
     return [
