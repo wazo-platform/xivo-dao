@@ -5,7 +5,7 @@
 from sqlalchemy import select, join, cast, literal, func, String, Index, text
 from sqlalchemy.dialects.postgresql import JSONB, aggregate_order_by
 
-from xivo_dao.helpers.db_views import MaterializedView, create_view
+from xivo_dao.helpers.db_views import MaterializedView, create_materialized_view
 
 from xivo_dao.alchemy import (
     EndpointSIP,
@@ -15,7 +15,7 @@ from xivo_dao.alchemy import (
 )
 
 
-def _view_selectable():
+def _generate_selectable():
     cte = select(
         [
             EndpointSIP.uuid.label('uuid'),
@@ -90,12 +90,10 @@ def _view_selectable():
 
 
 class EndpointSIPOptionsView(MaterializedView):
-
-    __view_dependencies__ = (EndpointSIPSectionOption,)
-    __table__ = create_view(
+    __view__ = create_materialized_view(
         'endpoint_sip_options_view',
-        _view_selectable(),
-        materialized=True,
+        _generate_selectable(),
+        dependencies=[EndpointSIPSectionOption],
         indexes=[
             Index('endpoint_sip_options_view__idx_root', text('root'), unique=True),
         ],
