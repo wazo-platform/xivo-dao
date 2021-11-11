@@ -209,8 +209,8 @@ class TestSimpleSearch(TestSearch):
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
 
-        moh1 = self.add_moh()
-        moh2 = self.add_moh(tenant_uuid=tenant.uuid)
+        moh1 = self.add_moh(label='moh1')
+        moh2 = self.add_moh(label='moh2', tenant_uuid=tenant.uuid)
 
         expected = SearchResult(2, [moh1, moh2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
