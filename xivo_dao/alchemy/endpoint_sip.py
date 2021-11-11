@@ -425,9 +425,9 @@ class EndpointSIP(Base):
             return value
 
     def get_option_value(self, option):
-        if option not in self._options:
+        if not self._options:
             return None
-        return self._options[option]
+        return self._options.get(option, None)
 
     @classmethod
     def _query_option_value(cls, option):
