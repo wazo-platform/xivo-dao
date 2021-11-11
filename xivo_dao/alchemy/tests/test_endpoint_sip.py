@@ -239,7 +239,6 @@ class TestTemplates(DAOTestCase):
 
 
 class TestInheritedOptions(DAOTestCase):
-
     def test_inherited_aor_options(self):
         template_1 = self.add_endpoint_sip(
             template=True,
@@ -294,7 +293,6 @@ class TestInheritedOptions(DAOTestCase):
 
 
 class TestCombinedOptions(DAOTestCase):
-
     def test_combined_aor_options(self):
         template_1 = self.add_endpoint_sip(
             template=True,
@@ -360,26 +358,36 @@ class TestCombinedOptions(DAOTestCase):
         )
 
 
-class TestMaterializedView(DAOTestCase):
+class TestOptionValue(DAOTestCase):
+    def setUp(self):
+        super(TestOptionValue, self).setUp()
+        self.sip = self.add_endpoint_sip()
+        self.sip.endpoint_section_options = [('test', 'value')]
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
-    def test_view_refresh(self):
-        sip = self.add_endpoint_sip(caller_id='test')
-
-        result = (
-            self.session.query(EndpointSIP)
-            .filter(EndpointSIP.caller_id == 'test')
-            .first()
+    def test_get_value(self):
+        assert_that(
+            self.sip.get_option_value('test'),
+            equal_to('value')
         )
-        assert_that(result, equal_to(None))
 
-        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
-        result = (
-            self.session.query(EndpointSIP)
-            .filter(EndpointSIP.caller_id == 'test')
-            .first()
+    def test_get_value_invalid_option(self):
+        assert_that(
+            self.sip.get_option_value('invalid'),
+            equal_to(None)
         )
-        assert_that(result, equal_to(sip))
 
+    def test_get_value_no_option_values(self):
+        sip = self.add_endpoint_sip()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+
+        assert_that(
+            sip.get_option_value('somevalue'),
+            equal_to(None)
+        )
+
+
+class TestCallerId(DAOTestCase):
     def test_get_callerid_nearest_value(self):
         template1 = self.add_endpoint_sip(caller_id='template1')
         template2 = self.add_endpoint_sip(caller_id='template2')
