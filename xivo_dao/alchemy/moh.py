@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
@@ -20,7 +20,7 @@ class MOH(Base):
     uuid = Column(String(38), nullable=False, default=new_uuid)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(Text, nullable=False)
-    label = Column(Text)
+    label = Column(Text, nullable=False)
     mode = Column(Text, nullable=False)
     application = Column(Text)
     sort = Column(Text)

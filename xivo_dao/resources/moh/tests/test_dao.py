@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -209,8 +209,8 @@ class TestSimpleSearch(TestSearch):
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
 
-        moh1 = self.add_moh()
-        moh2 = self.add_moh(tenant_uuid=tenant.uuid)
+        moh1 = self.add_moh(label='moh1')
+        moh2 = self.add_moh(label='moh2', tenant_uuid=tenant.uuid)
 
         expected = SearchResult(2, [moh1, moh2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
@@ -288,7 +288,9 @@ class TestSearchGivenMultipleMOH(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        moh_model = MOH(tenant_uuid=self.default_tenant.uuid, name='mymoh', mode='files')
+        moh_model = MOH(
+            tenant_uuid=self.default_tenant.uuid, name='mymoh', label='mymoh', mode='files',
+        )
         moh = moh_dao.create(moh_model)
 
         self.session.expire_all()
@@ -296,7 +298,7 @@ class TestCreate(DAOTestCase):
         assert_that(moh, has_properties(
             uuid=not_none(),
             name='mymoh',
-            label=none(),
+            label='mymoh',
             mode='files',
             application=none(),
             sort=none(),
@@ -367,7 +369,6 @@ class TestEdit(DAOTestCase):
         )
 
         self.session.expire_all()
-        moh.label = None
         moh.application = None
         moh.sort = None
 
@@ -377,7 +378,7 @@ class TestEdit(DAOTestCase):
         assert_that(moh, has_properties(
             uuid=not_none(),
             name='mymoh',
-            label=none(),
+            label='moh, you\'re mine',
             mode='files',
             application=none(),
             sort=none(),
