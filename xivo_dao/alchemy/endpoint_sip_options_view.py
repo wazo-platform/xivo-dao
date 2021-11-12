@@ -7,12 +7,9 @@ from sqlalchemy.dialects.postgresql import JSONB, aggregate_order_by
 
 from xivo_dao.helpers.db_views import MaterializedView, create_materialized_view
 
-from xivo_dao.alchemy import (
-    EndpointSIP,
-    EndpointSIPSection,
-    EndpointSIPSectionOption,
-    EndpointSIPTemplate,
-)
+from .endpoint_sip import EndpointSIP, EndpointSIPTemplate
+from .endpoint_sip_section import EndpointSIPSection
+from .endpoint_sip_section_option import EndpointSIPSectionOption
 
 
 def _generate_selectable():
@@ -43,17 +40,14 @@ def _generate_selectable():
                 (cte.c.root),
             ]
         ).select_from(
-            join(
-                cte,
-                EndpointSIPTemplate,
-                cte.c.uuid == EndpointSIPTemplate.child_uuid,
-            )
+            join(cte, EndpointSIPTemplate, cte.c.uuid == EndpointSIPTemplate.child_uuid)
         )
     )
 
     return (
         select(
             [
+                endpoints.c.root,
                 cast(
                     func.jsonb_object(
                         func.array_agg(
@@ -71,7 +65,6 @@ def _generate_selectable():
                     ),
                     JSONB,
                 ).label('options'),
-                endpoints.c.root,
             ]
         )
         .select_from(

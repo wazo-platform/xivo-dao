@@ -20,7 +20,6 @@ class TestView(DAOTestCase):
         assert_that(sip.get_option_value('key'), equal_to(None))
 
         EndpointSIPOptionsView.refresh()  # Simulate a database commit
-        self.session.expire(sip)  # must expire the object to force reload because of lazy loading
 
         assert_that(sip.get_option_value('key'), equal_to('value'))
 

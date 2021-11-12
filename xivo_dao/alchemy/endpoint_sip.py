@@ -4,8 +4,8 @@
 
 import logging
 
-from sqlalchemy import and_, text, select
-from sqlalchemy.orm import relationship
+from sqlalchemy import and_, text, select, column
+from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -31,6 +31,7 @@ from .endpoint_sip_section import (
     EndpointSIPSection,
 )
 from .endpoint_sip_section_option import EndpointSIPSectionOption
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,15 +81,10 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
-    _option_values_view = relationship(
-        'EndpointSIPOptionsView',
-        primaryjoin='EndpointSIP.uuid == foreign(EndpointSIPOptionsView.root)',
-        viewonly=True,
-        uselist=False,
-    )
-    _options = association_proxy(
-        '_option_values_view',
-        'options'
+    _options = column_property(
+        select([column('options')])
+        .where(column('root') == uuid)
+        .select_from('endpoint_sip_options_view')
     )
     _aor_section = relationship(
         'AORSection',
