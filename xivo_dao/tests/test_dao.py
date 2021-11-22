@@ -10,7 +10,6 @@ import logging
 import os
 import random
 import unittest
-import time
 import string
 import uuid
 import six
@@ -69,7 +68,6 @@ from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.queueinfo import QueueInfo
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillcat import QueueSkillCat
@@ -526,17 +524,6 @@ class ItemInserter(object):
         queuefeatures = QueueFeatures(**kwargs)
         self.add_me(queuefeatures)
         return queuefeatures
-
-    def add_queue_info(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('call_time_t', int(time.time()))
-        kwargs.setdefault('queue_name', self._random_name())
-        kwargs.setdefault('hold_time', self._generate_int())
-        kwargs.setdefault('talk_time', self._generate_int())
-        kwargs.setdefault('caller_uniqueid', str(self._generate_int()))
-        qi = QueueInfo(**kwargs)
-        self.add_me(qi)
-        return qi
 
     def add_conference(self, **kwargs):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
