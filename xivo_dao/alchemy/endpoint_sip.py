@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 
-from sqlalchemy import and_, text, select
-from sqlalchemy.orm import relationship
+from sqlalchemy import and_, text, select, column
+from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -31,6 +31,7 @@ from .endpoint_sip_section import (
     EndpointSIPSection,
 )
 from .endpoint_sip_section_option import EndpointSIPSectionOption
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,11 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
-
+    _options = column_property(
+        select([column('options')])
+        .where(column('root') == uuid)
+        .select_from('endpoint_sip_options_view')
+    )
     _aor_section = relationship(
         'AORSection',
         uselist=False, cascade="all, delete-orphan", passive_deletes=True,
@@ -352,6 +357,10 @@ class EndpointSIP(Base):
         for key, value in matching_options:
             return value
 
+    @caller_id.expression
+    def caller_id(cls):
+        return cls._query_option_value('callerid')
+
     @caller_id.setter
     def caller_id(self, caller_id):
         if not self._endpoint_section:
@@ -410,3 +419,15 @@ class EndpointSIP(Base):
         matching_options = section.find(key)
         for _, value in matching_options:
             return value
+
+    def get_option_value(self, option):
+        if not self._options:
+            return None
+        return self._options.get(option, None)
+
+    @classmethod
+    def _query_option_value(cls, option):
+        if option is None:
+            return None
+
+        return cls._options.remote_attr[option].astext

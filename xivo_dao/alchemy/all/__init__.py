@@ -29,6 +29,7 @@ from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
+from xivo_dao.alchemy.endpoint_sip_options_view import EndpointSIPOptionsView
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.external_app import ExternalApp
 from xivo_dao.alchemy.features import Features
@@ -149,6 +150,7 @@ __all__ = [
     "EndpointSIP",
     "EndpointSIPSection",
     "EndpointSIPSectionOption",
+    "EndpointSIPOptionsView",
     "EndpointSIPTemplate",
     "Extension",
     "ExternalApp",

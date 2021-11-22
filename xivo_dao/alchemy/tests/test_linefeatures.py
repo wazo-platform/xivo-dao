@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -14,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..linefeatures import LineFeatures
+from ..endpoint_sip_options_view import EndpointSIPOptionsView
 
 
 class TestConstraint(DAOTestCase):
@@ -55,5 +56,32 @@ class TestApplication(DAOTestCase):
     def test_getter(self):
         application = self.add_application()
         line = self.add_line(application_uuid=application.uuid)
-
         assert_that(line.application, equal_to(application))
+
+
+class TestCallerID(DAOTestCase):
+
+    def test_get_caller_id_by_name(self):
+        sip = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+
+        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_name.ilike("test 1")).first()
+        assert_that(result, equal_to(line))
+
+    def test_get_caller_id_by_num(self):
+        sip = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+
+        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_num.ilike("1000")).first()
+        assert_that(result, equal_to(line))
+
+    def test_get_inherited_callerid(self):
+        template = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
+        sip = self.add_endpoint_sip(templates=[template])
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_name == "Test 1").first()
+        assert_that(result, equal_to(line))

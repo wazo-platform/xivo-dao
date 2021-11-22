@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -15,6 +15,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from ..endpoint_sip_section import EndpointSIPSection
+from ..endpoint_sip_options_view import EndpointSIPOptionsView
 
 
 class TestEndpointSIP(DAOTestCase):
@@ -238,7 +239,6 @@ class TestTemplates(DAOTestCase):
 
 
 class TestInheritedOptions(DAOTestCase):
-
     def test_inherited_aor_options(self):
         template_1 = self.add_endpoint_sip(
             template=True,
@@ -293,7 +293,6 @@ class TestInheritedOptions(DAOTestCase):
 
 
 class TestCombinedOptions(DAOTestCase):
-
     def test_combined_aor_options(self):
         template_1 = self.add_endpoint_sip(
             template=True,
@@ -356,4 +355,79 @@ class TestCombinedOptions(DAOTestCase):
                 # endpoint options
                 ['allow', '!all,opus'],
             )
+        )
+
+
+class TestOptionValue(DAOTestCase):
+    def setUp(self):
+        super(TestOptionValue, self).setUp()
+        self.sip = self.add_endpoint_sip()
+        self.sip.endpoint_section_options = [('test', 'value')]
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+
+    def test_get_value(self):
+        assert_that(
+            self.sip.get_option_value('test'),
+            equal_to('value')
+        )
+
+    def test_get_value_invalid_option(self):
+        assert_that(
+            self.sip.get_option_value('invalid'),
+            equal_to(None)
+        )
+
+    def test_get_value_no_option_values(self):
+        sip = self.add_endpoint_sip()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+
+        assert_that(
+            sip.get_option_value('somevalue'),
+            equal_to(None)
+        )
+
+
+class TestCallerId(DAOTestCase):
+    def test_get_callerid_nearest_value(self):
+        template1 = self.add_endpoint_sip(caller_id='template1')
+        template2 = self.add_endpoint_sip(caller_id='template2')
+        sip = self.add_endpoint_sip(
+            templates=[template1, template2], caller_id='template3'
+        )
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+
+        result = sip.get_option_value('callerid')
+        assert_that(result, equal_to('template3'))
+
+    def test_get_callerid_inherited(self):
+        template1 = self.add_endpoint_sip(caller_id='template1')
+        template2 = self.add_endpoint_sip(caller_id='template2')
+        sip = self.add_endpoint_sip(templates=[template1, template2])
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+
+        result = sip.get_option_value('callerid')
+        assert_that(result, equal_to('template1'))
+
+    def test_get_callerid_inherited_depth_first(self):
+        template0 = self.add_endpoint_sip(caller_id='template0')
+        template1 = self.add_endpoint_sip(templates=[template0])
+        template2 = self.add_endpoint_sip(caller_id='template2')
+        sip = self.add_endpoint_sip(templates=[template1, template2])
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+
+        result = sip.get_option_value('callerid')
+        assert_that(result, equal_to('template0'))
+
+    def test_callerid_inheritance(self):
+        template1 = self.add_endpoint_sip(caller_id='template1')
+        sip = self.add_endpoint_sip(templates=[template1])
+        EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
+
+        assert_that(
+            sip.get_option_value('callerid'),
+            equal_to('template1')
+        )
+        assert_that(
+            template1.get_option_value('callerid'),
+            equal_to('template1')
         )

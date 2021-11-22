@@ -40,6 +40,8 @@ def list_model_names():
                 continue
             if element_name == 'Base':
                 continue
+            if element_name == 'MaterializedView':
+                continue
 
             # Exclude polymorphic classes that are not real tables
             if ('polymorphic_identity' in getattr(element, '__mapper_args__', {})
