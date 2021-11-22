@@ -10,6 +10,7 @@ from xivo_dao.resources.utils.search import SearchConfig
 config = SearchConfig(
     table=Meeting,
     columns={'name': Meeting.name, 'persistent': Meeting.persistent},
+    search=['name'],
     default_sort='name',
 )
 
