@@ -79,7 +79,6 @@ from xivo_dao.alchemy.provisioning import Provisioning
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.queueinfo import QueueInfo
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
@@ -201,7 +200,6 @@ __all__ = [
     "Queue",
     "QueueLog",
     "QueueFeatures",
-    "QueueInfo",
     "QueueMember",
     "QueuePenalty",
     "QueuePenaltyChange",
