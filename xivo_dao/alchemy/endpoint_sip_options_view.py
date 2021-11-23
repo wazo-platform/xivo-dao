@@ -22,7 +22,7 @@ def _generate_selectable():
         ]
     ).cte(recursive=True)
 
-    endpoints = cte.union(
+    endpoints = cte.union_all(
         select(
             [
                 EndpointSIPTemplate.parent_uuid.label('uuid'),
