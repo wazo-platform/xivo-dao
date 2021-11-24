@@ -4,7 +4,7 @@
 
 import logging
 
-from sqlalchemy import and_, text, select, column
+from sqlalchemy import and_, text, select, column, table
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -84,7 +84,7 @@ class EndpointSIP(Base):
     _options = column_property(
         select([column('options')])
         .where(column('root') == uuid)
-        .select_from('endpoint_sip_options_view')
+        .select_from(table('endpoint_sip_options_view'))
     )
     _aor_section = relationship(
         'AORSection',
