@@ -6,7 +6,7 @@ import six
 
 from sqlalchemy import Column, MetaData, PrimaryKeyConstraint, Table, Index
 from sqlalchemy.ext import compiler
-from sqlalchemy.ext.declarative.api import DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.event import listens_for, listen, contains
 from sqlalchemy.exc import InvalidRequestError, NoInspectionAvailable
 from sqlalchemy.inspection import inspect
