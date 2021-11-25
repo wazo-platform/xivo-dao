@@ -4,12 +4,12 @@
 
 from hamcrest import (
     assert_that,
-    has_entries,
     instance_of,
     calling,
     not_,
     raises,
     equal_to,
+    has_items,
 )
 from sqlalchemy import select, Table, Column, Integer
 from sqlalchemy.exc import InvalidRequestError
@@ -22,7 +22,8 @@ from xivo_dao.helpers.db_views import MaterializedView, create_materialized_view
 class TestCreateMaterializedView(DAOTestCase):
     def test_create_materialized_view(self):
         result = create_materialized_view('test', select([1]))
-        assert_that(result, has_entries(table=instance_of(Table), dependencies=[]))
+        assert_that(result, instance_of(tuple))
+        assert_that(result, has_items(instance_of(Table), instance_of(list)))
 
     def test_create_materialized_view_with_no_name(self):
         assert_that(
@@ -61,13 +62,13 @@ class TestCreateMaterializedView(DAOTestCase):
 
 class TestMaterializedView(DAOTestCase):
     def _create_view_class(
-        self, view, name=None, selectable=None, dependencies=None, indexes=None
+        self, func, name=None, selectable=None, dependencies=None, indexes=None
     ):
         class _(MaterializedView):
             __view__ = (
-                view(name, selectable, dependencies=dependencies, indexes=indexes)
-                if callable(view)
-                else view
+                func(name, selectable, dependencies=dependencies, indexes=indexes)
+                if callable(func)
+                else func
             )
 
         return _
@@ -75,10 +76,14 @@ class TestMaterializedView(DAOTestCase):
     def test_view_init_table(self):
         assert_that(
             calling(self._create_view_class).with_args(
-                create_materialized_view, 'test', select([1])
+                create_materialized_view, name='test', selectable=select([1])
             ),
             not_(raises(InvalidRequestError)),
         )
+
+    def test_view_class_creation(self):
+        view = self._create_view_class(create_materialized_view, "view", select([1]))
+        assert_that(issubclass(view, MaterializedView), equal_to(True))
 
     def test_view_init_with_none(self):
         assert_that(
@@ -86,11 +91,18 @@ class TestMaterializedView(DAOTestCase):
             raises(InvalidRequestError),
         )
 
+    def test_view_without_helper_function(self):
+        def some_func(name, selectable, dependencies=None, indexes=None):
+            return "bad return"
+
+        assert_that(
+            calling(self._create_view_class).with_args(some_func, "view", select([1])),
+            raises(InvalidRequestError)
+        )
+
     def test_view_init_with_invalid_view(self):
         assert_that(
-            calling(self._create_view_class).with_args(
-                {'table': None, 'dependencies': None}
-            ),
+            calling(self._create_view_class).with_args((None, None)),
             raises(InvalidRequestError),
         )
 
@@ -108,19 +120,11 @@ class TestMaterializedView(DAOTestCase):
             __tablename__ = 'mock_model'
             id = Column(Integer, primary_key=True)
 
-        create_view = calling(self._create_view_class).with_args(
-            create_materialized_view, 'view', select([1]), dependencies=[MockModel]
+        view = self._create_view_class(
+            create_materialized_view, "view", select([1]), dependencies=[MockModel]
         )
-
-        assert_that(create_view, not_(raises(Exception)))
-        view = create_view()
         assert_that(view.autorefresh, equal_to(True))
 
     def test_view_dependencies_no_event_bound(self):
-        create_view = calling(self._create_view_class).with_args(
-            create_materialized_view, 'view', select([1])
-        )
-
-        assert_that(create_view, not_(raises(Exception)))
-        view = create_view()
+        view = self._create_view_class(create_materialized_view, "view", select([1]))
         assert_that(view.autorefresh, equal_to(False))
