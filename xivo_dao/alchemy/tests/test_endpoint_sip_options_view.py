@@ -20,6 +20,7 @@ class TestView(DAOTestCase):
         assert_that(sip.get_option_value('key'), equal_to(None))
 
         EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        self.session.expire(sip)
 
         assert_that(sip.get_option_value('key'), equal_to('value'))
 

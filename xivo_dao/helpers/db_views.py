@@ -65,15 +65,18 @@ def _create_table_from_selectable(name, selectable, indexes=None, **kwargs):
     indexes = indexes or []
     metadata = MetaData()
 
+    try:
+        columns = selectable.selected_columns  # SQLAlchemy >= 1.4
+    except AttributeError:
+        columns = selectable.columns  # SQLAlchemy 1.2 compat
+
     cols = indexes
-    for col in selectable.columns:
+    for col in columns:
         cols.append(Column(col.name, col.type, primary_key=col.primary_key))
 
     table = Table(name, metadata, *cols)
-    if not any([col.primary_key for col in selectable.columns]):
-        table.append_constraint(
-            PrimaryKeyConstraint(*[col.name for col in selectable.columns])
-        )
+    if not any([col.primary_key for col in columns]):
+        table.append_constraint(PrimaryKeyConstraint(*[col.name for col in columns]))
 
     return table
 
@@ -136,7 +139,7 @@ def create_materialized_view(name, selectable, dependencies=None, indexes=None):
             raise ValueError('Invalid view index, must be an SQLAlchemy index')
 
     table = _create_materialized_view(name, selectable, Base.metadata, indexes)
-    return {'table': table, 'dependencies': dependencies}
+    return table, dependencies
 
 
 class _MaterializedViewMeta(DeclarativeMeta):
@@ -147,12 +150,11 @@ class _MaterializedViewMeta(DeclarativeMeta):
                     "Class '{}' must specify a '__view__' attribute".format(self)
                 )
         try:
-            view = getattr(self, '__view__')
-            self.__table__ = view['table']
-            self._view_dependencies = view['dependencies']
+            self.__table__, self._view_dependencies = getattr(self, '__view__')
+            attrs['__table__'] = self.__table__
         except AttributeError:
             pass
-        except (TypeError, KeyError):
+        except (TypeError, ValueError):
             raise InvalidRequestError(
                 "__view__ is invalid, use 'create_materialized_view' helper function"
             )
