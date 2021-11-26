@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -241,13 +241,13 @@ class TestLineFixes(DAOTestCase):
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default')
+        self.add_queue_member(usertype='user', userid=user.id, interface='PJSIP/default')
 
         self.fixes.fix(line.id)
 
         queue_member = self.session.query(QueueMember).first()
 
-        assert_that(queue_member.interface, equal_to('SIP/abcdef'))
+        assert_that(queue_member.interface, equal_to('PJSIP/abcdef'))
 
     def test_given_line_has_sccp_name_then_queue_member_interface_updated(self):
         sccp = self.add_sccpline(name='abcdef')
@@ -283,13 +283,13 @@ class TestLineFixes(DAOTestCase):
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line1.id, main_line=True)
         self.add_user_line(user_id=user.id, line_id=line2.id, main_line=False)
-        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default')
+        self.add_queue_member(usertype='user', userid=user.id, interface='PJSIP/default')
 
         self.fixes.fix(line2.id)
 
         queue_member = self.session.query(QueueMember).first()
 
-        assert_that(queue_member.interface, equal_to('SIP/default'))
+        assert_that(queue_member.interface, equal_to('PJSIP/default'))
 
     def test_given_queuemember_local_without_extension_then_queue_member_iface_not_updated(self):
         sip = self.add_endpoint_sip(name='abcdef')
@@ -297,14 +297,14 @@ class TestLineFixes(DAOTestCase):
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_queue_member(
-            usertype='user', userid=user.id, interface='SIP/default', channel='Local',
+            usertype='user', userid=user.id, interface='PJSIP/default', channel='Local',
         )
 
         self.fixes.fix(line.id)
 
         queue_member = self.session.query(QueueMember).first()
 
-        assert_that(queue_member.interface, equal_to('SIP/default'))
+        assert_that(queue_member.interface, equal_to('PJSIP/default'))
 
     def test_given_queuemember_local_with_extension_then_queue_member_interface_updated(self):
         sip = self.add_endpoint_sip(name='abcdef')
@@ -314,7 +314,7 @@ class TestLineFixes(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_queue_member(
-            usertype='user', userid=user.id, interface='SIP/default', channel='Local',
+            usertype='user', userid=user.id, interface='PJSIP/default', channel='Local',
         )
 
         self.fixes.fix(line.id)
