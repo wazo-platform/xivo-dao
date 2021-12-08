@@ -182,10 +182,11 @@ class TestSearchGivenMultipleMeetings(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.meeting1 = self.add_meeting(name='Ashton')
-        self.meeting2 = self.add_meeting(name='Beaugarton')
+        # Order got changed for such that the creation_time does not match the name order
         self.meeting3 = self.add_meeting(name='Casa')
         self.meeting4 = self.add_meeting(name='Dunkin')
+        self.meeting1 = self.add_meeting(name='Ashton')
+        self.meeting2 = self.add_meeting(name='Beaugarton')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.meeting2])
@@ -211,6 +212,13 @@ class TestSearchGivenMultipleMeetings(TestSearch):
         ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
+
+    def test_when_sorting_by_creation_time(self):
+        expected = SearchResult(4, [
+            self.meeting3, self.meeting4, self.meeting1, self.meeting2,
+        ])
+
+        self.assert_search_returns_result(expected, order='creation_time', direction='asc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.meeting1])
