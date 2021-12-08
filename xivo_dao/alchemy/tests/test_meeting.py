@@ -32,6 +32,7 @@ class TestMeeting(DAOTestCase):
             owners=[owner_1, owner_2],
             guest_endpoint_sip=endpoint_sip,
             tenant_uuid=self.default_tenant.uuid,
+            number=self.random_number(length=6),
         )
 
         self.session.add(meeting)
@@ -61,6 +62,7 @@ class TestMeeting(DAOTestCase):
             owners=[owner_1, owner_2],
             guest_endpoint_sip=endpoint_sip,
             tenant_uuid=self.default_tenant.uuid,
+            number=self.random_number(length=6),
         )
 
         self.session.add(meeting)
@@ -80,6 +82,7 @@ class TestMeeting(DAOTestCase):
             owners=[owner_1, owner_2],
             guest_endpoint_sip=endpoint_sip,
             tenant_uuid=self.default_tenant.uuid,
+            number=self.random_number(length=6),
         )
 
         self.session.add(meeting)
@@ -102,6 +105,7 @@ class TestMeeting(DAOTestCase):
             owners=[owner_1, owner_2],
             guest_endpoint_sip=endpoint_sip,
             tenant_uuid=self.default_tenant.uuid,
+            number=self.random_number(length=6),
         )
 
         self.session.add(meeting)
@@ -130,6 +134,7 @@ class TestMeeting(DAOTestCase):
             owners=[owner_1, owner_2],
             guest_endpoint_sip=endpoint_sip,
             tenant_uuid=self.default_tenant.uuid,
+            number=self.random_number(length=6),
         )
 
         self.session.add(meeting)
@@ -147,7 +152,11 @@ class TestMeeting(DAOTestCase):
     def test_ingress_http(self):
         tenant = self.add_tenant()
         ingress_http = self.add_ingress_http(tenant_uuid=tenant.uuid)
-        meeting = Meeting(name='My meeting', tenant_uuid=tenant.uuid)
+        meeting = Meeting(
+            name='My meeting',
+            tenant_uuid=tenant.uuid,
+            number=self.random_number(length=6),
+        )
 
         self.session.add(meeting)
         self.session.flush()
@@ -156,7 +165,11 @@ class TestMeeting(DAOTestCase):
 
     def test_ingress_http_no_config(self):
         tenant = self.add_tenant()
-        meeting = Meeting(name='My meeting', tenant_uuid=tenant.uuid)
+        meeting = Meeting(
+            name='My meeting',
+            tenant_uuid=tenant.uuid,
+            number=self.random_number(length=6),
+        )
 
         self.session.add(meeting)
         self.session.flush()

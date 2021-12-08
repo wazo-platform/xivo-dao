@@ -255,6 +255,7 @@ class TestCreate(DAOTestCase):
             uuid=not_none(),
             name=None,
             tenant_uuid=self.default_tenant.uuid,
+            number=not_none(),
         ))
 
     def test_create_all_parameters(self):
@@ -281,6 +282,7 @@ class TestCreate(DAOTestCase):
             owners=owners,
             guest_endpoint_sip_uuid=endpoint_sip.uuid,
             created_at=is_not(none()),
+            number=not_none(),
         ))
 
 
