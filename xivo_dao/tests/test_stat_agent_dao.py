@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from hamcrest import assert_that, contains_inanyorder
 
 from xivo_dao import stat_agent_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
@@ -40,10 +42,11 @@ class TestStatAgentDAO(DAOTestCase):
             stat_agent_dao.insert_missing_agents(self.session, confd_agents)
 
         result = self._fetch_stat_agents()
-        self.assertTrue(('Agent/1', 'tenant1', 1, False) in result)
-        self.assertTrue(('Agent/2', 'tenant2', 2, False) in result)
-        self.assertTrue(('Agent/3', 'tenant3', 3, True) in result)
-        self.assertEquals(len(result), 3)
+        assert_that(result, contains_inanyorder(
+            ('Agent/1', 'tenant1', 1, False),
+            ('Agent/2', 'tenant2', 2, False),
+            ('Agent/3', 'tenant3', 3, True),
+        ))
 
     def test_when_agent_marked_as_deleted_then_new_one_is_created(self):
         confd_agents = [{'id': 1, 'number': '1', 'tenant_uuid': 'tenant'}]
@@ -53,9 +56,10 @@ class TestStatAgentDAO(DAOTestCase):
             stat_agent_dao.insert_missing_agents(self.session, confd_agents)
 
         result = self._fetch_stat_agents()
-        self.assertTrue(('Agent/1', 'tenant', 1, False) in result)
-        self.assertTrue(('Agent/1_', 'tenant', 999, True) in result)
-        self.assertEquals(len(result), 2)
+        assert_that(result, contains_inanyorder(
+            ('Agent/1', 'tenant', 1, False),
+            ('Agent/1_', 'tenant', 999, True),
+        ))
 
     def test_mark_recreated_agents_with_same_number_as_deleted(self):
         confd_agents = {'Agent/1': {'id': 1, 'number': '1', 'tenant_uuid': 'tenant'}}
@@ -65,8 +69,9 @@ class TestStatAgentDAO(DAOTestCase):
             stat_agent_dao._mark_recreated_agents_with_same_number_as_deleted(self.session, confd_agents)
 
         result = self._fetch_stat_agents()
-        self.assertTrue(('Agent/1', 'tenant', 999, True) in result)
-        self.assertEquals(len(result), 1)
+        assert_that(result, contains_inanyorder(
+            ('Agent/1', 'tenant', 999, True)
+        ))
 
     def test_mark_non_confd_agents_as_deleted(self):
         confd_agents = [{'id': 1, 'number': '1', 'tenant_uuid': 'tenant'}]
@@ -77,9 +82,10 @@ class TestStatAgentDAO(DAOTestCase):
             stat_agent_dao._mark_non_confd_agents_as_deleted(self.session, confd_agents)
 
         result = self._fetch_stat_agents()
-        self.assertTrue(('Agent/2', 'tenant', 2, True) in result)
-        self.assertTrue(('Agent/3', 'tenant', None, True) in result)
-        self.assertEquals(len(result), 2)
+        assert_that(result, contains_inanyorder(
+            ('Agent/2', 'tenant', 2, True),
+            ('Agent/3', 'tenant', None, True),
+        ))
 
     def test_create_missing_agents(self):
         confd_agents = {
@@ -91,9 +97,10 @@ class TestStatAgentDAO(DAOTestCase):
             stat_agent_dao._create_missing_agents(self.session, confd_agents)
 
         result = self._fetch_stat_agents()
-        self.assertTrue(('Agent/1', 'tenant', 1, False) in result)
-        self.assertTrue(('Agent/2', 'tenant', None, True) in result)
-        self.assertEquals(len(result), 2)
+        assert_that(result, contains_inanyorder(
+            ('Agent/1', 'tenant', 1, False),
+            ('Agent/2', 'tenant', None, True),
+        ))
 
     def test_rename_deleted_agents_with_duplicate_name(self):
         confd_agents = {'Agent/1': {'id': 1, 'number': 'agent', 'tenant_uuid': 'tenant'}}
@@ -106,9 +113,10 @@ class TestStatAgentDAO(DAOTestCase):
             )
 
         result = self._fetch_stat_agents()
-        self.assertTrue(('Agent/1_', 'tenant', 1, True) in result)
-        self.assertTrue(('Agent/1__', 'tenant', 1, True) in result)
-        self.assertEquals(len(result), 2)
+        assert_that(result, contains_inanyorder(
+            ('Agent/1_', 'tenant', 1, True),
+            ('Agent/1__', 'tenant', 1, True),
+        ))
 
     def _fetch_stat_agents(self):
         return [
