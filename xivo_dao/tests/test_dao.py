@@ -406,7 +406,7 @@ class ItemInserter(object):
         return exten
 
     def random_number(self, length):
-        return str(random.randint(0, int('9' * length))).rjust(length, '0')
+        return str(random.randint(0, int('9' * length))).rjust(length, str(0))
 
     def add_ivr(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
