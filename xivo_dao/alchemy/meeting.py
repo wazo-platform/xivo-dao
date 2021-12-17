@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, UniqueConstraint
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.types import (
     Boolean,
@@ -40,6 +40,9 @@ class MeetingOwner(Base):
 class Meeting(Base):
 
     __tablename__ = 'meeting'
+    __table_args__ = (
+        UniqueConstraint('number', 'tenant_uuid'),
+    )
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
     name = Column(Text)
@@ -47,6 +50,7 @@ class Meeting(Base):
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, server_default=text("(now() at time zone 'utc')"))
     persistent = Column(Boolean, server_default='false', nullable=False)
+    number = Column(Text, nullable=False)
 
     meeting_owners = relationship(
         'MeetingOwner',

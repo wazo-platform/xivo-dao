@@ -405,6 +405,9 @@ class ItemInserter(object):
             return self._random_exten(extens)
         return exten
 
+    def random_number(self, length):
+        return str(random.randint(0, int('9' * length))).rjust(length, str(0))
+
     def add_ivr(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
@@ -512,6 +515,7 @@ class ItemInserter(object):
     def add_meeting(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        kwargs.setdefault('number', self.random_number(6))
         meeting = Meeting(**kwargs)
         self.add_me(meeting)
         return meeting

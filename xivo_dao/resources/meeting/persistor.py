@@ -2,9 +2,13 @@
 # Copyright 2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import random
+
 from xivo_dao.alchemy.meeting import Meeting, MeetingOwner
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin, SearchResult
+
+NUMBER_LEN = 6
 
 
 class Persistor(CriteriaBuilderMixin, BasePersistor):
@@ -15,6 +19,12 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
         self.session = session
         self.search_system = search_system
         self.tenant_uuids = tenant_uuids
+
+    def create(self, meeting):
+        meeting.number = self._generate_number()
+        self.session.add(meeting)
+        self.session.flush()
+        return meeting
 
     def search(self, parameters):
         query = self._search_query()
@@ -49,6 +59,14 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
         query = self._filter_owner(query, criteria)
         query = self._filter_created_before(query, criteria)
         return self.build_criteria(query, criteria)
+
+    def _generate_number(self):
+        max = int('9' * NUMBER_LEN)
+        while True:
+            number = str(random.randint(0, max)).rjust(NUMBER_LEN, '0')
+            count = self.session.query(Meeting).filter(Meeting.number == number).count()
+            if not count:
+                return number
 
     def _search_query(self):
         return self.session.query(self.search_system.config.table)
