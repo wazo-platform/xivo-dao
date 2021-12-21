@@ -8,7 +8,6 @@ from collections import (
     defaultdict,
     namedtuple,
 )
-from distutils import util
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import (
@@ -568,6 +567,69 @@ class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
         return options
 
 
+class _EndpointSIPLineResolver(_SIPEndpointResolver):
+    def __init__(self, line, parents, pickup_members):
+        super().__init__(line.endpoint_sip, parents)
+        self._line = line
+        self._pickup_members = pickup_members
+
+    def _build_aor_section(self):
+        options = super()._build_aor_section()
+
+        mailboxes = []
+        for user in self._line.users:
+            if user.voicemail:
+                mailboxes.append('{}@{}'.format(user.voicemail.number, user.voicemail.context))
+        if mailboxes:
+            options.append(('mailboxes', ','.join(mailboxes)))
+
+        if options:
+            options.append(('type', 'aor'))
+
+        return options
+
+    def _default_endpoint_section(self):
+        options = super()._default_endpoint_section() + [
+            ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+            ('set_var', 'WAZO_LINE_ID={}'.format(self._line.id)),
+        ]
+
+        context_name = self._line.context
+        if self._line.application_uuid:
+            outgoing_context = 'stasis-wazo-app-{}'.format(self._line.application_uuid)
+        elif context_name:
+            outgoing_context = context_name
+        else:
+            outgoing_context = None
+
+        if outgoing_context:
+            options.append(('context', outgoing_context))
+        if context_name:
+            options.append(('set_var', 'TRANSFER_CONTEXT={}'.format(context_name)))
+
+        for user in self._line.users:
+            options.append(('set_var', 'XIVO_USERID={}'.format(user.id)))
+            options.append(('set_var', 'XIVO_USERUUID={}'.format(user.uuid)))
+            if user.enableonlinerec:
+                options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
+
+        if self._line.extensions:
+            for extension in self._line.extensions:
+                options.append(('set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)))
+                break
+
+        pickup_groups = self._pickup_members.get(self._endpoint_config.uuid, {})
+        named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
+        if named_pickup_groups:
+            options.append(('named_pickup_group', named_pickup_groups))
+
+        named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
+        if named_call_groups:
+            options.append(('named_call_group', named_call_groups))
+
+        return options
+
+
 @daosession
 def find_sip_meeting_guests_settings(session):
     query = session.query(
@@ -646,148 +708,26 @@ def find_sip_user_settings(session):
         LineFeatures.endpoint_sip_uuid.isnot(None),
     )
 
-    lines = query.all()
-    application_mapping = {}
-    context_mapping = {}
-    extension_mapping = {}
-    voicemail_mapping = defaultdict(list)
-    line_mapping = {}
-    user_mapping = defaultdict(list)
-    raw_configs = {}
-    for line in lines:
-        raw_configs[line.endpoint_sip_uuid] = line.endpoint_sip
-        context_mapping[line.endpoint_sip_uuid] = line.context
-        application_mapping[line.endpoint_sip_uuid] = line.application_uuid
-        line_mapping[line.endpoint_sip_uuid] = line.id
-        if line.extensions:
-            extension_mapping[line.endpoint_sip_uuid] = line.extensions[0]
-        for user in line.users:
-            user_mapping[line.endpoint_sip_uuid].append(user)
-            if user.voicemail:
-                voicemail_mapping[line.endpoint_sip_uuid].append(user.voicemail)
+    resolved_configs = {}
 
-    def get_flat_config(endpoint):
-        if endpoint.uuid in flat_configs:
-            return flat_configs[endpoint.uuid]
+    def add_endpoint_configuration(resolved_configs, endpoint, line=None):
+        for parent in endpoint.templates:
+            if parent.uuid in resolved_configs:
+                continue
+            add_endpoint_configuration(resolved_configs, parent)
 
-        parents = [get_flat_config(parent) for parent in endpoint.templates]
-        base_config = endpoint_to_dict(endpoint)
-        context_name = context_mapping.get(endpoint.uuid)
-        application_uuid = application_mapping.get(endpoint.uuid)
-        if application_uuid:
-            outgoing_context = 'stasis-wazo-app-{}'.format(application_uuid)
-        elif context_name:
-            outgoing_context = context_name
+        if line:
+            config = _EndpointSIPLineResolver(line, resolved_configs, pickup_members)
         else:
-            outgoing_context = None
-        if outgoing_context:
-            base_config['endpoint_section_options'].append(['context', outgoing_context])
-        if context_name:
-            base_config['endpoint_section_options'].append(
-                ['set_var', 'TRANSFER_CONTEXT={}'.format(context_name)],
-            )
-        if endpoint.transport_uuid:
-            base_config['endpoint_section_options'].append(
-                ['transport', endpoint.transport.name],
-            )
-        extension = extension_mapping.get(endpoint.uuid)
-        if extension:
-            base_config['endpoint_section_options'].append(
-                ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)]
-            )
-        voicemails = voicemail_mapping.get(endpoint.uuid, [])
-        mailboxes = []
-        for voicemail in voicemails:
-            mailboxes.append('{}@{}'.format(voicemail.number, voicemail.context))
-        if mailboxes:
-            base_config['aor_section_options'].append(
-                ['mailboxes', ','.join(mailboxes)]
-            )
-            base_config['endpoint_section_options'].append(
-                ['mailboxes', ','.join(mailboxes)]
-            )
-        for user in user_mapping.get(endpoint.uuid, []):
-            base_config['endpoint_section_options'].extend([
-                ['set_var', 'XIVO_USERID={}'.format(user.id)],
-                ['set_var', 'XIVO_USERUUID={}'.format(user.uuid)],
-                # TODO(pc-m): document WAZO_USER_UUID and deprecate the XIVO one
-                # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
-            ])
-            if user.enableonlinerec:
-                base_config['endpoint_section_options'].append(
-                    ['set_var', 'DYNAMIC_FEATURES=togglerecord'],
-                )
-        line_id = line_mapping.get(endpoint.uuid)
-        if line_id:
-            base_config['endpoint_section_options'].append(
-                ['set_var', 'WAZO_LINE_ID={}'.format(line_id)]
-            )
-        pickup_groups = pickup_members.get(endpoint.uuid, {})
-        named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
-        if named_pickup_groups:
-            base_config['endpoint_section_options'].append(
-                ['named_pickup_group', named_pickup_groups],
-            )
-        named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
-        if named_call_groups:
-            base_config['endpoint_section_options'].append(
-                ['named_call_group', named_call_groups],
-            )
-        builder = {}
-        for parent in parents + [base_config]:
-            for section in [
-                'aor_section_options',
-                'auth_section_options',
-                'endpoint_section_options',
-            ]:
-                builder.setdefault(section, [])
-                parent_options = parent.get(section, [])
-                for option in parent_options:
-                    builder[section].append(option)
+            config = _SIPEndpointResolver(endpoint, resolved_configs)
 
-        original_caller_id = None
-        for key, value in builder.get('endpoint_section_options', []):
-            if key == 'callerid':
-                original_caller_id = value
+        resolved_configs[endpoint.uuid] = config
 
-        if original_caller_id:
-            builder['endpoint_section_options'].append(
-                ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)]
-            )
-
-        builder['endpoint_section_options'].extend([
-            ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
-            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-        ])
-        if builder['endpoint_section_options']:
-            builder['endpoint_section_options'].append(['type', 'endpoint'])
-        if builder['aor_section_options']:
-            builder['aor_section_options'].append(['type', 'aor'])
-            builder['endpoint_section_options'].append(['aors', endpoint.name])
-        if builder['auth_section_options']:
-            builder['auth_section_options'].append(['type', 'auth'])
-            builder['endpoint_section_options'].append(['auth', endpoint.name])
-        builder.update({
-            'uuid': base_config['uuid'],
-            'name': base_config['name'],
-            'label': base_config['label'],
-            'template': base_config['template'],
-            'asterisk_id': base_config['asterisk_id'],
-        })
-        if builder['template']:
-            flat_configs[builder['uuid']] = builder
-        return builder
-
-    # A flat_config is an endpoint config with all inherited fields merged into a single object
-    flat_configs = {}
-    for uuid, raw_config in raw_configs.items():
-        flat_config = get_flat_config(raw_config)
-        flat_configs[uuid] = flat_config
+    for line in query.all():
+        add_endpoint_configuration(resolved_configs, line.endpoint_sip, line)
 
     return [
-        canonicalize_config(config)
-        for config in flat_configs.values()
-        if config['template'] is False
+        config.resolve() for config in resolved_configs.values() if not config.template
     ]
 
 
