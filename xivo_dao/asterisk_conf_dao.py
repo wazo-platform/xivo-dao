@@ -383,6 +383,143 @@ def find_voicemail_general_settings(session):
     return res
 
 
+class _SIPEndpointResolver:
+
+    def __init__(self, endpoint_config, parents):
+        self._endpoint_config = endpoint_config
+        self._base_config = endpoint_to_dict(self._endpoint_config)
+        self._parents = parents
+        self.template = endpoint_config.template
+
+        self._body = None
+
+        self._aor_section = None
+        self._auth_section = None
+        self._endpoint_section = None
+
+    def get_aor_section(self):
+        if self._aor_section is None:
+            self._aor_section = self._build_aor_section()
+
+        return self._aor_section
+
+    def get_auth_section(self):
+        if self._auth_section is None:
+            self._auth_section = self._build_auth_section()
+
+        return self._auth_section
+
+    def get_endpoint_section(self):
+        if self._endpoint_section is None:
+            self._endpoint_section = self._build_endpoint_section()
+
+        return self._endpoint_section
+
+    def resolve(self):
+        if self._body is None:
+            self._body = canonicalize_config({
+                'uuid': self._endpoint_config.uuid,
+                'name': self._endpoint_config.name,
+                'label': self._endpoint_config.label,
+                'template': self._endpoint_config.template,
+                'asterisk_id': self._endpoint_config.asterisk_id,
+                'aor_section_options': self.get_aor_section(),
+                'auth_section_options': self.get_auth_section(),
+                'endpoint_section_options': self.get_endpoint_section(),
+            })
+
+        return self._body
+
+    def _build_aor_section(self):
+        options = self._default_aor_section()
+        for parent in self._iterover_parents():
+            for option in parent.get_aor_section():
+                options.append(option)
+
+        for option in self._base_config.get('aor_section_options', []):
+            options.append(option)
+
+        if options:
+            options.append(('type', 'aor'))
+
+        return options
+
+    def _build_auth_section(self):
+        options = self._default_auth_section()
+        for parent in self._iterover_parents():
+            for option in parent.get_auth_section():
+                options.append(option)
+
+        for option in self._base_config.get('auth_section_options', []):
+            options.append(option)
+
+        if options:
+            options.append(('type', 'auth'))
+
+        return options
+
+    def _build_endpoint_section(self):
+        options = self._default_endpoint_section()
+
+        for parent in self._iterover_parents():
+            for option in parent.get_endpoint_section():
+                options.append(option)
+
+        for option in self._base_config.get('endpoint_section_options', []):
+            options.append(option)
+
+        if self._endpoint_config.transport_uuid:
+            options.append(('transport', self._endpoint_config.transport.name))
+
+        original_caller_id = None
+        for key, value in options:
+            if key == 'callerid':
+                original_caller_id = value
+        if original_caller_id:
+            options.append(('set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)))
+
+        aor_options = self.get_aor_section()
+        if aor_options:
+            options.append(('aors', self._endpoint_config.name))
+
+        auth_options = self.get_auth_section()
+        if auth_options:
+            options.append(('auth', self._endpoint_config.name))
+
+        if options:
+            options.append(('type', 'endpoint'))
+
+        return options
+
+    def _default_aor_section(self):
+        return []
+
+    def _default_auth_section(self):
+        return []
+
+    def _default_endpoint_section(self):
+        return [
+            ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+            ('set_var', 'WAZO_TENANT_UUID={}'.format(self._endpoint_config.tenant_uuid)),
+        ]
+
+    def _iterover_parents(self):
+        for template in self._endpoint_config.templates:
+            yield self._parents[template.uuid]
+
+
+class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
+    def __init__(self, meeting, parents):
+        super().__init__(meeting.guest_endpoint_sip, parents)
+        self._meeting = meeting
+
+    def _default_endpoint_section(self):
+        return super()._default_endpoint_section() + [
+            ['set_var', 'WAZO_MEETING_UUID={}'.format(self._meeting.uuid)],
+            ['set_var', 'WAZO_MEETING_NAME={}'.format(self._meeting.name)],
+        ]
+
+
 @daosession
 def find_sip_meeting_guests_settings(session):
     query = session.query(
@@ -407,78 +544,26 @@ def find_sip_meeting_guests_settings(session):
         joinedload('guest_endpoint_sip').joinedload('transport'),
     ).filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
 
-    meetings = query.all()
+    resolved_configs = {}
 
-    def get_flat_config(endpoint, meeting_uuid, meeting_name):
-        if endpoint.uuid in flat_configs:
-            return flat_configs[endpoint.uuid]
+    def add_endpoint_configuration(resolved_configs, endpoint, meeting=None):
+        for parent in endpoint.templates:
+            if parent.uuid in resolved_configs:
+                continue
+            add_endpoint_configuration(resolved_configs, parent)
 
-        parents = [get_flat_config(parent, None, None) for parent in endpoint.templates]
-        base_config = endpoint_to_dict(endpoint)
-        if endpoint.transport_uuid:
-            base_config['endpoint_section_options'].append(
-                ['transport', endpoint.transport.name],
-            )
-        builder = {}
-        for parent in parents + [base_config]:
-            for section in [
-                'aor_section_options',
-                'auth_section_options',
-                'endpoint_section_options',
-            ]:
-                builder.setdefault(section, [])
-                parent_options = parent.get(section, [])
-                for option in parent_options:
-                    builder[section].append(option)
+        if meeting:
+            config = _EndpointSIPMeetingResolver(meeting, resolved_configs)
+        else:
+            config = _SIPEndpointResolver(endpoint, resolved_configs)
 
-        original_caller_id = None
-        for key, value in builder.get('endpoint_section_options', []):
-            if key == 'callerid':
-                original_caller_id = value
+        resolved_configs[endpoint.uuid] = config
 
-        if original_caller_id:
-            builder['endpoint_section_options'].append(
-                ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)]
-            )
-
-        builder['endpoint_section_options'].append(['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'])
-
-        if meeting_uuid:
-            builder['endpoint_section_options'].extend([
-                ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-                ['set_var', 'WAZO_MEETING_UUID={}'.format(meeting_uuid)],
-                ['set_var', 'WAZO_MEETING_NAME={}'.format(meeting_name)],
-            ])
-
-        if builder['endpoint_section_options']:
-            builder['endpoint_section_options'].append(['type', 'endpoint'])
-        if builder['aor_section_options']:
-            builder['aor_section_options'].append(['type', 'aor'])
-            builder['endpoint_section_options'].append(['aors', endpoint.name])
-        if builder['auth_section_options']:
-            builder['auth_section_options'].append(['type', 'auth'])
-            builder['endpoint_section_options'].append(['auth', endpoint.name])
-        builder.update({
-            'uuid': base_config['uuid'],
-            'name': base_config['name'],
-            'label': base_config['label'],
-            'template': base_config['template'],
-            'asterisk_id': base_config['asterisk_id'],
-        })
-        if builder['template']:
-            flat_configs[builder['uuid']] = builder
-        return builder
-
-    # A flat_config is an endpoint config with all inherited fields merged into a single object
-    flat_configs = {}
-    for meeting in meetings:
-        flat_config = get_flat_config(meeting.guest_endpoint_sip, meeting.uuid, meeting.name)
-        flat_configs[meeting.guest_endpoint_sip_uuid] = flat_config
+    for meeting in query.all():
+        add_endpoint_configuration(resolved_configs, meeting.guest_endpoint_sip, meeting)
 
     return [
-        canonicalize_config(config)
-        for config in flat_configs.values()
-        if config['template'] is False
+        config.resolve() for config in resolved_configs.values() if not config.template
     ]
 
 
