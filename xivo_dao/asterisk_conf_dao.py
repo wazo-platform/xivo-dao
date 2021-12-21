@@ -386,7 +386,7 @@ class _SIPEndpointResolver:
 
     def __init__(self, endpoint_config, parents):
         self._endpoint_config = endpoint_config
-        self._base_config = endpoint_to_dict(self._endpoint_config)
+        self._base_config = self._endpoint_to_dict(self._endpoint_config)
         self._parents = parents
         self.template = endpoint_config.template
 
@@ -432,7 +432,7 @@ class _SIPEndpointResolver:
 
     def resolve(self):
         if self._body is None:
-            self._body = canonicalize_config({
+            self._body = self._canonicalize_config({
                 'uuid': self._endpoint_config.uuid,
                 'name': self._endpoint_config.name,
                 'label': self._endpoint_config.label,
@@ -538,6 +538,52 @@ class _SIPEndpointResolver:
     def _iterover_parents(self):
         for template in self._endpoint_config.templates:
             yield self._parents[template.uuid]
+
+    @staticmethod
+    def _canonicalize_config(config):
+        sections = [
+            'aor_section_options',
+            'auth_section_options',
+            'endpoint_section_options',
+            'registration_section_options',
+            'identify_section_options',
+            'registration_outbound_auth_section_options',
+            'outbound_auth_section_options',
+        ]
+        repeatable_options = [
+            'set_var',
+            'match',
+        ]
+
+        for section in sections:
+            accumulator = {}
+            repeated_options = []
+            for key, value in config.get(section, []):
+                if key in repeatable_options:
+                    if [key, value] not in repeated_options:
+                        repeated_options.append([key, value])
+                else:
+                    accumulator[key] = value
+            config[section] = list(accumulator.items()) + repeated_options
+
+        return config
+
+    @staticmethod
+    def _endpoint_to_dict(endpoint):
+        return {
+            'uuid': endpoint.uuid,
+            'name': endpoint.name,
+            'label': endpoint.label,
+            'aor_section_options': list(endpoint.aor_section_options),
+            'auth_section_options': list(endpoint.auth_section_options),
+            'endpoint_section_options': list(endpoint.endpoint_section_options),
+            'registration_section_options': list(endpoint.registration_section_options),
+            'registration_outbound_auth_section_options': list(endpoint.registration_outbound_auth_section_options),
+            'identify_section_options': list(endpoint.identify_section_options),
+            'outbound_auth_section_options': list(endpoint.outbound_auth_section_options),
+            'template': endpoint.template,
+            'asterisk_id': endpoint.asterisk_id,
+        }
 
 
 class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
@@ -778,52 +824,6 @@ def find_sip_trunk_settings(session):
     return [
         config.resolve() for config in resolved_configs.values() if not config.template
     ]
-
-
-def canonicalize_config(config):
-    sections = [
-        'aor_section_options',
-        'auth_section_options',
-        'endpoint_section_options',
-        'registration_section_options',
-        'identify_section_options',
-        'registration_outbound_auth_section_options',
-        'outbound_auth_section_options',
-    ]
-    repeatable_options = [
-        'set_var',
-        'match',
-    ]
-
-    for section in sections:
-        accumulator = {}
-        repeated_options = []
-        for key, value in config.get(section, []):
-            if key in repeatable_options:
-                if [key, value] not in repeated_options:
-                    repeated_options.append([key, value])
-            else:
-                accumulator[key] = value
-        config[section] = list(accumulator.items()) + repeated_options
-
-    return config
-
-
-def endpoint_to_dict(endpoint):
-    return {
-        'uuid': endpoint.uuid,
-        'name': endpoint.name,
-        'label': endpoint.label,
-        'aor_section_options': list(endpoint.aor_section_options),
-        'auth_section_options': list(endpoint.auth_section_options),
-        'endpoint_section_options': list(endpoint.endpoint_section_options),
-        'registration_section_options': list(endpoint.registration_section_options),
-        'registration_outbound_auth_section_options': list(endpoint.registration_outbound_auth_section_options),
-        'identify_section_options': list(endpoint.identify_section_options),
-        'outbound_auth_section_options': list(endpoint.outbound_auth_section_options),
-        'template': endpoint.template,
-        'asterisk_id': endpoint.asterisk_id,
-    }
 
 
 @daosession
