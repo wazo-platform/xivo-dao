@@ -402,46 +402,34 @@ class _SIPEndpointResolver:
         self._registration_outbound_auth_section = None
 
     def get_aor_section(self):
-        if self._aor_section is None:
-            self._aor_section = self._build_aor_section()
-
-        return self._aor_section
+        return self._get_section('aor')
 
     def get_auth_section(self):
-        if self._auth_section is None:
-            self._auth_section = self._build_auth_section()
-
-        return self._auth_section
+        return self._get_section('auth')
 
     def get_endpoint_section(self):
-        if self._endpoint_section is None:
-            self._endpoint_section = self._build_endpoint_section()
-
-        return self._endpoint_section
+        return self._get_section('endpoint')
 
     def get_identify_section(self):
-        if self._identify_section is None:
-            self._identify_section = self._build_identify_section()
-
-        return self._identify_section
+        return self._get_section('identify')
 
     def get_outbound_auth_section(self):
-        if self._outbound_auth_section is None:
-            self._outbound_auth_section = self._build_outbound_auth_section()
-
-        return self._outbound_auth_section
+        return self._get_section('outbound_auth')
 
     def get_registration_section(self):
-        if self._registration_section is None:
-            self._registration_section = self._build_registration_section()
-
-        return self._registration_section
+        return self._get_section('registration')
 
     def get_registration_outbound_auth_section(self):
-        if self._registration_outbound_auth_section is None:
-            self._registration_outbound_auth_section = self._build_registration_outbound_auth_section()
+        return self._get_section('registration_outbound_auth')
 
-        return self._registration_outbound_auth_section
+    def _get_section(self, name):
+        field_name = '_{}_section'.format(name)
+        if getattr(self, field_name) is None:
+            build_method_name = '_build_{}_section'.format(name)
+            build_method = getattr(self, build_method_name)
+            section = build_method()
+            setattr(self, field_name, section)
+        return getattr(self, field_name)
 
     def resolve(self):
         if self._body is None:
