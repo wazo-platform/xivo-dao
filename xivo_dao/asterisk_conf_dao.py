@@ -463,7 +463,7 @@ class _SIPEndpointResolver:
         return self._body
 
     def _build_aor_section(self):
-        options = self._default_aor_section()
+        options = []
         for parent in self._iterover_parents():
             for option in parent.get_aor_section():
                 options.append(option)
@@ -477,7 +477,7 @@ class _SIPEndpointResolver:
         return options
 
     def _build_auth_section(self):
-        options = self._default_auth_section()
+        options = []
         for parent in self._iterover_parents():
             for option in parent.get_auth_section():
                 options.append(option)
@@ -524,7 +524,7 @@ class _SIPEndpointResolver:
         return options
 
     def _build_identify_section(self):
-        options = self._default_identify_section()
+        options = []
 
         for parent in self._iterover_parents():
             for option in parent.get_identify_section():
@@ -540,7 +540,7 @@ class _SIPEndpointResolver:
         return options
 
     def _build_outbound_auth_section(self):
-        options = self._default_outbound_auth_section()
+        options = []
 
         for parent in self._iterover_parents():
             for option in parent.get_outbound_auth_section():
@@ -555,7 +555,7 @@ class _SIPEndpointResolver:
         return options
 
     def _build_registration_section(self):
-        options = self._default_registration_section()
+        options = []
 
         for parent in self._iterover_parents():
             for option in parent.get_registration_section():
@@ -573,7 +573,7 @@ class _SIPEndpointResolver:
         return options
 
     def _build_registration_outbound_auth_section(self):
-        options = self._default_registration_outbound_auth_section()
+        options = []
 
         for parent in self._iterover_parents():
             for option in parent.get_registration_outbound_auth_section():
@@ -587,28 +587,10 @@ class _SIPEndpointResolver:
 
         return options
 
-    def _default_aor_section(self):
-        return []
-
-    def _default_auth_section(self):
-        return []
-
     def _default_endpoint_section(self):
         return [
             ('set_var', 'WAZO_TENANT_UUID={}'.format(self._endpoint_config.tenant_uuid)),
         ]
-
-    def _default_identify_section(self):
-        return []
-
-    def _default_outbound_auth_section(self):
-        return []
-
-    def _default_registration_section(self):
-        return []
-
-    def _default_registration_outbound_auth_section(self):
-        return []
 
     def _iterover_parents(self):
         for template in self._endpoint_config.templates:
