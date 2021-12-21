@@ -450,43 +450,35 @@ class _SIPEndpointResolver:
 
         return self._body
 
-    def _build_aor_section(self):
-        options = []
+    def _add_parent_options(self, section_name, options=None):
+        options = options or []
         for parent in self._iterover_parents():
-            for option in parent.get_aor_section():
+            method_name = 'get_{}_section'.format(section_name)
+            method = getattr(parent, method_name)
+            for option in method():
                 options.append(option)
 
-        for option in self._base_config.get('aor_section_options', []):
+        field_name = '{}_section_options'.format(section_name)
+        for option in self._base_config.get(field_name, []):
             options.append(option)
-
-        if options:
-            options.append(('type', 'aor'))
 
         return options
 
+    def _build_aor_section(self):
+        options = self._add_parent_options('aor')
+        if options:
+            options.append(('type', 'aor'))
+        return options
+
     def _build_auth_section(self):
-        options = []
-        for parent in self._iterover_parents():
-            for option in parent.get_auth_section():
-                options.append(option)
-
-        for option in self._base_config.get('auth_section_options', []):
-            options.append(option)
-
+        options = self._add_parent_options('auth')
         if options:
             options.append(('type', 'auth'))
-
         return options
 
     def _build_endpoint_section(self):
         options = self._default_endpoint_section()
-
-        for parent in self._iterover_parents():
-            for option in parent.get_endpoint_section():
-                options.append(option)
-
-        for option in self._base_config.get('endpoint_section_options', []):
-            options.append(option)
+        options = self._add_parent_options('endpoint', options)
 
         if self._endpoint_config.transport_uuid:
             options.append(('transport', self._endpoint_config.transport.name))
@@ -512,67 +504,31 @@ class _SIPEndpointResolver:
         return options
 
     def _build_identify_section(self):
-        options = []
-
-        for parent in self._iterover_parents():
-            for option in parent.get_identify_section():
-                options.append(option)
-
-        for option in self._base_config.get('identify_section_options', []):
-            options.append(option)
-
+        options = self._add_parent_options('identify')
         if options:
             options.append(('type', 'identify'))
             options.append(('endpoint', self._endpoint_config.name))
-
         return options
 
     def _build_outbound_auth_section(self):
-        options = []
-
-        for parent in self._iterover_parents():
-            for option in parent.get_outbound_auth_section():
-                options.append(option)
-
-        for option in self._base_config.get('outbound_auth_section_options', []):
-            options.append(option)
-
+        options = self._add_parent_options('outbound_auth')
         if options:
             options.append(('type', 'auth'))
-
         return options
 
     def _build_registration_section(self):
-        options = []
-
-        for parent in self._iterover_parents():
-            for option in parent.get_registration_section():
-                options.append(option)
-
-        for option in self._base_config.get('registration_section_options', []):
-            options.append(option)
-
+        options = self._add_parent_options('registration')
         if options:
             options.append(('type', 'registration'))
             options.append(('endpoint', self._endpoint_config.name))
             if self.get_registration_outbound_auth_section():
                 options.append(('outbound_auth', 'auth_reg_{}'.format(self._endpoint_config.name)))
-
         return options
 
     def _build_registration_outbound_auth_section(self):
-        options = []
-
-        for parent in self._iterover_parents():
-            for option in parent.get_registration_outbound_auth_section():
-                options.append(option)
-
-        for option in self._base_config.get('registration_outbound_auth_section_options', []):
-            options.append(option)
-
+        options = self._add_parent_options('registration_outbound_auth')
         if options:
             options.append(('type', 'auth'))
-
         return options
 
     def _default_endpoint_section(self):
