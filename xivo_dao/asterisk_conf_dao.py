@@ -396,6 +396,10 @@ class _SIPEndpointResolver:
         self._aor_section = None
         self._auth_section = None
         self._endpoint_section = None
+        self._identify_section = None
+        self._outbound_auth_section = None
+        self._registration_section = None
+        self._registration_outbound_auth_section = None
 
     def get_aor_section(self):
         if self._aor_section is None:
@@ -415,6 +419,30 @@ class _SIPEndpointResolver:
 
         return self._endpoint_section
 
+    def get_identify_section(self):
+        if self._identify_section is None:
+            self._identify_section = self._build_identify_section()
+
+        return self._identify_section
+
+    def get_outbound_auth_section(self):
+        if self._outbound_auth_section is None:
+            self._outbound_auth_section = self._build_outbound_auth_section()
+
+        return self._outbound_auth_section
+
+    def get_registration_section(self):
+        if self._registration_section is None:
+            self._registration_section = self._build_registration_section()
+
+        return self._registration_section
+
+    def get_registration_outbound_auth_section(self):
+        if self._registration_outbound_auth_section is None:
+            self._registration_outbound_auth_section = self._build_registration_outbound_auth_section()
+
+        return self._registration_outbound_auth_section
+
     def resolve(self):
         if self._body is None:
             self._body = canonicalize_config({
@@ -426,6 +454,10 @@ class _SIPEndpointResolver:
                 'aor_section_options': self.get_aor_section(),
                 'auth_section_options': self.get_auth_section(),
                 'endpoint_section_options': self.get_endpoint_section(),
+                'identify_section_options': self.get_identify_section(),
+                'outbound_auth_section_options': self.get_outbound_auth_section(),
+                'registration_section_options': self.get_registration_section(),
+                'registration_outbound_auth_section_options': self.get_registration_outbound_auth_section(),
             })
 
         return self._body
@@ -491,6 +523,70 @@ class _SIPEndpointResolver:
 
         return options
 
+    def _build_identify_section(self):
+        options = self._default_identify_section()
+
+        for parent in self._iterover_parents():
+            for option in parent.get_identify_section():
+                options.append(option)
+
+        for option in self._base_config.get('identify_section_options', []):
+            options.append(option)
+
+        if options:
+            options.append(('type', 'identify'))
+            options.append(('endpoint', self._endpoint_config.name))
+
+        return options
+
+    def _build_outbound_auth_section(self):
+        options = self._default_outbound_auth_section()
+
+        for parent in self._iterover_parents():
+            for option in parent.get_outbound_auth_section():
+                options.append(option)
+
+        for option in self._base_config.get('outbound_auth_section_options', []):
+            options.append(option)
+
+        if options:
+            options.append(('type', 'auth'))
+
+        return options
+
+    def _build_registration_section(self):
+        options = self._default_registration_section()
+
+        for parent in self._iterover_parents():
+            for option in parent.get_registration_section():
+                options.append(option)
+
+        for option in self._base_config.get('registration_section_options', []):
+            options.append(option)
+
+        if options:
+            options.append(('type', 'registration'))
+            options.append(('endpoint', self._endpoint_config.name))
+            if self.get_registration_outbound_auth_section():
+                options.append(('outbound_auth', 'auth_reg_{}'.format(self._endpoint_config.name)))
+
+        return options
+
+    def _build_registration_outbound_auth_section(self):
+        options = self._default_registration_outbound_auth_section()
+
+        for parent in self._iterover_parents():
+            for option in parent.get_registration_outbound_auth_section():
+                options.append(option)
+
+        for option in self._base_config.get('registration_outbound_auth_section_options', []):
+            options.append(option)
+
+        if options:
+            options.append(('type', 'auth'))
+
+        return options
+
     def _default_aor_section(self):
         return []
 
@@ -499,9 +595,20 @@ class _SIPEndpointResolver:
 
     def _default_endpoint_section(self):
         return [
-            ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
             ('set_var', 'WAZO_TENANT_UUID={}'.format(self._endpoint_config.tenant_uuid)),
         ]
+
+    def _default_identify_section(self):
+        return []
+
+    def _default_outbound_auth_section(self):
+        return []
+
+    def _default_registration_section(self):
+        return []
+
+    def _default_registration_outbound_auth_section(self):
+        return []
 
     def _iterover_parents(self):
         for template in self._endpoint_config.templates:
@@ -515,9 +622,24 @@ class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
 
     def _default_endpoint_section(self):
         return super()._default_endpoint_section() + [
-            ['set_var', 'WAZO_MEETING_UUID={}'.format(self._meeting.uuid)],
-            ['set_var', 'WAZO_MEETING_NAME={}'.format(self._meeting.name)],
+            ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+            ('set_var', 'WAZO_MEETING_UUID={}'.format(self._meeting.uuid)),
+            ('set_var', 'WAZO_MEETING_NAME={}'.format(self._meeting.name)),
         ]
+
+
+class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
+    def __init__(self, trunk, parents):
+        super().__init__(trunk.endpoint_sip, parents)
+        self._trunk = trunk
+
+    def _default_endpoint_section(self):
+        options = super()._default_endpoint_section()
+
+        if self._trunk.context:
+            options.append(('context', self._trunk.context))
+
+        return options
 
 
 @daosession
@@ -769,96 +891,26 @@ def find_sip_trunk_settings(session):
         TrunkFeatures.endpoint_sip_uuid.isnot(None),
     )
 
-    trunks = query.all()
-    context_mapping = {}
-    raw_configs = {}
-    for trunk in trunks:
-        raw_configs[trunk.endpoint_sip_uuid] = trunk.endpoint_sip
-        context_mapping[trunk.endpoint_sip_uuid] = trunk.context
+    resolved_configs = {}
 
-    def get_flat_config(endpoint):
-        if endpoint.uuid in flat_configs:
-            return flat_configs[endpoint.uuid]
+    def add_endpoint_configuration(resolved_configs, endpoint, trunk=None):
+        for parent in endpoint.templates:
+            if parent.uuid in resolved_configs:
+                continue
+            add_endpoint_configuration(resolved_configs, parent)
 
-        parents = [get_flat_config(parent) for parent in endpoint.templates]
-        base_config = endpoint_to_dict(endpoint)
-        context_name = context_mapping.get(endpoint.uuid)
-        transport_name = None
-        if context_name:
-            base_config['endpoint_section_options'].append(['context', context_name])
-        if endpoint.transport_uuid:
-            transport_name = endpoint.transport.name
-            base_config['endpoint_section_options'].append(['transport', transport_name])
-        builder = {}
-        for parent in parents + [base_config]:
-            for section in [
-                'aor_section_options',
-                'auth_section_options',
-                'endpoint_section_options',
-                'identify_section_options',
-                'registration_section_options',
-                'registration_outbound_auth_section_options',
-                'outbound_auth_section_options',
-            ]:
-                builder.setdefault(section, [])
-                parent_options = parent.get(section, [])
-                for option in parent_options:
-                    builder[section].append(option)
-        builder['endpoint_section_options'].extend([
-            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-        ])
-        if not endpoint.template:
-            if builder['endpoint_section_options']:
-                builder['endpoint_section_options'].append(['type', 'endpoint'])
-            if builder['aor_section_options']:
-                builder['aor_section_options'].append(['type', 'aor'])
-                builder['endpoint_section_options'].append(['aors', endpoint.name])
-            if builder['auth_section_options']:
-                builder['auth_section_options'].append(['type', 'auth'])
-                builder['endpoint_section_options'].append(['auth', endpoint.name])
-            if builder['identify_section_options']:
-                builder['identify_section_options'].append(['type', 'identify'])
-                builder['identify_section_options'].append(['endpoint', endpoint.name])
-            if builder['registration_section_options']:
-                builder['registration_section_options'].append(['type', 'registration'])
-                if transport_name:
-                    builder['registration_section_options'].append(['transport', transport_name])
-                for key, value in builder['registration_section_options']:
-                    if key == 'line' and util.strtobool(value):
-                        builder['registration_section_options'].append(['endpoint', endpoint.name])
-                        break
-            if builder['outbound_auth_section_options']:
-                outbound_auth_section_name = 'outbound_auth_{}'.format(endpoint.name)
-                builder['outbound_auth_section_options'].append(['type', 'auth'])
-                builder['endpoint_section_options'].append(
-                    ['outbound_auth', outbound_auth_section_name]
-                )
-            if builder['registration_outbound_auth_section_options']:
-                builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
-                builder['registration_section_options'].append(
-                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
-                )
-        builder.update({
-            'uuid': base_config['uuid'],
-            'name': base_config['name'],
-            'label': base_config['label'],
-            'template': base_config['template'],
-            'asterisk_id': base_config['asterisk_id'],
-        })
-        if builder['template']:
-            flat_configs[builder['uuid']] = builder
-        return builder
+        if trunk:
+            config = _EndpointSIPTrunkResolver(trunk, resolved_configs)
+        else:
+            config = _SIPEndpointResolver(endpoint, resolved_configs)
 
-    # A flat_config is an endpoint config with all inherited fields merged into a single object
-    flat_configs = {}
-    for uuid, raw_config in raw_configs.items():
-        flat_config = get_flat_config(raw_config)
-        flat_configs[uuid] = flat_config
+        resolved_configs[endpoint.uuid] = config
+
+    for trunk in query.all():
+        add_endpoint_configuration(resolved_configs, trunk.endpoint_sip, trunk)
 
     return [
-        canonicalize_config(config)
-        for config in flat_configs.values()
-        if config['template'] is False
+        config.resolve() for config in resolved_configs.values() if not config.template
     ]
 
 
