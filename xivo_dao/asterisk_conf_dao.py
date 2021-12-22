@@ -382,7 +382,7 @@ def find_voicemail_general_settings(session):
     return res
 
 
-class _SIPEndpointResolver:
+class _SIPEndpointResolver(object):
 
     def __init__(self, endpoint_config, parents):
         self._endpoint_config = endpoint_config
@@ -588,11 +588,11 @@ class _SIPEndpointResolver:
 
 class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
     def __init__(self, meeting, parents):
-        super().__init__(meeting.guest_endpoint_sip, parents)
+        super(_EndpointSIPMeetingResolver, self).__init__(meeting.guest_endpoint_sip, parents)
         self._meeting = meeting
 
     def _default_endpoint_section(self):
-        return super()._default_endpoint_section() + [
+        return super(_EndpointSIPMeetingResolver, self)._default_endpoint_section() + [
             ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
             ('set_var', 'WAZO_MEETING_UUID={}'.format(self._meeting.uuid)),
             ('set_var', 'WAZO_MEETING_NAME={}'.format(self._meeting.name)),
@@ -601,11 +601,11 @@ class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
 
 class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
     def __init__(self, trunk, parents):
-        super().__init__(trunk.endpoint_sip, parents)
+        super(_EndpointSIPTrunkResolver, self).__init__(trunk.endpoint_sip, parents)
         self._trunk = trunk
 
     def _default_endpoint_section(self):
-        options = super()._default_endpoint_section()
+        options = super(_EndpointSIPTrunkResolver, self)._default_endpoint_section()
 
         if self._trunk.context:
             options.append(('context', self._trunk.context))
@@ -615,12 +615,12 @@ class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
 
 class _EndpointSIPLineResolver(_SIPEndpointResolver):
     def __init__(self, line, parents, pickup_members):
-        super().__init__(line.endpoint_sip, parents)
+        super(_EndpointSIPLineResolver, self).__init__(line.endpoint_sip, parents)
         self._line = line
         self._pickup_members = pickup_members
 
     def _build_aor_section(self):
-        options = super()._build_aor_section()
+        options = super(_EndpointSIPLineResolver, self)._build_aor_section()
 
         mailboxes = []
         for user in self._line.users:
@@ -635,7 +635,7 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         return options
 
     def _default_endpoint_section(self):
-        options = super()._default_endpoint_section() + [
+        options = super(_EndpointSIPLineResolver, self)._default_endpoint_section() + [
             ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
             ('set_var', 'WAZO_LINE_ID={}'.format(self._line.id)),
         ]
