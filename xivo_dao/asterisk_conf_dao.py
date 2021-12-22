@@ -676,6 +676,29 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         return options
 
 
+def merge_endpoints_and_template(items, Klass, endpoint_field, *args):
+    resolved_configs = {}
+
+    def add_endpoint_configuration(endpoint, item=None):
+        for parent in endpoint.templates:
+            if parent.uuid in resolved_configs:
+                continue
+            add_endpoint_configuration(parent)
+
+        if item:
+            config = Klass(item, resolved_configs, *args)
+        else:
+            config = _SIPEndpointResolver(endpoint, resolved_configs)
+
+        resolved_configs[endpoint.uuid] = config
+
+    for item in items:
+        add_endpoint_configuration(getattr(item, endpoint_field), item)
+
+    endpoint_configs = (config for config in resolved_configs.values() if not config.template)
+    return [config.resolve() for config in endpoint_configs]
+
+
 @daosession
 def find_sip_meeting_guests_settings(session):
     query = session.query(
@@ -700,27 +723,7 @@ def find_sip_meeting_guests_settings(session):
         joinedload('guest_endpoint_sip').joinedload('transport'),
     ).filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
 
-    resolved_configs = {}
-
-    def add_endpoint_configuration(resolved_configs, endpoint, meeting=None):
-        for parent in endpoint.templates:
-            if parent.uuid in resolved_configs:
-                continue
-            add_endpoint_configuration(resolved_configs, parent)
-
-        if meeting:
-            config = _EndpointSIPMeetingResolver(meeting, resolved_configs)
-        else:
-            config = _SIPEndpointResolver(endpoint, resolved_configs)
-
-        resolved_configs[endpoint.uuid] = config
-
-    for meeting in query.all():
-        add_endpoint_configuration(resolved_configs, meeting.guest_endpoint_sip, meeting)
-
-    return [
-        config.resolve() for config in resolved_configs.values() if not config.template
-    ]
+    return merge_endpoints_and_template(query.all(), _EndpointSIPMeetingResolver, 'guest_endpoint_sip')
 
 
 @daosession
@@ -754,27 +757,7 @@ def find_sip_user_settings(session):
         LineFeatures.endpoint_sip_uuid.isnot(None),
     )
 
-    resolved_configs = {}
-
-    def add_endpoint_configuration(resolved_configs, endpoint, line=None):
-        for parent in endpoint.templates:
-            if parent.uuid in resolved_configs:
-                continue
-            add_endpoint_configuration(resolved_configs, parent)
-
-        if line:
-            config = _EndpointSIPLineResolver(line, resolved_configs, pickup_members)
-        else:
-            config = _SIPEndpointResolver(endpoint, resolved_configs)
-
-        resolved_configs[endpoint.uuid] = config
-
-    for line in query.all():
-        add_endpoint_configuration(resolved_configs, line.endpoint_sip, line)
-
-    return [
-        config.resolve() for config in resolved_configs.values() if not config.template
-    ]
+    return merge_endpoints_and_template(query.all(), _EndpointSIPLineResolver, 'endpoint_sip', pickup_members)
 
 
 @daosession
@@ -803,27 +786,7 @@ def find_sip_trunk_settings(session):
         TrunkFeatures.endpoint_sip_uuid.isnot(None),
     )
 
-    resolved_configs = {}
-
-    def add_endpoint_configuration(resolved_configs, endpoint, trunk=None):
-        for parent in endpoint.templates:
-            if parent.uuid in resolved_configs:
-                continue
-            add_endpoint_configuration(resolved_configs, parent)
-
-        if trunk:
-            config = _EndpointSIPTrunkResolver(trunk, resolved_configs)
-        else:
-            config = _SIPEndpointResolver(endpoint, resolved_configs)
-
-        resolved_configs[endpoint.uuid] = config
-
-    for trunk in query.all():
-        add_endpoint_configuration(resolved_configs, trunk.endpoint_sip, trunk)
-
-    return [
-        config.resolve() for config in resolved_configs.values() if not config.template
-    ]
+    return merge_endpoints_and_template(query.all(), _EndpointSIPTrunkResolver, 'endpoint_sip')
 
 
 @daosession
