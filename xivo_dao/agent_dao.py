@@ -43,7 +43,7 @@ def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
 
     agent_row = query.first()
     if agent_row is None:
-        raise LookupError('no agent found for user %s' % user_uuid)
+        raise LookupError('no agent found for user {}'.format(user_uuid))
     agent = _Agent(agent_row.id, agent_row.tenant_uuid, agent_row.number, [], [user.id for user in agent_row.users])
     _add_queues_to_agent(session, agent)
     return agent
