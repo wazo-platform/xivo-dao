@@ -21,7 +21,7 @@ from hamcrest import (
 )
 
 from mock import patch
-from xivo_test_helpers.hamcrest.uuid_ import uuid_
+from wazo_test_helpers.hamcrest.uuid_ import uuid_
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
