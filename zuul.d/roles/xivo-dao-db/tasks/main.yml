@@ -1,13 +1,8 @@
 ---
-- name: Install docker python librairy to use next ansible steps ...
-  shell: pip3 install --user docker docker-compose
 - name: Start DB container
-  # become: yes
-  docker_service:
-    project_src: "{{ zuul.project.src_dir }}"
-    state: present
-    services:
-      - db
+  command: docker-compose up -d
+  args:
+    chdir: "{{ zuul.project.src_dir }}"
 - name: Get DB container port
   command: docker-compose port db 5432
   register: container_port
