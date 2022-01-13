@@ -1,5 +1,5 @@
 ---
-# This file was copied from sf-jobs/playbooks/wazo-tox.yaml
+# This file was copied from wazo-production-sf-jobs/playbooks/wazo-tox/run.yaml
 # Modification: add role xivo-dao-db to start the DB container
 
 - hosts: all
