@@ -2,8 +2,6 @@
 # Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import datetime
-
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -20,7 +18,13 @@ from xivo_dao.helpers.db_manager import Base
 
 
 def utcnow_with_tzinfo():
-    return datetime.datetime.now(datetime.timezone.utc)
+    from datetime import datetime
+    try:
+        from datetime import timezone
+        return datetime.now(timezone.utc)
+    except ImportError:
+        # NOTE: Python2 this is unused anyway
+        return datetime.now()
 
 
 class MeetingOwner(Base):
