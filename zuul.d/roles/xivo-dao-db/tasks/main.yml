@@ -1,4 +1,6 @@
 ---
+- name: Install docker python librairy to use next ansible steps ...
+  shell: pip3 install --user docker docker-compose
 - name: Start DB container
   # become: yes
   docker_service:
