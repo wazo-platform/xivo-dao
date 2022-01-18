@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import datetime
 
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
@@ -17,6 +15,16 @@ from sqlalchemy.types import (
     Text
 )
 from xivo_dao.helpers.db_manager import Base
+
+
+def utcnow_with_tzinfo():
+    from datetime import datetime
+    try:
+        from datetime import timezone
+        return datetime.now(timezone.utc)
+    except ImportError:
+        # NOTE: Python2 this is unused anyway
+        return datetime.now()
 
 
 class MeetingOwner(Base):
@@ -48,7 +56,7 @@ class Meeting(Base):
     name = Column(Text)
     guest_endpoint_sip_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'))
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, server_default=text("(now() at time zone 'utc')"))
+    created_at = Column(DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')"))
     persistent = Column(Boolean, server_default='false', nullable=False)
     number = Column(Text, nullable=False)
 
