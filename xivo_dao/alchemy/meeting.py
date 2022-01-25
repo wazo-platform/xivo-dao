@@ -81,6 +81,12 @@ class Meeting(Base):
         viewonly=True,
         primaryjoin='Meeting.tenant_uuid == IngressHTTP.tenant_uuid',
     )
+    meeting_authorizations = relationship(
+        'MeetingAuthorization',
+        primaryjoin='MeetingAuthorization.meeting_uuid == Meeting.uuid',
+        foreign_keys='MeetingAuthorization.meeting_uuid',
+        cascade='all, delete-orphan',
+    )
 
     @property
     def owner_uuids(self):
