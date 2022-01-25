@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -95,3 +95,4 @@ unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot 
 secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
 not_permitted = FormattedError(ResourceError, "Operation not permitted. {}")
 different_tenants = FormattedError(ResourceError, "different tenants")
+quota_exceeded = FormattedError(ResourceError, "Quota for {} exceeded. Maximum: {}")
