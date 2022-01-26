@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -499,6 +499,9 @@ class _SIPEndpointResolver(object):
 
         if options:
             options.append(('type', 'endpoint'))
+
+            if self.get_outbound_auth_section():
+                options.append(('outbound_auth', 'outbound_auth_{}'.format(self._endpoint_config.name)))
 
         return options
 
