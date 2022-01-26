@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -2041,6 +2041,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     contains('aors', endpoint.name),
                     contains('auth', endpoint.name),
                     contains('identify_by', 'auth_username,username'),
+                    contains('outbound_auth', 'outbound_auth_{}'.format(endpoint.name)),
                 ),
                 registration_section_options=has_items(
                     contains('type', 'registration'),
