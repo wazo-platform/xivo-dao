@@ -11,17 +11,8 @@ from sqlalchemy.types import (
     DateTime,
     Text
 )
+from xivo_dao.helpers.datetime import utcnow_with_tzinfo
 from xivo_dao.helpers.db_manager import Base
-
-
-def utcnow_with_tzinfo():
-    from datetime import datetime
-    try:
-        from datetime import timezone
-        return datetime.now(timezone.utc)
-    except ImportError:
-        # NOTE: Python2 this is unused anyway
-        return datetime.now()
 
 
 class MeetingAuthorization(Base):
