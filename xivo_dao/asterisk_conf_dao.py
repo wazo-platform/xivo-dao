@@ -622,15 +622,18 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         self._line = line
         self._pickup_members = pickup_members
 
-    def _build_aor_section(self):
-        options = super(_EndpointSIPLineResolver, self)._build_aor_section()
-
+    def _add_mailboxes(self, options):
         mailboxes = []
         for user in self._line.users:
             if user.voicemail:
                 mailboxes.append('{}@{}'.format(user.voicemail.number, user.voicemail.context))
         if mailboxes:
             options.append(('mailboxes', ','.join(mailboxes)))
+        return options
+
+    def _build_aor_section(self):
+        options = super(_EndpointSIPLineResolver, self)._build_aor_section()
+        options = self._add_mailboxes(options)
 
         if options:
             options.append(('type', 'aor'))
@@ -675,6 +678,8 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
         if named_call_groups:
             options.append(('named_call_group', named_call_groups))
+
+        options = self._add_mailboxes(options)
 
         return options
 

@@ -1544,7 +1544,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             )),
         )
 
-    def test_that_aor_mailboxes_contains_all_of_the_users_voicemail(self):
+    def test_that_aor_and_endpoint_mailboxes_contains_all_of_the_users_voicemail(self):
         user = self.add_user()
         voicemail = self.add_voicemail()
         self.link_user_and_voicemail(user, voicemail.uniqueid)
@@ -1557,6 +1557,12 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 aor_section_options=has_items(
+                    contains(
+                        'mailboxes',
+                        '{}@{}'.format(voicemail.number, voicemail.context)
+                    ),
+                ),
+                endpoint_section_options=has_items(
                     contains(
                         'mailboxes',
                         '{}@{}'.format(voicemail.number, voicemail.context)
