@@ -50,6 +50,7 @@ class Meeting(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')"))
     persistent = Column(Boolean, server_default='false', nullable=False)
     number = Column(Text, nullable=False)
+    require_authorization = Column(Boolean, server_default='false', nullable=False)
 
     meeting_owners = relationship(
         'MeetingOwner',
