@@ -99,7 +99,7 @@ def user_shared_hints(session):
     query = session.query(UserFeatures).options(joinedload('user_lines').joinedload('line'))
     hints = []
     for user in query.all():
-        ifaces = []
+        ifaces = ['Custom:{}'.format(user.uuid)]
         for line in user.lines:
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
