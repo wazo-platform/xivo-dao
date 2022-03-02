@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -555,12 +555,12 @@ class TestUserSharedHints(TestHints):
 
         assert_that(
             results[0].argument,
-            equal_to('pjsip/{}&{}&sccp/{}'.format(line_1.name, line_2.name, line_3.name)),
+            equal_to('Custom:{}&pjsip/{}&{}&sccp/{}'.format(user.uuid, line_1.name, line_2.name, line_3.name)),
         )
 
     def test_no_line(self):
-        self.add_user()
+        user = self.add_user()
 
         results = hint_dao.user_shared_hints()
 
-        assert_that(results, empty())
+        assert_that(results[0].argument, equal_to('Custom:{}'.format(user.uuid)))
