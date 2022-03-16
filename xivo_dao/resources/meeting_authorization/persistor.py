@@ -2,6 +2,7 @@
 # Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from xivo_dao.alchemy.meeting import MeetingOwner
 from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin, SearchResult
@@ -19,6 +20,7 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
     def search(self, parameters):
         query = self._search_query()
         query = self._filter_meeting_uuid(query)
+        query = self._filter_owner(query, parameters)
         query = self._filter_guest_uuid(query, parameters)
         query = self._filter_authorization_uuid(query, parameters)
         query = self._filter_created_before(query, parameters)
@@ -27,6 +29,18 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
 
     def _filter_meeting_uuid(self, query):
         return query.filter(MeetingAuthorization.meeting_uuid == self.meeting_uuid)
+
+    def _filter_owner(self, query, criteria):
+        owner = criteria.pop('owner', None)
+        if not owner:
+            return query
+
+        owner_meeting = self.session.query(
+            MeetingOwner.meeting_uuid
+        ).filter(MeetingOwner.user_uuid == owner)
+        query = query.filter(MeetingAuthorization.meeting_uuid.in_(owner_meeting))
+
+        return query
 
     def _filter_guest_uuid(self, query, criteria):
         guest_uuid = criteria.pop('guest_uuid', None)
@@ -52,6 +66,7 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
     def _find_query(self, criteria):
         query = self.session.query(MeetingAuthorization)
         query = self._filter_meeting_uuid(query)
+        query = self._filter_owner(query, criteria)
         query = self._filter_guest_uuid(query, criteria)
         query = self._filter_authorization_uuid(query, criteria)
         query = self._filter_created_before(query, criteria)

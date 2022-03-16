@@ -25,10 +25,9 @@ def search(session, meeting_uuid, **parameters):
 
 
 @daosession
-def get(session, meeting_uuid, authorization_uuid, guest_uuid=None):
-    criteria = {'uuid': authorization_uuid}
-    if guest_uuid:
-        criteria['guest_uuid'] = guest_uuid
+def get(session, meeting_uuid, authorization_uuid, **criteria):
+    criteria = dict(criteria)
+    criteria['uuid'] = authorization_uuid
     return Persistor(session, meeting_authorization_search, meeting_uuid).get_by(criteria)
 
 
