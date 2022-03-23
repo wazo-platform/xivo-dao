@@ -14,17 +14,8 @@ from sqlalchemy.types import (
     String,
     Text
 )
+from xivo_dao.helpers.datetime import utcnow_with_tzinfo
 from xivo_dao.helpers.db_manager import Base
-
-
-def utcnow_with_tzinfo():
-    from datetime import datetime
-    try:
-        from datetime import timezone
-        return datetime.now(timezone.utc)
-    except ImportError:
-        # NOTE: Python2 this is unused anyway
-        return datetime.now()
 
 
 class MeetingOwner(Base):
@@ -59,6 +50,7 @@ class Meeting(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')"))
     persistent = Column(Boolean, server_default='false', nullable=False)
     number = Column(Text, nullable=False)
+    require_authorization = Column(Boolean, server_default='false', nullable=False)
 
     meeting_owners = relationship(
         'MeetingOwner',
@@ -80,6 +72,12 @@ class Meeting(Base):
         uselist=False,
         viewonly=True,
         primaryjoin='Meeting.tenant_uuid == IngressHTTP.tenant_uuid',
+    )
+    meeting_authorizations = relationship(
+        'MeetingAuthorization',
+        primaryjoin='MeetingAuthorization.meeting_uuid == Meeting.uuid',
+        foreign_keys='MeetingAuthorization.meeting_uuid',
+        cascade='all, delete-orphan',
     )
 
     @property

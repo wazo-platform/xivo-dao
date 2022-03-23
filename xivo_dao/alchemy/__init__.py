@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # explicitly import modules that are referenced in relationship to prevent
@@ -37,6 +37,9 @@ from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
+from xivo_dao.alchemy.meeting import MeetingOwner
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcall import OutcallTrunk
@@ -101,6 +104,9 @@ __all__ = [
     'Incall',
     'LineExtension',
     'LineFeatures',
+    'Meeting',
+    'MeetingAuthorization',
+    'MeetingOwner',
     'MOH',
     'Outcall',
     'OutcallTrunk',

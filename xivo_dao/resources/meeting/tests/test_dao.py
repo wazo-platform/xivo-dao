@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
@@ -256,6 +256,7 @@ class TestCreate(DAOTestCase):
             name=None,
             tenant_uuid=self.default_tenant.uuid,
             number=not_none(),
+            require_authorization=False,
         ))
 
     def test_create_all_parameters(self):
@@ -270,6 +271,7 @@ class TestCreate(DAOTestCase):
             name='name',
             guest_endpoint_sip=endpoint_sip,
             owners=owners,
+            require_authorization=True,
         )
 
         result = dao.create(model)
@@ -283,6 +285,7 @@ class TestCreate(DAOTestCase):
             guest_endpoint_sip_uuid=endpoint_sip.uuid,
             created_at=is_not(none()),
             number=not_none(),
+            require_authorization=True,
         ))
 
 

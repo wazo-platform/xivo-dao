@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -62,6 +62,7 @@ from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
 from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
 from xivo_dao.alchemy.meeting import MeetingOwner
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.monitoring import Monitoring
@@ -183,6 +184,7 @@ __all__ = [
     "LineFeatures",
     "Mail",
     "Meeting",
+    "MeetingAuthorization",
     "MeetingOwner",
     "MOH",
     "Monitoring",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.meeting import Meeting
@@ -12,6 +12,7 @@ config = SearchConfig(
     columns={
         'name': Meeting.name,
         'persistent': Meeting.persistent,
+        'require_authorization': Meeting.require_authorization,
         'creation_time': Meeting.created_at,
     },
     search=['name'],
