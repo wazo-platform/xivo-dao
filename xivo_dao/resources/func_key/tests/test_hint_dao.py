@@ -555,7 +555,7 @@ class TestUserSharedHints(TestHints):
 
         assert_that(
             results[0].argument,
-            equal_to('Custom:{}&pjsip/{}&{}&sccp/{}'.format(user.uuid, line_1.name, line_2.name, line_3.name)),
+            equal_to('Custom:{}-mobile&pjsip/{}&{}&sccp/{}'.format(user.uuid, line_1.name, line_2.name, line_3.name)),
         )
 
     def test_no_line(self):
@@ -563,4 +563,4 @@ class TestUserSharedHints(TestHints):
 
         results = hint_dao.user_shared_hints()
 
-        assert_that(results[0].argument, equal_to('Custom:{}'.format(user.uuid)))
+        assert_that(results[0].argument, equal_to('Custom:{}-mobile'.format(user.uuid)))
