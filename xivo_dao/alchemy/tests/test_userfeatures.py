@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -205,7 +205,7 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         )
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains(contains(user_target1, user_target2)),
+            contains(contains_inanyorder(user_target1, user_target2)),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
@@ -234,7 +234,7 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains(contains(user_target1), contains(user_target2)),
+            contains_inanyorder(contains(user_target1), contains(user_target2)),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
@@ -309,7 +309,12 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
-            contains(contains(contains(user_target1), contains(user_target2))),
+            contains(
+                contains_inanyorder(
+                    contains(user_target1),
+                    contains(user_target2),
+                ),
+            ),
         )
 
     def test_two_pickups_two_group_targets(self):
@@ -392,7 +397,7 @@ class TestUsersFromCallPickupGroupInterceptorsUserTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains(contains(contains(user_target1, user_target2))),
+            contains(contains(contains_inanyorder(user_target1, user_target2))),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
@@ -439,7 +444,12 @@ class TestUsersFromCallPickupGroupInterceptorsUserTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains(contains(contains(user_target1), contains(user_target2))),
+            contains(
+                contains_inanyorder(
+                    contains(user_target1),
+                    contains(user_target2),
+                )
+            ),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
@@ -499,7 +509,14 @@ class TestUsersFromCallPickupGroupInterceptorsGroupTargets(DAOTestCase):
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
-            contains(contains(contains(contains(user_target1), contains(user_target2)))),
+            contains(
+                contains(
+                    contains_inanyorder(
+                        contains(user_target1),
+                        contains(user_target2),
+                    ),
+                ),
+            ),
         )
 
     def test_two_pickups_two_user_targets(self):
