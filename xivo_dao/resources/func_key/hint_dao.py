@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import (
@@ -99,7 +99,7 @@ def user_shared_hints(session):
     query = session.query(UserFeatures).options(joinedload('user_lines').joinedload('line'))
     hints = []
     for user in query.all():
-        ifaces = []
+        ifaces = ['Custom:{}-mobile'.format(user.uuid)]
         for line in user.lines:
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
