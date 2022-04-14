@@ -28,7 +28,9 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
         return SearchResult(total, rows)
 
     def _filter_meeting_uuid(self, query):
-        return query.filter(MeetingAuthorization.meeting_uuid == self.meeting_uuid)
+        if self.meeting_uuid:
+            return query.filter(MeetingAuthorization.meeting_uuid == self.meeting_uuid)
+        return query
 
     def _filter_owner(self, query, criteria):
         owner = criteria.pop('owner', None)
