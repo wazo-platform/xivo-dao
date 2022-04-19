@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -60,6 +60,7 @@ from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
@@ -517,6 +518,15 @@ class ItemInserter(object):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('number', self.random_number(6))
         meeting = Meeting(**kwargs)
+        self.add_me(meeting)
+        return meeting
+
+    def add_meeting_authorization(self, meeting_uuid, **kwargs):
+        kwargs['meeting_uuid'] = meeting_uuid
+        kwargs.setdefault('guest_name', self._random_name())
+        kwargs.setdefault('guest_uuid', self._generate_uuid())
+        kwargs.setdefault('status', 'pending')
+        meeting = MeetingAuthorization(**kwargs)
         self.add_me(meeting)
         return meeting
 
@@ -1010,6 +1020,9 @@ class ItemInserter(object):
 
     def _generate_int(self):
         return six.next(self._generate_int_init)
+
+    def _generate_uuid(self):
+        return str(uuid.uuid4())
 
     def _random_name(self, length=6):
         return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
