@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from sqlalchemy.sql import func
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
@@ -49,6 +51,13 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
         return self.build_criteria(query, criteria)
+
+    def count_all_by(self, column_name, criteria):
+        column = self._get_column(column_name)
+        query = self.session.query(column, func.count(column).label('count'))
+        query = self.build_criteria(query, criteria)
+        query = query.group_by(column)
+        return query.all()
 
     def search(self, parameters):
         view = self.user_view.select(parameters.get('view'))

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -294,6 +294,48 @@ class TestFindAllBy(TestUser):
 
         assert_that(users, has_items(has_property('id', user1.id),
                                      has_property('id', user2.id)))
+
+
+class TestCountAllBy(TestUser):
+
+    def test_count_all_by_no_users(self):
+        result = user_dao.count_all_by('subscription_type')
+
+        assert_that(result, contains())
+
+    def test_count_all_by(self):
+        self.add_user(subscription_type=1)
+        self.add_user(subscription_type=1)
+        self.add_user(subscription_type=6)
+        self.add_user(subscription_type=8)
+
+        result = user_dao.count_all_by('subscription_type')
+
+        assert_that(
+            result,
+            contains_inanyorder(
+                has_properties(subscription_type=1, count=2),
+                has_properties(subscription_type=6, count=1),
+                has_properties(subscription_type=8, count=1),
+            ),
+        )
+
+    def test_count_all_by_filtered(self):
+        tenant_uuid = self.add_tenant().uuid
+        self.add_user(subscription_type=1, tenant_uuid=tenant_uuid)
+        self.add_user(subscription_type=1)
+        self.add_user(subscription_type=6, tenant_uuid=tenant_uuid)
+        self.add_user(subscription_type=8)
+
+        result = user_dao.count_all_by('subscription_type', tenant_uuid=tenant_uuid)
+
+        assert_that(
+            result,
+            contains_inanyorder(
+                has_properties(subscription_type=1, count=1),
+                has_properties(subscription_type=6, count=1),
+            ),
+        )
 
 
 class TestSearch(TestUser):
