@@ -18,7 +18,6 @@ config = SearchConfig(
         'exten': ParkingLot.exten,
     },
     search=[
-        'id',
         'name',
         'slots_start',
         'slots_end',
