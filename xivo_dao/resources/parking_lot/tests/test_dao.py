@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -213,10 +213,10 @@ class TestSearchGivenMultipleParkingLots(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.parking_lot1 = self.add_parking_lot(name='Ashton', music_on_hold='resto')
-        self.parking_lot2 = self.add_parking_lot(name='Beaugarton', music_on_hold='bar')
-        self.parking_lot3 = self.add_parking_lot(name='Casa', music_on_hold='resto')
-        self.parking_lot4 = self.add_parking_lot(name='Dunkin', music_on_hold='resto')
+        self.parking_lot1 = self.add_parking_lot(name='Ashton', timeout=111)
+        self.parking_lot2 = self.add_parking_lot(name='Beaugarton', timeout=222)
+        self.parking_lot3 = self.add_parking_lot(name='Casa', timeout=111)
+        self.parking_lot4 = self.add_parking_lot(name='Dunkin', timeout=111)
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.parking_lot2])
@@ -225,20 +225,20 @@ class TestSearchGivenMultipleParkingLots(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.parking_lot1])
-        self.assert_search_returns_result(expected_resto, search='ton', music_on_hold='resto')
+        self.assert_search_returns_result(expected_resto, search='ton', timeout=111)
 
         expected_bar = SearchResult(1, [self.parking_lot2])
-        self.assert_search_returns_result(expected_bar, search='ton', music_on_hold='bar')
+        self.assert_search_returns_result(expected_bar, search='ton', timeout=222)
 
         expected_all_resto = SearchResult(3, [self.parking_lot1, self.parking_lot3, self.parking_lot4])
-        self.assert_search_returns_result(expected_all_resto, music_on_hold='resto', order='name')
+        self.assert_search_returns_result(expected_all_resto, timeout=111, order='name')
 
     def test_when_searching_with_a_custom_extra_argument(self):
         expected_allow = SearchResult(1, [self.parking_lot2])
-        self.assert_search_returns_result(expected_allow, music_on_hold='bar')
+        self.assert_search_returns_result(expected_allow, timeout=222)
 
         expected_all_deny = SearchResult(3, [self.parking_lot1, self.parking_lot3, self.parking_lot4])
-        self.assert_search_returns_result(expected_all_deny, music_on_hold='resto')
+        self.assert_search_returns_result(expected_all_deny, timeout=111)
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [
