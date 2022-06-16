@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -43,7 +43,6 @@ config = SearchConfig(table=UserFeatures,
                               'userfield',
                               'email',
                               'mobile_phone_number',
-                              'music_on_hold',
                               'preprocess_subroutine',
                               'outgoing_caller_id',
                               'exten',
