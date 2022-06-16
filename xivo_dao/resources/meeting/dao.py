@@ -46,6 +46,10 @@ def create(session, meeting):
 def edit(session, meeting):
     with flush_session(session):
         Persistor(session, meeting_search).edit(meeting)
+        if not meeting.require_authorization:
+            for authorization in meeting.meeting_authorizations:
+                if authorization.status == 'pending':
+                    authorization.status = 'accepted'
 
 
 @daosession
