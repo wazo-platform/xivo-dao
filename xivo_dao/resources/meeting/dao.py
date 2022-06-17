@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -25,9 +25,9 @@ def search(session, tenant_uuids=None, **parameters):
 
 
 @daosession
-def get(session, sip_uuid, tenant_uuids=None):
+def get(session, meeting_uuid, tenant_uuids=None):
     return Persistor(session, meeting_search, tenant_uuids).get_by(
-        {'uuid': sip_uuid},
+        {'uuid': meeting_uuid},
     )
 
 
@@ -37,18 +37,22 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def create(session, sip):
+def create(session, meeting):
     with flush_session(session):
-        return Persistor(session, meeting_search).create(sip)
+        return Persistor(session, meeting_search).create(meeting)
 
 
 @daosession
-def edit(session, sip):
+def edit(session, meeting):
     with flush_session(session):
-        Persistor(session, meeting_search).edit(sip)
+        Persistor(session, meeting_search).edit(meeting)
+        if not meeting.require_authorization:
+            for authorization in meeting.meeting_authorizations:
+                if authorization.status == 'pending':
+                    authorization.status = 'accepted'
 
 
 @daosession
-def delete(session, sip):
+def delete(session, meeting):
     with flush_session(session):
-        return Persistor(session, meeting_search).delete(sip)
+        return Persistor(session, meeting_search).delete(meeting)
