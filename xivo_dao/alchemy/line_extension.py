@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.types import Integer, Boolean
@@ -18,7 +18,7 @@ class LineExtension(Base):
     )
 
     line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
-    extension_id = Column(Integer, ForeignKey('extensions.id'), nullable=False)
+    extension_id = Column(Integer, ForeignKey('extensions.id', ondelete='CASCADE'), nullable=False)
     main_extension = Column(Boolean, nullable=False)
 
     linefeatures = relationship("LineFeatures")

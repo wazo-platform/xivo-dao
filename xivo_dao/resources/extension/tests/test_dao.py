@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
+    calling,
     contains,
     contains_inanyorder,
     empty,
@@ -14,6 +15,7 @@ from hamcrest import (
     has_property,
     none,
     not_,
+    raises,
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -713,6 +715,11 @@ class TestRelationship(TestExtension):
         extension = extension_dao.get(extension_row.id)
         assert_that(extension, equal_to(extension_row))
         assert_that(extension.lines, contains_inanyorder(line1_row, line2_row))
+
+        assert_that(
+            calling(extension_dao.delete).with_args(extension),
+            not_(raises(Exception)),
+        )
 
     def test_group_relationship(self):
         extension_row = self.add_extension()
