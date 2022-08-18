@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -68,7 +68,7 @@ class FuncKeyMapping(Base):
 
     @inherited.setter
     def inherited(self, value):
-        self.func_key_template_private = not(value)
+        self.func_key_template_private = not value
 
     def hash_destination(self):
         if self.destination:
