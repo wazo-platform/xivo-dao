@@ -17,7 +17,7 @@ class LineExtension(Base):
         PrimaryKeyConstraint('line_id', 'extension_id'),
     )
 
-    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
+    line_id = Column(Integer, ForeignKey('linefeatures.id', ondelete='CASCADE'), nullable=False)
     extension_id = Column(Integer, ForeignKey('extensions.id', ondelete='CASCADE'), nullable=False)
     main_extension = Column(Boolean, nullable=False)
 
