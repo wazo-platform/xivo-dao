@@ -535,7 +535,7 @@ class _SIPEndpointResolver(object):
 
     def _default_endpoint_section(self):
         return [
-            ('set_var', 'WAZO_TENANT_UUID={}'.format(self._endpoint_config.tenant_uuid)),
+            ('set_var', '__WAZO_TENANT_UUID={}'.format(self._endpoint_config.tenant_uuid)),
         ]
 
     def _iterover_parents(self):

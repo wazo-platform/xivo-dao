@@ -1247,7 +1247,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                    ['set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
                 ),
             )),
         )
@@ -1302,7 +1302,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                         contains('type', 'endpoint'),  # only showed once
                         contains('codecs', '!all,ulaw'),
                         contains('webrtc', 'true'),  # only showed once
-                        contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains('set_var', 'WAZO_MEETING_UUID={}'.format(meeting.uuid)),
                         contains('set_var', 'WAZO_MEETING_NAME={}'.format(meeting.name)),
@@ -1648,7 +1648,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                    ['set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
                 ),
             )),
         )
@@ -1767,7 +1767,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         contains('type', 'endpoint'),  # only showed once
                         contains('codecs', '!all,ulaw'),
                         contains('webrtc', 'true'),  # only showed once
-                        contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains('set_var', 'WAZO_LINE_ID={}'.format(line.id)),
                         contains('context', 'foocontext'),
@@ -2139,7 +2139,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                         contains('type', 'endpoint'),  # only showed once
                         contains('codecs', '!all,ulaw'),
                         contains('webrtc', 'true'),  # only showed once
-                        contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
                     )
                 )
             )
