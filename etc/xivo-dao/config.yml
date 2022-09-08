@@ -1,10 +1,9 @@
 # This file should not be modified as it may get changed by the maintainer.
-# Add extra configuration files in the extra_config_files directory to override
-# the content from this file
+# Add extra configuration files to the extra_config_files directory to override
+# the settings in this file
 
-# Extra configuration directory where the config files overriding this file
-# should be.
+# Directory in which to place config overrides
 extra_config_files: /etc/xivo-dao/conf.d/
 
-# Database connection informations.
+# Database connection settings.
 db_uri: postgresql://asterisk:proformatique@localhost/asterisk
