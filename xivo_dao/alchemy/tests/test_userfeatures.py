@@ -121,6 +121,16 @@ class TestVoicemail(DAOTestCase):
 
         assert_that(user.voicemail, equal_to(voicemail))
 
+    def test_delete_associated_voicemail(self):
+        voicemail = self.add_voicemail()
+        user = self.add_user(voicemail_id=voicemail.id)
+
+        self.session.delete(voicemail)
+        self.session.flush()
+
+        row = self.session.query(UserFeatures).get(user.id)
+        assert_that(row.voicemailid, none())
+
 
 class TestCallFilterRecipients(DAOTestCase):
 
