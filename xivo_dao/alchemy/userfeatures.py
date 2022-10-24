@@ -73,7 +73,7 @@ class UserFeatures(Base):
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',)),
+        ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',), ondelete='SET NULL'),
         ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',), ondelete='CASCADE'),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
