@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -73,7 +73,7 @@ class UserFeatures(Base):
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',), ondelete='CASCADE'),
+        ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',)),
         ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',), ondelete='CASCADE'),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
