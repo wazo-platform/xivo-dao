@@ -538,9 +538,9 @@ class TestSearchMutipleSameCriteria(TestSearch):
         self.assert_search_returns_result(expected, uuid=None)
 
     def test_when_multiple_exten_then_returns_right_number_of_items(self):
-        self.add_user_line_with_exten(firstname='a')
-        ule2 = self.add_user_line_with_exten(firstname='b')
-        ule3 = self.add_user_line_with_exten(firstname='c')
+        self.add_user_line_with_exten(firstname='a', exten='1001')
+        ule2 = self.add_user_line_with_exten(firstname='b', exten='1002')
+        ule3 = self.add_user_line_with_exten(firstname='c', exten='1003')
         expected = SearchResult(2, [ule2.user, ule3.user])
 
         multiple_exten = ','.join([ule2.extension.exten, ule3.extension.exten])
