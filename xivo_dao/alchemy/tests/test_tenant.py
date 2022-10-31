@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, has_properties
@@ -19,16 +19,12 @@ class TestTenantSIPTemplates(DAOTestCase):
         webrtc_template = self.add_endpoint_sip(
             label='webrtc', template=True, tenant_uuid=tenant.uuid,
         )
-        video_template = self.add_endpoint_sip(
-            label='webrtc video', template=True, tenant_uuid=tenant.uuid,
-        )
         reg_template = self.add_endpoint_sip(
             label='reg trunk', template=True, tenant_uuid=tenant.uuid,
         )
         tenant.sip_templates_generated = True
         tenant.global_sip_template_uuid = global_template.uuid
         tenant.webrtc_sip_template_uuid = webrtc_template.uuid
-        tenant.webrtc_video_sip_template_uuid = video_template.uuid
         tenant.registration_trunk_sip_template_uuid = reg_template.uuid
 
         self.session.flush()
@@ -40,7 +36,6 @@ class TestTenantSIPTemplates(DAOTestCase):
             has_properties(
                 global_sip_template=has_properties(uuid=global_template.uuid),
                 webrtc_sip_template=has_properties(uuid=webrtc_template.uuid),
-                webrtc_video_sip_template=has_properties(uuid=video_template.uuid),
                 registration_trunk_sip_template=has_properties(uuid=reg_template.uuid),
             )
         )
