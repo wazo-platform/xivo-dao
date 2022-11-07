@@ -208,6 +208,7 @@ class ItemInserter(object):
         kwargs.setdefault('mobilephonenumber', '')
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
+        kwargs.setdefault('endpoint_sip_uuid', None)
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -221,9 +222,11 @@ class ItemInserter(object):
         line = self.add_line(context=kwargs['context'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
-                             commented=kwargs['commented_line'])
+                             commented=kwargs['commented_line'],
+                             endpoint_sip_uuid=kwargs['endpoint_sip_uuid'])
         self.add_queue_member(userid=user.id,
-                              usertype='user')
+                              usertype='user',
+                              interface='PJSIP/{}'.format(line.name))
         user_line = self.add_user_line(line_id=line.id,
                                        user_id=user.id)
 

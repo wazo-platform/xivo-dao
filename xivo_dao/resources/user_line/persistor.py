@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.resources.extension.fixes import ExtensionFixes
@@ -60,7 +60,7 @@ class Persistor(CriteriaBuilderMixin):
         if not user_line:
             return
 
-        self.delete_queue_member(user_line)
+        self.delete_queue_member(user_line, line)
 
         if user_line.main_line:
             self._set_oldest_main_line(user)
@@ -71,10 +71,20 @@ class Persistor(CriteriaBuilderMixin):
 
         return user_line
 
-    def delete_queue_member(self, user_line):
+    def delete_queue_member(self, user_line, line):
+        if line.endpoint_sip:
+            interface = 'PJSIP/{}'.format(line.endpoint_sip.name)
+        elif line.endpoint_sccp:
+            interface = 'SCCP/{}'.format(line.endpoint_sccp.name)
+        elif line.endpoint_custom:
+            interface = line.endpoint_custom.interface
+        else:
+            return
+
         (self.session.query(QueueMember)
          .filter(QueueMember.usertype == 'user')
          .filter(QueueMember.userid == user_line.user_id)
+         .filter(QueueMember.interface == interface)
          .delete())
 
     def _set_oldest_main_line(self, user):
