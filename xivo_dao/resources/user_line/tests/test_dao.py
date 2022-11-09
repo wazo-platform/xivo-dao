@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -213,7 +213,11 @@ class TestAssociateUserLine(DAOTestCase):
 class TestDissociateUserLine(DAOTestCase):
 
     def test_dissociate_user_line_with_queue_member(self):
-        user_line = self.add_user_line_with_queue_member()
+        sip = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_queue_member(
+            name_line=sip.name,
+            endpoint_sip_uuid=sip.uuid,
+        )
 
         user_line_dao.dissociate(user_line.user, user_line.line)
 
@@ -413,9 +417,14 @@ class TestAssociateAllLines(DAOTestCase):
         ))
 
     def test_dissociate_then_fixes_are_executed(self):
+        sip = self.add_endpoint_sip()
         user = self.add_user()
-        line = self.add_line()
-        self.add_queue_member(userid=user.id, usertype='user')
+        line = self.add_line(name=sip.name, endpoint_sip_uuid=sip.uuid)
+        self.add_queue_member(
+            userid=user.id,
+            usertype='user',
+            interface='PJSIP/{}'.format(sip.name),
+        )
         self.add_user_line(line_id=line.id, user_id=user.id)
 
         user_line_dao.associate_all_lines(user, [])
