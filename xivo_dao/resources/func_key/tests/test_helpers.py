@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
@@ -21,7 +20,7 @@ from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUs
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
 
-class FuncKeyHelper(object):
+class FuncKeyHelper:
 
     destination_types = {
         1: 'user',

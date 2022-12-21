@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 # Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 import warnings
 
@@ -20,7 +18,7 @@ from hamcrest import (
     not_,
 )
 
-from mock import patch
+from unittest.mock import patch
 from wazo_test_helpers.hamcrest.uuid_ import uuid_
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
@@ -38,7 +36,7 @@ def warning_filter(level):
     warnings.resetwarnings()
 
 
-class PickupHelperMixin(object):
+class PickupHelperMixin:
 
     _category_to_conf_map = {'member': 'pickupgroup',
                              'pickup': 'callgroup'}

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from sqlalchemy import Column, MetaData, PrimaryKeyConstraint, Table, Index
 from sqlalchemy.ext import compiler
@@ -188,8 +185,7 @@ class _MaterializedViewMeta(DeclarativeMeta):
         return contains(Session, 'before_commit', self._view_dependencies_handler)
 
 
-@six.add_metaclass(_MaterializedViewMeta)
-class MaterializedView(Base):
+class MaterializedView(Base, metaclass=_MaterializedViewMeta):
     """
     Materialized View base class
 

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from sqlalchemy.sql import and_, or_
 
@@ -54,15 +51,15 @@ config = SearchConfig(table=UserFeatures,
 class UserSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters):
-        if 'uuid' in parameters and isinstance(parameters['uuid'], (str, six.text_type)):
+        if 'uuid' in parameters and isinstance(parameters['uuid'], str):
             uuids = parameters.pop('uuid').split(',')
             query = self._filter_exact_match_uuids(query, uuids)
 
-        if 'exten' in parameters and isinstance(parameters['exten'], (str, six.text_type)):
+        if 'exten' in parameters and isinstance(parameters['exten'], str):
             extens = parameters.pop('exten').split(',')
             query = self._filter_exact_match_extens(query, extens)
 
-        if 'mobile_phone_number' in parameters and isinstance(parameters['mobile_phone_number'], (str, six.text_type)):
+        if 'mobile_phone_number' in parameters and isinstance(parameters['mobile_phone_number'], str):
             extens = parameters.pop('mobile_phone_number').split(',')
             query = self._filter_exact_match_mobile_phone_numbers(query, extens)
 

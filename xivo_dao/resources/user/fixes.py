@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.user_line import UserLine
@@ -7,7 +6,7 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.resources.line.fixes import LineFixes
 
 
-class UserFixes(object):
+class UserFixes:
 
     def __init__(self, session):
         self.session = session

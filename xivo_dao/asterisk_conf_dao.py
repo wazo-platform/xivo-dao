@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 # Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import unicode_literals
 
 from collections import (
     defaultdict,
@@ -382,7 +379,7 @@ def find_voicemail_general_settings(session):
     return res
 
 
-class _SIPEndpointResolver(object):
+class _SIPEndpointResolver:
 
     def __init__(self, endpoint_config, parents):
         self._endpoint_config = endpoint_config

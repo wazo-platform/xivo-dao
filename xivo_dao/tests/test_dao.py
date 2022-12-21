@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 # Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 import datetime
 import itertools
@@ -12,7 +10,6 @@ import random
 import unittest
 import string
 import uuid
-import six
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy.pool import StaticPool
@@ -133,7 +130,7 @@ Session = sessionmaker()
 engine = None
 
 
-class ItemInserter(object):
+class ItemInserter:
 
     def __init__(self, session, tenant_uuid=None):
         self.session = session
@@ -980,7 +977,7 @@ class ItemInserter(object):
         kwargs.setdefault('uuid', str(uuid.uuid4()))
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('name', self._random_name())
-        for fallback, destination in six.iteritems(kwargs.get('fallbacks', {})):
+        for fallback, destination in kwargs.get('fallbacks', {}).items():
             kwargs['fallbacks'][fallback] = Dialaction(**destination)
         switchboard = Switchboard(**kwargs)
         self.add_me(switchboard)
@@ -1022,7 +1019,7 @@ class ItemInserter(object):
     _generate_int_init = itertools.count(1)
 
     def _generate_int(self):
-        return six.next(self._generate_int_init)
+        return next(self._generate_int_init)
 
     def _generate_uuid(self):
         return str(uuid.uuid4())

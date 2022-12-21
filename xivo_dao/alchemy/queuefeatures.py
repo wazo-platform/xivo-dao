@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -235,7 +232,7 @@ class QueueFeatures(Base):
             if event not in dialactions:
                 self.queue_dialactions.pop(event, None)
 
-        for event, dialaction in six.iteritems(dialactions):
+        for event, dialaction in dialactions.items():
             self._set_dialaction(event, dialaction)
 
     def _set_dialaction(self, event, dialaction):

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import unicode_literals
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint

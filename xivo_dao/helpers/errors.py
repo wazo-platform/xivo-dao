@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
 # Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import unicode_literals
-
-import six
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import ResourceError
@@ -23,14 +18,14 @@ def format_error(category, error, metadata=None):
 def _format_metadata(metadata):
     if len(metadata) == 0:
         return ''
-    return "({})".format(six.text_type(metadata).strip("{}"))
+    return f"({str(metadata).strip('{}')})"
 
 
 def _format_list(elements):
     return ', '.join(elements)
 
 
-class FormattedError(object):
+class FormattedError:
 
     def __init__(self, exception, error_template):
         self.exception = exception

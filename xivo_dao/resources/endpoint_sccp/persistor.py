@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -11,7 +10,7 @@ from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
 
 
-class SccpPersistor(object):
+class SccpPersistor:
 
     def __init__(self, session, sccp_search, tenant_uuids=None):
         self.session = session

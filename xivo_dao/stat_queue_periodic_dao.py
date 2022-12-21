@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from sqlalchemy.sql.functions import max
 
 
 def insert_stats(session, stats, period_start):
-    for queue_id, queue_stats in six.iteritems(stats):
+    for queue_id, queue_stats in stats.items():
         entry = StatQueuePeriodic()
         entry.time = period_start
         entry.abandoned = queue_stats.get('abandoned', 0)

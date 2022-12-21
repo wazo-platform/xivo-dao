@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2012-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -269,7 +266,7 @@ class GroupFeatures(Base):
             if event not in dialactions:
                 self.group_dialactions.pop(event, None)
 
-        for event, dialaction in six.iteritems(dialactions):
+        for event, dialaction in dialactions.items():
             if dialaction is None:
                 self.group_dialactions.pop(event, None)
                 continue

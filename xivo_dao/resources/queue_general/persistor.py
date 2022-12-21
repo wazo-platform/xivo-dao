@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.staticqueue import StaticQueue
 
 
-class QueueGeneralPersistor(object):
+class QueueGeneralPersistor:
 
     def __init__(self, session):
         self.session = session

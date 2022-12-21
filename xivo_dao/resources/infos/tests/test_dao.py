@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
-import six
 
 from xivo_dao.alchemy.infos import Infos
 from xivo_dao.resources.infos import dao as infos_dao
@@ -13,7 +11,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestGetInfos(DAOTestCase):
 
     def test_get_with_one_infos(self):
-        xivo_uuid = six.text_type(uuid.uuid5(uuid.NAMESPACE_DNS, __name__))
+        xivo_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, __name__))
         wazo_version = '42.42'
         infos_row = Infos(
             uuid=xivo_uuid,

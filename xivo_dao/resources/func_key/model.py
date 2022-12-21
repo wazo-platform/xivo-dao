@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-class Hint(object):
+class Hint:
 
     __slots__ = ['user_id', 'conference_id', 'extension', 'argument']
 

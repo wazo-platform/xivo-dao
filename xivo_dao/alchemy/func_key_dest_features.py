@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -47,7 +46,7 @@ class FuncKeyDestFeatures(Base):
 
 
 # These tables don't exist in database
-class _FuncKeyDestFeaturesWithoutBaseDeclarative(object):
+class _FuncKeyDestFeaturesWithoutBaseDeclarative:
 
     def __init__(self, **kwargs):
         self._func_key_dest_features = FuncKeyDestFeatures(**kwargs)

@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
 
 
 def insert_stats(session, period_stats, period_start):
-    for agent_id, times in six.iteritems(period_stats):
+    for agent_id, times in period_stats.items():
         entry = StatAgentPeriodic(
             time=period_start,
             login_time=times['login_time'] if 'login_time' in times else '00:00:00',

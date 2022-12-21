@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 
 
-class AsteriskFilePersistor(object):
+class AsteriskFilePersistor:
 
     def __init__(self, session):
         self.session = session

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import unicode_literals
 
 from collections import namedtuple
 from sqlalchemy.sql import select, and_

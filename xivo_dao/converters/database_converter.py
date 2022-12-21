@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import six
 
-
-class DatabaseConverter(object):
+class DatabaseConverter:
 
     def __init__(self, mapping, schema, model):
         self.schema = schema
         self.model = model
 
-        model_mapping = dict((value, key) for key, value in six.iteritems(mapping))
+        model_mapping = {value: key for key, value in mapping.items()}
 
         self.db_mapping = mapping
         self.model_mapping = model_mapping
@@ -46,11 +43,11 @@ class DatabaseConverter(object):
 
     def _remap_columns(self, columns, mapping):
         mapped_columns = {}
-        for column_name, value in six.iteritems(columns):
+        for column_name, value in columns.items():
             key = mapping[column_name]
             mapped_columns[key] = value
         return mapped_columns
 
     def _update_object(self, values, destination):
-        for key, value in six.iteritems(values):
+        for key, value in values.items():
             setattr(destination, key, value)

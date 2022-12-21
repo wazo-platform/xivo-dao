@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from collections import namedtuple
 from unidecode import unidecode
@@ -22,10 +19,10 @@ class unaccent(ReturnTypeFromArgs):
     pass
 
 
-class CriteriaBuilderMixin(object):
+class CriteriaBuilderMixin:
 
     def build_criteria(self, query, criteria):
-        for name, value in six.iteritems(criteria):
+        for name, value in criteria.items():
             column = self._get_column(name)
             query = query.filter(column == value)
         return query
@@ -37,7 +34,7 @@ class CriteriaBuilderMixin(object):
         return column
 
 
-class SearchConfig(object):
+class SearchConfig:
 
     def __init__(self, table, columns, default_sort, search=None, sort=None):
         self.table = table
@@ -68,7 +65,7 @@ class SearchConfig(object):
         return name
 
 
-class SearchSystem(object):
+class SearchSystem:
 
     SORT_DIRECTIONS = {
         'asc': sql.asc,
@@ -133,7 +130,7 @@ class SearchSystem(object):
         return query
 
     def _filter_exact_match(self, query, parameters):
-        for column_name, value in six.iteritems(parameters):
+        for column_name, value in parameters.items():
             column = self.config.column_for_searching(column_name)
             if column is not None:
                 if isinstance(column.type, Integer) and not self._represents_int(value):
