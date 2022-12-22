@@ -121,7 +121,7 @@ def get_agent_id_from_extension(session, extension, context):
                     .filter(AgentLoginStatus.context == context)
                     .first())
     if not login_status:
-        raise LookupError('No agent logged onto extension %s@%s' % (extension, context))
+        raise LookupError(f'No agent logged onto extension {extension}@{context}')
     return login_status.agent_id
 
 

@@ -64,7 +64,7 @@ class UserSearchSystem(SearchSystem):
             query = self._filter_exact_match_mobile_phone_numbers(query, extens)
 
         query = self._search_on_extension(query)
-        return super(UserSearchSystem, self).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
     def _filter_exact_match_uuids(self, query, uuids):
         column = self.config.column_for_searching('uuid')

@@ -49,10 +49,7 @@ class SwitchboardSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters):
         query = self._search_on_extension(query)
-        return super(
-            SwitchboardSearchSystem,
-            self,
-        ).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
 
 switchboard_search = SwitchboardSearchSystem(config)

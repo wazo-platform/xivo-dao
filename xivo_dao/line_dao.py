@@ -30,7 +30,7 @@ def get_interface_from_exten_and_context(session, extension, context):
             return interface
 
     if not interface:
-        raise LookupError('no line with extension %s and context %s' % (extension, context))
+        raise LookupError(f'no line with extension {extension} and context {context}')
 
     return interface
 
@@ -79,8 +79,8 @@ def is_line_owned_by_user(session, user_uuid, line_id):
 
 def _format_interface(row):
     if row.endpoint_sip_uuid:
-        return 'PJSIP/{}'.format(row.name)
+        return f'PJSIP/{row.name}'
     elif row.endpoint_sccp_id:
-        return 'SCCP/{}'.format(row.name)
+        return f'SCCP/{row.name}'
     elif row.endpoint_custom_id:
         return row.name

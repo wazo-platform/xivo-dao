@@ -189,7 +189,7 @@ class QueueFeatures(Base):
         options = self.merge_options_with_default_values(options)
         enabled = kwargs.pop('enabled', True)
         music_on_hold = kwargs.pop('music_on_hold', None)
-        super(QueueFeatures, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if not self._queue:
             self._queue = Queue(
                 # 'name' is set by the relationship foreign_key

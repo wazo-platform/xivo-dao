@@ -37,7 +37,7 @@ class DatabaseConverter:
         extracted_values = {}
         for column_name in columns:
             if not hasattr(source_object, column_name):
-                raise ValueError('column %s does not exist in object %s' % (column_name, type(source_object)))
+                raise ValueError(f'column {column_name} does not exist in object {type(source_object)}')
             extracted_values[column_name] = getattr(source_object, column_name)
         return extracted_values
 

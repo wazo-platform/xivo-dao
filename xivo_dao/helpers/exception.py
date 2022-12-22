@@ -8,7 +8,7 @@ class ServiceError(ValueError):
     prefix = "Error"
 
     def __init__(self, message=None, metadata=None):
-        super(ServiceError, self).__init__(message)
+        super().__init__(message)
         self.metadata = metadata
 
 

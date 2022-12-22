@@ -13,7 +13,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestTrunkFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestTrunkFixes, self).setUp()
+        super().setUp()
         self.fixes = TrunkFixes(self.session)
 
     def test_given_trunk_has_iax_endpoint_then_category_and_context_updated(self):

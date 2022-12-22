@@ -142,7 +142,7 @@ class ItemInserter:
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('email', None)
-        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
@@ -194,7 +194,7 @@ class ItemInserter:
     def add_user_line_with_queue_member(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -223,7 +223,7 @@ class ItemInserter:
                              endpoint_sip_uuid=kwargs['endpoint_sip_uuid'])
         self.add_queue_member(userid=user.id,
                               usertype='user',
-                              interface='PJSIP/{}'.format(line.name))
+                              interface=f'PJSIP/{line.name}')
         user_line = self.add_user_line(line_id=line.id,
                                        user_id=user.id)
 
@@ -235,7 +235,7 @@ class ItemInserter:
     def add_user_line_without_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -463,7 +463,7 @@ class ItemInserter:
         if 'lastname' in kwargs:
             fullname += " " + kwargs['lastname']
 
-        kwargs.setdefault('callerid', '"{}"'.format(fullname))
+        kwargs.setdefault('callerid', f'"{fullname}"')
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user

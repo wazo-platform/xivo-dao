@@ -16,7 +16,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestLineFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestLineFixes, self).setUp()
+        super().setUp()
         self.fixes = LineFixes(self.session)
 
     def test_when_update_context_extension_then_line_context_is_updated(self):

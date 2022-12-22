@@ -46,10 +46,7 @@ class IVRSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters):
         query = self._search_on_extension(query)
-        return super(
-            IVRSearchSystem,
-            self,
-        ).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
 
 ivr_search = IVRSearchSystem(config)

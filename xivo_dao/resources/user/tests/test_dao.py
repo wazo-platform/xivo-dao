@@ -39,7 +39,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 class TestUser(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestUser, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
 

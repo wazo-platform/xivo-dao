@@ -31,7 +31,7 @@ class PJSIPTransport(Base):
 
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
-        super(PJSIPTransport, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         for key, value in options:
             self._options.append(PJSIPTransportOption(key=key, value=value))
 

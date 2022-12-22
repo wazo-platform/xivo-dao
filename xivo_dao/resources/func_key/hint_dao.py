@@ -84,7 +84,7 @@ def user_hints(session, context):
     if not user_extensions:
         return tuple()
 
-    user_arguments = _list_user_arguments(session, set(item.user_id for item in user_extensions))
+    user_arguments = _list_user_arguments(session, {item.user_id for item in user_extensions})
     hints = []
     for user_id, extension in user_extensions:
         argument = user_arguments.get(user_id)
@@ -98,16 +98,16 @@ def user_shared_hints(session):
     query = session.query(UserFeatures).options(joinedload('user_lines').joinedload('line'))
     hints = []
     for user in query.all():
-        ifaces = ['Custom:{}-mobile'.format(user.uuid)]
+        ifaces = [f'Custom:{user.uuid}-mobile']
         for line in user.lines:
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
             elif line.endpoint_sip_uuid:
-                ifaces.append('pjsip/{}'.format(line.name))
+                ifaces.append(f'pjsip/{line.name}')
             elif line.endpoint_sccp_id:
-                ifaces.append('sccp/{}'.format(line.name))
+                ifaces.append(f'sccp/{line.name}')
             else:
-                ifaces.append('custom/{}'.format(line.name))
+                ifaces.append(f'custom/{line.name}')
 
         if not ifaces:
             continue

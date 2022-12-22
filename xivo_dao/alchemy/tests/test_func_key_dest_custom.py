@@ -16,7 +16,7 @@ from ..func_key_dest_agent import FuncKey
 class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDelete, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
     def test_func_key_deleted(self):

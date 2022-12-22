@@ -31,7 +31,7 @@ from xivo_dao.resources.utils.search import SearchResult
 
 from .. import dao as group_dao
 
-UNKNOWN_UUID = u'99999999-9999-4999-8999-999999999999'
+UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 
 
 class TestFind(DAOTestCase):

@@ -20,7 +20,7 @@ from ..endpoint_sip_section_option import EndpointSIPSectionOption
 class TestOptions(DAOTestCase):
 
     def setUp(self):
-        super(TestOptions, self).setUp()
+        super().setUp()
         self.endpoint_sip = self.add_endpoint_sip()
 
     def test_ondelete_cascade_when_options_are_not_in_session(self):

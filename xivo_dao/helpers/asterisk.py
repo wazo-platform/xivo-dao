@@ -1,7 +1,7 @@
 # Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from collections import Iterable
+from collections.abc import Iterable
 
 from xivo_dao.helpers import errors
 
@@ -107,7 +107,7 @@ class AsteriskOptionsMixin:
 
     def native_option_names(self, exclude=None):
         exclude = set(exclude or []).union(self.EXCLUDE_OPTIONS)
-        return set(column.name for column in self.__table__.columns) - exclude
+        return {column.name for column in self.__table__.columns} - exclude
 
     def option_defaults(self):
         defaults = {}

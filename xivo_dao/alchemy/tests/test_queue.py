@@ -193,7 +193,7 @@ class TestOptions(DAOTestCase):
 
     def test_label_group(self):
         group_uuid = uuid4()
-        name = 'grp-mytenant-{}'.format(group_uuid)
+        name = f'grp-mytenant-{group_uuid}'
         group = self.add_group(uuid=group_uuid, name=name, label='mylabel')
         self.session.flush()
 

@@ -40,7 +40,7 @@ def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
 
     agent_row = query.first()
     if agent_row is None:
-        raise LookupError('no agent found for user {}'.format(user_uuid))
+        raise LookupError(f'no agent found for user {user_uuid}')
     agent = _Agent(agent_row.id, agent_row.tenant_uuid, agent_row.number, [], [user.id for user in agent_row.users])
     _add_queues_to_agent(session, agent)
     return agent
@@ -52,7 +52,7 @@ def _get_agent(session, whereclause, tenant_uuids=None):
         query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
     agent = query.first()
     if agent is None:
-        raise LookupError('no agent matching clause {}'.format(whereclause.compile().params))
+        raise LookupError(f'no agent matching clause {whereclause.compile().params}')
     return _Agent(agent.id, agent.tenant_uuid, agent.number, [], [user.id for user in agent.users])
 
 

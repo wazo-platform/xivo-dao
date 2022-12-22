@@ -173,8 +173,8 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
     def test_find_sccp_line_pickup_group(self, mock_find_pickup_members):
         sccp_line = self.add_sccpline()
         ule = self.add_user_line_with_exten(endpoint_sccp_id=sccp_line.id)
-        callgroups = set([1, 2, 3, 4])
-        pickupgroups = set([3, 4])
+        callgroups = {1, 2, 3, 4}
+        pickupgroups = {3, 4}
         pickup_members = {
             sccp_line.id: {'callgroup': callgroups, 'pickupgroup': pickupgroups},
         }
@@ -361,7 +361,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {sip.uuid: {category: set([pickup.id])}},
+            {sip.uuid: {category: {pickup.id}}},
         ))
 
     def test_find_pickup_members_with_sccp_users(self):
@@ -374,7 +374,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         pickup_members = asterisk_conf_dao.find_pickup_members('sccp')
 
         assert_that(pickup_members, equal_to(
-            {sccp_line.id: {category: set([pickup.id])}}
+            {sccp_line.id: {category: {pickup.id}}}
         ))
 
     def test_find_pickup_members_with_groups(self):
@@ -387,7 +387,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {sip.uuid: {category: set([pickup.id])}}
+            {sip.uuid: {category: {pickup.id}}}
         ))
 
     def test_find_pickup_members_with_queues(self):
@@ -400,7 +400,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {sip.uuid: {category: set([pickup.id])}}
+            {sip.uuid: {category: {pickup.id}}}
         ))
 
     def test_find_features_settings(self):
@@ -960,10 +960,10 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         result = asterisk_conf_dao.find_queue_members_settings(group_name)
         assert_that(result, contains_inanyorder(
             contains(
-                'Local/{}@usersharedlines'.format(user.uuid),
+                f'Local/{user.uuid}@usersharedlines',
                 '0',
                 '',
-                'hint:{}@usersharedlines'.format(user.uuid),
+                f'hint:{user.uuid}@usersharedlines',
             ),
         ))
 
@@ -1035,7 +1035,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 class BaseFindSIPSettings(DAOTestCase):
 
     def setUp(self):
-        super(BaseFindSIPSettings, self).setUp()
+        super().setUp()
         transport_udp = self.add_transport(name='transport-udp')
         sip_general_body = {
             'label': 'General config',
@@ -1074,7 +1074,7 @@ class BaseFindSIPSettings(DAOTestCase):
 class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
 
     def setUp(self):
-        super(TestFindSipMeetingGuestsSettings, self).setUp()
+        super().setUp()
         transport_wss = self.add_transport(name='transport-wss')
         guest_meeting_template_body = {
             'label': 'Guest meeting',
@@ -1216,7 +1216,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                 endpoint_section_options=has_items(
                     contains(
                         'set_var',
-                        'XIVO_ORIGINAL_CALLER_ID={}'.format(caller_id),
+                        f'XIVO_ORIGINAL_CALLER_ID={caller_id}',
                     ),
                 ),
             )),
@@ -1245,7 +1245,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                    ['set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'],
                 ),
             )),
         )
@@ -1300,10 +1300,10 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                         contains('type', 'endpoint'),  # only showed once
                         contains('codecs', '!all,ulaw'),
                         contains('webrtc', 'true'),  # only showed once
-                        contains('set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'),
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-                        contains('set_var', 'WAZO_MEETING_UUID={}'.format(meeting.uuid)),
-                        contains('set_var', 'WAZO_MEETING_NAME={}'.format(meeting.name)),
+                        contains('set_var', f'WAZO_MEETING_UUID={meeting.uuid}'),
+                        contains('set_var', f'WAZO_MEETING_NAME={meeting.name}'),
                         contains('context', 'wazo-meeting-uuid-guest'),
                     )
                 )
@@ -1352,7 +1352,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
 class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
 
     def setUp(self):
-        super(TestFindSipUserSettings, self).setUp()
+        super().setUp()
         transport_wss = self.add_transport(name='transport-wss')
         webrtc_body = {
             'label': 'WebRTC line',
@@ -1465,8 +1465,8 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    contains('context', 'stasis-wazo-app-{}'.format(application.uuid)),
-                    contains('set_var', 'TRANSFER_CONTEXT={}'.format(context.name)),
+                    contains('context', f'stasis-wazo-app-{application.uuid}'),
+                    contains('set_var', f'TRANSFER_CONTEXT={context.name}'),
                 )
             ))
         )
@@ -1481,7 +1481,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    contains('set_var', 'TRANSFER_CONTEXT={}'.format(context.name)),
+                    contains('set_var', f'TRANSFER_CONTEXT={context.name}'),
                 ),
             )),
         )
@@ -1536,7 +1536,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 endpoint_section_options=has_items(
                     contains(
                         'set_var',
-                        'PICKUPMARK={}%{}'.format(extension.exten, extension.context)
+                        f'PICKUPMARK={extension.exten}%{extension.context}'
                     ),
                 ),
             )),
@@ -1557,13 +1557,13 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 aor_section_options=has_items(
                     contains(
                         'mailboxes',
-                        '{}@{}'.format(voicemail.number, voicemail.context)
+                        f'{voicemail.number}@{voicemail.context}'
                     ),
                 ),
                 endpoint_section_options=has_items(
                     contains(
                         'mailboxes',
-                        '{}@{}'.format(voicemail.number, voicemail.context)
+                        f'{voicemail.number}@{voicemail.context}'
                     ),
                 ),
             )),
@@ -1584,7 +1584,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 endpoint_section_options=has_items(
                     contains(
                         'set_var',
-                        'XIVO_ORIGINAL_CALLER_ID={}'.format(caller_id),
+                        f'XIVO_ORIGINAL_CALLER_ID={caller_id}',
                     ),
                 ),
             )),
@@ -1615,7 +1615,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'XIVO_USERID={}'.format(user.id)],
+                    ['set_var', f'XIVO_USERID={user.id}'],
                 ),
             )),
         )
@@ -1631,7 +1631,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'XIVO_USERUUID={}'.format(user.uuid)],
+                    ['set_var', f'XIVO_USERUUID={user.uuid}'],
                     # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
                 ),
             )),
@@ -1646,7 +1646,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                    ['set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'],
                 ),
             )),
         )
@@ -1662,7 +1662,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'WAZO_LINE_ID={}'.format(line.id)],
+                    ['set_var', f'WAZO_LINE_ID={line.id}'],
                 ),
             )),
         )
@@ -1715,7 +1715,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 )
                 break
         else:
-            self.fail('no "named_pickup_group" in {}'.format(result[0]))
+            self.fail(f'no "named_pickup_group" in {result[0]}')
 
     def test_that_named_call_groups_are_added(self):
         pickup_user = self.add_pickup()
@@ -1739,7 +1739,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 )
                 break
         else:
-            self.fail('no "named_call_group" in {}'.format(result[0]))
+            self.fail(f'no "named_call_group" in {result[0]}')
 
     def test_that_doubles_are_removed(self):
         template = self.add_endpoint_sip(
@@ -1765,9 +1765,9 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         contains('type', 'endpoint'),  # only showed once
                         contains('codecs', '!all,ulaw'),
                         contains('webrtc', 'true'),  # only showed once
-                        contains('set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'),
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-                        contains('set_var', 'WAZO_LINE_ID={}'.format(line.id)),
+                        contains('set_var', f'WAZO_LINE_ID={line.id}'),
                         contains('context', 'foocontext'),
                         contains('set_var', 'TRANSFER_CONTEXT=foocontext')
                     )
@@ -1817,7 +1817,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
 class TestFindSipTrunkSettings(BaseFindSIPSettings):
 
     def setUp(self):
-        super(TestFindSipTrunkSettings, self).setUp()
+        super().setUp()
         registration_trunk_body = {
             'name': 'registration_trunk',
             'label': 'Global trunk with registration configuration',
@@ -1926,7 +1926,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     contains('match', '54.172.60.2'),
                 ),
                 registration_section_options=has_items(
-                    contains('outbound_auth', 'auth_reg_{}'.format(endpoint.name)),
+                    contains('outbound_auth', f'auth_reg_{endpoint.name}'),
                     contains('retry_interval', '20'),
                     contains('auth_rejection_permanent', 'off'),
                     contains('forbidden_retry_interval', '30'),
@@ -2045,12 +2045,12 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     contains('aors', endpoint.name),
                     contains('auth', endpoint.name),
                     contains('identify_by', 'auth_username,username'),
-                    contains('outbound_auth', 'outbound_auth_{}'.format(endpoint.name)),
+                    contains('outbound_auth', f'outbound_auth_{endpoint.name}'),
                 ),
                 registration_section_options=has_items(
                     contains('type', 'registration'),
                     contains('expiration', '120'),
-                    contains('outbound_auth', 'auth_reg_{}'.format(endpoint.name)),
+                    contains('outbound_auth', f'auth_reg_{endpoint.name}'),
                 ),
                 registration_outbound_auth_section_options=has_items(
                     contains('type', 'auth'),
@@ -2105,7 +2105,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['auth', template.name],
                 ),
                 registration_section_options=has_items(
-                    ['outbound_auth', 'auth_reg_{}'.format(template.name)]
+                    ['outbound_auth', f'auth_reg_{template.name}']
                 ),
                 identify_section_options=has_items(
                     ['endpoint', template.name],
@@ -2137,7 +2137,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                         contains('type', 'endpoint'),  # only showed once
                         contains('codecs', '!all,ulaw'),
                         contains('webrtc', 'true'),  # only showed once
-                        contains('set_var', '__WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'),
                     )
                 )
             )

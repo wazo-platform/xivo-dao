@@ -37,7 +37,7 @@ def _compile_create_view(element, compiler, **kw):
     selectable = compiler.sql_compiler.process(element.selectable, literal_binds=True)
     materialized = 'MATERIALIZED ' if element.materialized else ''
 
-    return 'CREATE {}VIEW {} AS {}'.format(materialized, name, selectable)
+    return f'CREATE {materialized}VIEW {name} AS {selectable}'
 
 
 # Todo: Replace by SQLAlchemy-Utils when possible
@@ -54,7 +54,7 @@ def _compile_drop_view(element, compiler, **kw):
     materialized = 'MATERIALIZED ' if element.materialized else ''
     cascade = 'CASCADE ' if element.cascade else ''
 
-    return 'DROP {}VIEW IF EXISTS {} {}'.format(materialized, name, cascade)
+    return f'DROP {materialized}VIEW IF EXISTS {name} {cascade}'
 
 
 # Replace by SQLAlchemy-Utils when possible
@@ -99,7 +99,7 @@ def _refresh_materialized_view(session, name, concurrently):
     concurrently = 'CONCURRENTLY ' if concurrently else ''
 
     session.flush()
-    session.execute('REFRESH MATERIALIZED VIEW {}{}'.format(concurrently, view_name))
+    session.execute(f'REFRESH MATERIALIZED VIEW {concurrently}{view_name}')
 
 
 def create_materialized_view(name, selectable, dependencies=None, indexes=None):
@@ -144,7 +144,7 @@ class _MaterializedViewMeta(DeclarativeMeta):
         for cls_ in bases:
             if cls_.__name__ == 'MaterializedView' and not hasattr(self, '__view__'):
                 raise InvalidRequestError(
-                    "Class '{}' must specify a '__view__' attribute".format(self)
+                    f"Class '{self}' must specify a '__view__' attribute"
                 )
         try:
             self.__table__, self._view_dependencies = getattr(self, '__view__')
@@ -155,7 +155,7 @@ class _MaterializedViewMeta(DeclarativeMeta):
             raise InvalidRequestError(
                 "__view__ is invalid, use 'create_materialized_view' helper function"
             )
-        super(_MaterializedViewMeta, self).__init__(clsname, bases, attrs)
+        super().__init__(clsname, bases, attrs)
         self._view_dependencies_handler = None
         self._track_dependencies()
 

@@ -337,7 +337,7 @@ class UserFeatures(Base):
 
     def fill_caller_id(self):
         if self.caller_id is None:
-            self.caller_id = '"{}"'.format(self.fullname)
+            self.caller_id = f'"{self.fullname}"'
 
     @property
     def fallbacks(self):
@@ -367,7 +367,7 @@ class UserFeatures(Base):
     def fullname(self):
         name = self.firstname
         if self.lastname:
-            name += " {}".format(self.lastname)
+            name += f" {self.lastname}"
         return name
 
     @fullname.expression

@@ -20,7 +20,7 @@ from .. import dao
 class TestFuncKeyDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestFuncKeyDao, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
 

@@ -57,7 +57,7 @@ class TestTimeout(unittest.TestCase):
 class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDelete, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
     def test_funckeys_are_deleted(self):
@@ -75,7 +75,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 class TestExtension(DAOTestCase):
 
     def setUp(self):
-        super(TestExtension, self).setUp()
+        super().setUp()
         self.extension = self.add_extension(typeval='bsfilter', exten='_*37')
         self.user = self.add_user()
         self.call_filter = self.add_call_filter()

@@ -224,7 +224,7 @@ class GroupFeatures(Base):
         timeout = kwargs.pop('user_timeout', 15)
         musicclass = kwargs.pop('music_on_hold', None)
         enabled = kwargs.pop('enabled', True)
-        super(GroupFeatures, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if not self.queue:
             self.queue = Queue(
                 retry=retry,

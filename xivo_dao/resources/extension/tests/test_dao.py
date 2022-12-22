@@ -433,7 +433,7 @@ class TestCreate(TestExtension):
 class TestEdit(TestExtension):
 
     def setUp(self):
-        super(TestEdit, self).setUp()
+        super().setUp()
         self.existing_extension = self.add_extension(exten='1635', context='my_context', type='user', typeval='0')
 
     def test_edit(self):

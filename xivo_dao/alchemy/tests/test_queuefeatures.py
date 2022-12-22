@@ -607,7 +607,7 @@ class TestExten(DAOTestCase):
 class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDelete, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
     def test_queue_is_deleted(self):

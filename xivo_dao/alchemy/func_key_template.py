@@ -26,7 +26,7 @@ class FuncKeyTemplate(Base):
         # keys should probably be retrieved by relationship
         # but that implies to convert FuncKeyMapping.destination as relationship
         self.keys = kwargs.pop('keys', {})
-        super(FuncKeyTemplate, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get(self, position):
         if position not in self.keys:

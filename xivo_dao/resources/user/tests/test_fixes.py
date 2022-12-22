@@ -12,7 +12,7 @@ from xivo_dao.resources.user.fixes import UserFixes
 class TestUserFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestUserFixes, self).setUp()
+        super().setUp()
         self.fixes = UserFixes(self.session)
 
     def test_given_user_has_no_extension_then_fixes_pass(self):

@@ -15,7 +15,7 @@ class FuncKeyTemplateSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters=None):
         query = self._apply_private_filter(query)
-        return super(FuncKeyTemplateSearchSystem, self).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
     def _apply_private_filter(self, query):
         return query.filter(FuncKeyTemplate.private.is_(False))

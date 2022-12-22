@@ -422,7 +422,7 @@ class TestAssociateAllLines(DAOTestCase):
         self.add_queue_member(
             userid=user.id,
             usertype='user',
-            interface='PJSIP/{}'.format(sip.name),
+            interface=f'PJSIP/{sip.name}',
         )
         self.add_user_line(line_id=line.id, user_id=user.id)
 

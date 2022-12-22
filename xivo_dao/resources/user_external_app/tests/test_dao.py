@@ -117,7 +117,7 @@ class TestFindAllBy(DAOTestCase):
 class TestSearch(DAOTestCase):
 
     def setUp(self):
-        super(TestSearch, self).setUp()
+        super().setUp()
         self.user = self.add_user()
 
     def assert_search_returns_result(self, search_result, **parameters):
@@ -142,7 +142,7 @@ class TestSimpleSearch(TestSearch):
 class TestSearchGivenMultipleUserExternalApps(TestSearch):
 
     def setUp(self):
-        super(TestSearchGivenMultipleUserExternalApps, self).setUp()
+        super().setUp()
         self.app1 = self.add_user_external_app(user_uuid=self.user.uuid, name='Ashton')
         self.app2 = self.add_user_external_app(user_uuid=self.user.uuid, name='Beaugarton')
         self.app3 = self.add_user_external_app(user_uuid=self.user.uuid, name='Casa')

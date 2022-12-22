@@ -31,7 +31,7 @@ config = SearchConfig(
 class LineSearchSystem(SearchSystem):
     def search_from_query(self, query, parameters):
         query = self._search_on_extension(query)
-        return super(LineSearchSystem, self).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
     def _search_on_extension(self, query):
         return query.outerjoin(

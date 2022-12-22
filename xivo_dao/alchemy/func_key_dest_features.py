@@ -26,11 +26,11 @@ class FuncKeyDestFeatures(Base):
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'features_id'),
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
-        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
+        CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
+    destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
     features_id = Column(Integer, ForeignKey('features.id'))
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
@@ -78,7 +78,7 @@ class FuncKeyDestTransfer(_FuncKeyDestFeaturesWithoutBaseDeclarative):
 
     def __init__(self, **kwargs):
         transfer = kwargs.pop('transfer', None)
-        super(FuncKeyDestTransfer, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if transfer:
             self._func_key_dest_features.transfer = transfer
 

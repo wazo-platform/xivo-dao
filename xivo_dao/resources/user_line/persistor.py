@@ -72,9 +72,9 @@ class Persistor(CriteriaBuilderMixin):
 
     def delete_queue_member(self, user_line, line):
         if line.endpoint_sip:
-            interface = 'PJSIP/{}'.format(line.endpoint_sip.name)
+            interface = f'PJSIP/{line.endpoint_sip.name}'
         elif line.endpoint_sccp:
-            interface = 'SCCP/{}'.format(line.endpoint_sccp.name)
+            interface = f'SCCP/{line.endpoint_sccp.name}'
         elif line.endpoint_custom:
             interface = line.endpoint_custom.interface
         else:

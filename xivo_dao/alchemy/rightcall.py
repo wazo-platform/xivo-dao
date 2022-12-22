@@ -107,7 +107,7 @@ class RightCall(Base):
         elif value == 'deny':
             self.authorization = 0
         else:
-            raise InputError("cannot set mode to {}. Only 'allow' or 'deny' are authorized".format(value))
+            raise InputError(f"cannot set mode to {value}. Only 'allow' or 'deny' are authorized")
 
     @hybrid_property
     def enabled(self):

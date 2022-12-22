@@ -26,11 +26,11 @@ class FuncKeyDestBSFilter(Base):
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'filtermember_id'),
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
-        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
+        CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
+    destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
     filtermember_id = Column(Integer, ForeignKey('callfiltermember.id'), nullable=False)
 
     type = 'bsfilter'

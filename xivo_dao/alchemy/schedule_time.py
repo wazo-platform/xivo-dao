@@ -59,8 +59,8 @@ class ScheduleTime(Base):
         self._set_hours(hours_start, hours_end)
 
     def _set_hours(self, hours_start, hours_end):
-        self.hours = '{}{}'.format(hours_start,
-                                   '-{}'.format(hours_end) if hours_end else '')
+        end_suffix = f'-{hours_end}' if hours_end else ''
+        self.hours = f'{hours_start}{end_suffix}'
 
     @property
     def week_days(self):

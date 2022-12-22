@@ -39,7 +39,7 @@ from .. import dao
 class TestDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDao, self).setUp()
+        super().setUp()
         self.setup_types()
         self.setup_destination_types()
         self.destination_type_ids = {

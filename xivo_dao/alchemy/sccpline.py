@@ -66,7 +66,7 @@ class SCCPLine(Base):
             elif name == "disallow":
                 self.disallow = value
             else:
-                raise InputError("Unknown SCCP options: {}".format(name))
+                raise InputError(f"Unknown SCCP options: {name}")
 
     def same_protocol(self, protocol, id):
         return protocol == 'sccp' and self.id == id

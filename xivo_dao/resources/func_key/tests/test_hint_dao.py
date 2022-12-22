@@ -45,7 +45,7 @@ class TestCalluserExtension(DAOTestCase):
 class TestHints(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestHints, self).setUp()
+        super().setUp()
         self.setup_funckeys()
         self.context = self.add_context(name='mycontext')
         self.context2 = self.add_context(name='mycontext2')
@@ -440,7 +440,7 @@ class TestCustomHints(TestHints):
 class TestBSFilterHints(TestHints):
 
     def setUp(self):
-        super(TestBSFilterHints, self).setUp()
+        super().setUp()
         self.add_extension(
             context='xivo-features',
             exten='_*37.',
@@ -554,7 +554,7 @@ class TestUserSharedHints(TestHints):
 
         assert_that(
             results[0].argument,
-            equal_to('Custom:{}-mobile&pjsip/{}&{}&sccp/{}'.format(user.uuid, line_1.name, line_2.name, line_3.name)),
+            equal_to(f'Custom:{user.uuid}-mobile&pjsip/{line_1.name}&{line_2.name}&sccp/{line_3.name}'),
         )
 
     def test_no_line(self):
@@ -562,4 +562,4 @@ class TestUserSharedHints(TestHints):
 
         results = hint_dao.user_shared_hints()
 
-        assert_that(results[0].argument, equal_to('Custom:{}-mobile'.format(user.uuid)))
+        assert_that(results[0].argument, equal_to(f'Custom:{user.uuid}-mobile'))

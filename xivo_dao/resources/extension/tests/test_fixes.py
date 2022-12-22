@@ -13,7 +13,7 @@ from xivo_dao.resources.extension.fixes import ExtensionFixes
 class TestExtensionFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestExtensionFixes, self).setUp()
+        super().setUp()
         self.fixes = ExtensionFixes(self.session)
 
     def test_given_extension_associated_to_nothing_then_fixes_pass(self):

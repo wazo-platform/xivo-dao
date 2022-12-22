@@ -67,11 +67,11 @@ class LineFixes:
 
     def fix_protocol(self, row):
         if row.EndpointSIP:
-            interface = 'PJSIP/{}'.format(row.EndpointSIP.name)
+            interface = f'PJSIP/{row.EndpointSIP.name}'
             self.fix_queue_member(row, interface)
         elif row.SCCPLine:
             self.fix_sccp_line(row)
-            interface = 'SCCP/{}'.format(row.SCCPLine.name)
+            interface = f'SCCP/{row.SCCPLine.name}'
             self.fix_queue_member(row, interface)
         elif row.UserCustom:
             row.UserCustom.context = row.LineFeatures.context
@@ -107,7 +107,7 @@ class LineFixes:
                  .update({'interface': interface}))
 
                 if row.Extension:
-                    local_interface = 'Local/{}@{}'.format(row.Extension.exten, row.Extension.context)
+                    local_interface = f'Local/{row.Extension.exten}@{row.Extension.context}'
                     (self.session.query(QueueMember)
                      .filter(QueueMember.usertype == 'user')
                      .filter(QueueMember.userid == row.UserFeatures.id)

@@ -359,7 +359,7 @@ class TestCombinedOptions(DAOTestCase):
 
 class TestOptionValue(DAOTestCase):
     def setUp(self):
-        super(TestOptionValue, self).setUp()
+        super().setUp()
         self.sip = self.add_endpoint_sip()
         self.sip.endpoint_section_options = [('test', 'value')]
         EndpointSIPOptionsView.refresh()  # Simulate a database commit

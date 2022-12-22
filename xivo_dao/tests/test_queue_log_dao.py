@@ -21,7 +21,7 @@ TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f%z"
 class TestQueueLogDAO(DAOTestCase):
 
     def setUp(self):
-        super(TestQueueLogDAO, self).setUp()
+        super().setUp()
         self.queue_name = 'q1'
 
     def _insert_agent(self, aname, tenant_uuid=None):

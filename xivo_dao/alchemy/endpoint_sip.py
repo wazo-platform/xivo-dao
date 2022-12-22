@@ -156,12 +156,12 @@ class EndpointSIP(Base):
             kwargs['_outbound_auth_section'] = OutboundAuthSection(
                 options=outbound_auth_section_options,
             )
-        super(EndpointSIP, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if caller_id:
             self.caller_id = caller_id
 
     def __repr__(self):
-        return 'EndpointSIP(label={})'.format(self.label)
+        return f'EndpointSIP(label={self.label})'
 
     @hybrid_property
     def aor_section_options(self):
@@ -209,8 +209,8 @@ class EndpointSIP(Base):
             self._endpoint_section = None
 
     def _get_combined_section_options(self, section_name):
-        inherited_options = getattr(self, 'inherited_{}_section_options'.format(section_name))
-        endpoint_options = getattr(self, '{}_section_options'.format(section_name))
+        inherited_options = getattr(self, f'inherited_{section_name}_section_options')
+        endpoint_options = getattr(self, f'{section_name}_section_options')
         return inherited_options + endpoint_options
 
     @hybrid_property
@@ -249,7 +249,7 @@ class EndpointSIP(Base):
         for template in self.templates:
             template_options = getattr(
                 template,
-                'combined_{}_section_options'.format(section_name),
+                f'combined_{section_name}_section_options',
             )
             for k, v in template_options:
                 options.append([k, v])
@@ -371,9 +371,9 @@ class EndpointSIP(Base):
     def update_caller_id(self, user, extension=None):
         # Copied from usersip
         name, num = user.extrapolate_caller_id(extension)
-        caller_id = u'"{}"'.format(name)
+        caller_id = f'"{name}"'
         if num:
-            caller_id += u" <{}>".format(num)
+            caller_id += f" <{num}>"
         self.caller_id = caller_id
 
     def endpoint_protocol(self):
