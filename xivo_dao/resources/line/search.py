@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.extension import Extension
@@ -32,7 +31,7 @@ config = SearchConfig(
 class LineSearchSystem(SearchSystem):
     def search_from_query(self, query, parameters):
         query = self._search_on_extension(query)
-        return super(LineSearchSystem, self).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
     def _search_on_extension(self, query):
         return query.outerjoin(

@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import unicode_literals
 
 import datetime
 import re
-import six
 
 from sqlalchemy import text
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -341,7 +337,7 @@ class UserFeatures(Base):
 
     def fill_caller_id(self):
         if self.caller_id is None:
-            self.caller_id = '"{}"'.format(self.fullname)
+            self.caller_id = f'"{self.fullname}"'
 
     @property
     def fallbacks(self):
@@ -353,7 +349,7 @@ class UserFeatures(Base):
             if event not in dialactions:
                 self.user_dialactions.pop(event, None)
 
-        for event, dialaction in six.iteritems(dialactions):
+        for event, dialaction in dialactions.items():
             if dialaction is None:
                 self.user_dialactions.pop(event, None)
                 continue
@@ -371,7 +367,7 @@ class UserFeatures(Base):
     def fullname(self):
         name = self.firstname
         if self.lastname:
-            name += " {}".format(self.lastname)
+            name += f" {self.lastname}"
         return name
 
     @fullname.expression

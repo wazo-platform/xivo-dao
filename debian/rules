@@ -2,9 +2,8 @@
 # -*- makefile -*-
 
 export PYBUILD_NAME=xivo_libdao
-export PYBUILD_DESTDIR_python2=debian/xivo-libdao/
 export PYBUILD_DESTDIR_python3=debian/xivo-libdao-python3/
 export PYBUILD_DISABLE=test
 
 %:
-	dh $@ --with python2,python3 --buildsystem=pybuild
+	dh $@ --with python3 --buildsystem=pybuild

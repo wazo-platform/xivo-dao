@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from datetime import datetime as dt
 from datetime import timedelta
@@ -68,7 +65,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         }
 
         with flush_session(self.session):
-            for period_start, agents_stats in six.iteritems(stats):
+            for period_start, agents_stats in stats.items():
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         period_start = dt(2012, 1, 1, 1, 0, 0, tzinfo=UTC)
@@ -123,7 +120,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         }
 
         with flush_session(self.session):
-            for period_start, agents_stats in six.iteritems(stats):
+            for period_start, agents_stats in stats.items():
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=UTC))

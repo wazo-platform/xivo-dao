@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -400,7 +399,7 @@ class TestCreate(DAOTestCase):
 class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDelete, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
     def test_call_pickup_interceptors_are_deleted(self):

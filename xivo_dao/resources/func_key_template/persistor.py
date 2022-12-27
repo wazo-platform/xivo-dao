@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
-import six
 
 from sqlalchemy import text
 
@@ -71,7 +69,7 @@ def build_persistor(session, tenant_uuids=None):
     )
 
 
-class FuncKeyPersistor(object):
+class FuncKeyPersistor:
 
     def __init__(self, session, persistors, template_search, tenant_uuids=None):
         self.persistors = persistors
@@ -100,7 +98,7 @@ class FuncKeyPersistor(object):
 
     def add_funckeys(self, template_id, funckeys):
         created_funckeys = {}
-        for pos, funckey in six.iteritems(funckeys):
+        for pos, funckey in funckeys.items():
             created_funckeys[pos] = self.add_mapping(template_id, pos, funckey)
         return created_funckeys
 
@@ -212,8 +210,7 @@ class FuncKeyPersistor(object):
         self.add_funckeys(template.id, template.keys)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DestinationPersistor(object):
+class DestinationPersistor(metaclass=abc.ABCMeta):
 
     def __init__(self, session):
         self.session = session

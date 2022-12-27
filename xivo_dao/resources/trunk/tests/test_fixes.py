@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 from hamcrest import assert_that, equal_to
 
@@ -15,7 +13,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestTrunkFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestTrunkFixes, self).setUp()
+        super().setUp()
         self.fixes = TrunkFixes(self.session)
 
     def test_given_trunk_has_iax_endpoint_then_category_and_context_updated(self):

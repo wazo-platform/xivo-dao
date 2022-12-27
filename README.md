@@ -27,9 +27,9 @@ Running unit tests
 You need the test database ``asterisktest`` installed (see above).
 
 ```
-apt-get install libpq-dev python-dev libyaml-dev python3.7-dev
+apt-get install libpq-dev libyaml-dev python3.7-dev
 pip install tox
-tox --recreate -e py27,py37
+tox --recreate -e py37
 ```
 
 To execute tests slightly faster, you can avoid recreating all the tables in the

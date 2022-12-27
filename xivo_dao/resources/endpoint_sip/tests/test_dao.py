@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 import uuid
 
@@ -358,7 +356,7 @@ class TestCreate(DAOTestCase):
             self.add_endpoint_sip(template=True),
         ]
         almost_all_options = {
-            '{}_section_options'.format(name): options
+            f'{name}_section_options': options
             for (name, options) in OPTION_SAMPLE.items()
         }
 
@@ -392,7 +390,7 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def setUp(self):
-        super(TestEdit, self).setUp()
+        super().setUp()
         self.section_options = OPTION_SAMPLE
 
     def test_edit_add_the_first_option(self):
@@ -400,7 +398,7 @@ class TestEdit(DAOTestCase):
             sip = self.add_endpoint_sip()
             self.session.expire_all()
 
-            field = '{}_section_options'.format(name)
+            field = f'{name}_section_options'
 
             setattr(sip, field, [options[0]])
 
@@ -415,7 +413,7 @@ class TestEdit(DAOTestCase):
 
     def test_edit_remove_all_options(self):
         def _test(name, options):
-            field = '{}_section_options'.format(name)
+            field = f'{name}_section_options'
             sip = self.add_endpoint_sip(**{field: [options[0]]})
 
             setattr(sip, field, [])
@@ -435,7 +433,7 @@ class TestEdit(DAOTestCase):
 
     def test_edit_remove_one_options(self):
         def _test(name, options):
-            field = '{}_section_options'.format(name)
+            field = f'{name}_section_options'
             sip = self.add_endpoint_sip(**{field: options})
 
             self.session.expire_all()

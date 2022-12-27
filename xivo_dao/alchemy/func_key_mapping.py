@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -50,7 +49,7 @@ class FuncKeyMapping(Base):
         # destination should probably be retrieved by relationship
         # but that implies to transfer all persistor logic in this class
         self.destination = kwargs.pop('destination', None)
-        super(FuncKeyMapping, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @hybrid_property
     def id(self):

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from hamcrest import assert_that, none, equal_to, calling, raises
 
@@ -42,11 +39,13 @@ from .. import dao
 class TestDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDao, self).setUp()
+        super().setUp()
         self.setup_types()
         self.setup_destination_types()
-        self.destination_type_ids = {value: key
-                                     for key, value in six.iteritems(self.destination_types)}
+        self.destination_type_ids = {
+            value: key
+            for key, value in self.destination_types.items()
+        }
 
     def assert_template_empty(self, template_id):
         count = (self.session.query(FuncKeyMapping)

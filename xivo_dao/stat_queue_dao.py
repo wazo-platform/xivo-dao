@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import distinct
@@ -46,8 +45,8 @@ def _mark_recreated_queues_with_same_name_as_deleted(session, confd_queues_by_na
 
 
 def _mark_non_confd_queues_as_deleted(session, confd_queues):
-    active_queue_ids = set([queue['id'] for queue in confd_queues])
-    all_queue_ids = set(r[0] for r in session.query(distinct(StatQueue.queue_id)))
+    active_queue_ids = {queue['id'] for queue in confd_queues}
+    all_queue_ids = {r[0] for r in session.query(distinct(StatQueue.queue_id))}
     deleted_queues = [queue for queue in list(all_queue_ids - active_queue_ids) if queue]
     (
         session.query(StatQueue)
@@ -66,7 +65,7 @@ def _mark_non_confd_queues_as_deleted(session, confd_queues):
 def _create_missing_queues(session, queuelog_queues, confd_queues_by_name, master_tenant):
     new_queue_names = set(confd_queues_by_name.keys())
     db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(False))
-    old_queue_names = set(queue.name for queue in db_queue_query.all())
+    old_queue_names = {queue.name for queue in db_queue_query.all()}
     missing_queues = list(new_queue_names - old_queue_names)
     for queue_name in missing_queues:
         queue = confd_queues_by_name[queue_name]
@@ -79,7 +78,7 @@ def _create_missing_queues(session, queuelog_queues, confd_queues_by_name, maste
         session.flush()
 
     db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(True))
-    old_queue_names = set(queue.name for queue in db_queue_query.all())
+    old_queue_names = {queue.name for queue in db_queue_query.all()}
     missing_queues = list(set(queuelog_queues) - old_queue_names - new_queue_names)
     for queue_name in missing_queues:
         new_queue = StatQueue()
@@ -101,7 +100,7 @@ def _rename_deleted_queues_with_duplicate_name(session, confd_queues_by_name):
 def _find_next_available_name(session, name):
     query = session.query(StatQueue).filter(StatQueue.name == name)
     if query.first():
-        next_name = '{}_'.format(name)
+        next_name = f'{name}_'
         return _find_next_available_name(session, next_name)
     return name
 

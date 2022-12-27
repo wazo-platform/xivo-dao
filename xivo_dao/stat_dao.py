@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from sqlalchemy.sql import text
 
@@ -206,7 +203,7 @@ def get_login_intervals_in_range(session, start, end):
 
     unique_result = {}
 
-    for agent, logins in six.iteritems(results):
+    for agent, logins in results.items():
         logins = _pick_longest_with_same_end(logins)
         unique_result[agent] = sorted(list(set(logins)))
 
@@ -217,13 +214,13 @@ def _merge_agent_statistics(*args):
     result = {}
 
     for stat in args:
-        for agent, logins in six.iteritems(stat):
+        for agent, logins in stat.items():
             if agent not in result:
                 result[agent] = logins
             else:
                 result[agent].extend(logins)
 
-    for agent, logins in six.iteritems(result):
+    for agent, logins in result.items():
         filtered_logins = _filter_overlap(logins)
         result[agent] = filtered_logins
 
@@ -271,7 +268,7 @@ def _pick_longest_with_same_end(logins):
         end_time_map[end].append(start)
 
     res = []
-    for end, starts in six.iteritems(end_time_map):
+    for end, starts in end_time_map.items():
         res.append((min(starts), end))
 
     return res
@@ -330,7 +327,7 @@ def _get_ongoing_logins(session, start, end):
 
     def filter_ended_logins(logins, logouts):
         filtered_logins = {}
-        for agent, login in six.iteritems(logins):
+        for agent, login in logins.items():
             if not login:
                 continue
 
@@ -344,7 +341,7 @@ def _get_ongoing_logins(session, start, end):
 
     results = {}
 
-    for agent, login in six.iteritems(filtered_logins):
+    for agent, login in filtered_logins.items():
         if agent not in results:
             results[agent] = []
         results[agent].append((login, end))

@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 from hamcrest import assert_that, equal_to, none
 
@@ -18,7 +16,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestLineFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestLineFixes, self).setUp()
+        super().setUp()
         self.fixes = LineFixes(self.session)
 
     def test_when_update_context_extension_then_line_context_is_updated(self):

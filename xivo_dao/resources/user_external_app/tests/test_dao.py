@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 from hamcrest import (
     assert_that,
@@ -119,7 +117,7 @@ class TestFindAllBy(DAOTestCase):
 class TestSearch(DAOTestCase):
 
     def setUp(self):
-        super(TestSearch, self).setUp()
+        super().setUp()
         self.user = self.add_user()
 
     def assert_search_returns_result(self, search_result, **parameters):
@@ -144,7 +142,7 @@ class TestSimpleSearch(TestSearch):
 class TestSearchGivenMultipleUserExternalApps(TestSearch):
 
     def setUp(self):
-        super(TestSearchGivenMultipleUserExternalApps, self).setUp()
+        super().setUp()
         self.app1 = self.add_user_external_app(user_uuid=self.user.uuid, name='Ashton')
         self.app2 = self.add_user_external_app(user_uuid=self.user.uuid, name='Beaugarton')
         self.app3 = self.add_user_external_app(user_uuid=self.user.uuid, name='Casa')

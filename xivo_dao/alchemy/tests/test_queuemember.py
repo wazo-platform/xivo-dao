@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from unittest.mock import Mock
 from hamcrest import (
     assert_that,
     contains,
@@ -11,7 +11,6 @@ from hamcrest import (
     is_,
     none,
 )
-from mock import Mock
 
 from xivo_dao.tests.test_dao import DAOTestCase
 

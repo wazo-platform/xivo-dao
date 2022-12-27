@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.expression import and_, cast
@@ -47,10 +46,7 @@ class IVRSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters):
         query = self._search_on_extension(query)
-        return super(
-            IVRSearchSystem,
-            self,
-        ).search_from_query(query, parameters)
+        return super().search_from_query(query, parameters)
 
 
 ivr_search = IVRSearchSystem(config)

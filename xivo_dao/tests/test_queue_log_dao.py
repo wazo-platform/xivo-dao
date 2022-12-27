@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -22,7 +21,7 @@ TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f%z"
 class TestQueueLogDAO(DAOTestCase):
 
     def setUp(self):
-        super(TestQueueLogDAO, self).setUp()
+        super().setUp()
         self.queue_name = 'q1'
 
     def _insert_agent(self, aname, tenant_uuid=None):

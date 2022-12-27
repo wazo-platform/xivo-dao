@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -16,7 +15,7 @@ from hamcrest import (
     not_,
     not_none,
 )
-from mock import Mock
+from unittest.mock import Mock
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
@@ -32,7 +31,7 @@ from xivo_dao.resources.utils.search import SearchResult
 
 from .. import dao as group_dao
 
-UNKNOWN_UUID = u'99999999-9999-4999-8999-999999999999'
+UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 
 
 class TestFind(DAOTestCase):

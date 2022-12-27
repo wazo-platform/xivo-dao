@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -16,7 +15,7 @@ from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 
 
-class LineFixes(object):
+class LineFixes:
 
     def __init__(self, session):
         self.session = session
@@ -68,11 +67,11 @@ class LineFixes(object):
 
     def fix_protocol(self, row):
         if row.EndpointSIP:
-            interface = 'PJSIP/{}'.format(row.EndpointSIP.name)
+            interface = f'PJSIP/{row.EndpointSIP.name}'
             self.fix_queue_member(row, interface)
         elif row.SCCPLine:
             self.fix_sccp_line(row)
-            interface = 'SCCP/{}'.format(row.SCCPLine.name)
+            interface = f'SCCP/{row.SCCPLine.name}'
             self.fix_queue_member(row, interface)
         elif row.UserCustom:
             row.UserCustom.context = row.LineFeatures.context
@@ -108,7 +107,7 @@ class LineFixes(object):
                  .update({'interface': interface}))
 
                 if row.Extension:
-                    local_interface = 'Local/{}@{}'.format(row.Extension.exten, row.Extension.context)
+                    local_interface = f'Local/{row.Extension.exten}@{row.Extension.context}'
                     (self.session.query(QueueMember)
                      .filter(QueueMember.usertype == 'user')
                      .filter(QueueMember.userid == row.UserFeatures.id)

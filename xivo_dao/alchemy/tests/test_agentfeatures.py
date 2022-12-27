@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -68,7 +67,7 @@ class TestUsers(DAOTestCase):
 class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestDelete, self).setUp()
+        super().setUp()
         self.setup_funckeys()
 
     def test_funckeys_are_deleted(self):

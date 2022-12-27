@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import namedtuple
@@ -122,7 +121,7 @@ def get_agent_id_from_extension(session, extension, context):
                     .filter(AgentLoginStatus.context == context)
                     .first())
     if not login_status:
-        raise LookupError('No agent logged onto extension %s@%s' % (extension, context))
+        raise LookupError(f'No agent logged onto extension {extension}@{context}')
     return login_status.agent_id
 
 

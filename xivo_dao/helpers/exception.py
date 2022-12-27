@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -9,7 +8,7 @@ class ServiceError(ValueError):
     prefix = "Error"
 
     def __init__(self, message=None, metadata=None):
-        super(ServiceError, self).__init__(message)
+        super().__init__(message)
         self.metadata = metadata
 
 

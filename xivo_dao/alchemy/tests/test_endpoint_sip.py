@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2020-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -360,7 +359,7 @@ class TestCombinedOptions(DAOTestCase):
 
 class TestOptionValue(DAOTestCase):
     def setUp(self):
-        super(TestOptionValue, self).setUp()
+        super().setUp()
         self.sip = self.add_endpoint_sip()
         self.sip.endpoint_section_options = [('test', 'value')]
         EndpointSIPOptionsView.refresh()  # Simulate a database commit

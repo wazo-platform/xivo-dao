@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
-import six
 
 from xivo_dao.helpers import errors
 
 
-class ViewSelector(object):
+class ViewSelector:
 
     def __init__(self, default, **views):
         self.default = default
@@ -22,8 +20,7 @@ class ViewSelector(object):
         return self.views[name]
 
 
-@six.add_metaclass(abc.ABCMeta)
-class View(object):
+class View(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def query(self, session):

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -32,7 +31,7 @@ class PJSIPTransport(Base):
 
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
-        super(PJSIPTransport, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         for key, value in options:
             self._options.append(PJSIPTransportOption(key=key, value=value))
 

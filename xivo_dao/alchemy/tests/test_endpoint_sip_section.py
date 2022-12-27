@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -21,7 +20,7 @@ from ..endpoint_sip_section_option import EndpointSIPSectionOption
 class TestOptions(DAOTestCase):
 
     def setUp(self):
-        super(TestOptions, self).setUp()
+        super().setUp()
         self.endpoint_sip = self.add_endpoint_sip()
 
     def test_ondelete_cascade_when_options_are_not_in_session(self):

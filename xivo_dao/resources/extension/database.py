@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from xivo_dao.resources.extension.model import ForwardExtension, \
     ServiceExtension, AgentActionExtension
@@ -12,7 +9,7 @@ def clean_exten(exten):
     return exten.strip('_.')
 
 
-class ServiceExtensionConverter(object):
+class ServiceExtensionConverter:
 
     SERVICES = ("enablevm",
                 "vmusermsg",
@@ -38,13 +35,13 @@ class ServiceExtensionConverter(object):
                                 service=row.typeval)
 
 
-class ForwardExtensionConverter(object):
+class ForwardExtensionConverter:
 
     FORWARDS = {'fwdbusy': 'busy',
                 'fwdrna': 'noanswer',
                 'fwdunc': 'unconditional'}
 
-    TYPEVALS = {value: key for key, value in six.iteritems(FORWARDS)}
+    TYPEVALS = {value: key for key, value in FORWARDS.items()}
 
     def typevals(self):
         return list(self.FORWARDS.keys())
@@ -63,13 +60,13 @@ class ForwardExtensionConverter(object):
                                 forward=forward)
 
 
-class AgentActionExtensionConverter(object):
+class AgentActionExtensionConverter:
 
     ACTIONS = {'agentstaticlogin': 'login',
                'agentstaticlogoff': 'logout',
                'agentstaticlogtoggle': 'toggle'}
 
-    TYPEVALS = {value: key for key, value in six.iteritems(ACTIONS)}
+    TYPEVALS = {value: key for key, value in ACTIONS.items()}
 
     def typevals(self):
         return list(self.ACTIONS.keys())
@@ -88,13 +85,13 @@ class AgentActionExtensionConverter(object):
                                     action=action)
 
 
-class GroupMemberActionExtensionConverter(object):
+class GroupMemberActionExtensionConverter:
 
     ACTIONS = {'groupmemberjoin': 'join',
                'groupmemberleave': 'leave',
                'groupmembertoggle': 'toggle'}
 
-    TYPEVALS = {value: key for key, value in six.iteritems(ACTIONS)}
+    TYPEVALS = {value: key for key, value in ACTIONS.items()}
 
     def typevals(self):
         return list(self.ACTIONS.keys())

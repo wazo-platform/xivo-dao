@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2015-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -14,7 +13,7 @@ from xivo_dao.resources.extension.fixes import ExtensionFixes
 class TestExtensionFixes(DAOTestCase):
 
     def setUp(self):
-        super(TestExtensionFixes, self).setUp()
+        super().setUp()
         self.fixes = ExtensionFixes(self.session)
 
     def test_given_extension_associated_to_nothing_then_fixes_pass(self):

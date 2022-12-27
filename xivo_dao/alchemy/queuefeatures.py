@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-# Copyright 2007-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import six
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -192,7 +189,7 @@ class QueueFeatures(Base):
         options = self.merge_options_with_default_values(options)
         enabled = kwargs.pop('enabled', True)
         music_on_hold = kwargs.pop('music_on_hold', None)
-        super(QueueFeatures, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if not self._queue:
             self._queue = Queue(
                 # 'name' is set by the relationship foreign_key
@@ -235,7 +232,7 @@ class QueueFeatures(Base):
             if event not in dialactions:
                 self.queue_dialactions.pop(event, None)
 
-        for event, dialaction in six.iteritems(dialactions):
+        for event, dialaction in dialactions.items():
             self._set_dialaction(event, dialaction)
 
     def _set_dialaction(self, event, dialaction):

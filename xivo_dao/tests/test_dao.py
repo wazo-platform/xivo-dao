@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 # Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
 
 import datetime
 import itertools
@@ -12,7 +10,6 @@ import random
 import unittest
 import string
 import uuid
-import six
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy.pool import StaticPool
@@ -133,7 +130,7 @@ Session = sessionmaker()
 engine = None
 
 
-class ItemInserter(object):
+class ItemInserter:
 
     def __init__(self, session, tenant_uuid=None):
         self.session = session
@@ -145,7 +142,7 @@ class ItemInserter(object):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('email', None)
-        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
@@ -197,7 +194,7 @@ class ItemInserter(object):
     def add_user_line_with_queue_member(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -226,7 +223,7 @@ class ItemInserter(object):
                              endpoint_sip_uuid=kwargs['endpoint_sip_uuid'])
         self.add_queue_member(userid=user.id,
                               usertype='user',
-                              interface='PJSIP/{}'.format(line.name))
+                              interface=f'PJSIP/{line.name}')
         user_line = self.add_user_line(line_id=line.id,
                                        user_id=user.id)
 
@@ -238,7 +235,7 @@ class ItemInserter(object):
     def add_user_line_without_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -466,7 +463,7 @@ class ItemInserter(object):
         if 'lastname' in kwargs:
             fullname += " " + kwargs['lastname']
 
-        kwargs.setdefault('callerid', '"{}"'.format(fullname))
+        kwargs.setdefault('callerid', f'"{fullname}"')
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user
@@ -980,7 +977,7 @@ class ItemInserter(object):
         kwargs.setdefault('uuid', str(uuid.uuid4()))
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('name', self._random_name())
-        for fallback, destination in six.iteritems(kwargs.get('fallbacks', {})):
+        for fallback, destination in kwargs.get('fallbacks', {}).items():
             kwargs['fallbacks'][fallback] = Dialaction(**destination)
         switchboard = Switchboard(**kwargs)
         self.add_me(switchboard)
@@ -1022,7 +1019,7 @@ class ItemInserter(object):
     _generate_int_init = itertools.count(1)
 
     def _generate_int(self):
-        return six.next(self._generate_int_init)
+        return next(self._generate_int_init)
 
     def _generate_uuid(self):
         return str(uuid.uuid4())

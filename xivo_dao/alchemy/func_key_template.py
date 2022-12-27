@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column
@@ -27,7 +26,7 @@ class FuncKeyTemplate(Base):
         # keys should probably be retrieved by relationship
         # but that implies to convert FuncKeyMapping.destination as relationship
         self.keys = kwargs.pop('keys', {})
-        super(FuncKeyTemplate, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get(self, position):
         if position not in self.keys:

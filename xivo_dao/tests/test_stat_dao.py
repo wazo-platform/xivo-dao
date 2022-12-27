@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
-import six
 import pytz
 
 from datetime import datetime as t
@@ -809,11 +807,11 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(len(statistics), len(expected))
 
-        for agent, statistic in six.iteritems(statistics):
+        for agent, statistic in statistics.items():
             for login in statistic:
                 self.assertTrue(login in expected[agent])
 
-        for agent, statistic in six.iteritems(expected):
+        for agent, statistic in expected.items():
             for login in statistic:
                 self.assertTrue(login in statistics[agent])
 

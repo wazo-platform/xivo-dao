@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-class UserDirectory(object):
+class UserDirectory:
 
     def __init__(self, id, uuid, line_id, agent_id, firstname, lastname, exten, email,
                  mobile_phone_number, voicemail_number, userfield, description, context):
@@ -25,7 +24,7 @@ class UserDirectory(object):
         return self.__dict__ == other.__dict__
 
 
-class UserSummary(object):
+class UserSummary:
 
     def __init__(self, id, uuid, firstname, lastname, email, enabled, provisioning_code, protocol,
                  extension, context):

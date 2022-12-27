@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -423,7 +422,7 @@ class TestAssociateAllLines(DAOTestCase):
         self.add_queue_member(
             userid=user.id,
             usertype='user',
-            interface='PJSIP/{}'.format(sip.name),
+            interface=f'PJSIP/{sip.name}',
         )
         self.add_user_line(line_id=line.id, user_id=user.id)
 

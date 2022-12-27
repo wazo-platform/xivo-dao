@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import unicode_literals
-
-import six
-from collections import Iterable
+from collections.abc import Iterable
 
 from xivo_dao.helpers import errors
 
@@ -30,7 +26,7 @@ def convert_int_to_ast_true(value):
     return 'no'
 
 
-class AsteriskOptionsMixin(object):
+class AsteriskOptionsMixin:
 
     EXCLUDE_OPTIONS = set()
     EXCLUDE_OPTIONS_CONFD = set()
@@ -56,7 +52,7 @@ class AsteriskOptionsMixin(object):
             if column_name in self.AST_TRUE_INTEGER_COLUMNS:
                 return convert_int_to_ast_true(value)
             else:
-                return six.text_type(value)
+                return str(value)
         return None
 
     @options.setter
@@ -98,8 +94,8 @@ class AsteriskOptionsMixin(object):
         if not len(option) == 2:
             raise errors.wrong_type('options', 'list of pair of strings')
         for i in option:
-            if not isinstance(i, (str, six.text_type)):
-                raise errors.wrong_type('options', "value '{}' is not a string".format(i))
+            if not isinstance(i, str):
+                raise errors.wrong_type('options', f"value '{i}' is not a string")
 
     def set_native_option(self, column, value):
         if column in self.AST_TRUE_INTEGER_COLUMNS:
@@ -111,7 +107,7 @@ class AsteriskOptionsMixin(object):
 
     def native_option_names(self, exclude=None):
         exclude = set(exclude or []).union(self.EXCLUDE_OPTIONS)
-        return set(column.name for column in self.__table__.columns) - exclude
+        return {column.name for column in self.__table__.columns} - exclude
 
     def option_defaults(self):
         defaults = {}

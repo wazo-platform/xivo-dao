@@ -1,4 +1,4 @@
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -12,8 +12,7 @@ from xivo_dao.helpers.db_manager import Base
 
 
 def list_exported_classes():
-    for exported_class in sorted(xivo_dao.alchemy.all.__all__):
-        yield exported_class
+    yield from sorted(xivo_dao.alchemy.all.__all__)
 
 
 def explore_alchemy():

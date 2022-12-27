@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 # Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import unicode_literals
 
 from collections import (
     defaultdict,
@@ -382,7 +379,7 @@ def find_voicemail_general_settings(session):
     return res
 
 
-class _SIPEndpointResolver(object):
+class _SIPEndpointResolver:
 
     def __init__(self, endpoint_config, parents):
         self._endpoint_config = endpoint_config
@@ -422,9 +419,9 @@ class _SIPEndpointResolver(object):
         return self._get_section('registration_outbound_auth')
 
     def _get_section(self, name):
-        field_name = '_{}_section'.format(name)
+        field_name = f'_{name}_section'
         if getattr(self, field_name) is None:
-            build_method_name = '_build_{}_section'.format(name)
+            build_method_name = f'_build_{name}_section'
             build_method = getattr(self, build_method_name)
             section = build_method()
             setattr(self, field_name, section)
@@ -452,12 +449,12 @@ class _SIPEndpointResolver(object):
     def _add_parent_options(self, section_name, options=None):
         options = options or []
         for parent in self._iterover_parents():
-            method_name = 'get_{}_section'.format(section_name)
+            method_name = f'get_{section_name}_section'
             method = getattr(parent, method_name)
             for option in method():
                 options.append(option)
 
-        field_name = '{}_section_options'.format(section_name)
+        field_name = f'{section_name}_section_options'
         for option in self._base_config.get(field_name, []):
             options.append(option)
 
@@ -487,7 +484,7 @@ class _SIPEndpointResolver(object):
             if key == 'callerid':
                 original_caller_id = value
         if original_caller_id:
-            options.append(('set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)))
+            options.append(('set_var', f'XIVO_ORIGINAL_CALLER_ID={original_caller_id}'))
 
         aor_options = self.get_aor_section()
         if aor_options:
@@ -501,7 +498,7 @@ class _SIPEndpointResolver(object):
             options.append(('type', 'endpoint'))
 
             if self.get_outbound_auth_section():
-                options.append(('outbound_auth', 'outbound_auth_{}'.format(self._endpoint_config.name)))
+                options.append(('outbound_auth', f'outbound_auth_{self._endpoint_config.name}'))
 
         return options
 
@@ -524,7 +521,7 @@ class _SIPEndpointResolver(object):
             options.append(('type', 'registration'))
             options.append(('endpoint', self._endpoint_config.name))
             if self.get_registration_outbound_auth_section():
-                options.append(('outbound_auth', 'auth_reg_{}'.format(self._endpoint_config.name)))
+                options.append(('outbound_auth', f'auth_reg_{self._endpoint_config.name}'))
         return options
 
     def _build_registration_outbound_auth_section(self):
@@ -535,7 +532,7 @@ class _SIPEndpointResolver(object):
 
     def _default_endpoint_section(self):
         return [
-            ('set_var', '__WAZO_TENANT_UUID={}'.format(self._endpoint_config.tenant_uuid)),
+            ('set_var', f'__WAZO_TENANT_UUID={self._endpoint_config.tenant_uuid}'),
         ]
 
     def _iterover_parents(self):
@@ -591,24 +588,24 @@ class _SIPEndpointResolver(object):
 
 class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
     def __init__(self, meeting, parents):
-        super(_EndpointSIPMeetingResolver, self).__init__(meeting.guest_endpoint_sip, parents)
+        super().__init__(meeting.guest_endpoint_sip, parents)
         self._meeting = meeting
 
     def _default_endpoint_section(self):
-        return super(_EndpointSIPMeetingResolver, self)._default_endpoint_section() + [
+        return super()._default_endpoint_section() + [
             ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-            ('set_var', 'WAZO_MEETING_UUID={}'.format(self._meeting.uuid)),
-            ('set_var', 'WAZO_MEETING_NAME={}'.format(self._meeting.name)),
+            ('set_var', f'WAZO_MEETING_UUID={self._meeting.uuid}'),
+            ('set_var', f'WAZO_MEETING_NAME={self._meeting.name}'),
         ]
 
 
 class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
     def __init__(self, trunk, parents):
-        super(_EndpointSIPTrunkResolver, self).__init__(trunk.endpoint_sip, parents)
+        super().__init__(trunk.endpoint_sip, parents)
         self._trunk = trunk
 
     def _default_endpoint_section(self):
-        options = super(_EndpointSIPTrunkResolver, self)._default_endpoint_section()
+        options = super()._default_endpoint_section()
 
         if self._trunk.context:
             options.append(('context', self._trunk.context))
@@ -618,7 +615,7 @@ class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
 
 class _EndpointSIPLineResolver(_SIPEndpointResolver):
     def __init__(self, line, parents, pickup_members):
-        super(_EndpointSIPLineResolver, self).__init__(line.endpoint_sip, parents)
+        super().__init__(line.endpoint_sip, parents)
         self._line = line
         self._pickup_members = pickup_members
 
@@ -626,13 +623,13 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         mailboxes = []
         for user in self._line.users:
             if user.voicemail:
-                mailboxes.append('{}@{}'.format(user.voicemail.number, user.voicemail.context))
+                mailboxes.append(f'{user.voicemail.number}@{user.voicemail.context}')
         if mailboxes:
             options.append(('mailboxes', ','.join(mailboxes)))
         return options
 
     def _build_aor_section(self):
-        options = super(_EndpointSIPLineResolver, self)._build_aor_section()
+        options = super()._build_aor_section()
         options = self._add_mailboxes(options)
 
         if options:
@@ -641,14 +638,14 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         return options
 
     def _default_endpoint_section(self):
-        options = super(_EndpointSIPLineResolver, self)._default_endpoint_section() + [
+        options = super()._default_endpoint_section() + [
             ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-            ('set_var', 'WAZO_LINE_ID={}'.format(self._line.id)),
+            ('set_var', f'WAZO_LINE_ID={self._line.id}'),
         ]
 
         context_name = self._line.context
         if self._line.application_uuid:
-            outgoing_context = 'stasis-wazo-app-{}'.format(self._line.application_uuid)
+            outgoing_context = f'stasis-wazo-app-{self._line.application_uuid}'
         elif context_name:
             outgoing_context = context_name
         else:
@@ -657,17 +654,17 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         if outgoing_context:
             options.append(('context', outgoing_context))
         if context_name:
-            options.append(('set_var', 'TRANSFER_CONTEXT={}'.format(context_name)))
+            options.append(('set_var', f'TRANSFER_CONTEXT={context_name}'))
 
         for user in self._line.users:
-            options.append(('set_var', 'XIVO_USERID={}'.format(user.id)))
-            options.append(('set_var', 'XIVO_USERUUID={}'.format(user.uuid)))
+            options.append(('set_var', f'XIVO_USERID={user.id}'))
+            options.append(('set_var', f'XIVO_USERUUID={user.uuid}'))
             if user.enableonlinerec:
                 options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
 
         if self._line.extensions:
             for extension in self._line.extensions:
-                options.append(('set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)))
+                options.append(('set_var', f'PICKUPMARK={extension.exten}%{extension.context}'))
                 break
 
         pickup_groups = self._pickup_members.get(self._endpoint_config.uuid, {})
@@ -986,10 +983,10 @@ def find_queue_members_settings(session, queue_name):
     for row in user_members:
         if is_user_in_group(row):
             member = Member(
-                interface='Local/{}@usersharedlines'.format(row.uuid),
+                interface=f'Local/{row.uuid}@usersharedlines',
                 penalty=str(row.penalty),
                 name='',
-                state_interface='hint:{}@usersharedlines'.format(row.uuid),
+                state_interface=f'hint:{row.uuid}@usersharedlines',
             )
         else:
             member = Member(

@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import six
 from sqlalchemy import or_
 
 from xivo_dao.alchemy.extension import Extension
@@ -44,7 +42,7 @@ def find_users_having_user_destination(session, destination_user):
     return query.all()
 
 
-class _ForwardTypeConverter(object):
+class _ForwardTypeConverter:
 
     fwd_types = {
         'unconditional': 'fwdunc',
@@ -52,7 +50,7 @@ class _ForwardTypeConverter(object):
         'busy': 'fwdbusy',
     }
 
-    reversed_types = dict((value, key) for key, value in six.iteritems(fwd_types))
+    reversed_types = {value: key for key, value in fwd_types.items()}
 
     def db_to_model(self, db_type):
         return self.reversed_types[db_type]

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2013-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -90,11 +89,11 @@ class QueueMember(Base):
         main_line = user.lines[0]
         if main_line.endpoint_sip:
             self.channel = 'SIP'
-            self.interface = 'PJSIP/{}'.format(main_line.endpoint_sip.name)
+            self.interface = f'PJSIP/{main_line.endpoint_sip.name}'
 
         elif main_line.endpoint_sccp:
             self.channel = 'SCCP'
-            self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
+            self.interface = f'{self.channel}/{main_line.endpoint_sccp.name}'
 
         elif main_line.endpoint_custom:
             self.channel = '**Unknown**'
@@ -102,11 +101,11 @@ class QueueMember(Base):
 
     def _fix_agent(self, agent):
         self.channel = 'Agent'
-        self.interface = '{}/{}'.format(self.channel, agent.number)
+        self.interface = f'{self.channel}/{agent.number}'
 
     def _fix_local(self):
         self.channel = 'Local'
-        self.interface = '{}/{}@{}'.format(self.channel, self.exten, self.context)
+        self.interface = f'{self.channel}/{self.exten}@{self.context}'
 
     @hybrid_property
     def priority(self):
