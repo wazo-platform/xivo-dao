@@ -11,6 +11,9 @@ X-Python3-Version: >= 3.7
 
 Package: xivo-libdao-python3
 Architecture: all
+Provides: xivo-libdao
+Conflicts: xivo-libdao
+Replaces: xivo-libdao
 Depends: ${python3:Depends},
          ${misc:Depends},
          xivo-lib-python-python3,
