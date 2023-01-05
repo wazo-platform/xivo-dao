@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import Column, MetaData, PrimaryKeyConstraint, Table, Index
@@ -19,8 +19,9 @@ from .db_manager import Base, Session, daosession
 #
 # Notes:
 # * SQLAlchemy-utils package provides utilities for database views
-#   Until wazo-platform fully drops python2 support, we cannot use recent enough sqlalchemy-utils
-#   because of packaging issues, forcing the custom implementation below
+#   Until wazo-platform runs on Debian Bullseye, we cannot use recent
+#   enough packaged sqlalchemy-utils (>= 0.33.6, buster is 0.32.21) which
+#   implements the view functions below
 
 
 # Todo: Replace by SQLAlchemy-Utils when possible
