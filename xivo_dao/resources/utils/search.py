@@ -1,7 +1,9 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
 
-from collections import namedtuple
+from typing import Any, List, NamedTuple
+
 from unidecode import unidecode
 
 import sqlalchemy as sa
@@ -12,7 +14,10 @@ from sqlalchemy.types import Integer
 
 from xivo_dao.helpers import errors
 
-SearchResult = namedtuple('SearchResult', ['total', 'items'])
+
+class SearchResult(NamedTuple):
+    total: int
+    items: List[Any]
 
 
 class unaccent(ReturnTypeFromArgs):

@@ -1,7 +1,9 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
 
-from collections import namedtuple
+from datetime import datetime
+from typing import List, NamedTuple, Union
 from sqlalchemy.sql.expression import case
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -13,23 +15,24 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 
-_AgentStatus = namedtuple(
-    '_AgentStatus',
-    [
-        'agent_id',
-        'agent_number',
-        'extension',
-        'context',
-        'interface',
-        'state_interface',
-        'login_at',
-        'paused',
-        'paused_reason',
-        'queues',
-        'user_ids',
-    ]
-)
-_Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
+class _Queue(NamedTuple):
+    id: int
+    name: str
+    penalty: int
+
+
+class _AgentStatus(NamedTuple):
+    agent_id: int
+    agent_number: str
+    extension: str
+    context: str
+    interface: str
+    state_interface: str
+    login_at: datetime
+    paused: bool
+    paused_reason: Union[str, None]
+    queues: List[_Queue]
+    user_ids: List[int]
 
 
 @daosession
