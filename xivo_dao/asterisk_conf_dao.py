@@ -1,10 +1,9 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
 
-from collections import (
-    defaultdict,
-    namedtuple,
-)
+from typing import NamedTuple
+from collections import defaultdict
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import (
@@ -51,6 +50,13 @@ from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.resources.features.search import PARKING_OPTIONS
+
+
+class Member(NamedTuple):
+    interface: str
+    penalty: str
+    name: str
+    state_interface: str
 
 
 @daosession
@@ -979,7 +985,6 @@ def find_queue_members_settings(session, queue_name):
         return row.category == 'group' and row.uuid is not None
 
     res = []
-    Member = namedtuple('Member', ['interface', 'penalty', 'name', 'state_interface'])
     for row in user_members:
         if is_user_in_group(row):
             member = Member(

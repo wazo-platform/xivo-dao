@@ -1,7 +1,8 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
 
-from collections import namedtuple
+from typing import List, NamedTuple
 from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -10,8 +11,19 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 
-_Agent = namedtuple('_Agent', ['id', 'tenant_uuid', 'number', 'queues', 'user_ids'])
-_Queue = namedtuple('_Queue', ['id', 'tenant_uuid', 'name', 'penalty'])
+class _Agent(NamedTuple):
+    id: int
+    tenant_uuid: str
+    number: str
+    queues: List[QueueFeatures]
+    user_ids: List[int]
+
+
+class _Queue(NamedTuple):
+    id: int
+    tenant_uuid: str
+    name: str
+    penalty: int
 
 
 @daosession
