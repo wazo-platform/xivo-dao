@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -307,8 +307,8 @@ class UserFeatures(Base):
             PickupMember.membertype == 'user',
             PickupMember.memberid == UserFeatures.id
         )""",
-        secondary="join(PickupMember, Pickup, Pickup.id == PickupMember.pickupid)",
-        secondaryjoin="Pickup.id == PickupMember.pickupid",
+        secondary="pickupmember",
+        secondaryjoin="Pickup.id == pickupmember.c.pickupid",
         foreign_keys='PickupMember.pickupid,PickupMember.memberid',
         viewonly=True,
     )
