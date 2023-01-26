@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.tests.test_dao import (
@@ -38,7 +38,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual('SCCP/1001', interface)
 
     def test_get_interface_from_exten_and_context_custom(self):
-        name = 'dahdi/g1/12345'
+        name = 'custom/g1/12345'
         extension = self.add_extension(exten=EXTEN, context=CONTEXT)
         custom = self.add_usercustom()
         line = self.add_line(name=name, endpoint_custom_id=custom.id)
@@ -46,7 +46,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
 
-        self.assertEqual('dahdi/g1/12345', interface)
+        self.assertEqual('custom/g1/12345', interface)
 
     def test_get_interface_from_exten_and_context_multiple_lines(self):
         main_exten = '1234'

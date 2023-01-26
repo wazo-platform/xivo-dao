@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -17,5 +17,4 @@ class Monitoring(Base):
     id = Column(Integer, nullable=False)
     maintenance = Column(Integer, nullable=False, server_default='0')
     alert_emails = Column(String(4096))
-    dahdi_monitor_ports = Column(String(255))
     max_call_duration = Column(Integer)
