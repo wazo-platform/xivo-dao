@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -28,6 +28,7 @@ class RightCallMember(Base):
                          primaryjoin="""and_(RightCallMember.type == 'group',
                                              RightCallMember.typeval == cast(GroupFeatures.id, String))""",
                          foreign_keys='RightCallMember.typeval',
+                         lazy='selectin',
                          viewonly=True)
 
     outcall = relationship('Outcall',
@@ -40,6 +41,7 @@ class RightCallMember(Base):
                         primaryjoin="""and_(RightCallMember.type == 'user',
                                             RightCallMember.typeval == cast(UserFeatures.id, String))""",
                         foreign_keys='RightCallMember.typeval',
+                        lazy='selectin',
                         viewonly=True)
 
     rightcall = relationship('RightCall',
