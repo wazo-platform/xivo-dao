@@ -25,7 +25,7 @@ def _format_list(elements):
     return ', '.join(elements)
 
 
-class FormattedError(Exception):
+class FormattedError:
 
     def __init__(self, exception, error_template):
         self.exception = exception
