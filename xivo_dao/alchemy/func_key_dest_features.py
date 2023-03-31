@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -8,6 +8,7 @@ from sqlalchemy.schema import (
     Column,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     PrimaryKeyConstraint,
 )
 from sqlalchemy.types import Integer
@@ -27,6 +28,7 @@ class FuncKeyDestFeatures(Base):
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
+        Index('func_key_dest_features__idx__features_id', 'features_id'),
     )
 
     func_key_id = Column(Integer)

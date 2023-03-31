@@ -1,4 +1,4 @@
-# Copyright 2019-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2019-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -9,6 +9,7 @@ from sqlalchemy.schema import (
     Column,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -31,6 +32,8 @@ class FuncKeyDestGroupMember(Base):
                              ['func_key.id', 'func_key.destination_type_id']),
         UniqueConstraint('group_id', 'extension_id'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
+        Index('func_key_dest_groupmember__idx__group_id', 'group_id'),
+        Index('func_key_dest_groupmember__idx__extension_id', 'extension_id'),
     )
 
     func_key_id = Column(Integer)

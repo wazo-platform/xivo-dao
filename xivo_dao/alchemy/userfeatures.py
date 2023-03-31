@@ -81,6 +81,8 @@ class UserFeatures(Base):
         Index('userfeatures__idx__musiconhold', 'musiconhold'),
         Index('userfeatures__idx__uuid', 'uuid'),
         Index('userfeatures__idx__voicemailid', 'voicemailid'),
+        Index('userfeatures__idx__func_key_template_id', 'func_key_template_id'),
+        Index('userfeatures__idx__func_key_private_template_id', 'func_key_private_template_id'),
     )
 
     id = Column(Integer, nullable=False)

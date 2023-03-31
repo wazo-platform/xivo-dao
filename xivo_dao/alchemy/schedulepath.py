@@ -1,4 +1,4 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -15,6 +15,7 @@ class SchedulePath(Base):
     __table_args__ = (
         PrimaryKeyConstraint('schedule_id', 'path', 'pathid'),
         Index('schedule_path_path', 'path', 'pathid'),
+        Index('schedule_path__idx__schedule_id', 'schedule_id'),
     )
 
     schedule_id = Column(Integer, ForeignKey('schedule.id'))

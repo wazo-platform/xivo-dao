@@ -1,7 +1,7 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index
 from sqlalchemy.types import Integer, DateTime
 from sqlalchemy.orm import relationship
 
@@ -12,6 +12,9 @@ from xivo_dao.helpers.db_manager import Base
 class StatQueuePeriodic(Base):
 
     __tablename__ = 'stat_queue_periodic'
+    __table_args__ = (
+        Index('stat_queue_periodic__idx__stat_queue_id', 'stat_queue_id'),
+    )
 
     id = Column(Integer, primary_key=True)
     time = Column(DateTime(timezone=True), nullable=False)

@@ -1,10 +1,13 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.types import Integer, Boolean
-from sqlalchemy.schema import (Column,
-                               ForeignKey,
-                               PrimaryKeyConstraint)
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    Index,
+    PrimaryKeyConstraint,
+)
 from sqlalchemy.orm import relationship
 from xivo_dao.helpers.db_manager import Base
 
@@ -14,6 +17,8 @@ class LineExtension(Base):
     __tablename__ = 'line_extension'
     __table_args__ = (
         PrimaryKeyConstraint('line_id', 'extension_id'),
+        Index('line_extension__idx__line_id', 'line_id'),
+        Index('line_extension__idx__extension_id', 'extension_id'),
     )
 
     line_id = Column(Integer, ForeignKey('linefeatures.id', ondelete='CASCADE'), nullable=False)
