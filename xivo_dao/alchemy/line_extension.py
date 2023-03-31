@@ -28,12 +28,11 @@ class LineExtension(Base):
     linefeatures = relationship("LineFeatures")
     extensions = relationship("Extension")
 
-    main_extension_rel = relationship("Extension",
-                                      primaryjoin="""and_(LineExtension.extension_id == Extension.id,
-                                      LineExtension.main_extension == True)"""
-                                      )
+    main_extension_rel = relationship(
+        "Extension",
+        primaryjoin="and_(LineExtension.extension_id == Extension.id, LineExtension.main_extension == True)"
+    )
 
-    line = relationship('LineFeatures',
-                        back_populates='line_extensions')
+    line = relationship('LineFeatures', back_populates='line_extensions')
 
     extension = relationship('Extension')

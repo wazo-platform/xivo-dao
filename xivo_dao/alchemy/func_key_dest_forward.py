@@ -26,8 +26,10 @@ class FuncKeyDestForward(Base):
     __tablename__ = 'func_key_dest_forward'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
-        ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
-                             ['func_key.id', 'func_key.destination_type_id']),
+        ForeignKeyConstraint(
+            ('func_key_id', 'destination_type_id'),
+            ('func_key.id', 'func_key.destination_type_id'),
+        ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         Index('func_key_dest_forward__idx__extension_id', 'extension_id'),
     )
@@ -45,8 +47,7 @@ class FuncKeyDestForward(Base):
     extension_typeval = association_proxy(
         'extension', 'typeval',
         # Only to keep value persistent in the instance
-        creator=lambda _typeval: Extension(type='extenfeatures',
-                                           typeval=_typeval)
+        creator=lambda _typeval: Extension(type='extenfeatures', typeval=_typeval)
     )
 
     def to_tuple(self):

@@ -25,18 +25,18 @@ class UserLine(Base):
     linefeatures = relationship("LineFeatures")
     userfeatures = relationship("UserFeatures")
 
-    main_user_rel = relationship("UserFeatures",
-                                 primaryjoin="""and_(UserLine.user_id == UserFeatures.id,
-                                 UserLine.main_user == True)"""
-                                 )
+    main_user_rel = relationship(
+        "UserFeatures",
+        primaryjoin="""and_(UserLine.user_id == UserFeatures.id,
+                            UserLine.main_user == True)"""
+    )
 
-    main_line_rel = relationship("LineFeatures",
-                                 primaryjoin="""and_(UserLine.line_id == LineFeatures.id,
-                                 UserLine.main_line == True)"""
-                                 )
+    main_line_rel = relationship(
+        "LineFeatures",
+        primaryjoin="""and_(UserLine.line_id == LineFeatures.id,
+                            UserLine.main_line == True)"""
+    )
 
-    user = relationship('UserFeatures',
-                        back_populates='user_lines')
+    user = relationship('UserFeatures', back_populates='user_lines')
 
-    line = relationship('LineFeatures',
-                        back_populates='user_lines')
+    line = relationship('LineFeatures', back_populates='user_lines')

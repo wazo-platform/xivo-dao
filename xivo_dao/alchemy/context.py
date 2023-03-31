@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -21,8 +21,10 @@ class Context(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
-        ForeignKeyConstraint(('tenant_uuid',),
-                             ('tenant.uuid',)),
+        ForeignKeyConstraint(
+            ('tenant_uuid',),
+            ('tenant.uuid',),
+        ),
     )
 
     id = Column(Integer)
@@ -33,55 +35,72 @@ class Context(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    context_numbers_user = relationship(ContextNumbers,
-                                        primaryjoin="""and_(
-                                            ContextNumbers.type == 'user',
-                                            ContextNumbers.context == Context.name)""",
-                                        foreign_keys='ContextNumbers.context',
-                                        cascade='all, delete-orphan')
+    context_numbers_user = relationship(
+        ContextNumbers,
+        primaryjoin="""and_(
+            ContextNumbers.type == 'user',
+            ContextNumbers.context == Context.name)""",
+        foreign_keys='ContextNumbers.context',
+        cascade='all, delete-orphan',
+    )
 
-    context_numbers_group = relationship(ContextNumbers,
-                                         primaryjoin="""and_(
-                                             ContextNumbers.type == 'group',
-                                             ContextNumbers.context == Context.name)""",
-                                         foreign_keys='ContextNumbers.context',
-                                         cascade='all, delete-orphan')
+    context_numbers_group = relationship(
+        ContextNumbers,
+        primaryjoin="""and_(
+            ContextNumbers.type == 'group',
+            ContextNumbers.context == Context.name)""",
+        foreign_keys='ContextNumbers.context',
+        cascade='all, delete-orphan',
+    )
 
-    context_numbers_queue = relationship(ContextNumbers,
-                                         primaryjoin="""and_(
-                                             ContextNumbers.type == 'queue',
-                                             ContextNumbers.context == Context.name)""",
-                                         foreign_keys='ContextNumbers.context',
-                                         cascade='all, delete-orphan')
+    context_numbers_queue = relationship(
+        ContextNumbers,
+        primaryjoin="""and_(
+            ContextNumbers.type == 'queue',
+            ContextNumbers.context == Context.name)""",
+        foreign_keys='ContextNumbers.context',
+        cascade='all, delete-orphan',
+    )
 
-    context_numbers_meetme = relationship(ContextNumbers,
-                                          primaryjoin="""and_(
-                                              ContextNumbers.type == 'meetme',
-                                              ContextNumbers.context == Context.name)""",
-                                          foreign_keys='ContextNumbers.context',
-                                          cascade='all, delete-orphan')
+    context_numbers_meetme = relationship(
+        ContextNumbers,
+        primaryjoin="""and_(
+            ContextNumbers.type == 'meetme',
+            ContextNumbers.context == Context.name)""",
+        foreign_keys='ContextNumbers.context',
+        cascade='all, delete-orphan',
+    )
 
-    context_numbers_incall = relationship(ContextNumbers,
-                                          primaryjoin="""and_(
-                                              ContextNumbers.type == 'incall',
-                                              ContextNumbers.context == Context.name)""",
-                                          foreign_keys='ContextNumbers.context',
-                                          cascade='all, delete-orphan')
+    context_numbers_incall = relationship(
+        ContextNumbers,
+        primaryjoin="""and_(
+            ContextNumbers.type == 'incall',
+            ContextNumbers.context == Context.name)""",
+        foreign_keys='ContextNumbers.context',
+        cascade='all, delete-orphan'
+    )
 
-    context_includes_children = relationship('ContextInclude',
-                                             primaryjoin='ContextInclude.include == Context.name',
-                                             foreign_keys='ContextInclude.include',
-                                             cascade='all, delete-orphan')
+    context_includes_children = relationship(
+        'ContextInclude',
+        primaryjoin='ContextInclude.include == Context.name',
+        foreign_keys='ContextInclude.include',
+        cascade='all, delete-orphan',
+    )
 
-    context_include_parents = relationship('ContextInclude',
-                                           primaryjoin='ContextInclude.context == Context.name',
-                                           foreign_keys='ContextInclude.context',
-                                           order_by='ContextInclude.priority',
-                                           collection_class=ordering_list('priority', reorder_on_append=True),
-                                           cascade='all, delete-orphan')
+    context_include_parents = relationship(
+        'ContextInclude',
+        primaryjoin='ContextInclude.context == Context.name',
+        foreign_keys='ContextInclude.context',
+        order_by='ContextInclude.priority',
+        collection_class=ordering_list('priority', reorder_on_append=True),
+        cascade='all, delete-orphan',
+    )
 
-    contexts = association_proxy('context_include_parents', 'included_context',
-                                 creator=lambda _context: ContextInclude(included_context=_context))
+    contexts = association_proxy(
+        'context_include_parents',
+        'included_context',
+        creator=lambda _context: ContextInclude(included_context=_context)
+    )
 
     tenant = relationship('Tenant', viewonly=True)
 

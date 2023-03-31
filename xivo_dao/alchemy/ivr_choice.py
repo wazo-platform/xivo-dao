@@ -21,13 +21,15 @@ class IVRChoice(Base):
     ivr_id = Column(Integer, ForeignKey('ivr.id'), nullable=False)
     exten = Column(String(40), nullable=False)
 
-    dialaction = relationship(Dialaction,
-                              primaryjoin="""and_(Dialaction.category == 'ivr_choice',
-                                                  Dialaction.categoryval == cast(IVRChoice.id, String))""",
-                              foreign_keys='Dialaction.categoryval',
-                              cascade='all, delete-orphan',
-                              back_populates='ivr_choice',
-                              uselist=False)
+    dialaction = relationship(
+        Dialaction,
+        primaryjoin="""and_(Dialaction.category == 'ivr_choice',
+                            Dialaction.categoryval == cast(IVRChoice.id, String))""",
+        foreign_keys='Dialaction.categoryval',
+        cascade='all, delete-orphan',
+        back_populates='ivr_choice',
+        uselist=False
+    )
 
     @property
     def destination(self):

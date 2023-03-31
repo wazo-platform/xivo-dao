@@ -25,8 +25,10 @@ class FuncKeyDestFeatures(Base):
     __tablename__ = 'func_key_dest_features'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'features_id'),
-        ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
-                             ['func_key.id', 'func_key.destination_type_id']),
+        ForeignKeyConstraint(
+            ('func_key_id', 'destination_type_id'),
+            ('func_key.id', 'func_key.destination_type_id'),
+        ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         Index('func_key_dest_features__idx__features_id', 'features_id'),
     )

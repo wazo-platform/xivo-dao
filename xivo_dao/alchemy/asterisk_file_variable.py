@@ -18,6 +18,8 @@ class AsteriskFileVariable(Base):
     key = Column(String(255), nullable=False)
     value = Column(Text)
     priority = Column(Integer)
-    asterisk_file_section_id = Column(Integer,
-                                      ForeignKey('asterisk_file_section.id', ondelete='CASCADE'),
-                                      nullable=False)
+    asterisk_file_section_id = Column(
+        Integer,
+        ForeignKey('asterisk_file_section.id', ondelete='CASCADE'),
+        nullable=False,
+    )

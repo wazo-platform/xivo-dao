@@ -19,11 +19,15 @@ class AsteriskFileSection(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     priority = Column(Integer)
-    asterisk_file_id = Column(Integer,
-                              ForeignKey('asterisk_file.id', ondelete='CASCADE'),
-                              nullable=False)
+    asterisk_file_id = Column(
+        Integer,
+        ForeignKey('asterisk_file.id', ondelete='CASCADE'),
+        nullable=False,
+    )
 
-    variables = relationship('AsteriskFileVariable',
-                             order_by='AsteriskFileVariable.priority',
-                             cascade='all, delete-orphan',
-                             passive_deletes=True)
+    variables = relationship(
+        'AsteriskFileVariable',
+        order_by='AsteriskFileVariable.priority',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
+    )

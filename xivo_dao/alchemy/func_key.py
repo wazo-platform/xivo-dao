@@ -21,9 +21,11 @@ class FuncKey(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     type_id = Column(Integer, ForeignKey('func_key_type.id'), nullable=False)
-    destination_type_id = Column(Integer,
-                                 ForeignKey('func_key_destination_type.id'),
-                                 primary_key=True)
+    destination_type_id = Column(
+        Integer,
+        ForeignKey('func_key_destination_type.id'),
+        primary_key=True,
+    )
 
     func_key_type = relationship(FuncKeyType, foreign_keys=type_id)
     destination_type = relationship(FuncKeyDestinationType, foreign_keys=destination_type_id, viewonly=True)

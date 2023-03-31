@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -18,8 +18,10 @@ class FuncKeyDestParkPosition(Base):
     __tablename__ = 'func_key_dest_park_position'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id'),
-        ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
-                             ['func_key.id', 'func_key.destination_type_id']),
+        ForeignKeyConstraint(
+            ('func_key_id', 'destination_type_id'),
+            ('func_key.id', 'func_key.destination_type_id'),
+        ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         CheckConstraint("park_position ~ '^[0-9]+$'")
     )
