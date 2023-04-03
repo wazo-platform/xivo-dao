@@ -19,9 +19,6 @@ from xivo_dao.helpers.db_manager import Base
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
-    __table_args__ = (
-        Index('usersip__idx__tenant_uuid', 'tenant_uuid'),
-    )
 
     id = Column(Integer, nullable=False)
     tenant_uuid = Column(
