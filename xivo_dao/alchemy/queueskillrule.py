@@ -1,8 +1,8 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index
 from sqlalchemy.sql import func, case
 from sqlalchemy.types import Integer, String, Text
 
@@ -12,9 +12,16 @@ from xivo_dao.helpers.db_manager import Base
 class QueueSkillRule(Base):
 
     __tablename__ = 'queueskillrule'
+    __table_args__ = (
+        Index('queueskillrule__idx__tenant_uuid', 'tenant_uuid'),
+    )
 
     id = Column(Integer, primary_key=True)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(64), nullable=False)
     rule = Column(Text)
 

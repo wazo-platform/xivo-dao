@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -6,8 +6,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
-    PrimaryKeyConstraint,
     ForeignKey,
+    Index,
+    PrimaryKeyConstraint,
 )
 from sqlalchemy.sql import (
     cast,
@@ -31,10 +32,15 @@ class Incall(Base):
     __tablename__ = 'incall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        Index('incall__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     preprocess_subroutine = Column(String(39))
     greeting_sound = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')

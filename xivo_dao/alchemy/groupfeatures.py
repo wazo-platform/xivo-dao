@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -30,6 +30,7 @@ class GroupFeatures(Base):
         PrimaryKeyConstraint('id'),
         Index('groupfeatures__idx__name', 'name'),
         Index('groupfeatures__idx__uuid', 'uuid'),
+        Index('groupfeatures__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)

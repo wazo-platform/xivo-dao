@@ -1,10 +1,10 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import Enum, text, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, UniqueConstraint
+from sqlalchemy.schema import Column, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 
 from xivo_dao.helpers.db_manager import Base
@@ -16,6 +16,7 @@ class EndpointSIPSection(Base):
     __tablename__ = 'endpoint_sip_section'
     __table_args__ = (
         UniqueConstraint('type', 'endpoint_sip_uuid'),
+        Index('endpoint_sip_section__idx__endpoint_sip_uuid', 'endpoint_sip_uuid'),
     )
 
     uuid = Column(

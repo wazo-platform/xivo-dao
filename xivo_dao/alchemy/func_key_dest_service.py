@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -9,6 +9,7 @@ from sqlalchemy.schema import (
     Column,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     PrimaryKeyConstraint,
 )
 from sqlalchemy.types import Integer
@@ -25,9 +26,12 @@ class FuncKeyDestService(Base):
     __tablename__ = 'func_key_dest_service'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
-        ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
-                             ['func_key.id', 'func_key.destination_type_id']),
+        ForeignKeyConstraint(
+            ('func_key_id', 'destination_type_id'),
+            ('func_key.id', 'func_key.destination_type_id'),
+        ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
+        Index('func_key_dest_service__idx__extension_id', 'extension_id'),
     )
 
     func_key_id = Column(Integer)
@@ -42,8 +46,7 @@ class FuncKeyDestService(Base):
     extension_typeval = association_proxy(
         'extension', 'typeval',
         # Only to keep value persistent in the instance
-        creator=lambda _typeval: Extension(type='extenfeatures',
-                                           typeval=_typeval)
+        creator=lambda _typeval: Extension(type='extenfeatures', typeval=_typeval)
     )
 
     def to_tuple(self):

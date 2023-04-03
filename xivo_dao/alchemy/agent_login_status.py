@@ -1,9 +1,9 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index, UniqueConstraint
 from sqlalchemy.types import Integer, String, DateTime, Boolean
 
 from xivo_dao.helpers.db_manager import Base
@@ -15,7 +15,8 @@ class AgentLoginStatus(Base):
     __table_args__ = (
         PrimaryKeyConstraint('agent_id'),
         UniqueConstraint('extension', 'context'),
-        UniqueConstraint('interface')
+        UniqueConstraint('interface'),
+        Index('agent_login_status__idx__agent_id', 'agent_id'),
     )
 
     agent_id = Column(Integer, autoincrement=False)

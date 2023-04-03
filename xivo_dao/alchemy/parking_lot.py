@@ -1,9 +1,9 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.sql import (
     cast,
     select,
@@ -19,10 +19,15 @@ class ParkingLot(Base):
     __tablename__ = 'parking_lot'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        Index('parking_lot__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128))
     slots_start = Column(String(40), nullable=False)
     slots_end = Column(String(40), nullable=False)

@@ -1,4 +1,4 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -14,10 +14,19 @@ class SwitchboardMemberUser(Base):
     __table_args__ = (
         PrimaryKeyConstraint('switchboard_uuid', 'user_uuid'),
         Index('switchboard_member_user__idx__switchboard_uuid', 'switchboard_uuid'),
+        Index('switchboard_member_user__idx__user_uuid', 'user_uuid'),
     )
 
-    switchboard_uuid = Column(String(38), ForeignKey('switchboard.uuid'), nullable=False)
-    user_uuid = Column(String(38), ForeignKey('userfeatures.uuid'), nullable=False)
+    switchboard_uuid = Column(
+        String(38),
+        ForeignKey('switchboard.uuid'),
+        nullable=False,
+    )
+    user_uuid = Column(
+        String(38),
+        ForeignKey('userfeatures.uuid'),
+        nullable=False,
+    )
 
     switchboard = relationship('Switchboard')
     user = relationship('UserFeatures')

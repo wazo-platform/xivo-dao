@@ -1,8 +1,8 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.exception import InputError
@@ -16,10 +16,15 @@ class SCCPLine(Base):
     __tablename__ = 'sccpline'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        Index('sccpline__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(80), nullable=False)
     context = Column(String(80), nullable=False)
     cid_name = Column(String(80), nullable=False)

@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, Index
@@ -15,6 +15,8 @@ class StatCallOnQueue(Base):
     __tablename__ = 'stat_call_on_queue'
     __table_args__ = (
         Index('stat_call_on_queue__idx_callid', 'callid'),
+        Index('stat_call_on_queue__idx__stat_queue_id', 'stat_queue_id'),
+        Index('stat_call_on_queue__idx__stat_agent_id', 'stat_agent_id'),
     )
 
     id = Column(Integer, primary_key=True)
@@ -23,18 +25,22 @@ class StatCallOnQueue(Base):
     ringtime = Column(Integer, nullable=False, server_default='0')
     talktime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer, nullable=False, server_default='0')
-    status = Column(Enum('full',
-                         'closed',
-                         'joinempty',
-                         'leaveempty',
-                         'divert_ca_ratio',
-                         'divert_waittime',
-                         'answered',
-                         'abandoned',
-                         'timeout',
-                         name='call_exit_type',
-                         metadata=Base.metadata),
-                    nullable=False)
+    status = Column(
+        Enum(
+            'full',
+            'closed',
+            'joinempty',
+            'leaveempty',
+            'divert_ca_ratio',
+            'divert_waittime',
+            'answered',
+            'abandoned',
+            'timeout',
+            name='call_exit_type',
+            metadata=Base.metadata
+        ),
+        nullable=False,
+    )
     stat_queue_id = Column(Integer, ForeignKey("stat_queue.id"))
     stat_agent_id = Column(Integer, ForeignKey("stat_agent.id"))
 

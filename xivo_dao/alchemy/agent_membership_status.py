@@ -1,7 +1,7 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -12,6 +12,8 @@ class AgentMembershipStatus(Base):
     __tablename__ = 'agent_membership_status'
     __table_args__ = (
         PrimaryKeyConstraint('agent_id', 'queue_id'),
+        Index('agent_membership_status__idx__agent_id', 'agent_id'),
+        Index('agent_membership_status__idx__queue_id', 'queue_id'),
     )
 
     agent_id = Column(Integer, autoincrement=False)

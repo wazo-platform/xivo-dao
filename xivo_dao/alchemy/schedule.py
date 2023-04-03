@@ -1,10 +1,10 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.types import Integer, String, Text, Boolean
@@ -20,10 +20,15 @@ class Schedule(Base):
     __tablename__ = 'schedule'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        Index('schedule__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(255))
     timezone = Column(String(128))
     fallback_action = Column(enum.dialaction_action, nullable=False, server_default='none')

@@ -1,4 +1,4 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
@@ -64,10 +64,15 @@ class QueueFeatures(Base):
         UniqueConstraint('name'),
         Index('queuefeatures__idx__context', 'context'),
         Index('queuefeatures__idx__number', 'number'),
+        Index('queuefeatures__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128), nullable=False)
     displayname = Column(String(128), nullable=False)
     number = Column(String(40))

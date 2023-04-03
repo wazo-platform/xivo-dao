@@ -4,7 +4,13 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import case, cast, func, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -20,10 +26,15 @@ class RightCall(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name', 'tenant_uuid'),
+        Index('rightcall__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128), nullable=False, server_default='')
     passwd = Column(String(40), nullable=False, server_default='')
     authorization = Column(Integer, nullable=False, server_default='0')

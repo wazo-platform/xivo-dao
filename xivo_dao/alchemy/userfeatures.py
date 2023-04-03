@@ -69,8 +69,15 @@ class UserFeatures(Base):
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',)),
-        ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',), ondelete='CASCADE'),
+        ForeignKeyConstraint(
+            ('voicemailid',),
+            ('voicemail.uniqueid',),
+        ),
+        ForeignKeyConstraint(
+            ('tenant_uuid',),
+            ('tenant.uuid',),
+            ondelete='CASCADE',
+        ),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
         UniqueConstraint('email', name='userfeatures_email'),
@@ -80,7 +87,10 @@ class UserFeatures(Base):
         Index('userfeatures__idx__loginclient', 'loginclient'),
         Index('userfeatures__idx__musiconhold', 'musiconhold'),
         Index('userfeatures__idx__uuid', 'uuid'),
+        Index('userfeatures__idx__tenant_uuid', 'tenant_uuid'),
         Index('userfeatures__idx__voicemailid', 'voicemailid'),
+        Index('userfeatures__idx__func_key_template_id', 'func_key_template_id'),
+        Index('userfeatures__idx__func_key_private_template_id', 'func_key_private_template_id'),
     )
 
     id = Column(Integer, nullable=False)
