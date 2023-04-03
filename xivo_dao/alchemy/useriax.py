@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -51,12 +51,26 @@ class UserIAX(Base, AsteriskOptionsMixin):
         UniqueConstraint('name'),
         Index('useriax__idx__category', 'category'),
         Index('useriax__idx__mailbox', 'mailbox'),
+        Index('useriax__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(40), nullable=False)
-    type = Column(Enum('friend', 'peer', 'user', name='useriax_type', metadata=Base.metadata), nullable=False)
+    type = Column(
+        Enum(
+            'friend',
+            'peer',
+            'user',
+            name='useriax_type',
+            metadata=Base.metadata
+        ),
+        nullable=False,
+    )
     username = Column(String(80))
     secret = Column(String(80), nullable=False, server_default='')
     dbsecret = Column(String(255), nullable=False, server_default='')

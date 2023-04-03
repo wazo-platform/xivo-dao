@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -17,6 +17,7 @@ class IVR(Base):
     __tablename__ = 'ivr'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        Index('ivr__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)

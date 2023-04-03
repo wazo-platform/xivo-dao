@@ -70,6 +70,8 @@ class LineFeatures(Base):
         Index('linefeatures__idx__provisioningid', 'provisioningid'),
         Index('linefeatures__idx__endpoint_sccp_id', 'endpoint_sccp_id'),
         Index('linefeatures__idx__endpoint_custom_id', 'endpoint_custom_id'),
+        Index('linefeatures__idx__application_uuid', 'application_uuid'),
+        Index('linefeatures__idx__endpoint_sip_uuid', 'endpoint_sip_uuid'),
     )
 
     id = Column(Integer)

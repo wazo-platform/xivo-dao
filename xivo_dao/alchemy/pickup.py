@@ -1,10 +1,15 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, String, Text
@@ -19,11 +24,16 @@ class Pickup(Base):
     __tablename__ = 'pickup'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        UniqueConstraint('name')
+        UniqueConstraint('name'),
+        Index('pickup__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False, autoincrement=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128), nullable=False)
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)

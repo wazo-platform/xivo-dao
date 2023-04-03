@@ -5,7 +5,13 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKeyConstraint,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -25,6 +31,7 @@ class Context(Base):
             ('tenant_uuid',),
             ('tenant.uuid',),
         ),
+        Index('context__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)

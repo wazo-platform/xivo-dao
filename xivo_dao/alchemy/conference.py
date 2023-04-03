@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     ForeignKey,
+    Index,
     PrimaryKeyConstraint,
 )
 from sqlalchemy.sql import (
@@ -29,10 +30,15 @@ class Conference(Base):
     __tablename__ = 'conference'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        Index('conference__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128))
     preprocess_subroutine = Column(String(39))
 

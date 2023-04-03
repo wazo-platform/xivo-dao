@@ -1,8 +1,8 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import Text
 
@@ -11,6 +11,12 @@ from xivo_dao.helpers.db_manager import Base
 
 class EndpointSIPSectionOption(Base):
     __tablename__ = 'endpoint_sip_section_option'
+    __table_args__ = (
+        Index(
+            'endpoint_sip_section_option__idx__endpoint_sip_section_uuid',
+            'endpoint_sip_section_uuid',
+        ),
+    )
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
     key = Column(Text, nullable=False)

@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint
-from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.schema import ForeignKey, Index
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -40,6 +40,8 @@ class Meeting(Base):
     __tablename__ = 'meeting'
     __table_args__ = (
         UniqueConstraint('number', 'tenant_uuid'),
+        Index('meeting__idx__guest_endpoint_sip_uuid', 'guest_endpoint_sip_uuid'),
+        Index('meeting__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)

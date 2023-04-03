@@ -1,10 +1,10 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.types import String, Boolean
 from xivo_dao.helpers.db_manager import Base
 
@@ -14,6 +14,11 @@ class Tenant(Base):
     __tablename__ = 'tenant'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
+        Index('tenant__idx__global_sip_template_uuid', 'global_sip_template_uuid'),
+        Index('tenant__idx__webrtc_sip_template_uuid', 'webrtc_sip_template_uuid'),
+        Index('tenant__idx__registration_trunk_sip_template_uuid', 'registration_trunk_sip_template_uuid'),
+        Index('tenant__idx__meeting_guest_sip_template_uuid', 'meeting_guest_sip_template_uuid'),
+        Index('tenant__idx__twilio_trunk_sip_template_uuid', 'twilio_trunk_sip_template_uuid'),
     )
 
     uuid = Column(String(36), server_default=text('uuid_generate_v4()'))

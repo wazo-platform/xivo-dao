@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -18,13 +18,26 @@ class Switchboard(Base):
     __tablename__ = 'switchboard'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
+        Index('switchboard__idx__tenant_uuid', 'tenant_uuid'),
+        Index('switchboard__idx__hold_moh_uuid', 'hold_moh_uuid'),
+        Index('switchboard__idx__queue_moh_uuid', 'queue_moh_uuid'),
     )
 
     uuid = Column(String(38), nullable=False, default=new_uuid)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128), nullable=False)
-    hold_moh_uuid = Column(String(38), ForeignKey('moh.uuid', ondelete='SET NULL'))
-    queue_moh_uuid = Column(String(38), ForeignKey('moh.uuid', ondelete='SET NULL'))
+    hold_moh_uuid = Column(
+        String(38),
+        ForeignKey('moh.uuid', ondelete='SET NULL'),
+    )
+    queue_moh_uuid = Column(
+        String(38),
+        ForeignKey('moh.uuid', ondelete='SET NULL'),
+    )
     timeout = Column(Integer)
 
     incall_dialactions = relationship(

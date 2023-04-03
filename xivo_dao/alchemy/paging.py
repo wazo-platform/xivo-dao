@@ -1,10 +1,16 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Integer, String, Text, Boolean
 
@@ -19,10 +25,15 @@ class Paging(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('number'),
+        Index('paging__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     number = Column(String(32))
     name = Column(String(128))
     duplex = Column(Integer, nullable=False, server_default='0')

@@ -54,6 +54,8 @@ class TrunkFeatures(Base):
             ''',
             name='trunkfeatures_endpoint_register_check',
         ),
+        Index('trunkfeatures__idx__tenant_uuid', 'tenant_uuid'),
+        Index('trunkfeatures__idx__endpoint_sip_uuid', 'endpoint_sip_uuid'),
         Index('trunkfeatures__idx__endpoint_iax_id', 'endpoint_iax_id'),
         Index('trunkfeatures__idx__endpoint_custom_id', 'endpoint_custom_id'),
         Index('trunkfeatures__idx__register_iax_id', 'register_iax_id'),

@@ -1,8 +1,8 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -13,6 +13,7 @@ class AgentFeatures(Base):
     __tablename__ = 'agentfeatures'
     __table_args__ = (
         UniqueConstraint('number'),
+        Index('agentfeatures__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, primary_key=True)

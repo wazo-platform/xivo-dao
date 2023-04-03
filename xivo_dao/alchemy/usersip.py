@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -19,14 +19,27 @@ from xivo_dao.helpers.db_manager import Base
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
+    __table_args__ = (
+        Index('usersip__idx__tenant_uuid', 'tenant_uuid'),
+    )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(40), nullable=False)
-    type = Column(Enum('friend', 'peer', 'user',
-                       name='useriax_type',
-                       metadata=Base.metadata),
-                  nullable=False)
+    type = Column(
+        Enum(
+            'friend',
+            'peer',
+            'user',
+            name='useriax_type',
+            metadata=Base.metadata
+        ),
+        nullable=False,
+    )
     username = Column(String(80))
     secret = Column(String(80), nullable=False, server_default='')
     md5secret = Column(String(32), nullable=False, server_default='')

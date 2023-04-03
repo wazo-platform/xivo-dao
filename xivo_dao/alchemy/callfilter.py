@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -6,7 +6,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_, and_, select
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -23,10 +23,15 @@ class Callfilter(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
+        Index('callfilter__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128), nullable=False, server_default='')
     type = Column(enum.callfilter_type, nullable=False)
     bosssecretary = Column(enum.callfilter_bosssecretary)
