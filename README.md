@@ -2,7 +2,7 @@ xivo-dao [![Build Status](https://jenkins.wazo.community/buildStatus/icon?job=xi
 ========
 
 xivo-dao is a library used internally by Wazo to access and modify
-different data sources (e.g. postgres database, provisoning database).
+different data sources (e.g. postgres database, provisioning database).
 
 Creating the test database
 --------------------------
@@ -27,9 +27,9 @@ Running unit tests
 You need the test database ``asterisktest`` installed (see above).
 
 ```
-apt-get install libpq-dev libyaml-dev python3.7-dev
+apt-get install libpq-dev libyaml-dev python3-dev
 pip install tox
-tox --recreate -e py37
+tox --recreate -e py39
 ```
 
 To execute tests slightly faster, you can avoid recreating all the tables in the

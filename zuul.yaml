@@ -1,17 +1,17 @@
 - job:
-    name: wazo-tox-xivo-dao-py37
-    parent: wazo-tox-py37
+    name: wazo-tox-xivo-dao-py39
+    parent: wazo-tox-py39
     run: zuul.d/run.yaml
 
 - project:
     templates:
-      - wazo-tox-linters
-      - debian-packaging-template
+      - wazo-tox-linters-310
+      - debian-packaging-bullseye
     check:
       jobs:
-        - wazo-tox-xivo-dao-py37:
-            nodeset: vm-debian-10-m1s
+        - wazo-tox-xivo-dao-py39:
+            nodeset: vm-debian-11-m1s
     gate:
       jobs:
-        - wazo-tox-xivo-dao-py37:
-            nodeset: vm-debian-10-m1s
+        - wazo-tox-xivo-dao-py39:
+            nodeset: vm-debian-11-m1s
