@@ -158,7 +158,7 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         self._create_functions()
         self.callid_found = '1404377805.6457'
         event = QueueLog(
-            time=t(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC),
+            time=t(2020, 1, 1, 0, 0, 1, tzinfo=pytz.UTC),
             callid=self.callid_found,
             queuename='found_queue',
             event='LEAVEEMPTY',
