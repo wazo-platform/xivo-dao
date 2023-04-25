@@ -5,8 +5,9 @@ import datetime
 import pytz
 
 from datetime import datetime as t
+import pathlib
 
-from hamcrest import assert_that, contains, equal_to, has_properties
+from hamcrest import assert_that, contains, equal_to, has_properties, not_, has_length, greater_than
 
 from sqlalchemy import func, text
 
@@ -139,29 +140,15 @@ class TestFillSimpleCall(DAOTestCase):
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
-        fill_simple_calls_fn = text('''\
-DROP FUNCTION IF EXISTS "fill_simple_calls" (timestamptz, timestamptz);
-CREATE FUNCTION "fill_simple_calls"(period_start timestamptz, period_end timestamptz)
-  RETURNS void AS
-$$
-  INSERT INTO "stat_call_on_queue" (callid, "time", stat_queue_id, status)
-    SELECT
-      callid,
-      time,
-      (SELECT id FROM stat_queue WHERE name=queuename) as stat_queue_id,
-      CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
-           WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
-           WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
-           WHEN event = 'CLOSED' THEN 'closed'
-           WHEN event = 'JOINEMPTY' THEN 'joinempty'
-      END as status
-    FROM queue_log
-    WHERE event IN ('FULL', 'DIVERT_CA_RATIO', 'DIVERT_HOLDTIME', 'CLOSED', 'JOINEMPTY') AND
-          "time" BETWEEN $1 AND $2;
-$$
-LANGUAGE SQL;
-''')
+        fill_simple_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_simple_calls.sql').read_text()
         self.session.execute(fill_simple_calls_fn)
+
+
+def create_fill_leaveempty_calls_function(session):
+    # WARNING: This functions should always be the same as the one in xivo-manage-db
+
+    fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
+    session.execute(fill_leaveempty_calls_fn)
 
 
 class TestFillLeaveEmptyCall(DAOTestCase):
@@ -232,33 +219,10 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         result = self.session.query(StatCallOnQueue).all()
         assert_that(result, contains(has_properties(callid=self.callid_found)))
 
+
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
-        fill_leaveempty_calls_fn = text('''\
-DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (timestamptz, timestamptz);
-CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start timestamptz, period_end timestamptz)
-  RETURNS void AS
-$$
-INSERT INTO stat_call_on_queue (callid, time, waittime, stat_queue_id, status)
-SELECT
-  callid,
-  enter_time as time,
-  EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
-  stat_queue_id,
-  'leaveempty' AS status
-FROM (SELECT
-        time AS enter_time,
-        (select time from queue_log where callid=main.callid AND event='LEAVEEMPTY' LIMIT 1) AS leave_time,
-        callid,
-        (SELECT id FROM stat_queue WHERE name=queuename) AS stat_queue_id
-      FROM queue_log AS main
-      WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
-            AND event = 'ENTERQUEUE'
-            AND time BETWEEN $1 AND $2) AS first;
-$$
-LANGUAGE SQL;
-''')
-        self.session.execute(fill_leaveempty_calls_fn)
+        create_fill_leaveempty_calls_function(self.session)
 
 
 class TestStatDAO(DAOTestCase):

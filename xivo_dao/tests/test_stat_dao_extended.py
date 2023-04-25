@@ -1,6 +1,7 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import pathlib
 from datetime import datetime as dt
 from pytz import UTC
 from sqlalchemy import text
@@ -268,54 +269,10 @@ class TestStatDAO(DAOTestCase):
         return q.name, q.id
 
     @classmethod
-    def _create_functions(cls):
+    def _create_functions(cls, con):
         # ## WARNING: These functions should always be the same as the one in baseconfig
-        fill_simple_calls_fn = text('''\
-DROP FUNCTION IF EXISTS "fill_simple_calls" (timestamptz, timestamptz);
-CREATE FUNCTION "fill_simple_calls"(period_start timestamptz, period_end timestamptz)
-  RETURNS void AS
-$$
-  INSERT INTO "stat_call_on_queue" (callid, "time", stat_queue_id, status)
-    SELECT
-      callid,
-      time,
-      (SELECT id FROM stat_queue WHERE name=queuename) as stat_queue_id,
-      CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
-           WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
-           WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
-           WHEN event = 'CLOSED' THEN 'closed'
-           WHEN event = 'JOINEMPTY' THEN 'joinempty'
-      END as status
-    FROM queue_log
-    WHERE event IN ('FULL', 'DIVERT_CA_RATIO', 'DIVERT_HOLDTIME', 'CLOSED', 'JOINEMPTY') AND
-          "time" BETWEEN $1 AND $2;
-$$
-LANGUAGE SQL;
-''')
-        cls.session.execute(fill_simple_calls_fn)
+        fill_simple_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_simple_calls.sql').read_text()
+        con.execute(fill_simple_calls_fn)
 
-        fill_leaveempty_calls_fn = text('''\
-DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (timestamptz, timestamptz);
-CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start timestamptz, period_end timestamptz)
-  RETURNS void AS
-$$
-INSERT INTO stat_call_on_queue (callid, time, waittime, stat_queue_id, status)
-SELECT
-  callid,
-  enter_time as time,
-  EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
-  stat_queue_id,
-  'leaveempty' AS status
-FROM (SELECT
-        time AS enter_time,
-        (select time from queue_log where callid=main.callid AND event='LEAVEEMPTY' LIMIT 1) AS leave_time,
-        callid,
-        (SELECT id FROM stat_queue WHERE name=queuename) AS stat_queue_id
-      FROM queue_log AS main
-      WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
-            AND event = 'ENTERQUEUE'
-            AND time BETWEEN $1 AND $2) AS first;
-$$
-LANGUAGE SQL;
-''')
-        cls.session.execute(fill_leaveempty_calls_fn)
+        fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
+        con.execute(fill_leaveempty_calls_fn)
