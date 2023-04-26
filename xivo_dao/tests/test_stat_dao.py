@@ -7,7 +7,7 @@ import pytz
 from datetime import datetime as t
 import pathlib
 
-from hamcrest import assert_that, contains, equal_to, has_properties, not_, has_length, greater_than
+from hamcrest import assert_that, contains, equal_to, has_properties
 
 from sqlalchemy import func, text
 
@@ -144,13 +144,6 @@ class TestFillSimpleCall(DAOTestCase):
         self.session.execute(fill_simple_calls_fn)
 
 
-def create_fill_leaveempty_calls_function(session):
-    # WARNING: This functions should always be the same as the one in xivo-manage-db
-
-    fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
-    session.execute(fill_leaveempty_calls_fn)
-
-
 class TestFillLeaveEmptyCall(DAOTestCase):
 
     def setUp(self):
@@ -219,10 +212,10 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         result = self.session.query(StatCallOnQueue).all()
         assert_that(result, contains(has_properties(callid=self.callid_found)))
 
-
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
-        create_fill_leaveempty_calls_function(self.session)
+        fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
+        self.session.execute(fill_leaveempty_calls_fn)
 
 
 class TestStatDAO(DAOTestCase):

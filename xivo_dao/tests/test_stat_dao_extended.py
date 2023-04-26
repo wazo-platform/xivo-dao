@@ -20,8 +20,8 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from hamcrest import (
     assert_that,
     equal_to
-
 )
+
 
 def parse_fields(line):
     return [cleaned_field for field in line.split('|') if (cleaned_field := field.strip())]
