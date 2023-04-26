@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import distinct
@@ -9,7 +9,7 @@ from xivo_dao.alchemy.stat_agent import StatAgent
 
 def insert_missing_agents(session, confd_agents):
     confd_agents_by_name = {
-        'Agent/{number}'.format(number=agent['number']): agent for agent in confd_agents
+        f'Agent/{agent["number"]}': agent for agent in confd_agents
     }
     _mark_recreated_agents_with_same_number_as_deleted(session, confd_agents_by_name)
     _mark_non_confd_agents_as_deleted(session, confd_agents)

@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -1632,7 +1632,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains(has_entries(
                 endpoint_section_options=has_items(
                     ['set_var', f'XIVO_USERUUID={user.uuid}'],
-                    # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
+                    # ['set_var', f'WAZO_USER_UUID={user.uuid}'],
                 ),
             )),
         )

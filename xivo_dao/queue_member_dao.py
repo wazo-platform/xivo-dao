@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import func
@@ -12,7 +12,7 @@ def add_agent_to_queue(session, agent_id, agent_number, queue_name):
     next_position = _get_next_position_for_queue(session, queue_name)
     queue_member = QueueMember()
     queue_member.queue_name = queue_name
-    queue_member.interface = 'Agent/%s' % agent_number
+    queue_member.interface = f'Agent/{agent_number}'
     queue_member.usertype = 'agent'
     queue_member.userid = agent_id
     queue_member.channel = 'Agent'

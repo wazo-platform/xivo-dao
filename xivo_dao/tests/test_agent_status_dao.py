@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, contains, empty, has_properties, none
@@ -566,9 +566,9 @@ class TestAgentStatusDao(DAOTestCase):
     def _insert_agent_login_status(self, agent_id, agent_number, extension=None, context='default',
                                    interface=None, state_interface='SIP/abcdef'):
         if extension is None:
-            extension = '1%s' % agent_number
+            extension = f'1{agent_number}'
         if interface is None:
-            interface = 'Local/%s@foo' % agent_id
+            interface = f'Local/{agent_id}@foo'
         agent_status = AgentLoginStatus()
         agent_status.agent_id = agent_id
         agent_status.agent_number = agent_number
@@ -604,7 +604,7 @@ class TestAgentStatusDao(DAOTestCase):
     def _insert_agent_queue_member(self, agent_id, queue_name):
         queue_member = QueueMember()
         queue_member.queue_name = queue_name
-        queue_member.interface = 'Agent/%s' % (agent_id)
+        queue_member.interface = f'Agent/{agent_id}'
         queue_member.penalty = 0
         queue_member.usertype = 'agent'
         queue_member.userid = agent_id

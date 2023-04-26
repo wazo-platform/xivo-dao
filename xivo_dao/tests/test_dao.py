@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -142,8 +142,8 @@ class ItemInserter:
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('email', None)
-        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
-        kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
+        kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
+        kwargs.setdefault('exten', f'{random.randint(1000, 1999)}')
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -194,7 +194,7 @@ class ItemInserter:
     def add_user_line_with_queue_member(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -235,7 +235,7 @@ class ItemInserter:
     def add_user_line_without_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', '"{} {}"'.format(kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
@@ -387,7 +387,7 @@ class ItemInserter:
         return line_extension
 
     def add_extension(self, **kwargs):
-        kwargs.setdefault('exten', '%s' % self._generate_random_exten())
+        kwargs.setdefault('exten', f'{self._generate_random_exten()}')
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('context', 'default')
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, NamedTuple, Union
+from typing import NamedTuple, Union
 from sqlalchemy.sql.expression import case
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -31,8 +31,8 @@ class _AgentStatus(NamedTuple):
     login_at: datetime
     paused: bool
     paused_reason: Union[str, None]
-    queues: List[_Queue]
-    user_ids: List[int]
+    queues: list[_Queue]
+    user_ids: list[int]
 
 
 @daosession
@@ -111,7 +111,7 @@ def get_extension_from_agent_id(session, agent_id):
                         .first())
 
     if not login_status_row:
-        raise LookupError('agent with id %s is not logged' % agent_id)
+        raise LookupError(f'agent with id {agent_id} is not logged')
 
     return login_status_row.extension, login_status_row.context
 

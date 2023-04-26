@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-from typing import List, NamedTuple
+from typing import NamedTuple
 from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -15,8 +15,8 @@ class _Agent(NamedTuple):
     id: int
     tenant_uuid: str
     number: str
-    queues: List[QueueFeatures]
-    user_ids: List[int]
+    queues: list[QueueFeatures]
+    user_ids: list[int]
 
 
 class _Queue(NamedTuple):

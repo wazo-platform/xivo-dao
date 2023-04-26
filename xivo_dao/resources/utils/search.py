@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-from typing import Any, List, NamedTuple
+from typing import Any, NamedTuple
 
 from unidecode import unidecode
 
@@ -17,7 +17,7 @@ from xivo_dao.helpers import errors
 
 class SearchResult(NamedTuple):
     total: int
-    items: List[Any]
+    items: list[Any]
 
 
 class unaccent(ReturnTypeFromArgs):
@@ -128,7 +128,7 @@ class SearchSystem:
         criteria = []
         for column in self.config.all_search_columns():
             clean_term = unidecode(term)
-            expression = unaccent(sql.cast(column, sa.String)).ilike('%%%s%%' % clean_term)
+            expression = unaccent(sql.cast(column, sa.String)).ilike(f'%{clean_term}%')
             criteria.append(expression)
 
         query = query.filter(sql.or_(*criteria))

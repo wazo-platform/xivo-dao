@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -143,7 +143,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result, expected)
 
     def test_get_queue_names_in_range(self):
-        queue_names = sorted(['queue_%s' % x for x in range(10)])
+        queue_names = sorted([f'queue_{x}' for x in range(10)])
         t = datetime(2012, 1, 1, 1, 1, 1, tzinfo=UTC)
         timestamp = self._build_timestamp(t)
         for queue_name in queue_names:
