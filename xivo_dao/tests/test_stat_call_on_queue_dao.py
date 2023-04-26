@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -117,7 +117,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = timedelta(minutes=minute_increment)
             time = start + delta
-            stat_call_on_queue_dao.add_full_call(self.session, 'callid%s' % minute_increment, time, queue_name)
+            stat_call_on_queue_dao.add_full_call(self.session, f'callid{minute_increment}', time, queue_name)
 
         stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 
@@ -146,7 +146,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = timedelta(minutes=minute_increment)
             time = start + delta
-            stat_call_on_queue_dao.add_closed_call(self.session, 'callid%s' % minute_increment, time, queue_name)
+            stat_call_on_queue_dao.add_closed_call(self.session, f'callid{minute_increment}', time, queue_name)
 
         stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 
@@ -175,12 +175,12 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = timedelta(minutes=minute_increment)
             time = start + delta
-            stat_call_on_queue_dao.add_full_call(self.session, 'callid%s-full' % minute_increment, time, queue_name)
+            stat_call_on_queue_dao.add_full_call(self.session, f'callid{minute_increment}-full', time, queue_name)
 
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = timedelta(minutes=minute_increment)
             time = start + delta
-            stat_call_on_queue_dao.add_closed_call(self.session, 'callid%s-closed' % minute_increment, time, queue_name)
+            stat_call_on_queue_dao.add_closed_call(self.session, f'callid{minute_increment}-closed', time, queue_name)
 
         other_call = StatCallOnQueue()
         other_call.time = start
@@ -216,7 +216,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = timedelta(minutes=minute_increment)
             time = start + delta
-            stat_call_on_queue_dao.add_full_call(self.session, 'callid%s' % minute_increment, time, queue_name)
+            stat_call_on_queue_dao.add_full_call(self.session, f'callid{minute_increment}', time, queue_name)
 
         stat_call_on_queue_dao.clean_table(self.session)
 

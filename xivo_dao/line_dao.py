@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -47,7 +47,7 @@ def get_interface_from_line_id(session, line_id):
     line_row = query.first()
 
     if not line_row:
-        raise LookupError('no line with id %s' % line_id)
+        raise LookupError(f'no line with id {line_id}')
 
     return _format_interface(line_row)
 
