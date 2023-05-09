@@ -10,7 +10,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.sql.ddl import DDLElement
 from sqlalchemy.sql.selectable import Selectable
 
-from .db_manager import Base, Session, daosession
+from .db_manager import Base, Session
 
 
 # Adapted from:
@@ -160,9 +160,8 @@ class _MaterializedViewMeta(DeclarativeMeta):
         self._view_dependencies_handler = None
         self._track_dependencies()
 
-    @daosession
-    def refresh(session, self, concurrently=True):
-        _refresh_materialized_view(session, self.__table__.fullname, concurrently)
+    def refresh(self, concurrently=True):
+        _refresh_materialized_view(Session(), self.__table__.fullname, concurrently)
 
     def _track_dependencies(self):
         if not hasattr(self, '_view_dependencies'):
@@ -172,7 +171,7 @@ class _MaterializedViewMeta(DeclarativeMeta):
 
             @listens_for(Session, 'before_commit')
             def _before_session_commit_handler(session):
-                for obj in (session.dirty | session.new | session.deleted):
+                for obj in session.dirty | session.new | session.deleted:
                     if isinstance(obj, tuple(targets)):
                         self.refresh(concurrently=True)
                         return
