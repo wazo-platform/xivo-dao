@@ -1,9 +1,10 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip_options_view import EndpointSIPOptionsView
 from xivo_dao.helpers import errors, generators
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.line.fixes import LineFixes
@@ -56,14 +57,17 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
         self._fill_default_values(sip)
         self.session.add(sip)
         self.session.flush()
+        EndpointSIPOptionsView.refresh()
         return sip
 
     def edit(self, sip):
         self.persist(sip)
+        EndpointSIPOptionsView.refresh()
         self._fix_associated(sip)
 
     def delete(self, sip):
         self.session.delete(sip)
+        EndpointSIPOptionsView.refresh()
         self._fix_associated(sip)
 
     def _fix_associated(self, sip):
