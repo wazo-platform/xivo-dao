@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -18,7 +18,7 @@ class TestView(DAOTestCase):
 
         assert_that(sip.get_option_value('key'), equal_to(None))
 
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        EndpointSIPOptionsView.refresh()
         self.session.expire(sip)
 
         assert_that(sip.get_option_value('key'), equal_to('value'))
@@ -34,7 +34,7 @@ class TestView(DAOTestCase):
         template3.endpoint_section_options = [('templ3', 'third')]
         sip.endpoint_section_options = [('sip', 'fourth')]
 
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        EndpointSIPOptionsView.refresh()
 
         assert_that(
             sip._options,
@@ -48,7 +48,7 @@ class TestView(DAOTestCase):
         template.endpoint_section_options = [('option', 'template')]
         sip.endpoint_section_options = [('option', 'sip')]
 
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        EndpointSIPOptionsView.refresh()
 
         assert_that(sip.get_option_value('option'), equal_to('sip'))
 
@@ -59,7 +59,7 @@ class TestView(DAOTestCase):
         template.endpoint_section_options = [('second', 'value2')]
         sip.endpoint_section_options = [('first', 'value1')]
 
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        EndpointSIPOptionsView.refresh()
 
         result = (
             self.session.query(EndpointSIPOptionsView).filter_by(root=sip.uuid).first()

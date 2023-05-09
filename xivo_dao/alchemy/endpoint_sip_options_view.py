@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import select, join, cast, literal, func, String, Index, text
@@ -82,10 +82,9 @@ def _generate_selectable():
 
 
 class EndpointSIPOptionsView(MaterializedView):
-    __view__ = create_materialized_view(
+    __table__ = create_materialized_view(
         'endpoint_sip_options_view',
         _generate_selectable(),
-        dependencies=[EndpointSIPSectionOption],
         indexes=[
             Index('endpoint_sip_options_view__idx_root', text('root'), unique=True),
         ],
