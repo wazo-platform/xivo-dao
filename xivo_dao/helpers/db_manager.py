@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -13,6 +13,7 @@ from sqlalchemy.types import String, TypeDecorator
 from xivo.config_helper import ConfigParser, ErrorHandler
 
 DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
+DEFAULT_POOL_SIZE = 16
 
 logger = logging.getLogger(__name__)
 Session = scoped_session(sessionmaker())
@@ -79,8 +80,8 @@ def daosession(func):
     return wrapped
 
 
-def init_db(db_uri):
-    engine = create_engine(db_uri)
+def init_db(db_uri, pool_size=DEFAULT_POOL_SIZE):
+    engine = create_engine(db_uri, pool_size=pool_size, pool_pre_ping=True)
     Session.configure(bind=engine)
     Base.metadata.bind = engine
 
@@ -88,7 +89,11 @@ def init_db(db_uri):
 def init_db_from_config(config=None):
     config = config or default_config()
     url = config.get('db_uri', DEFAULT_DB_URI)
-    init_db(url)
+    try:
+        pool_size = config['rest_api']['max_threads']
+    except KeyError:
+        pool_size = DEFAULT_POOL_SIZE
+    init_db(url, pool_size=pool_size)
 
 
 def default_config():
