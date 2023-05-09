@@ -172,7 +172,7 @@ class _MaterializedViewMeta(DeclarativeMeta):
 
             @listens_for(Session, 'before_commit')
             def _before_session_commit_handler(session):
-                for obj in session:
+                for obj in (session.dirty | session.new | session.deleted):
                     if isinstance(obj, tuple(targets)):
                         self.refresh(concurrently=True)
                         return
