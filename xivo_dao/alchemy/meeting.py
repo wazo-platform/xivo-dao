@@ -48,7 +48,9 @@ class Meeting(Base):
     name = Column(Text)
     guest_endpoint_sip_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'))
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')"))
+    created_at = Column(
+        DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')")
+    )
     persistent = Column(Boolean, server_default='false', nullable=False)
     number = Column(Text, nullable=False)
     require_authorization = Column(Boolean, server_default='false', nullable=False)

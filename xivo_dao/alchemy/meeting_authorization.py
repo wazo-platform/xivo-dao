@@ -27,7 +27,8 @@ class MeetingAuthorization(Base):
     meeting_uuid = Column(UUID(as_uuid=True), ForeignKey('meeting.uuid', ondelete='CASCADE'), nullable=False)
     guest_name = Column(Text)
     status = Column(Text)
-    created_at = Column(DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')"))
+    created_at = Column(
+        DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')"))
 
     meeting = relationship(
         'Meeting',
