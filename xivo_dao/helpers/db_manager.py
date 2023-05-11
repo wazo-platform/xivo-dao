@@ -3,9 +3,7 @@
 
 import logging
 from functools import wraps
-from sqlalchemy import event, exc
 from sqlalchemy import create_engine
-from sqlalchemy.pool import Pool
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import String, TypeDecorator
@@ -60,16 +58,6 @@ def todict(self, exclude=None):
 
 
 Base.todict = todict
-
-
-@event.listens_for(Pool, "checkout")
-def ping_connection(dbapi_connection, connection_record, connection_proxy):
-    cursor = dbapi_connection.cursor()
-    try:
-        cursor.execute("SELECT 1")
-    except Exception:
-        raise exc.DisconnectionError()
-    cursor.close()
 
 
 def daosession(func):
