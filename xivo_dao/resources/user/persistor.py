@@ -1,5 +1,7 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+import unicodedata
 
 from sqlalchemy.sql import func
 
@@ -13,7 +15,6 @@ from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
 class UserPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = User
 
     def __init__(self, session, user_view, user_search, tenant_uuids=None):
@@ -58,14 +59,33 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         query = query.group_by(column)
         return query.all()
 
-    def search(self, parameters):
+    def search(self, parameters, is_db_sort_limit=True):
         view = self.user_view.select(parameters.get('view'))
         query = view.query(self.session)
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
+
+        if not is_db_sort_limit:
+            order = parameters.pop('order', None)
+            limit = parameters.pop('limit', None)
+            offset = parameters.pop('offset', None)
+            reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
+
         rows, total = self.user_search.search_from_query(query, parameters)
         users = view.convert_list(rows)
-        return SearchResult(total, users)
+        if is_db_sort_limit:
+            return SearchResult(total, users)
+        else:
+            result = sorted(
+                users,
+                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
+                reverse=reverse,
+            )
+
+            if not offset or not limit:
+                return SearchResult(total, result[offset:])
+            else:
+                return SearchResult(total, result[offset : offset + limit])
 
     def create(self, user):
         self.prepare_template(user)

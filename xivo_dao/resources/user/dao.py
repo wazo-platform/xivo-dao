@@ -1,11 +1,13 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.resources.user.persistor import UserPersistor
-from xivo_dao.resources.func_key_template.persistor import build_persistor as build_template_persistor
+from xivo_dao.resources.func_key_template.persistor import (
+    build_persistor as build_template_persistor,
+)
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
@@ -15,9 +17,9 @@ def persistor(tenant_uuids=None):
     return UserPersistor(Session, user_view, user_search, tenant_uuids)
 
 
-def search(**parameters):
+def search(is_db_sort_limit=True, **parameters):
     tenant_uuids = parameters.pop('tenant_uuids', None)
-    return persistor(tenant_uuids).search(parameters)
+    return persistor(tenant_uuids).search(parameters, is_db_sort_limit=is_db_sort_limit)
 
 
 def get(user_id, tenant_uuids=None):

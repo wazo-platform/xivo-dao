@@ -1,4 +1,4 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -343,6 +343,11 @@ class TestSearch(TestUser):
         result = user_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
+    def assert_search_returns_result_total(self, total, **parameters):
+        parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
+        result = user_dao.search(**parameters)
+        assert_that(result.total, equal_to(total))
+
 
 class TestSimpleSearch(TestSearch):
 
@@ -470,12 +475,15 @@ class TestSearchGivenMultipleUsers(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
         self.user1 = self.add_user(firstname='Ashton', lastname='ToujoursFrais', description='resto')
-        self.user2 = self.add_user(firstname='Beaugarte', lastname='Cougar', description='bar')
-        self.user3 = self.add_user(firstname='Casa', lastname='Grecque', description='resto')
-        self.user4 = self.add_user(firstname='Dunkin', lastname='Donuts', description='resto')
+        self.user2 = self.add_user(firstname='Áustin', lastname='French', description='resto')
+        self.user3 = self.add_user(firstname='Beaugarte', lastname='Cougar', description='bar')
+        self.user4 = self.add_user(firstname='Casa', lastname='Grecque', description='resto')
+        self.user5 = self.add_user(firstname='Dunkin', lastname='Donuts', description='resto')
+        self.user6 = self.add_user(firstname='Émilie', lastname='Pizza', description='resto')
+        self.user7 = self.add_user(firstname='Ômygod', lastname='Spanish', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
-        expected = SearchResult(1, [self.user2])
+        expected = SearchResult(1, [self.user3])
 
         self.assert_search_returns_result(expected, search='eau')
 
@@ -483,34 +491,30 @@ class TestSearchGivenMultipleUsers(TestSearch):
         expected_resto = SearchResult(1, [self.user1])
         self.assert_search_returns_result(expected_resto, search='ou', description='resto')
 
-        expected_bar = SearchResult(1, [self.user2])
+        expected_bar = SearchResult(1, [self.user3])
         self.assert_search_returns_result(expected_bar, search='ou', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.user1, self.user3, self.user4])
+        expected_all_resto = SearchResult(6, [self.user1, self.user2, self.user4, self.user5, self.user6, self.user7])
         self.assert_search_returns_result(expected_all_resto, description='resto', order='firstname')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.user1, self.user2, self.user3, self.user4])
+        expected = SearchResult(7, [self.user1, self.user2, self.user3, self.user4, self.user5, self.user6, self.user7])
 
         self.assert_search_returns_result(expected, order='firstname')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.user4, self.user3, self.user2, self.user1])
+        expected = SearchResult(7, [self.user7, self.user6, self.user5, self.user4, self.user3, self.user2, self.user1])
 
         self.assert_search_returns_result(expected, order='firstname', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.user2])
-
-        self.assert_search_returns_result(expected, limit=1)
+        self.assert_search_returns_result_total(7, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.user4, self.user3, self.user1])
-
-        self.assert_search_returns_result(expected, offset=1)
+        self.assert_search_returns_result_total(7, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
-        expected = SearchResult(3, [self.user2])
+        expected = SearchResult(6, [self.user6])
 
         self.assert_search_returns_result(expected,
                                           search='a',
