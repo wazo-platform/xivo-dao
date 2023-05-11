@@ -37,14 +37,12 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
 class TestUser(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()
 
 
 class TestFindByIdUuid(TestUser):
-
     def test_given_no_user_when_finding_then_returns_none(self):
         assert_that(user_dao.find_by_id_uuid(1), none())
 
@@ -84,28 +82,29 @@ class TestFindByIdUuid(TestUser):
 
 
 class TestFind(TestUser):
-
     def test_find_no_user(self):
         result = user_dao.find(42)
 
         assert_that(result, none())
 
     def test_find(self):
-        user_row = self.add_user(firstname='Pâul',
-                                 lastname='Rôgers',
-                                 callerid='"Côol dude"',
-                                 outcallerid='"Côol dude going out"',
-                                 loginclient='paulrogers',
-                                 passwdclient='paulrogers',
-                                 musiconhold='mymusic',
-                                 mobilephonenumber='4185551234',
-                                 commented=1,
-                                 rightcallcode='1234',
-                                 userfield='userfield',
-                                 timezone='America/Montreal',
-                                 language='fr_FR',
-                                 description='Really cool dude',
-                                 preprocess_subroutine='preprocess_subroutine')
+        user_row = self.add_user(
+            firstname='Pâul',
+            lastname='Rôgers',
+            callerid='"Côol dude"',
+            outcallerid='"Côol dude going out"',
+            loginclient='paulrogers',
+            passwdclient='paulrogers',
+            musiconhold='mymusic',
+            mobilephonenumber='4185551234',
+            commented=1,
+            rightcallcode='1234',
+            userfield='userfield',
+            timezone='America/Montreal',
+            language='fr_FR',
+            description='Really cool dude',
+            preprocess_subroutine='preprocess_subroutine',
+        )
 
         voicemail_row = self.add_voicemail(mailbox='1234', context='default')
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
@@ -126,27 +125,33 @@ class TestFind(TestUser):
         assert_that(user.timezone, equal_to(user_row.timezone))
         assert_that(user.language, equal_to(user_row.language))
         assert_that(user.description, equal_to(user_row.description))
-        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
+        assert_that(
+            user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine)
+        )
         assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
-        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
+        assert_that(
+            user.private_template_id, equal_to(user_row.func_key_private_template_id)
+        )
 
     def test_that_email_address_is_case_insensitive_when_comparing(self):
-        user_row = self.add_user(firstname='Pâul',
-                                 lastname='Rôgers',
-                                 callerid='"Côol dude"',
-                                 outcallerid='"Côol dude going out"',
-                                 loginclient='paulrogers',
-                                 passwdclient='paulrogers',
-                                 musiconhold='mymusic',
-                                 mobilephonenumber='4185551234',
-                                 commented=1,
-                                 email='paul.rogers@example.com',
-                                 rightcallcode='1234',
-                                 userfield='userfield',
-                                 timezone='America/Montreal',
-                                 language='fr_FR',
-                                 description='Really cool dude',
-                                 preprocess_subroutine='preprocess_subroutine')
+        user_row = self.add_user(
+            firstname='Pâul',
+            lastname='Rôgers',
+            callerid='"Côol dude"',
+            outcallerid='"Côol dude going out"',
+            loginclient='paulrogers',
+            passwdclient='paulrogers',
+            musiconhold='mymusic',
+            mobilephonenumber='4185551234',
+            commented=1,
+            email='paul.rogers@example.com',
+            rightcallcode='1234',
+            userfield='userfield',
+            timezone='America/Montreal',
+            language='fr_FR',
+            description='Really cool dude',
+            preprocess_subroutine='preprocess_subroutine',
+        )
 
         user = user_dao.find_by(email='Paul.Rogers@Example.COM')
 
@@ -154,7 +159,6 @@ class TestFind(TestUser):
 
 
 class TestGet(TestUser):
-
     def test_get_no_user(self):
         self.assertRaises(NotFoundError, user_dao.get, 42)
 
@@ -167,7 +171,6 @@ class TestGet(TestUser):
 
 
 class TestFindBy(TestUser):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, user_dao.find_by, invalid=42)
 
@@ -191,10 +194,15 @@ class TestFindBy(TestUser):
     def test_find_by_private_template_id(self):
         user_row = self.add_user()
 
-        user = user_dao.find_by(private_template_id=user_row.func_key_private_template_id)
+        user = user_dao.find_by(
+            private_template_id=user_row.func_key_private_template_id
+        )
 
         assert_that(user.id, equal_to(user_row.id))
-        assert_that(user.func_key_private_template_id, equal_to(user_row.func_key_private_template_id))
+        assert_that(
+            user.func_key_private_template_id,
+            equal_to(user_row.func_key_private_template_id),
+        )
 
     def test_find_by_fullname(self):
         user_row = self.add_user(firstname='Jôhn', lastname='Smîth')
@@ -212,7 +220,6 @@ class TestFindBy(TestUser):
 
 
 class TestGetBy(TestUser):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, user_dao.get_by, invalid=42)
 
@@ -236,10 +243,15 @@ class TestGetBy(TestUser):
     def test_get_by_private_template_id(self):
         user_row = self.add_user()
 
-        user = user_dao.get_by(private_template_id=user_row.func_key_private_template_id)
+        user = user_dao.get_by(
+            private_template_id=user_row.func_key_private_template_id
+        )
 
         assert_that(user.id, equal_to(user_row.id))
-        assert_that(user.func_key_private_template_id, equal_to(user_row.func_key_private_template_id))
+        assert_that(
+            user.func_key_private_template_id,
+            equal_to(user_row.func_key_private_template_id),
+        )
 
     def test_get_by_fullname(self):
         user_row = self.add_user(firstname='Jôhn', lastname='Smîth')
@@ -259,7 +271,9 @@ class TestGetBy(TestUser):
         user_row = self.add_user()
         self.assertRaises(
             NotFoundError,
-            user_dao.get_by, id=user_row.id, tenant_uuids=[tenant.uuid],
+            user_dao.get_by,
+            id=user_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         user_row = self.add_user(tenant_uuid=tenant.uuid)
@@ -268,7 +282,6 @@ class TestGetBy(TestUser):
 
 
 class TestFindAllBy(TestUser):
-
     def test_find_all_by_no_users(self):
         result = user_dao.find_all_by(firstname='toto')
 
@@ -281,8 +294,9 @@ class TestFindAllBy(TestUser):
 
         users = user_dao.find_all_by(template_id=template_row.id)
 
-        assert_that(users, has_items(has_property('id', user1.id),
-                                     has_property('id', user2.id)))
+        assert_that(
+            users, has_items(has_property('id', user1.id), has_property('id', user2.id))
+        )
 
     def test_find_all_by_native_column(self):
         user1 = self.add_user(firstname="Rîchard")
@@ -290,12 +304,12 @@ class TestFindAllBy(TestUser):
 
         users = user_dao.find_all_by(firstname='Rîchard')
 
-        assert_that(users, has_items(has_property('id', user1.id),
-                                     has_property('id', user2.id)))
+        assert_that(
+            users, has_items(has_property('id', user1.id), has_property('id', user2.id))
+        )
 
 
 class TestCountAllBy(TestUser):
-
     def test_count_all_by_no_users(self):
         result = user_dao.count_all_by('subscription_type')
 
@@ -337,7 +351,6 @@ class TestCountAllBy(TestUser):
 
 
 class TestSearch(TestUser):
-
     def assert_search_returns_result(self, search_result, **parameters):
         parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
         result = user_dao.search(**parameters)
@@ -350,7 +363,6 @@ class TestSearch(TestUser):
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_users_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -364,123 +376,178 @@ class TestSimpleSearch(TestSearch):
 
     def test_given_directory_view_then_returns_one_result(self):
         user = self.add_user(firstname='chârles')
-        expected = SearchResult(1, [UserDirectory(id=user.id,
-                                                  uuid=user.uuid,
-                                                  line_id=None,
-                                                  agent_id=None,
-                                                  firstname='chârles',
-                                                  lastname=None,
-                                                  email=None,
-                                                  mobile_phone_number=None,
-                                                  voicemail_number=None,
-                                                  exten=None,
-                                                  userfield=None,
-                                                  description=None,
-                                                  context=None)])
+        expected = SearchResult(
+            1,
+            [
+                UserDirectory(
+                    id=user.id,
+                    uuid=user.uuid,
+                    line_id=None,
+                    agent_id=None,
+                    firstname='chârles',
+                    lastname=None,
+                    email=None,
+                    mobile_phone_number=None,
+                    voicemail_number=None,
+                    exten=None,
+                    userfield=None,
+                    description=None,
+                    context=None,
+                )
+            ],
+        )
 
         self.assert_search_returns_result(expected, view='directory')
 
-    def test_given_user_without_line_when_using_summary_view_then_returns_summary_result(self):
+    def test_given_user_without_line_when_using_summary_view_then_returns_summary_result(
+        self,
+    ):
         user = self.add_user(firstname='chârles')
 
-        expected = SearchResult(1, [UserSummary(id=user.id,
-                                                uuid=user.uuid,
-                                                firstname='chârles',
-                                                lastname=None,
-                                                email=None,
-                                                enabled=True,
-                                                extension=None,
-                                                context=None,
-                                                provisioning_code=None,
-                                                protocol=None,
-                                                )])
+        expected = SearchResult(
+            1,
+            [
+                UserSummary(
+                    id=user.id,
+                    uuid=user.uuid,
+                    firstname='chârles',
+                    lastname=None,
+                    email=None,
+                    enabled=True,
+                    extension=None,
+                    context=None,
+                    provisioning_code=None,
+                    protocol=None,
+                )
+            ],
+        )
 
         self.assert_search_returns_result(expected, view='summary')
 
-    def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(self):
+    def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(
+        self,
+    ):
         sip = self.add_endpoint_sip()
-        user_line = self.add_user_line_with_exten(firstname='dânny',
-                                                  lastname='rôgers',
-                                                  endpoint_sip_uuid=sip.uuid,
-                                                  email='dany.rogers@example.com')
+        user_line = self.add_user_line_with_exten(
+            firstname='dânny',
+            lastname='rôgers',
+            endpoint_sip_uuid=sip.uuid,
+            email='dany.rogers@example.com',
+        )
 
-        expected = SearchResult(1, [UserSummary(id=user_line.user_id,
-                                                uuid=user_line.user.uuid,
-                                                firstname='dânny',
-                                                lastname='rôgers',
-                                                email='dany.rogers@example.com',
-                                                enabled=True,
-                                                extension=user_line.extension.exten,
-                                                context=user_line.extension.context,
-                                                provisioning_code=user_line.linefeatures.provisioning_code,
-                                                protocol='sip',
-                                                )])
+        expected = SearchResult(
+            1,
+            [
+                UserSummary(
+                    id=user_line.user_id,
+                    uuid=user_line.user.uuid,
+                    firstname='dânny',
+                    lastname='rôgers',
+                    email='dany.rogers@example.com',
+                    enabled=True,
+                    extension=user_line.extension.exten,
+                    context=user_line.extension.context,
+                    provisioning_code=user_line.linefeatures.provisioning_code,
+                    protocol='sip',
+                )
+            ],
+        )
 
         self.assert_search_returns_result(expected, view='summary')
 
-    def test_given_user_with_multi_lines_when_using_summary_view_then_returns_summary_one_result(self):
+    def test_given_user_with_multi_lines_when_using_summary_view_then_returns_summary_one_result(
+        self,
+    ):
         custom = self.add_usercustom()
-        user_line = self.add_user_line_with_exten(firstname='dânny',
-                                                  lastname='rôgers',
-                                                  endpoint_custom_id=custom.id)
+        user_line = self.add_user_line_with_exten(
+            firstname='dânny', lastname='rôgers', endpoint_custom_id=custom.id
+        )
         line = self.add_line()
-        self.add_user_line(user_id=user_line.user.id,
-                           line_id=line.id,
-                           main_line=False)
+        self.add_user_line(user_id=user_line.user.id, line_id=line.id, main_line=False)
 
-        expected = SearchResult(1, [UserSummary(id=user_line.user_id,
-                                                uuid=user_line.user.uuid,
-                                                firstname='dânny',
-                                                lastname='rôgers',
-                                                email=None,
-                                                enabled=True,
-                                                extension=user_line.extension.exten,
-                                                context=user_line.extension.context,
-                                                provisioning_code=None,
-                                                protocol='custom',
-                                                )])
+        expected = SearchResult(
+            1,
+            [
+                UserSummary(
+                    id=user_line.user_id,
+                    uuid=user_line.user.uuid,
+                    firstname='dânny',
+                    lastname='rôgers',
+                    email=None,
+                    enabled=True,
+                    extension=user_line.extension.exten,
+                    context=user_line.extension.context,
+                    provisioning_code=None,
+                    protocol='custom',
+                )
+            ],
+        )
 
         self.assert_search_returns_result(expected, view='summary')
 
-    def test_given_user_with_line_and_agent_then_returns_one_directory_view_result(self):
+    def test_given_user_with_line_and_agent_then_returns_one_directory_view_result(
+        self,
+    ):
         agent_row = self.add_agent()
         voicemail_row = self.add_voicemail(mailbox='2002')
-        user_line_row = self.add_user_line_with_exten(firstname='dânny',
-                                                      lastname='rôgers',
-                                                      agentid=agent_row.id,
-                                                      mobilephonenumber='4185551234',
-                                                      voicemail_id=voicemail_row.uniqueid,
-                                                      userfield='userfield',
-                                                      description='desc')
+        user_line_row = self.add_user_line_with_exten(
+            firstname='dânny',
+            lastname='rôgers',
+            agentid=agent_row.id,
+            mobilephonenumber='4185551234',
+            voicemail_id=voicemail_row.uniqueid,
+            userfield='userfield',
+            description='desc',
+        )
 
-        expected = SearchResult(1, [UserDirectory(id=user_line_row.user_id,
-                                                  uuid=user_line_row.user.uuid,
-                                                  line_id=user_line_row.line_id,
-                                                  agent_id=agent_row.id,
-                                                  firstname='dânny',
-                                                  lastname='rôgers',
-                                                  email=None,
-                                                  mobile_phone_number='4185551234',
-                                                  voicemail_number='2002',
-                                                  exten=user_line_row.extension.exten,
-                                                  userfield='userfield',
-                                                  description='desc',
-                                                  context=user_line_row.extension.context)])
+        expected = SearchResult(
+            1,
+            [
+                UserDirectory(
+                    id=user_line_row.user_id,
+                    uuid=user_line_row.user.uuid,
+                    line_id=user_line_row.line_id,
+                    agent_id=agent_row.id,
+                    firstname='dânny',
+                    lastname='rôgers',
+                    email=None,
+                    mobile_phone_number='4185551234',
+                    voicemail_number='2002',
+                    exten=user_line_row.extension.exten,
+                    userfield='userfield',
+                    description='desc',
+                    context=user_line_row.extension.context,
+                )
+            ],
+        )
 
         self.assert_search_returns_result(expected, view='directory')
 
 
 class TestSearchGivenMultipleUsers(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.user1 = self.add_user(firstname='Ashton', lastname='ToujoursFrais', description='resto')
-        self.user2 = self.add_user(firstname='Áustin', lastname='French', description='resto')
-        self.user3 = self.add_user(firstname='Beaugarte', lastname='Cougar', description='bar')
-        self.user4 = self.add_user(firstname='Casa', lastname='Grecque', description='resto')
-        self.user5 = self.add_user(firstname='Dunkin', lastname='Donuts', description='resto')
-        self.user6 = self.add_user(firstname='Émilie', lastname='Pizza', description='resto')
-        self.user7 = self.add_user(firstname='Ômygod', lastname='Spanish', description='resto')
+        self.user1 = self.add_user(
+            firstname='Ashton', lastname='ToujoursFrais', description='resto'
+        )
+        self.user2 = self.add_user(
+            firstname='Áustin', lastname='French', description='resto'
+        )
+        self.user3 = self.add_user(
+            firstname='Beaugarte', lastname='Cougar', description='bar'
+        )
+        self.user4 = self.add_user(
+            firstname='Casa', lastname='Grecque', description='resto'
+        )
+        self.user5 = self.add_user(
+            firstname='Dunkin', lastname='Donuts', description='resto'
+        )
+        self.user6 = self.add_user(
+            firstname='Émilie', lastname='Pizza', description='resto'
+        )
+        self.user7 = self.add_user(
+            firstname='Ômygod', lastname='Spanish', description='resto'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.user3])
@@ -489,21 +556,51 @@ class TestSearchGivenMultipleUsers(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.user1])
-        self.assert_search_returns_result(expected_resto, search='ou', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ou', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.user3])
         self.assert_search_returns_result(expected_bar, search='ou', description='bar')
 
-        expected_all_resto = SearchResult(6, [self.user1, self.user2, self.user4, self.user5, self.user6, self.user7])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='firstname')
+        expected_all_resto = SearchResult(
+            6, [self.user1, self.user2, self.user4, self.user5, self.user6, self.user7]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='firstname'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(7, [self.user1, self.user2, self.user3, self.user4, self.user5, self.user6, self.user7])
+        expected = SearchResult(
+            7,
+            [
+                self.user1,
+                self.user2,
+                self.user3,
+                self.user4,
+                self.user5,
+                self.user6,
+                self.user7,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='firstname')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(7, [self.user7, self.user6, self.user5, self.user4, self.user3, self.user2, self.user1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            7,
+            [
+                self.user7,
+                self.user6,
+                self.user5,
+                self.user4,
+                self.user3,
+                self.user2,
+                self.user1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='firstname', direction='desc')
 
@@ -516,12 +613,9 @@ class TestSearchGivenMultipleUsers(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(6, [self.user6])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='firstname',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, search='a', order='firstname', direction='desc', offset=1, limit=1
+        )
 
 
 class TestSearchMutipleSameCriteria(TestSearch):
@@ -532,7 +626,9 @@ class TestSearchMutipleSameCriteria(TestSearch):
         expected = SearchResult(2, [user2, user3])
 
         multiple_uuid = ','.join([user2.uuid, user3.uuid])
-        self.assert_search_returns_result(expected, uuid=multiple_uuid, order='firstname')
+        self.assert_search_returns_result(
+            expected, uuid=multiple_uuid, order='firstname'
+        )
 
     def test_when_uuid_is_none_then_returns_right_number_of_items(self):
         self.add_user()
@@ -546,7 +642,9 @@ class TestSearchMutipleSameCriteria(TestSearch):
         expected = SearchResult(2, [ule2.user, ule3.user])
 
         multiple_exten = ','.join([ule2.extension.exten, ule3.extension.exten])
-        self.assert_search_returns_result(expected, exten=multiple_exten, order='firstname')
+        self.assert_search_returns_result(
+            expected, exten=multiple_exten, order='firstname'
+        )
 
     def test_when_exten_is_none_then_returns_right_number_of_items(self):
         self.add_user_line_with_exten()
@@ -555,80 +653,85 @@ class TestSearchMutipleSameCriteria(TestSearch):
 
 
 class TestCreate(TestUser):
-
     def test_create_minimal_fields(self):
         user = User(firstname='Jôhn', tenant_uuid=self.default_tenant.uuid)
         created_user = user_dao.create(user)
 
         row = self.session.query(User).first()
 
-        assert_that(created_user, has_properties(
-            id=row.id,
-            uuid=row.uuid,
-            firstname="Jôhn",
-            lastname=none(),
-            timezone=none(),
-            language=none(),
-            description=none(),
-            outgoing_caller_id=none(),
-            mobile_phone_number=none(),
-            call_permission_password=none(),
-            enabled=True,
-            caller_id='"Jôhn"',
-            music_on_hold=none(),
-            username=none(),
-            password=none(),
-            preprocess_subroutine=none(),
-            userfield=none(),
-            voicemail_id=none(),
-            call_transfer_enabled=False,
-            dtmf_hangup_enabled=False,
-            dnd_enabled=False,
-            incallfilter_enabled=False,
-            supervision_enabled=True,
-            call_record_outgoing_external_enabled=False,
-            call_record_outgoing_internal_enabled=False,
-            call_record_incoming_external_enabled=False,
-            call_record_incoming_internal_enabled=False,
-            busy_enabled=False,
-            busy_destination=None,
-            noanswer_enabled=False,
-            noanswer_destination=None,
-            tenant_uuid=self.default_tenant.uuid,
-            unconditional_enabled=False,
-            unconditional_destination=None,
-            simultaneous_calls=5,
-            ring_seconds=30,
-            subscription_type=0,
-        ))
+        assert_that(
+            created_user,
+            has_properties(
+                id=row.id,
+                uuid=row.uuid,
+                firstname="Jôhn",
+                lastname=none(),
+                timezone=none(),
+                language=none(),
+                description=none(),
+                outgoing_caller_id=none(),
+                mobile_phone_number=none(),
+                call_permission_password=none(),
+                enabled=True,
+                caller_id='"Jôhn"',
+                music_on_hold=none(),
+                username=none(),
+                password=none(),
+                preprocess_subroutine=none(),
+                userfield=none(),
+                voicemail_id=none(),
+                call_transfer_enabled=False,
+                dtmf_hangup_enabled=False,
+                dnd_enabled=False,
+                incallfilter_enabled=False,
+                supervision_enabled=True,
+                call_record_outgoing_external_enabled=False,
+                call_record_outgoing_internal_enabled=False,
+                call_record_incoming_external_enabled=False,
+                call_record_incoming_internal_enabled=False,
+                busy_enabled=False,
+                busy_destination=None,
+                noanswer_enabled=False,
+                noanswer_destination=None,
+                tenant_uuid=self.default_tenant.uuid,
+                unconditional_enabled=False,
+                unconditional_destination=None,
+                simultaneous_calls=5,
+                ring_seconds=30,
+                subscription_type=0,
+            ),
+        )
 
-        assert_that(row, has_properties(
-            id=is_not(none()),
-            uuid=is_not(none()),
-            callerid='"Jôhn"',
-            outcallerid='',
-            mobilephonenumber='',
-            rightcallcode=none(),
-            commented=0,
-            loginclient='',
-            passwdclient='',
-            musiconhold='',
-            voicemailid=none(),
-            enablehint=1,
-            enablexfer=0,
-            dtmf_hangup=0,
-            incallfilter=0,
-            enablednd=0,
-            enableonlinerec=0,
-            enablebusy=0,
-            destbusy='',
-            enablerna=0,
-            destrna='',
-            enableunc=0,
-            destunc='',
-            func_key_private_template_id=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-        ))
+        assert_that(
+            row,
+            has_properties(
+                id=is_not(none()),
+                uuid=is_not(none()),
+                callerid='"Jôhn"',
+                outcallerid='',
+                mobilephonenumber='',
+                rightcallcode=none(),
+                commented=0,
+                loginclient='',
+                passwdclient='',
+                musiconhold='',
+                voicemailid=none(),
+                enablehint=1,
+                enablexfer=0,
+                dtmf_hangup=0,
+                incallfilter=0,
+                enablednd=0,
+                enableonlinerec=0,
+                enablebusy=0,
+                destbusy='',
+                enablerna=0,
+                destrna='',
+                enableunc=0,
+                destunc='',
+                func_key_private_template_id=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         voicemail = self.add_voicemail()
@@ -675,82 +778,89 @@ class TestCreate(TestUser):
 
         row = self.session.query(User).first()
 
-        assert_that(created_user, has_properties(
-            id=row.id,
-            uuid=row.uuid,
-            firstname="Jôhn",
-            lastname='Smîth',
-            timezone='America/Montreal',
-            language='en_US',
-            description='description',
-            caller_id='"fîrstname lâstname" <1000>',
-            outgoing_caller_id='ôutgoing_caller_id',
-            mobile_phone_number='1234567890',
-            call_permission_password='1234',
-            enabled=False,
-            username='username',
-            password='password',
-            music_on_hold='music_on_hold',
-            preprocess_subroutine='preprocess_subroutine',
-            voicemail_id=voicemail.id,
-            call_transfer_enabled=True,
-            dtmf_hangup_enabled=True,
-            dnd_enabled=True,
-            incallfilter_enabled=True,
-            supervision_enabled=False,
-            call_record_outgoing_external_enabled=True,
-            call_record_outgoing_internal_enabled=True,
-            call_record_incoming_external_enabled=True,
-            call_record_incoming_internal_enabled=True,
-            online_call_record_enabled=True,
-            busy_enabled=True,
-            busy_destination='123',
-            noanswer_enabled=True,
-            noanswer_destination='456',
-            tenant_uuid=self.default_tenant.uuid,
-            unconditional_enabled=True,
-            unconditional_destination='789',
-            ring_seconds=60,
-            simultaneous_calls=10,
-            userfield='userfield',
-            subscription_type=0,
-            created_at=is_not(none()),
-        ))
+        assert_that(
+            created_user,
+            has_properties(
+                id=row.id,
+                uuid=row.uuid,
+                firstname="Jôhn",
+                lastname='Smîth',
+                timezone='America/Montreal',
+                language='en_US',
+                description='description',
+                caller_id='"fîrstname lâstname" <1000>',
+                outgoing_caller_id='ôutgoing_caller_id',
+                mobile_phone_number='1234567890',
+                call_permission_password='1234',
+                enabled=False,
+                username='username',
+                password='password',
+                music_on_hold='music_on_hold',
+                preprocess_subroutine='preprocess_subroutine',
+                voicemail_id=voicemail.id,
+                call_transfer_enabled=True,
+                dtmf_hangup_enabled=True,
+                dnd_enabled=True,
+                incallfilter_enabled=True,
+                supervision_enabled=False,
+                call_record_outgoing_external_enabled=True,
+                call_record_outgoing_internal_enabled=True,
+                call_record_incoming_external_enabled=True,
+                call_record_incoming_internal_enabled=True,
+                online_call_record_enabled=True,
+                busy_enabled=True,
+                busy_destination='123',
+                noanswer_enabled=True,
+                noanswer_destination='456',
+                tenant_uuid=self.default_tenant.uuid,
+                unconditional_enabled=True,
+                unconditional_destination='789',
+                ring_seconds=60,
+                simultaneous_calls=10,
+                userfield='userfield',
+                subscription_type=0,
+                created_at=is_not(none()),
+            ),
+        )
 
-        assert_that(row, has_properties(
-            callerid='"fîrstname lâstname" <1000>',
-            outcallerid='ôutgoing_caller_id',
-            mobilephonenumber='1234567890',
-            rightcallcode='1234',
-            commented=1,
-            loginclient='username',
-            passwdclient='password',
-            voicemailid=voicemail.id,
-            enablehint=0,
-            enablexfer=1,
-            dtmf_hangup=1,
-            incallfilter=1,
-            enablednd=1,
-            enableonlinerec=1,
-            enablebusy=1,
-            destbusy='123',
-            enablerna=1,
-            destrna='456',
-            enableunc=1,
-            destunc='789',
-            musiconhold='music_on_hold',
-            tenant_uuid=self.default_tenant.uuid,
-        ))
+        assert_that(
+            row,
+            has_properties(
+                callerid='"fîrstname lâstname" <1000>',
+                outcallerid='ôutgoing_caller_id',
+                mobilephonenumber='1234567890',
+                rightcallcode='1234',
+                commented=1,
+                loginclient='username',
+                passwdclient='password',
+                voicemailid=voicemail.id,
+                enablehint=0,
+                enablexfer=1,
+                dtmf_hangup=1,
+                incallfilter=1,
+                enablednd=1,
+                enableonlinerec=1,
+                enablebusy=1,
+                destbusy='123',
+                enablerna=1,
+                destrna='456',
+                enableunc=1,
+                destunc='789',
+                musiconhold='music_on_hold',
+                tenant_uuid=self.default_tenant.uuid,
+            ),
+        )
 
     def test_that_the_user_uuid_is_unique(self):
         shared_uuid = str(uuid.uuid4())
         self.add_user(firstname='Alice', uuid=shared_uuid)
 
-        self.assertRaises(Exception, user_dao.create, User(firstname='Jôhn', uuid=shared_uuid))
+        self.assertRaises(
+            Exception, user_dao.create, User(firstname='Jôhn', uuid=shared_uuid)
+        )
 
 
 class TestEdit(TestUser):
-
     def test_edit_all_fields(self):
         old_voicemail = self.add_voicemail()
         new_voicemail = self.add_voicemail()
@@ -813,43 +923,46 @@ class TestEdit(TestUser):
 
         row = self.session.query(User).first()
 
-        assert_that(row, has_properties(
-            firstname='firstname',
-            lastname='lastname',
-            timezone='America/Montreal',
-            language='en_US',
-            description='description',
-            caller_id='"John Sparrow"',
-            outgoing_caller_id='outgoing_caller_id',
-            mobile_phone_number='1234567890',
-            call_permission_password='1234',
-            enabled=False,
-            username='username',
-            password='password',
-            music_on_hold='music_on_hold',
-            preprocess_subroutine='preprocess_subroutine',
-            voicemail_id=new_voicemail.id,
-            call_transfer_enabled=True,
-            dtmf_hangup_enabled=True,
-            dnd_enabled=True,
-            incallfilter_enabled=True,
-            supervision_enabled=False,
-            call_record_outgoing_external_enabled=True,
-            call_record_outgoing_internal_enabled=True,
-            call_record_incoming_external_enabled=True,
-            call_record_incoming_internal_enabled=True,
-            online_call_record_enabled=True,
-            busy_enabled=True,
-            busy_destination='123',
-            noanswer_enabled=True,
-            noanswer_destination='456',
-            unconditional_enabled=True,
-            unconditional_destination='789',
-            ring_seconds=60,
-            simultaneous_calls=5,
-            userfield='userfield',
-            subscription_type=2,
-        ))
+        assert_that(
+            row,
+            has_properties(
+                firstname='firstname',
+                lastname='lastname',
+                timezone='America/Montreal',
+                language='en_US',
+                description='description',
+                caller_id='"John Sparrow"',
+                outgoing_caller_id='outgoing_caller_id',
+                mobile_phone_number='1234567890',
+                call_permission_password='1234',
+                enabled=False,
+                username='username',
+                password='password',
+                music_on_hold='music_on_hold',
+                preprocess_subroutine='preprocess_subroutine',
+                voicemail_id=new_voicemail.id,
+                call_transfer_enabled=True,
+                dtmf_hangup_enabled=True,
+                dnd_enabled=True,
+                incallfilter_enabled=True,
+                supervision_enabled=False,
+                call_record_outgoing_external_enabled=True,
+                call_record_outgoing_internal_enabled=True,
+                call_record_incoming_external_enabled=True,
+                call_record_incoming_internal_enabled=True,
+                online_call_record_enabled=True,
+                busy_enabled=True,
+                busy_destination='123',
+                noanswer_enabled=True,
+                noanswer_destination='456',
+                unconditional_enabled=True,
+                unconditional_destination='789',
+                ring_seconds=60,
+                simultaneous_calls=5,
+                userfield='userfield',
+                subscription_type=2,
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
         voicemail = self.add_voicemail()
@@ -867,7 +980,7 @@ class TestEdit(TestUser):
             timezone='America/Montreal',
             language='fr_FR',
             voicemail_id=voicemail.id,
-            description='Really cool dude'
+            description='Really cool dude',
         )
 
         user = user_dao.get(user.id)
@@ -888,24 +1001,27 @@ class TestEdit(TestUser):
 
         row = self.session.query(User).first()
 
-        assert_that(row, has_properties(
-            id=user.id,
-            uuid=user.uuid,
-            firstname="Pâul",
-            lastname=none(),
-            timezone=none(),
-            language=none(),
-            description=none(),
-            outcallerid='',
-            mobilephonenumber='',
-            rightcallcode=none(),
-            musiconhold='',
-            loginclient='',
-            passwdclient='',
-            preprocess_subroutine=none(),
-            voicemailid=none(),
-            userfield=none(),
-        ))
+        assert_that(
+            row,
+            has_properties(
+                id=user.id,
+                uuid=user.uuid,
+                firstname="Pâul",
+                lastname=none(),
+                timezone=none(),
+                language=none(),
+                description=none(),
+                outcallerid='',
+                mobilephonenumber='',
+                rightcallcode=none(),
+                musiconhold='',
+                loginclient='',
+                passwdclient='',
+                preprocess_subroutine=none(),
+                voicemailid=none(),
+                userfield=none(),
+            ),
+        )
 
     def test_edit_caller_id_with_number(self):
         caller_id = '<1000>'
@@ -923,7 +1039,6 @@ class TestEdit(TestUser):
 
 
 class TestDelete(TestUser):
-
     def test_delete(self):
         user = self.add_user()
 
@@ -959,7 +1074,6 @@ class TestDelete(TestUser):
 
 
 class TestAssociateGroups(DAOTestCase):
-
     def test_associate_user_sip(self):
         user_row = self.add_user()
         sip = self.add_endpoint_sip(name='sipname')
@@ -971,13 +1085,17 @@ class TestAssociateGroups(DAOTestCase):
 
         user = self.session.query(User).first()
         assert_that(user, equal_to(user_row))
-        assert_that(user.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='PJSIP/sipname',
-                           channel='SIP',
-                           group=has_properties(id=group.id,
-                                                name=group.name))
-        ))
+        assert_that(
+            user.group_members,
+            contains(
+                has_properties(
+                    queue_name=group.name,
+                    interface='PJSIP/sipname',
+                    channel='SIP',
+                    group=has_properties(id=group.id, name=group.name),
+                )
+            ),
+        )
 
     def test_associate_multiple_users(self):
         user_row = self.add_user()
@@ -1005,11 +1123,14 @@ class TestAssociateGroups(DAOTestCase):
         user_dao.associate_all_groups(user_row, [group])
 
         user = self.session.query(User).first()
-        assert_that(user.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='PJSIP/sipname',
-                           channel='SIP')
-        ))
+        assert_that(
+            user.group_members,
+            contains(
+                has_properties(
+                    queue_name=group.name, interface='PJSIP/sipname', channel='SIP'
+                )
+            ),
+        )
 
     def test_associate_sccp_fix(self):
         user_row = self.add_user()
@@ -1021,11 +1142,14 @@ class TestAssociateGroups(DAOTestCase):
         user_dao.associate_all_groups(user_row, [group])
 
         user = self.session.query(User).first()
-        assert_that(user.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='SCCP/sccpname',
-                           channel='SCCP')
-        ))
+        assert_that(
+            user.group_members,
+            contains(
+                has_properties(
+                    queue_name=group.name, interface='SCCP/sccpname', channel='SCCP'
+                )
+            ),
+        )
 
     def test_associate_custom_fix(self):
         user_row = self.add_user()
@@ -1037,11 +1161,16 @@ class TestAssociateGroups(DAOTestCase):
         user_dao.associate_all_groups(user_row, [group])
 
         user = self.session.query(User).first()
-        assert_that(user.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='custom/interface',
-                           channel='**Unknown**')
-        ))
+        assert_that(
+            user.group_members,
+            contains(
+                has_properties(
+                    queue_name=group.name,
+                    interface='custom/interface',
+                    channel='**Unknown**',
+                )
+            ),
+        )
 
     def test_users_dissociation(self):
         user_row = self.add_user()
