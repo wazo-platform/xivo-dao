@@ -62,6 +62,15 @@ def get_status_by_user(session, user_uuid, tenant_uuids=None):
     return _to_agent_status(login_status, _get_queues_for_agent(session, login_status.agent_id))
 
 
+@daosession
+def get_status_by_state_interface(session, state_interface, tenant_uuids=None):
+    login_status = _get_login_status_by_state_interface(session, state_interface, tenant_uuids=tenant_uuids)
+    if not login_status:
+        return None
+
+    return _to_agent_status(login_status, _get_queues_for_agent(session, login_status.agent_id))
+
+
 def _get_login_status_by_id(session, agent_id, tenant_uuids=None):
     login_status = (session
                     .query(AgentLoginStatus)
@@ -88,6 +97,16 @@ def _get_login_status_by_user(session, user_uuid, tenant_uuids=None):
                     .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
                     .join((UserFeatures, AgentFeatures.id == UserFeatures.agentid))
                     .filter(UserFeatures.uuid == user_uuid))
+    if tenant_uuids is not None:
+        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+    return login_status.first()
+
+
+def _get_login_status_by_state_interface(session, state_interface, tenant_uuids=None):
+    login_status = (session
+                    .query(AgentLoginStatus)
+                    .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
+                    .filter(AgentLoginStatus.state_interface == state_interface))
     if tenant_uuids is not None:
         login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
     return login_status.first()
