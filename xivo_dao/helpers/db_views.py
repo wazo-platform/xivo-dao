@@ -171,7 +171,7 @@ class _MaterializedViewMeta(DeclarativeMeta):
         @listens_for(Session, 'after_flush')
         def _before_session_commit_handler(session: Session, flush_context: UOWTransaction) -> None:
             for obj in session.dirty | session.new | session.deleted:
-                if isinstance(obj, targets):
+                if isinstance(obj, tuple(targets)):
                     # Cannot call `refresh_materialized_view` as it will try to flush again.
                     session.execute(
                         text(f'REFRESH MATERIALIZED VIEW CONCURRENTLY {self.__table__.fullname}')
