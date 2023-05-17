@@ -178,9 +178,9 @@ class _MaterializedViewMeta(DeclarativeMeta):
                     )
                     return
 
-            self._view_dependencies_handler = staticmethod(
-                _before_session_commit_handler
-            )
+        self._view_dependencies_handler = staticmethod(
+            _before_session_commit_handler
+        )
 
     @property
     def autorefresh(self):
