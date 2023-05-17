@@ -66,3 +66,22 @@ class TestView(DAOTestCase):
         )
         assert_that(result.root, equal_to(sip.uuid))
         assert_that(result.options, has_entries(first='value1', second='value2'))
+
+    def test_view_dont_update_on_get(self):
+        sip = self.add_endpoint_sip(
+            endpoint_section_options=[('test', 'old_value')]
+        )
+
+        assert_that(sip.get_option_value('test'), equal_to('old_value'))
+
+        sip.endpoint_section_options = [('test', 'new_value')]
+
+        # view should not be updated, because no flush occurred
+        assert_that(sip.get_option_value('test'), equal_to('old_value'))
+
+        self.session.add(sip)
+        self.session.flush()
+        self.session.expire(sip)
+
+        # view is only updated when a EndpointSIPOption object is updated
+        assert_that(sip.get_option_value('test'), equal_to('new_value'))
