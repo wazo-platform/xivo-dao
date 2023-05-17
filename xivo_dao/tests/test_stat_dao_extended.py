@@ -83,12 +83,9 @@ class TestStatDAO(DAOTestCase):
         logs_by_queue = dict(group_by(queue_logs, group_key=lambda log: log.queuename))
         for queuename, stat_calls in stat_coq_by_queue:
             with self.subTest(queue=queuename):
-                print(f"queue={queuename}")
                 logs = logs_by_queue[queuename]
                 leaveempty_queuelogs_count = sum(1 for log in logs if log.event == 'LEAVEEMPTY')
-                print(f"queue_log_leaveempty_count={leaveempty_queuelogs_count}")
                 calls_on_queue_leaveempty_count = sum(1 for call in stat_calls if call.status == 'leaveempty')
-                print(f"calls_on_queue_leaveempty_count={calls_on_queue_leaveempty_count}")
                 assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
 
     def test_fill_leaveempty_calls_reenter_same_queue(self):
@@ -130,12 +127,9 @@ class TestStatDAO(DAOTestCase):
         logs_by_queue = dict(group_by(queue_logs, group_key=lambda log: log.queuename))
         for queuename, stat_calls in stat_coq_by_queue:
             with self.subTest(queue=queuename):
-                print(f"queue={queuename}")
                 logs = logs_by_queue[queuename]
                 leaveempty_queuelogs_count = sum(1 for log in logs if log.event == 'LEAVEEMPTY')
-                print(f"queue_log_leaveempty_count={leaveempty_queuelogs_count}")
                 calls_on_queue_leaveempty_count = sum(1 for call in stat_calls if call.status == 'leaveempty')
-                print(f"calls_on_queue_leaveempty_count={calls_on_queue_leaveempty_count}")
                 assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
 
     def test_get_completed_logins(self):
