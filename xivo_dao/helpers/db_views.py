@@ -1,12 +1,13 @@
 # Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import Column, MetaData, PrimaryKeyConstraint, Table, Index
+from sqlalchemy import Column, MetaData, PrimaryKeyConstraint, Table, Index, text
 from sqlalchemy.ext import compiler
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.event import listens_for, listen, contains
 from sqlalchemy.exc import InvalidRequestError, NoInspectionAvailable
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm.unitofwork import UOWTransaction
 from sqlalchemy.sql.ddl import DDLElement
 from sqlalchemy.sql.selectable import Selectable
 
@@ -164,25 +165,26 @@ class _MaterializedViewMeta(DeclarativeMeta):
         _refresh_materialized_view(Session(), self.__table__.fullname, concurrently)
 
     def _track_dependencies(self):
-        if not hasattr(self, '_view_dependencies'):
+        if not (targets := getattr(self, '_view_dependencies', None)):
             return
-        targets = self._view_dependencies
-        if targets:
 
-            @listens_for(Session, 'before_commit')
-            def _before_session_commit_handler(session):
-                for obj in session.dirty | session.new | session.deleted:
-                    if isinstance(obj, tuple(targets)):
-                        self.refresh(concurrently=True)
-                        return
+        @listens_for(Session, 'after_flush')
+        def _before_session_commit_handler(session: Session, flush_context: UOWTransaction) -> None:
+            for obj in session.dirty | session.new | session.deleted:
+                if isinstance(obj, tuple(targets)):
+                    # Cannot call `refresh_materialized_view` as it will try to flush again.
+                    session.execute(
+                        text(f'REFRESH MATERIALIZED VIEW CONCURRENTLY {self.__table__.fullname}')
+                    )
+                    return
 
-            self._view_dependencies_handler = staticmethod(
-                _before_session_commit_handler
-            )
+        self._view_dependencies_handler = staticmethod(
+            _before_session_commit_handler
+        )
 
     @property
     def autorefresh(self):
-        return contains(Session, 'before_commit', self._view_dependencies_handler)
+        return contains(Session, 'after_flush', self._view_dependencies_handler)
 
 
 class MaterializedView(Base, metaclass=_MaterializedViewMeta):
