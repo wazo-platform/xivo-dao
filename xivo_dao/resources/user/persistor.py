@@ -59,33 +59,34 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         query = query.group_by(column)
         return query.all()
 
-    def search(self, parameters, is_db_sort_limit=True):
+    def search(self, parameters):
         view = self.user_view.select(parameters.get('view'))
         query = view.query(self.session)
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
-
-        if not is_db_sort_limit:
-            order = parameters.pop('order', None)
-            limit = parameters.pop('limit', None)
-            offset = parameters.pop('offset', None)
-            reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
-
         rows, total = self.user_search.search_from_query(query, parameters)
         users = view.convert_list(rows)
-        if is_db_sort_limit:
-            return SearchResult(total, users)
-        else:
-            result = sorted(
-                users,
+        return SearchResult(total, users)
+
+    def search_collated(self, parameters):
+        order = parameters.pop('order', None)
+        limit = parameters.pop('limit', None)
+        offset = parameters.pop('offset', None)
+        reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
+        result = self.search(parameters)
+        if order:
+            users = sorted(
+                result.items,
                 key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
                 reverse=reverse,
             )
+        else:
+            users = result.items
 
-            if not offset or not limit:
-                return SearchResult(total, result[offset:])
-            else:
-                return SearchResult(total, result[offset:offset + limit])
+        if not offset or not limit:
+            return SearchResult(result.total, users[offset:])
+        else:
+            return SearchResult(result.total, users[offset:offset + limit])
 
     def create(self, user):
         self.prepare_template(user)

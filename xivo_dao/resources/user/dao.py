@@ -17,9 +17,14 @@ def persistor(tenant_uuids=None):
     return UserPersistor(Session, user_view, user_search, tenant_uuids)
 
 
-def search(is_db_sort_limit=True, **parameters):
+def search(**parameters):
     tenant_uuids = parameters.pop('tenant_uuids', None)
-    return persistor(tenant_uuids).search(parameters, is_db_sort_limit=is_db_sort_limit)
+    return persistor(tenant_uuids).search(parameters)
+
+
+def search_collated(**parameters):
+    tenant_uuids = parameters.pop('tenant_uuids', None)
+    return persistor(tenant_uuids).search_collated(parameters)
 
 
 def get(user_id, tenant_uuids=None):
