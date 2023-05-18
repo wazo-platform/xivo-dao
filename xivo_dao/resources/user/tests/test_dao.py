@@ -586,6 +586,9 @@ class TestSearchGivenMultipleUsers(TestSearch):
         self.assert_search_returns_result(
             expected_all_resto, description='resto', order='firstname'
         )
+        self.assert_search_collated_returns_result(
+            expected_all_resto, description='resto', order='firstname'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
@@ -602,6 +605,7 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
 
         self.assert_search_returns_result(expected, order='firstname')
+        self.assert_search_collated_returns_result(expected, order='firstname')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
         self,
@@ -620,6 +624,7 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
 
         self.assert_search_returns_result(expected, order='firstname', direction='desc')
+        self.assert_search_collated_returns_result(expected, order='firstname', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         self.assert_search_returns_result_total(7, limit=1)
