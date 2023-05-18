@@ -624,7 +624,9 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
 
         self.assert_search_returns_result(expected, order='firstname', direction='desc')
-        self.assert_search_collated_returns_result(expected, order='firstname', direction='desc')
+        self.assert_search_collated_returns_result(
+            expected, order='firstname', direction='desc'
+        )
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         self.assert_search_returns_result_total(7, limit=1)
