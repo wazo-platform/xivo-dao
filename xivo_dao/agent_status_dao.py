@@ -176,7 +176,7 @@ def get_statuses(session, tenant_uuids=None):
         AgentLoginStatus.state_interface.label('state_interface'),
         AgentLoginStatus.paused.label('paused'),
         AgentLoginStatus.paused_reason.label('paused_reason'),
-        case([(AgentLoginStatus.agent_id is None, false())], else_=true()).label(
+        case([(AgentLoginStatus.agent_id.is_(None), false())], else_=true()).label(
             'logged'
         ),  # noqa
     ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
