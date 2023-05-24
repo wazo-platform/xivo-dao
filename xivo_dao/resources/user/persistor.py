@@ -1,5 +1,7 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+import unicodedata
 
 from sqlalchemy.sql import func
 
@@ -13,7 +15,6 @@ from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
 class UserPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = User
 
     def __init__(self, session, user_view, user_search, tenant_uuids=None):
@@ -66,6 +67,26 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         rows, total = self.user_search.search_from_query(query, parameters)
         users = view.convert_list(rows)
         return SearchResult(total, users)
+
+    def search_collated(self, parameters):
+        order = parameters.pop('order', None)
+        limit = parameters.pop('limit', None)
+        offset = parameters.pop('offset', None)
+        reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
+        result = self.search(parameters)
+        if order:
+            users = sorted(
+                result.items,
+                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
+                reverse=reverse,
+            )
+        else:
+            users = result.items
+
+        if not offset or not limit:
+            return SearchResult(result.total, users[offset:])
+        else:
+            return SearchResult(result.total, users[offset:offset + limit])
 
     def create(self, user):
         self.prepare_template(user)
