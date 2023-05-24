@@ -581,17 +581,32 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
 
         expected_all_resto = SearchResult(
+            6, [self.user1, self.user4, self.user5, self.user2, self.user6, self.user7]
+        )
+        expected_collated_all_resto = SearchResult(
             6, [self.user1, self.user2, self.user4, self.user5, self.user6, self.user7]
         )
         self.assert_search_returns_result(
             expected_all_resto, description='resto', order='firstname'
         )
         self.assert_search_collated_returns_result(
-            expected_all_resto, description='resto', order='firstname'
+            expected_collated_all_resto, description='resto', order='firstname'
         )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
+            7,
+            [
+                self.user1,
+                self.user3,
+                self.user4,
+                self.user5,
+                self.user2,
+                self.user6,
+                self.user7,
+            ],
+        )
+        expected_collated = SearchResult(
             7,
             [
                 self.user1,
@@ -605,12 +620,24 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
 
         self.assert_search_returns_result(expected, order='firstname')
-        self.assert_search_collated_returns_result(expected, order='firstname')
+        self.assert_search_collated_returns_result(expected_collated, order='firstname')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
         self,
     ):
         expected = SearchResult(
+            7,
+            [
+                self.user7,
+                self.user6,
+                self.user2,
+                self.user5,
+                self.user4,
+                self.user3,
+                self.user1,
+            ],
+        )
+        expected_collated = SearchResult(
             7,
             [
                 self.user7,
@@ -625,7 +652,7 @@ class TestSearchGivenMultipleUsers(TestSearch):
 
         self.assert_search_returns_result(expected, order='firstname', direction='desc')
         self.assert_search_collated_returns_result(
-            expected, order='firstname', direction='desc'
+            expected_collated, order='firstname', direction='desc'
         )
 
     def test_when_limiting_then_returns_right_number_of_items(self):

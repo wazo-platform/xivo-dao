@@ -8,5 +8,6 @@ services:
      - POSTGRES_USER=asterisk
      - POSTGRES_PASSWORD=proformatique
      - POSTGRES_DB=asterisk
+     - LC_ALL=C.UTF-8
     volumes:
       - "./contribs/docker/db/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql"
