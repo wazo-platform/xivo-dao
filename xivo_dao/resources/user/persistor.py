@@ -89,7 +89,7 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         if not offset or not limit:
             return SearchResult(result.total, users[offset:])
         else:
-            return SearchResult(result.total, users[offset : offset + limit])
+            return SearchResult(result.total, users[offset: offset + limit])
 
     def create(self, user):
         self.prepare_template(user)
