@@ -69,6 +69,9 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         return SearchResult(total, users)
 
     def search_collated(self, parameters):
+        parameters = self.user_search._populate_parameters(parameters)
+        self.user_search._validate_parameters(parameters)
+        self.user_search.config.column_for_sorting(parameters['order'])
         order = parameters.pop('order', None)
         limit = parameters.pop('limit', None)
         offset = parameters.pop('offset', None)
@@ -86,7 +89,7 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         if not offset or not limit:
             return SearchResult(result.total, users[offset:])
         else:
-            return SearchResult(result.total, users[offset:offset + limit])
+            return SearchResult(result.total, users[offset : offset + limit])
 
     def create(self, user):
         self.prepare_template(user)

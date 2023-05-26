@@ -371,6 +371,20 @@ class TestSearch(TestUser):
         result = user_dao.search_collated(**parameters)
         assert_that(result.total, equal_to(total))
 
+    def assert_search_raises_exception(self, exception, exception_msg, **parameters):
+        with self.assertRaises(exception) as exc:
+            parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
+            user_dao.search(**parameters)
+        self.assertEquals(str(exc.exception), exception_msg)
+
+    def assert_search_collated_raises_exception(
+        self, exception, exception_msg, **parameters
+    ):
+        with self.assertRaises(exception) as exc:
+            parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
+            user_dao.search_collated(**parameters)
+        self.assertEquals(str(exc.exception), exception_msg)
+
 
 class TestSimpleSearch(TestSearch):
     def test_given_no_users_then_returns_no_empty_result(self):
@@ -671,6 +685,30 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
         self.assert_search_collated_returns_result(
             expected, search='a', order='firstname', direction='desc', offset=1, limit=1
+        )
+
+    def test_when_invalid_column(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - order: column 'invalid' was not found",
+            order='invalid',
+        )
+        self.assert_search_collated_raises_exception(
+            InputError,
+            "Input Error - order: column 'invalid' was not found",
+            order='invalid',
+        )
+
+    def test_when_invalid_direction(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - direction: must be 'asc' or 'desc'",
+            direction='invalid',
+        )
+        self.assert_search_collated_raises_exception(
+            InputError,
+            "Input Error - direction: must be 'asc' or 'desc'",
+            direction='invalid',
         )
 
 
