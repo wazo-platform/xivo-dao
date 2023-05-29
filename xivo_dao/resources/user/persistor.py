@@ -59,37 +59,23 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         query = query.group_by(column)
         return query.all()
 
-    def search(self, parameters):
+    def _search(self, parameters, is_collated=False):
         view = self.user_view.select(parameters.get('view'))
         query = view.query(self.session)
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
-        rows, total = self.user_search.search_from_query(query, parameters)
+        if not is_collated:
+            rows, total = self.user_search.search_from_query(query, parameters)
+        else:
+            rows, total = self.user_search.search_from_query_collated(query, parameters)
         users = view.convert_list(rows)
         return SearchResult(total, users)
 
-    def search_collated(self, parameters):
-        parameters = self.user_search._populate_parameters(parameters)
-        self.user_search._validate_parameters(parameters)
-        self.user_search.config.column_for_sorting(parameters['order'])
-        order = parameters.pop('order', None)
-        limit = parameters.pop('limit', None)
-        offset = parameters.pop('offset', None)
-        reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
-        result = self.search(parameters)
-        if order:
-            users = sorted(
-                result.items,
-                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
-                reverse=reverse,
-            )
-        else:
-            users = result.items
+    def search(self, parameters):
+        return self._search(parameters)
 
-        if not offset or not limit:
-            return SearchResult(result.total, users[offset:])
-        else:
-            return SearchResult(result.total, users[offset:offset + limit])
+    def search_collated(self, parameters):
+        return self._search(parameters, is_collated=True)
 
     def create(self, user):
         self.prepare_template(user)
