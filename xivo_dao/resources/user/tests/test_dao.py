@@ -593,6 +593,12 @@ class TestSearchGivenMultipleUsers(TestSearch):
             expected_collated_all_resto, description='resto', order='firstname'
         )
 
+    def test_when_limiting_and_ordering(self):
+        expected = SearchResult(7, [self.user1])
+
+        self.assert_search_returns_result(expected, limit=1, order='firstname')
+        self.assert_search_collated_returns_result(expected, limit=1, order='firstname')
+
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
             7,
