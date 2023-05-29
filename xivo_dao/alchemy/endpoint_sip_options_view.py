@@ -3,12 +3,13 @@
 
 from sqlalchemy import select, join, cast, literal, func, String, Index, text
 from sqlalchemy.dialects.postgresql import JSONB, aggregate_order_by
-
-from xivo_dao.helpers.db_views import MaterializedView, create_materialized_view
+from sqlalchemy_utils import create_materialized_view
 
 from .endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from .endpoint_sip_section import EndpointSIPSection
 from .endpoint_sip_section_option import EndpointSIPSectionOption
+from ..helpers.db_manager import Base
+from ..helpers.db_views import MaterializedView
 
 
 def _generate_selectable():
@@ -82,14 +83,15 @@ def _generate_selectable():
 
 
 class EndpointSIPOptionsView(MaterializedView):
-    __view__ = create_materialized_view(
+    __table__ = create_materialized_view(
         'endpoint_sip_options_view',
         _generate_selectable(),
-        dependencies=(EndpointSIPSectionOption, EndpointSIP),
+        metadata=Base.metadata,
         indexes=[
             Index('endpoint_sip_options_view__idx_root', text('root'), unique=True),
         ],
     )
+    __view_dependencies__ = (EndpointSIPSectionOption, EndpointSIP)
 
     @classmethod
     def get_option_value(cls, option):
