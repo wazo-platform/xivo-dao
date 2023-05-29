@@ -130,7 +130,7 @@ class SearchSystem:
         if not limit:
             return rows[offset:], total
         else:
-            return rows[offset : offset + limit], total
+            return rows[offset:offset + limit], total
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
