@@ -1,8 +1,9 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
 from pytz import UTC
+from sqlalchemy import text
 
 from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -269,7 +270,7 @@ class TestStatDAO(DAOTestCase):
     @classmethod
     def _create_functions(cls):
         # ## WARNING: These functions should always be the same as the one in baseconfig
-        fill_simple_calls_fn = '''\
+        fill_simple_calls_fn = text('''\
 DROP FUNCTION IF EXISTS "fill_simple_calls" (timestamptz, timestamptz);
 CREATE FUNCTION "fill_simple_calls"(period_start timestamptz, period_end timestamptz)
   RETURNS void AS
@@ -290,10 +291,10 @@ $$
           "time" BETWEEN $1 AND $2;
 $$
 LANGUAGE SQL;
-'''
+''')
         cls.session.execute(fill_simple_calls_fn)
 
-        fill_leaveempty_calls_fn = '''\
+        fill_leaveempty_calls_fn = text('''\
 DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (timestamptz, timestamptz);
 CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start timestamptz, period_end timestamptz)
   RETURNS void AS
@@ -316,5 +317,5 @@ FROM (SELECT
             AND time BETWEEN $1 AND $2) AS first;
 $$
 LANGUAGE SQL;
-'''
+''')
         cls.session.execute(fill_leaveempty_calls_fn)
