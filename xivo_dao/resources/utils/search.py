@@ -26,7 +26,6 @@ class unaccent(ReturnTypeFromArgs):
 
 
 class CriteriaBuilderMixin:
-
     def build_criteria(self, query, criteria):
         for name, value in criteria.items():
             column = self._get_column(name)
@@ -41,7 +40,6 @@ class CriteriaBuilderMixin:
 
 
 class SearchConfig:
-
     def __init__(self, table, columns, default_sort, search=None, sort=None):
         self.table = table
         self._columns = columns
@@ -72,7 +70,6 @@ class SearchConfig:
 
 
 class SearchSystem:
-
     SORT_DIRECTIONS = {
         'asc': sql.asc,
         'desc': sql.desc,
@@ -83,7 +80,7 @@ class SearchSystem:
         'order': None,
         'direction': 'asc',
         'limit': None,
-        'offset': 0
+        'offset': 0,
     }
 
     def __init__(self, config):
@@ -133,7 +130,7 @@ class SearchSystem:
         if not limit:
             return rows[offset:], total
         else:
-            return rows[offset: offset + limit], total
+            return rows[offset : offset + limit], total
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
