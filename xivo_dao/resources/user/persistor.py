@@ -1,8 +1,6 @@
 # Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import unicodedata
-
 from sqlalchemy.sql import func
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
