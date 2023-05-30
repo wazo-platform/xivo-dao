@@ -6,6 +6,7 @@ from typing import Any, NamedTuple
 
 from unidecode import unidecode
 
+import unicodedata
 import sqlalchemy as sa
 
 from sqlalchemy import sql
@@ -25,7 +26,6 @@ class unaccent(ReturnTypeFromArgs):
 
 
 class CriteriaBuilderMixin:
-
     def build_criteria(self, query, criteria):
         for name, value in criteria.items():
             column = self._get_column(name)
@@ -40,7 +40,6 @@ class CriteriaBuilderMixin:
 
 
 class SearchConfig:
-
     def __init__(self, table, columns, default_sort, search=None, sort=None):
         self.table = table
         self._columns = columns
@@ -71,7 +70,6 @@ class SearchConfig:
 
 
 class SearchSystem:
-
     SORT_DIRECTIONS = {
         'asc': sql.asc,
         'desc': sql.desc,
@@ -82,7 +80,7 @@ class SearchSystem:
         'order': None,
         'direction': 'asc',
         'limit': None,
-        'offset': 0
+        'offset': 0,
     }
 
     def __init__(self, config):
@@ -92,16 +90,47 @@ class SearchSystem:
         query = session.query(self.config.table)
         return self.search_from_query(query, parameters)
 
+    def search_collated(self, session, parameters=None):
+        query = session.query(self.config.table)
+        return self.search_from_query_collated(query, parameters)
+
     def search_from_query(self, query, parameters=None):
         parameters = self._populate_parameters(parameters)
         self._validate_parameters(parameters)
-
         query = self._filter(query, parameters['search'])
         query = self._filter_exact_match(query, parameters)
         sorted_query = self._sort(query, parameters['order'], parameters['direction'])
-        paginated_query = self._paginate(sorted_query, parameters['limit'], parameters['offset'])
+        paginated_query = self._paginate(
+            sorted_query, parameters['limit'], parameters['offset']
+        )
 
         return paginated_query.all(), sorted_query.count()
+
+    def search_from_query_collated(self, query, parameters=None):
+        parameters = self._populate_parameters(parameters)
+        self._validate_parameters(parameters)
+        self.config.column_for_sorting(parameters['order'])
+
+        order = parameters.pop('order', None)
+        limit = parameters.pop('limit', None)
+        offset = parameters.pop('offset', 0)
+        reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
+
+        rows, total = self.search_from_query(query, parameters)
+
+        if order:
+            rows = sorted(
+                rows,
+                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
+                reverse=reverse,
+            )
+        elif reverse:
+            rows.reverse()
+
+        if not limit:
+            return rows[offset:], total
+        else:
+            return rows[offset:offset + limit], total
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
