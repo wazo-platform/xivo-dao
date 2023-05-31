@@ -7,7 +7,6 @@ import itertools
 import pathlib
 from datetime import datetime as dt
 from pytz import UTC
-from sqlalchemy import text
 
 from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog

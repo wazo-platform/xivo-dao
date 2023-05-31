@@ -9,7 +9,7 @@ import pathlib
 
 from hamcrest import assert_that, contains, equal_to, has_properties
 
-from sqlalchemy import func, text
+from sqlalchemy import func
 
 from xivo_dao import stat_dao
 from xivo_dao import stat_call_on_queue_dao
