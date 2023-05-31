@@ -1,19 +1,135 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from __future__ import annotations
+from typing import Any, Iterator
+import itertools
+import pathlib
 from datetime import datetime as dt
 from pytz import UTC
-from sqlalchemy import text
 
 from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from hamcrest import (
+    assert_that,
+    equal_to
+)
+
+
+def parse_fields(line):
+    return [cleaned_field for field in line.split('|') if (cleaned_field := field.strip())]
+
+
+def parse_table(data: str) -> Iterator[dict[str, Any]]:
+    lines = [cleaned_line for line in data.split('\n') if (cleaned_line := line.strip())]
+    header = parse_fields(lines.pop(0))
+    for line in lines:
+        fields = parse_fields(line)
+        data = dict(zip(header, fields))
+        yield data
+
+
+def group_by(iterable, group_key):
+    return (
+        (key, list(group))
+        for key, group in itertools.groupby(sorted(iterable, key=group_key), key=group_key)
+    )
+
 
 class TestStatDAO(DAOTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._create_functions(cls.engine)
+
+    def test_fill_leaveempty_calls_fallover(self):
+        queue_log_data = '''
+        | id      | callid            | event            | queuename | time                          |
+        | 4893491 | 1681282818.209622 | ENTERQUEUE       | queue1    | 2023-04-12 07:00:36.992026+00 |
+        | 4893492 | 1681282818.209622 | EXITEMPTY        | queue1    | 2023-04-12 07:00:37.008464+00 |
+        | 4893493 | 1681282818.209622 | LEAVEEMPTY       | queue1    | 2023-04-12 07:00:37.025775+00 |
+        | 4893494 | 1681282818.209622 | ENTERQUEUE       | queue2    | 2023-04-12 07:00:37.206645+00 |
+        | 4893495 | 1681282818.209622 | RINGNOANSWER     | queue2    | 2023-04-12 07:00:52.252287+00 |
+        | 4893502 | 1681282818.209622 | RINGNOANSWER     | queue2    | 2023-04-12 07:01:08.287469+00 |
+        | 4893505 | 1681282818.209622 | RINGNOANSWER     | queue2    | 2023-04-12 07:01:24.31699+00  |
+        | 4893509 | 1681282818.209622 | CONNECT          | queue2    | 2023-04-12 07:01:29.36803+00  |
+        | 4893701 | 1681282818.209622 | COMPLETEAGENT    | queue2    | 2023-04-12 07:06:48.84232+00  |
+        | 4893702 | 1681282818.209622 | WRAPUPSTART      | queue2    | 2023-04-12 07:06:48.856337+00 |
+        '''
+        queue_logs = self._insert_queue_log_data(queue_log_data)
+        assert_that(self.session.query(QueueLog).count(), equal_to(10))
+
+        queues = set(log.queuename for log in queue_logs)
+        for queue in queues:
+            self._insert_queue(queue)
+
+        start = min(log.time for log in queue_logs)
+        end = max(log.time for log in queue_logs)
+
+        stat_dao.fill_leaveempty_calls(self.session, start, end)
+
+        result = self.session.query(StatCallOnQueue).filter(
+            StatCallOnQueue.time >= start,
+            StatCallOnQueue.time <= end
+        ).all()
+        stat_coq_by_queue = group_by(result, group_key=lambda call: call.stat_queue.name)
+        logs_by_queue = dict(group_by(queue_logs, group_key=lambda log: log.queuename))
+        for queuename, stat_calls in stat_coq_by_queue:
+            with self.subTest(queue=queuename):
+                logs = logs_by_queue[queuename]
+                leaveempty_queuelogs_count = sum(1 for log in logs if log.event == 'LEAVEEMPTY')
+                calls_on_queue_leaveempty_count = sum(1 for call in stat_calls if call.status == 'leaveempty')
+                assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
+
+    def test_fill_leaveempty_calls_reenter_same_queue(self):
+        queue_log_data = '''
+        | id      | callid            | event          | queuename | time                          |
+        | 4902659 | 1681302917.231273 | ENTERQUEUE     | queue1    | 2023-04-12 12:35:36.686525+00 |
+        | 4902660 | 1681302917.231273 | EXITEMPTY      | queue1    | 2023-04-12 12:35:36.716105+00 |
+        | 4902661 | 1681302917.231273 | LEAVEEMPTY     | queue1    | 2023-04-12 12:35:36.745441+00 |
+        | 4902662 | 1681302917.231273 | ENTERQUEUE     | queue2    | 2023-04-12 12:35:37.060998+00 |
+        | 4902740 | 1681302917.231273 | RINGNOANSWER   | queue2    | 2023-04-12 12:36:59.165529+00 |
+        | 4902761 | 1681302917.231273 | CONNECT        | queue2    | 2023-04-12 12:37:25.938767+00 |
+        | 4902834 | 1681302917.231273 | BLINDTRANSFER  | queue2    | 2023-04-12 12:39:02.737237+00 |
+        | 4902835 | 1681302917.231273 | WRAPUPSTART    | queue2    | 2023-04-12 12:39:02.822856+00 |
+        | 4902851 | 1681302917.231273 | ENTERQUEUE     | queue1    | 2023-04-12 12:39:33.717291+00 |
+        | 4902852 | 1681302917.231273 | EXITEMPTY      | queue1    | 2023-04-12 12:39:33.764423+00 |
+        | 4902853 | 1681302917.231273 | LEAVEEMPTY     | queue1    | 2023-04-12 12:39:33.799041+00 |
+        | 4902854 | 1681302917.231273 | ENTERQUEUE     | queue2    | 2023-04-12 12:39:34.163929+00 |
+        | 4902973 | 1681302917.231273 | CONNECT        | queue2    | 2023-04-12 12:41:57.877111+00 |
+        | 4903307 | 1681302917.231273 | COMPLETECALLER | queue2    | 2023-04-12 12:48:53.708396+00 |
+        | 4903308 | 1681302917.231273 | WRAPUPSTART    | queue2    | 2023-04-12 12:48:53.718011+00 |
+        '''
+        queue_logs = self._insert_queue_log_data(queue_log_data)
+        assert_that(self.session.query(QueueLog).count(), equal_to(15))
+
+        queues = set(log.queuename for log in queue_logs)
+        for queue in queues:
+            self._insert_queue(queue)
+
+        start = min(log.time for log in queue_logs)
+        end = max(log.time for log in queue_logs)
+
+        stat_dao.fill_leaveempty_calls(self.session, start, end)
+
+        result = self.session.query(StatCallOnQueue).filter(
+            StatCallOnQueue.time >= start,
+            StatCallOnQueue.time <= end
+        ).all()
+        stat_coq_by_queue = group_by(result, group_key=lambda call: call.stat_queue.name)
+        logs_by_queue = dict(group_by(queue_logs, group_key=lambda log: log.queuename))
+        for queuename, stat_calls in stat_coq_by_queue:
+            with self.subTest(queue=queuename):
+                logs = logs_by_queue[queuename]
+                leaveempty_queuelogs_count = sum(1 for log in logs if log.event == 'LEAVEEMPTY')
+                calls_on_queue_leaveempty_count = sum(1 for call in stat_calls if call.status == 'leaveempty')
+                assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
 
     def test_get_completed_logins(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -228,28 +344,16 @@ class TestStatDAO(DAOTestCase):
 
     def _insert_queue_log_data(self, queue_log_data):
         with flush_session(self.session):
-            lines = queue_log_data.split('\n')
-            lines.pop()
-            header = self._strip_content_list(lines.pop(0).split('|')[1:-1])
-            for line in lines:
-                tmp = self._strip_content_list(line[1:-1].split('|'))
-                data = dict(zip(header, tmp))
-                queue_log = QueueLog(
-                    time=data['time'],
-                    callid=data['callid'],
-                    queuename=data['queuename'],
-                    agent=data['agent'],
-                    event=data['event'],
-                    data1=data['data1'],
-                    data2=data['data2'],
-                    data3=data['data3'],
-                    data4=data['data4'],
-                    data5=data['data5']
+            logs = parse_table(queue_log_data)
+            queue_logs = [
+                QueueLog(
+                    **data
                 )
-                self.session.add(queue_log)
-
-    def _strip_content_list(self, lines):
-        return [line.strip() for line in lines]
+                for data in logs
+            ]
+            self.session.add_all(queue_logs)
+        self.session.expire_all()
+        return queue_logs
 
     def _insert_agent(self, aname, tenant_uuid=None):
         tenant_uuid = tenant_uuid or self.default_tenant.uuid
@@ -268,54 +372,10 @@ class TestStatDAO(DAOTestCase):
         return q.name, q.id
 
     @classmethod
-    def _create_functions(cls):
+    def _create_functions(cls, con):
         # ## WARNING: These functions should always be the same as the one in baseconfig
-        fill_simple_calls_fn = text('''\
-DROP FUNCTION IF EXISTS "fill_simple_calls" (timestamptz, timestamptz);
-CREATE FUNCTION "fill_simple_calls"(period_start timestamptz, period_end timestamptz)
-  RETURNS void AS
-$$
-  INSERT INTO "stat_call_on_queue" (callid, "time", stat_queue_id, status)
-    SELECT
-      callid,
-      time,
-      (SELECT id FROM stat_queue WHERE name=queuename) as stat_queue_id,
-      CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
-           WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
-           WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
-           WHEN event = 'CLOSED' THEN 'closed'
-           WHEN event = 'JOINEMPTY' THEN 'joinempty'
-      END as status
-    FROM queue_log
-    WHERE event IN ('FULL', 'DIVERT_CA_RATIO', 'DIVERT_HOLDTIME', 'CLOSED', 'JOINEMPTY') AND
-          "time" BETWEEN $1 AND $2;
-$$
-LANGUAGE SQL;
-''')
-        cls.session.execute(fill_simple_calls_fn)
+        fill_simple_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_simple_calls.sql').read_text()
+        con.execute(fill_simple_calls_fn)
 
-        fill_leaveempty_calls_fn = text('''\
-DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (timestamptz, timestamptz);
-CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start timestamptz, period_end timestamptz)
-  RETURNS void AS
-$$
-INSERT INTO stat_call_on_queue (callid, time, waittime, stat_queue_id, status)
-SELECT
-  callid,
-  enter_time as time,
-  EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
-  stat_queue_id,
-  'leaveempty' AS status
-FROM (SELECT
-        time AS enter_time,
-        (select time from queue_log where callid=main.callid AND event='LEAVEEMPTY' LIMIT 1) AS leave_time,
-        callid,
-        (SELECT id FROM stat_queue WHERE name=queuename) AS stat_queue_id
-      FROM queue_log AS main
-      WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
-            AND event = 'ENTERQUEUE'
-            AND time BETWEEN $1 AND $2) AS first;
-$$
-LANGUAGE SQL;
-''')
-        cls.session.execute(fill_leaveempty_calls_fn)
+        fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
+        con.execute(fill_leaveempty_calls_fn)
