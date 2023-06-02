@@ -107,30 +107,9 @@ class SearchSystem:
         return paginated_query.all(), sorted_query.count()
 
     def search_from_query_collated(self, query, parameters=None):
-        parameters = self._populate_parameters(parameters)
-        self._validate_parameters(parameters)
-        self.config.column_for_sorting(parameters['order'])
-
-        order = parameters.pop('order', None)
-        limit = parameters.pop('limit', None)
-        offset = parameters.pop('offset', 0)
-        reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
-
+        order, limit, offset, reverse = self._extract_search_params(parameters)
         rows, total = self.search_from_query(query, parameters)
-
-        if order:
-            rows = sorted(
-                rows,
-                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
-                reverse=reverse,
-            )
-        elif reverse:
-            rows.reverse()
-
-        if not limit:
-            return rows[offset:], total
-        else:
-            return rows[offset:offset + limit], total
+        return self._apply_search_params(rows,order, limit, offset, reverse), total
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
@@ -194,3 +173,29 @@ class SearchSystem:
             query = query.limit(limit)
 
         return query
+
+    def _extract_search_params(self, parameters):
+        parameters = self._populate_parameters(parameters)
+        self._validate_parameters(parameters)
+        self.config.column_for_sorting(parameters['order'])
+
+        order = parameters.pop('order', None)
+        limit = parameters.pop('limit', None)
+        offset = parameters.pop('offset', 0)
+        reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
+        return order, limit, offset, reverse
+
+    def _apply_search_params(self, rows, order, limit, offset, reverse):
+        if order:
+            rows = sorted(
+                rows,
+                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
+                reverse=reverse,
+            )
+        elif reverse:
+            rows.reverse()
+
+        if not limit:
+            return rows[offset:]
+        else:
+            return rows[offset:offset + limit]
