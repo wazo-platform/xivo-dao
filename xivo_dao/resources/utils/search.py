@@ -107,7 +107,7 @@ class SearchSystem:
         return paginated_query.all(), sorted_query.count()
 
     def search_from_query_collated(self, query, parameters=None):
-        order, limit, offset, reverse = self._extract_search_params(parameters)
+        parameters, order, limit, offset, reverse = self._extract_search_params(parameters)
         rows, total = self.search_from_query(query, parameters)
         return self._apply_search_params(rows, order, limit, offset, reverse), total
 
@@ -183,7 +183,7 @@ class SearchSystem:
         limit = parameters.pop('limit', None)
         offset = parameters.pop('offset', 0)
         reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
-        return order, limit, offset, reverse
+        return parameters, order, limit, offset, reverse
 
     def _apply_search_params(self, rows, order, limit, offset, reverse):
         if order:
