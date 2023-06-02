@@ -109,7 +109,7 @@ class SearchSystem:
     def search_from_query_collated(self, query, parameters=None):
         order, limit, offset, reverse = self._extract_search_params(parameters)
         rows, total = self.search_from_query(query, parameters)
-        return self._apply_search_params(rows,order, limit, offset, reverse), total
+        return self._apply_search_params(rows, order, limit, offset, reverse), total
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
@@ -198,4 +198,4 @@ class SearchSystem:
         if not limit:
             return rows[offset:]
         else:
-            return rows[offset:offset + limit]
+            return rows[offset : offset + limit]
