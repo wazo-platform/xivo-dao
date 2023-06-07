@@ -191,7 +191,7 @@ class SearchSystem:
         if order:
             rows = sorted(
                 rows,
-                key=lambda x: unicodedata.normalize('NFKD', x.__getattribute__(order)),
+                key=lambda x: unicodedata.normalize('NFKD', getattr(x, order)),
                 reverse=reverse,
             )
         elif reverse:
