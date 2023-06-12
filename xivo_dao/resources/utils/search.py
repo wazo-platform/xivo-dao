@@ -207,4 +207,4 @@ class SearchSystem:
         if not limit:
             return rows[offset:]
         else:
-            return rows[offset : offset + limit]
+            return rows[offset:offset + limit]
