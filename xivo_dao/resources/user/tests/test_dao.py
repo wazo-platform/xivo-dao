@@ -588,10 +588,7 @@ class TestSearchGivenMultipleUsers(TestSearch):
             description='resto',
         )
         self.user7 = self.add_user(
-            firstname='Ômygod',
-            lastname='Spanish',
-            email=None,
-            description='resto'
+            firstname='Ômygod', lastname='Spanish', email=None, description='resto'
         )
 
     def test_when_searching_then_returns_one_result(self):
