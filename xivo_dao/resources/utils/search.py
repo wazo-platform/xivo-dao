@@ -188,10 +188,17 @@ class SearchSystem:
         return parameters, order, limit, offset, reverse
 
     def _apply_search_params(self, rows, order, limit, offset, reverse):
+        def _get_attr(o):
+            a = getattr(o, order, '')
+            return a if a is not None else ''
+
         if order:
             rows = sorted(
                 rows,
-                key=lambda x: unicodedata.normalize('NFKD', getattr(x, order)),
+                key=lambda x: (
+                    _get_attr(x) == '',
+                    unicodedata.normalize('NFKD', _get_attr(x)),
+                ),
                 reverse=reverse,
             )
         elif reverse:

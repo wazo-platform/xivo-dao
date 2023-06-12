@@ -552,25 +552,43 @@ class TestSearchGivenMultipleUsers(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
         self.user1 = self.add_user(
-            firstname='Ashton', lastname='ToujoursFrais', description='resto'
+            firstname='Ashton',
+            lastname='ToujoursFrais',
+            email='toujoursfrais@toujoursfrais.xyz',
+            description='resto',
         )
         self.user2 = self.add_user(
-            firstname='Áustin', lastname='French', description='resto'
+            firstname='Áustin',
+            lastname='French',
+            email='french@french.xyz',
+            description='resto',
         )
         self.user3 = self.add_user(
-            firstname='Beaugarte', lastname='Cougar', description='bar'
+            firstname='Beaugarte',
+            lastname='Cougar',
+            email='cougar@cougar.xyz',
+            description='bar',
         )
         self.user4 = self.add_user(
-            firstname='Casa', lastname='Grecque', description='resto'
+            firstname='Casa',
+            lastname='Grecque',
+            email='grecque@grecque.xyz',
+            description='resto',
         )
         self.user5 = self.add_user(
-            firstname='Dunkin', lastname='Donuts', description='resto'
+            firstname='Dunkin',
+            lastname='Donuts',
+            email='donuts@donuts.xyz',
+            description='resto',
         )
         self.user6 = self.add_user(
-            firstname='Émilie', lastname='Pizza', description='resto'
+            firstname='Émilie',
+            lastname='Pizza',
+            email='pizza@pizza.xyz',
+            description='resto',
         )
         self.user7 = self.add_user(
-            firstname='Ômygod', lastname='Spanish', description='resto'
+            firstname='Ômygod', lastname='Spanish', email=None, description='resto'
         )
 
     def test_when_searching_then_returns_one_result(self):
@@ -716,6 +734,35 @@ class TestSearchGivenMultipleUsers(TestSearch):
             "Input Error - direction: must be 'asc' or 'desc'",
             direction='invalid',
         )
+
+    def test_when_ordering_when_none_field_then_returns_result_none_at_the_end(self):
+        expected = SearchResult(
+            7,
+            [
+                self.user3,
+                self.user5,
+                self.user2,
+                self.user4,
+                self.user6,
+                self.user1,
+                self.user7,
+            ],
+        )
+        expected_collated = SearchResult(
+            7,
+            [
+                self.user3,
+                self.user5,
+                self.user2,
+                self.user4,
+                self.user6,
+                self.user1,
+                self.user7,
+            ],
+        )
+
+        self.assert_search_returns_result(expected, order='email')
+        self.assert_search_collated_returns_result(expected_collated, order='email')
 
 
 class TestSearchMutipleSameCriteria(TestSearch):
