@@ -627,12 +627,14 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ))
 
     def test_find_contextincludes_settings(self):
-        context = 'default'
-        self.add_context_include(context='koki')
-        context_include = self.add_context_include(context=context)
-        self.add_context_include(context='toto')
+        context_default = self.add_context(name='default')
+        context_koki = self.add_context(name='koki')
+        context_toto = self.add_context(name='toto')
+        self.add_context_include(context=context_koki.name)
+        context_include = self.add_context_include(context=context_default.name)
+        self.add_context_include(context=context_toto.name)
 
-        context = asterisk_conf_dao.find_contextincludes_settings(context)
+        context = asterisk_conf_dao.find_contextincludes_settings(context_default.name)
 
         assert_that(context, contains_inanyorder(
             has_entries(

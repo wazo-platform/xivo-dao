@@ -17,8 +17,16 @@ class ContextInclude(Base):
             ('context',),
             ('context.name',),
             ondelete='CASCADE',
+            onupdate='CASCADE',
+        ),
+        ForeignKeyConstraint(
+            ('include',),
+            ('context.name',),
+            ondelete='CASCADE',
+            onupdate='CASCADE',
         ),
     )
+
     context = Column(String(39), primary_key=True)
     include = Column(String(39), primary_key=True)
     priority = Column(Integer, nullable=False, server_default='0')

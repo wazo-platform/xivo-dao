@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -172,10 +172,11 @@ class TestFindAllBy(DAOTestCase):
         assert_that(voicemails, contains_inanyorder(voicemail1, voicemail2))
 
     def test_find_all_by_native_column(self):
-        voicemail1 = self.add_voicemail(context='MyContext')
-        voicemail2 = self.add_voicemail(context='MyContext')
+        context = self.add_context(name='MyContext')
+        voicemail1 = self.add_voicemail(context=context.name)
+        voicemail2 = self.add_voicemail(context=context.name)
 
-        voicemails = voicemail_dao.find_all_by(context='MyContext')
+        voicemails = voicemail_dao.find_all_by(context=context.name)
 
         assert_that(voicemails, contains_inanyorder(voicemail1, voicemail2))
 
@@ -237,10 +238,12 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.voicemail1 = self.add_voicemail(name='Ashton', context='resto', number='1000')
-        self.voicemail2 = self.add_voicemail(name='Beaugarton', context='bar', number='1001')
-        self.voicemail3 = self.add_voicemail(name='Casa', context='resto', number='1002')
-        self.voicemail4 = self.add_voicemail(name='Dunkin', context='resto', number='1003')
+        self.resto = self.add_context(name='resto')
+        self.bar = self.add_context(name='bar')
+        self.voicemail1 = self.add_voicemail(name='Ashton', context=self.resto.name, number='1000')
+        self.voicemail2 = self.add_voicemail(name='Beaugarton', context=self.bar.name, number='1001')
+        self.voicemail3 = self.add_voicemail(name='Casa', context=self.resto.name, number='1002')
+        self.voicemail4 = self.add_voicemail(name='Dunkin', context=self.resto.name, number='1003')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.voicemail2])
@@ -249,13 +252,13 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.voicemail1])
-        self.assert_search_returns_result(expected_resto, search='ton', context='resto')
+        self.assert_search_returns_result(expected_resto, search='ton', context=self.resto.name)
 
         expected_bar = SearchResult(1, [self.voicemail2])
-        self.assert_search_returns_result(expected_bar, search='ton', context='bar')
+        self.assert_search_returns_result(expected_bar, search='ton', context=self.bar.name)
 
         expected_all_resto = SearchResult(3, [self.voicemail1, self.voicemail3, self.voicemail4])
-        self.assert_search_returns_result(expected_all_resto, context='resto', order='name')
+        self.assert_search_returns_result(expected_all_resto, context=self.resto.name, order='name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
@@ -293,7 +296,8 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        voicemail = Voicemail(number='1000', context='default')
+        context = self.add_context(name='default')
+        voicemail = Voicemail(number='1000', context=context.name)
         created_voicemail = voicemail_dao.create(voicemail)
 
         row = self.session.query(Voicemail).first()
@@ -309,7 +313,7 @@ class TestCreate(DAOTestCase):
                     fullname='',
                     number='1000',
                     mailbox='1000',
-                    context='default',
+                    context=context.name,
                     password=none(),
                     email=none(),
                     pager=none(),
@@ -331,10 +335,11 @@ class TestCreate(DAOTestCase):
         )
 
     def test_create_with_all_fields(self):
+        context = self.add_context(name='from-extern')
         voicemail = Voicemail(
             name='myVoicemail',
             number='1000',
-            context='from-extern',
+            context=context.name,
             password='12345',
             email='me@example.com',
             pager='12345',
@@ -362,7 +367,7 @@ class TestCreate(DAOTestCase):
                     fullname='myVoicemail',
                     number='1000',
                     mailbox='1000',
-                    context='from-extern',
+                    context=context.name,
                     password='12345',
                     email='me@example.com',
                     pager='12345',
@@ -388,11 +393,12 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
+        context_from_extern = self.add_context(name='from-extern')
         voicemail = voicemail_dao.create(
             Voicemail(
                 name='MyVoicemail',
                 number='1000',
-                context='from-extern',
+                context=context_from_extern.name,
                 password='12345',
                 email='me@example.com',
                 pager='12345',
@@ -407,10 +413,11 @@ class TestEdit(DAOTestCase):
             )
         )
 
+        context_default = self.add_context(name='default')
         voicemail = voicemail_dao.get(voicemail.id)
         voicemail.name = 'other_name'
         voicemail.number = '1001'
-        voicemail.context = 'default'
+        voicemail.context = context_default.name
         voicemail.password = '6789'
         voicemail.email = 'not_me@example.com'
         voicemail.pager = '6789'
@@ -434,7 +441,7 @@ class TestEdit(DAOTestCase):
                 fullname='other_name',
                 number='1001',
                 mailbox='1001',
-                context='default',
+                context=context_default.name,
                 password='6789',
                 email='not_me@example.com',
                 pager='6789',
@@ -456,11 +463,12 @@ class TestEdit(DAOTestCase):
         )
 
     def test_edit_set_fields_to_null(self):
+        context = self.add_context(name='default')
         voicemail = voicemail_dao.create(
             Voicemail(
                 name='MyVoicemail',
                 number='1000',
-                context='default',
+                context=context.name,
                 password='12345',
                 email='me@example.com',
                 pager='12345',

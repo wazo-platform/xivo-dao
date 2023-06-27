@@ -19,6 +19,7 @@ class ContextMember(Base):
             ('context',),
             ('context.name',),
             ondelete='CASCADE',
+            onupdate='CASCADE',
         ),
     )
 
