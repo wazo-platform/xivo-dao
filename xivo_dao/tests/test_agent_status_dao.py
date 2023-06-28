@@ -355,39 +355,6 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(result, none())
 
-    def test_get_status_by_state_interface_with_logged_agent(self):
-        agent = self.add_agent()
-        user = self.add_user(agentid=agent.id)
-        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
-        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1')
-
-        result = agent_status_dao.get_status_by_state_interface(
-            agent_login_status.state_interface
-        )
-
-        assert_that(
-            result,
-            has_properties(
-                agent_id=agent.id,
-                agent_number=agent.number,
-                extension=agent_login_status.extension,
-                context=agent_login_status.context,
-                interface=agent_login_status.interface,
-                state_interface=agent_login_status.state_interface,
-                queues=contains(
-                    has_properties(
-                        id=agent_membership.queue_id, name=agent_membership.queue_name
-                    )
-                ),
-                user_ids=contains(user.id),
-            ),
-        )
-
-    def test_get_status_by_state_interface_with_wrong_state_interface(self):
-        result = agent_status_dao.get_status_by_state_interface("wrong state interface")
-
-        assert_that(result, none())
-
     def test_get_statuses_of_unlogged_agent(self):
         agent = self.add_agent()
 
