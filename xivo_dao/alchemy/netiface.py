@@ -14,6 +14,7 @@ class Netiface(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('ifname'),
+        { 'comment': 'Contains the existing network interfaces.'}
     )
 
     id = Column(Integer, nullable=False)

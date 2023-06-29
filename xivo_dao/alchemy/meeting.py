@@ -42,6 +42,12 @@ class Meeting(Base):
         UniqueConstraint('number', 'tenant_uuid'),
         Index('meeting__idx__guest_endpoint_sip_uuid', 'guest_endpoint_sip_uuid'),
         Index('meeting__idx__tenant_uuid', 'tenant_uuid'),
+        {
+            'comment': 'A meeting allows users to get in conference with other '
+                       'people that are not using Wazo directly: users can '
+                       'create meetings and give a URL to anybody '
+                       'to join them in a Web conference.'
+        }
     )
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)

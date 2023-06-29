@@ -14,6 +14,11 @@ class IngressHTTP(Base):
     __tablename__ = 'ingress_http'
     __table_args__ = (
         Index('ingress_http__idx__tenant_uuid', 'tenant_uuid'),
+        {
+            'comment': 'A HTTP Ingress is the public address of the Wazo '
+                        'Platform server that will be given to external '
+                        'users to contact the server:'
+        }
     )
 
     uuid = Column(

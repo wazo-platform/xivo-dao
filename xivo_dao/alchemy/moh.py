@@ -21,6 +21,9 @@ class MOH(Base):
         PrimaryKeyConstraint('uuid'),
         UniqueConstraint('name'),
         Index('moh__idx__tenant_uuid', 'tenant_uuid'),
+        {
+            'comment': 'Music On Hold.'
+        }
     )
 
     uuid = Column(String(38), nullable=False, default=new_uuid)

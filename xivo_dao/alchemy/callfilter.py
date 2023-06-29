@@ -24,6 +24,12 @@ class Callfilter(Base):
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         Index('callfilter__idx__tenant_uuid', 'tenant_uuid'),
+        {
+            'comment': 'Contains all the boss/secretary filters. A '
+                       'boss/secretary filter allow to set a secretary or '
+                        'a boss role to a user. Filters can then be created '
+                       'to filter calls directed to a boss using different '
+                       'strategies.'}
     )
 
     id = Column(Integer, nullable=False)

@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -38,7 +38,11 @@ class Queue(Base, AsteriskOptionsMixin):
     __table_args__ = (
         PrimaryKeyConstraint('name'),
         Index('queue__idx__category', 'category'),
-        CheckConstraint("autopause in ('no', 'yes', 'all')")
+        CheckConstraint("autopause in ('no', 'yes', 'all')"),
+        {
+            'comment': 'Queues are used to distribute calls to agents '
+                       '(aka queue members) subscribed to the queue.'
+        }
     )
 
     name = Column(String(128))

@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -12,7 +12,12 @@ class QueuePenalty(Base):
     __tablename__ = 'queuepenalty'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        UniqueConstraint('name')
+        UniqueConstraint('name'),
+        {
+            'comment': 'Within a queue, members can be penalized in order to '
+                       'lower their preference for being called when there '
+                       'are people waiting in a particular queue.'
+        }
     )
 
     id = Column(Integer)

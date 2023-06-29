@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -28,6 +28,9 @@ class QueueMember(Base):
         Index('queuemember__idx__channel', 'channel'),
         Index('queuemember__idx__userid', 'userid'),
         Index('queuemember__idx__usertype', 'usertype'),
+        {
+            'comment': 'A queue member is an agent subscribed to a queue.'
+        }
     )
 
     queue_name = Column(String(128))
