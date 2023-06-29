@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -69,7 +69,6 @@ class RightCall(Base):
         )""",
         foreign_keys='RightCallMember.rightcallid',
         viewonly=True,
-        lazy='selectin',
     )
     groups = association_proxy('rightcall_groups', 'group')
 
@@ -81,7 +80,6 @@ class RightCall(Base):
         )""",
         foreign_keys='RightCallMember.rightcallid',
         viewonly=True,
-        lazy='selectin',
     )
     users = association_proxy('rightcall_users', 'user')
 
