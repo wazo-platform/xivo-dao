@@ -18,18 +18,14 @@ from .callerid import Callerid
 
 
 class Callfilter(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/boss_secretary_filter
+    """
     __tablename__ = 'callfilter'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         Index('callfilter__idx__tenant_uuid', 'tenant_uuid'),
-        {
-            'comment': 'Contains all the boss/secretary filters. A '
-                       'boss/secretary filter allow to set a secretary or '
-                        'a boss role to a user. Filters can then be created '
-                       'to filter calls directed to a boss using different '
-                       'strategies.'}
     )
 
     id = Column(Integer, nullable=False)

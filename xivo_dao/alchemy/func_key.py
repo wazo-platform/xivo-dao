@@ -13,7 +13,9 @@ from .func_key_type import FuncKeyType
 
 
 class FuncKey(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/api_sdk/rest_api/confd/func_keys
+    """
     __tablename__ = 'func_key'
     __table_args__ = (
         Index('func_key__idx__type_id', 'type_id'),

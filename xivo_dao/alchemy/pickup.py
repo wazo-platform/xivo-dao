@@ -20,18 +20,15 @@ from .pickupmember import PickupMember
 
 
 class Pickup(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/directed_pickup
+    https://wazo-platform.org/uc-doc/administration/group_pickup
+    """
     __tablename__ = 'pickup'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         Index('pickup__idx__tenant_uuid', 'tenant_uuid'),
-        {
-            'comment': 'Contains calls pickups. Call pickup allows users to '
-                       'answer a call while it is ringing another phone or '
-                        'group of phones(other than the phone people are '
-                        'sitting at).'}
-
     )
 
     id = Column(Integer, nullable=False, autoincrement=False)

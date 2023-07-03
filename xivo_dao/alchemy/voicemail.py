@@ -27,7 +27,9 @@ from .context import Context
 
 
 class Voicemail(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/voicemails
+    """
     __tablename__ = 'voicemail'
     __table_args__ = (
         PrimaryKeyConstraint('uniqueid'),

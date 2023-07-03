@@ -21,7 +21,9 @@ from .rightcallexten import RightCallExten
 
 
 class RightCall(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/call_permissions
+    """
     __tablename__ = 'rightcall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

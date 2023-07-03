@@ -9,7 +9,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AsteriskFileSection(Base):
-
+    """
+    Contains the sections of the Asterisk configuration files
+    """
     __tablename__ = 'asterisk_file_section'
     __table_args__ = (
         UniqueConstraint('name', 'asterisk_file_id'),

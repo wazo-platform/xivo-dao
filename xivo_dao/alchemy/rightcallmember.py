@@ -16,7 +16,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class RightCallMember(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/call_permissions
+    """
     __tablename__ = 'rightcallmember'
 
     id = Column(Integer, nullable=False)

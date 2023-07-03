@@ -11,7 +11,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestConference(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/api_sdk/rest_api/confd/func_keys#destination
+    """
     DESTINATION_TYPE_ID = 4
 
     __tablename__ = 'func_key_dest_conference'

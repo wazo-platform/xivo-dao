@@ -8,7 +8,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AsteriskFileVariable(Base):
-
+    """
+    Contains the variables used in the Asterisk configuration files
+    """
     __tablename__ = 'asterisk_file_variable'
     __table_args__ = (
         Index('asterisk_file_variable__idx__asterisk_file_section_id', 'asterisk_file_section_id'),

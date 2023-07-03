@@ -10,11 +10,13 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AsteriskFile(Base):
-
+    """
+    Contains the Asterisk configuration files
+    """
     __tablename__ = 'asterisk_file'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True, nullable=False)
+    name = Column(String(255), unique=True, nullable=False, doc="File name")
 
     sections_ordered = relationship('AsteriskFileSection',
                                     order_by='AsteriskFileSection.priority',

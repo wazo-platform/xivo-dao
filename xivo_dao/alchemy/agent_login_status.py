@@ -10,7 +10,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AgentLoginStatus(Base):
-
+    """
+    Contains the latest login status for the agents.
+    """
     __tablename__ = 'agent_login_status'
     __table_args__ = (
         PrimaryKeyConstraint('agent_id'),

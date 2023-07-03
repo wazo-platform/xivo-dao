@@ -13,11 +13,6 @@ class QueuePenalty(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
-        {
-            'comment': 'Within a queue, members can be penalized in order to '
-                       'lower their preference for being called when there '
-                       'are people waiting in a particular queue.'
-        }
     )
 
     id = Column(Integer)

@@ -19,7 +19,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyMapping(Base):
-
+    """
+    Used to link a func key to a template.
+    """
     __tablename__ = 'func_key_mapping'
     __table_args__ = (
         ForeignKeyConstraint(

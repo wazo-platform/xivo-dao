@@ -12,7 +12,10 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class Queue(Base, AsteriskOptionsMixin):
-
+    """
+    Table used by Asterisk.
+    https://wazo-platform.org/uc-doc/contact_center/queues
+    """
     EXCLUDE_OPTIONS = {
         'name',
         'category',
@@ -39,10 +42,6 @@ class Queue(Base, AsteriskOptionsMixin):
         PrimaryKeyConstraint('name'),
         Index('queue__idx__category', 'category'),
         CheckConstraint("autopause in ('no', 'yes', 'all')"),
-        {
-            'comment': 'Queues are used to distribute calls to agents '
-                       '(aka queue members) subscribed to the queue.'
-        }
     )
 
     name = Column(String(128))

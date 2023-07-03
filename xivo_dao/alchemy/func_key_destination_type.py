@@ -9,7 +9,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestinationType(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/api_sdk/rest_api/confd/func_keys#destination
+    """
     __tablename__ = 'func_key_destination_type'
 
     id = Column(Integer, primary_key=True)

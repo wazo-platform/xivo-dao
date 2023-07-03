@@ -48,7 +48,10 @@ caller_id_regex = re.compile(
 
 
 class LineFeatures(Base):
-
+    """
+    Used to extend the line table used by Asterisk
+    https://wazo-platform.org/uc-doc/administration/line
+    """
     CALLER_ID = '"{name}" <{num}>'
 
     __tablename__ = 'linefeatures'

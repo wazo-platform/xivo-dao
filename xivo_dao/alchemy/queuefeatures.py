@@ -57,7 +57,10 @@ DEFAULT_QUEUE_OPTIONS = {
 
 
 class QueueFeatures(Base):
-
+    """
+    Used to extend the queue table used by Asterisk.
+    https://wazo-platform.org/uc-doc/contact_center/queues
+    """
     __tablename__ = 'queuefeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

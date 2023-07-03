@@ -14,7 +14,9 @@ from xivo_dao.alchemy.callfilter import Callfilter
 
 
 class Callfiltermember(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/boss_secretary_filter
+    """
     __tablename__ = 'callfiltermember'
     __table_args__ = (
         UniqueConstraint('callfilterid', 'type', 'typeval'),

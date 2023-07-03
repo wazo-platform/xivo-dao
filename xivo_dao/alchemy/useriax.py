@@ -19,7 +19,10 @@ from . import enum
 
 
 class UserIAX(Base, AsteriskOptionsMixin):
-
+    """
+    Contains IAX Endpoints.
+    https://wazo-platform.org/uc-doc/administration/interconnections/introduction
+    """
     EXCLUDE_OPTIONS = {
         'id',
         'commented',

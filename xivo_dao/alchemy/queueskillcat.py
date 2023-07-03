@@ -8,7 +8,10 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class QueueSkillCat(Base):
-
+    """
+    Contains the categories of the queue skills.
+    https://wazo-platform.org/uc-doc/contact_center/skillbasedrouting
+    """
     __tablename__ = 'queueskillcat'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

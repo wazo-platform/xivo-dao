@@ -32,7 +32,9 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 
 
 class Outcall(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/outcall
+    """
     __tablename__ = 'outcall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

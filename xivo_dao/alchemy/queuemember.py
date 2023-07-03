@@ -19,7 +19,9 @@ interface_regex = re.compile(r'Local/(?P<exten>.*)@(?P<context>.*)')
 
 
 class QueueMember(Base):
-
+    """
+    A queue member is an agent or a user subscribed to a queue.
+    """
     __tablename__ = 'queuemember'
     __table_args__ = (
         PrimaryKeyConstraint('queue_name', 'interface'),
@@ -28,9 +30,6 @@ class QueueMember(Base):
         Index('queuemember__idx__channel', 'channel'),
         Index('queuemember__idx__userid', 'userid'),
         Index('queuemember__idx__usertype', 'usertype'),
-        {
-            'comment': 'A queue member is an agent subscribed to a queue.'
-        }
     )
 
     queue_name = Column(String(128))

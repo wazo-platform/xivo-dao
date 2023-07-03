@@ -20,18 +20,14 @@ from .paginguser import PagingUser
 
 
 class Paging(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/paging
+    """
     __tablename__ = 'paging'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('number'),
         Index('paging__idx__tenant_uuid', 'tenant_uuid'),
-        { 'comment': 'Paging (i.e. intercom) extensions are used to page a '
-                     'group of users. A paging extension have a list of '
-                     'member users who are notified when the paging '
-                     'extension is dialed. A paging extension have a list of '
-                     'caller users who may use the paging extension to notify '
-                     'member users.'}
     )
 
     id = Column(Integer, nullable=False)

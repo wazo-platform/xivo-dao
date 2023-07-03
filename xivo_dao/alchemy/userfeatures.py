@@ -65,6 +65,9 @@ def ordering_main_line(index, collection):
 
 
 class UserFeatures(Base):
+    """
+    https://wazo-platform.org/uc-doc/administration/user
+    """
 
     __tablename__ = 'userfeatures'
     __table_args__ = (

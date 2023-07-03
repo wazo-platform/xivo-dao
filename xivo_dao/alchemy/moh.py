@@ -15,15 +15,14 @@ from xivo_dao.helpers.uuid import new_uuid
 
 
 class MOH(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/music_on_hold
+    """
     __tablename__ = 'moh'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
         UniqueConstraint('name'),
         Index('moh__idx__tenant_uuid', 'tenant_uuid'),
-        {
-            'comment': 'Music On Hold.'
-        }
     )
 
     uuid = Column(String(38), nullable=False, default=new_uuid)

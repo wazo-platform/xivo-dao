@@ -9,16 +9,13 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AgentFeatures(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/contact_center/agents
+    """
     __tablename__ = 'agentfeatures'
     __table_args__ = (
         UniqueConstraint('number'),
         Index('agentfeatures__idx__tenant_uuid', 'tenant_uuid'),
-        {'comment': 'Contains agents. Agents are phone extensions that are used by human '
-                    'beings. Setting up agents allows to then assign agents '
-                    'in call queues as a member. One agent can be assigned '
-                    'to many queues.'}
-
     )
 
     id = Column(Integer, primary_key=True)

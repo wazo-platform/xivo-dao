@@ -15,7 +15,9 @@ from xivo_dao.alchemy.context import Context
 
 
 class Extension(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/administration/extension
+    """
     __tablename__ = 'extensions'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

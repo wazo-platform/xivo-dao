@@ -19,23 +19,14 @@ from .queueskillcat import QueueSkillCat
 
 
 class QueueSkill(Base):
-
+    """
+    https://wazo-platform.org/uc-doc/contact_center/skillbasedrouting
+    """
     __tablename__ = 'queueskill'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name', 'tenant_uuid'),
         Index('queueskill__idx__tenant_uuid', 'tenant_uuid'),
-        {
-            'comment': 'Skills-based routing (SBR), or Skills-based call '
-                       'routing, is a call-assignment strategy used in '
-                       'call centres to assign incoming calls to the most '
-                       'suitable agent, instead of simply choosing the '
-                       'next available agent. Skills-based routing is '
-                       'also based on call distribution to agents through '
-                       'waiting queues, but one or many skills can be '
-                       'assigned to each agent, and call can be '
-                       'distributed to the most suitable agent.'
-        }
     )
 
     id = Column(Integer, nullable=False)

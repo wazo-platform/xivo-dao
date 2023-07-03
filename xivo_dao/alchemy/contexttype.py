@@ -8,7 +8,9 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class ContextType(Base):
-
+    """
+    Contains the list of the available context types, like 'internal', 'incall', ...
+    """
     __tablename__ = 'contexttype'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
