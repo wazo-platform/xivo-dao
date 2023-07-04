@@ -903,6 +903,7 @@ class ItemInserter:
         kwargs.setdefault('callfrom', 'internal')
         kwargs.setdefault('type', 'bosssecretary')
         kwargs.setdefault('name', 'bsfilter')
+        kwargs.setdefault('label', 'BS Filter')
         kwargs.setdefault('description', '')
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
@@ -912,6 +913,7 @@ class ItemInserter:
 
     def add_call_filter(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('label', self._random_name())
         kwargs.setdefault('type', 'bosssecretary')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         callfilter = Callfilter(**kwargs)

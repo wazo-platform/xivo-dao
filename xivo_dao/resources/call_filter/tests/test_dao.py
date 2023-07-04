@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -237,17 +237,21 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
         super(TestSearch, self).setUp()
         self.call_filter1 = self.add_call_filter(
             name='Ashton',
+            label='Ashton',
             description='resto',
             strategy='all-recipients-then-linear-surrogates',
         )
-        self.call_filter2 = self.add_call_filter(name='Beaugarton', description='bar')
-        self.call_filter3 = self.add_call_filter(name='Casa', description='resto')
-        self.call_filter4 = self.add_call_filter(name='Dunkin', description='resto')
+        self.call_filter2 = self.add_call_filter(name='Beaugarton', label='Le Beaugarte', description='bar')
+        self.call_filter3 = self.add_call_filter(name='Casa', label='Casa Grecque', description='resto')
+        self.call_filter4 = self.add_call_filter(name='Dunkin', label='Dunkin Donuts', description='resto')
+        self.call_filter5 = self.add_call_filter(name='Mikes', label='Chez Mikes', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.call_filter2])
-
         self.assert_search_returns_result(expected, search='eau')
+
+        expected = SearchResult(1, [self.call_filter5])
+        self.assert_search_returns_result(expected, search='chez')
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.call_filter1])
@@ -256,36 +260,54 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
         expected_bar = SearchResult(1, [self.call_filter2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.call_filter1, self.call_filter3, self.call_filter4])
+        expected_all_resto = SearchResult(4, [self.call_filter1, self.call_filter3, self.call_filter4, self.call_filter5])
         self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
+        expected = SearchResult(5, [
             self.call_filter1,
             self.call_filter2,
             self.call_filter3,
             self.call_filter4,
+            self.call_filter5,
         ])
-
         self.assert_search_returns_result(expected, order='name')
 
+        expected = SearchResult(5, [
+            self.call_filter1,
+            self.call_filter2,
+            self.call_filter3,
+            self.call_filter5,
+            self.call_filter4,
+        ])
+        self.assert_search_returns_result(expected, order='label')
+
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
+        expected = SearchResult(5, [
+            self.call_filter5,
             self.call_filter4,
             self.call_filter3,
             self.call_filter2,
             self.call_filter1,
         ])
-
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
+        expected = SearchResult(5, [
+            self.call_filter4,
+            self.call_filter5,
+            self.call_filter3,
+            self.call_filter2,
+            self.call_filter1,
+        ])
+        self.assert_search_returns_result(expected, order='label', direction='desc')
+
     def test_when_limiting_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.call_filter1])
+        expected = SearchResult(5, [self.call_filter1])
 
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.call_filter2, self.call_filter3, self.call_filter4])
+        expected = SearchResult(5, [self.call_filter2, self.call_filter3, self.call_filter4, self.call_filter5])
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -314,6 +336,7 @@ class TestCreate(DAOTestCase):
         assert_that(call_filter, has_properties(
             tenant_uuid=self.default_tenant.uuid,
             name='name',
+            label='label',
             strategy=none(),
             callfrom=none(),
             surrogates_timeout=none(),
@@ -325,6 +348,7 @@ class TestCreate(DAOTestCase):
         call_filter_model = CallFilter(
             tenant_uuid=self.default_tenant.uuid,
             name='name',
+            label='label',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
             surrogates_timeout=10,
@@ -339,6 +363,7 @@ class TestCreate(DAOTestCase):
         assert_that(call_filter, has_properties(
             tenant_uuid=self.default_tenant.uuid,
             name='name',
+            label='label',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
             surrogates_timeout=10,
@@ -347,7 +372,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_fill_default_values(self):
-        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
+        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name', label='label')
 
         call_filter = call_filter_dao.create(call_filter_model)
 
@@ -361,6 +386,7 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         call_filter = self.add_call_filter(
             name='name',
+            label='label',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
             surrogates_timeout=10,
@@ -370,6 +396,7 @@ class TestEdit(DAOTestCase):
 
         self.session.expire_all()
         call_filter.name = 'other_name'
+        call_filter.label = 'other-label'
         call_filter.strategy = 'all-recipients-then-all-surrogates'
         call_filter.callfrom = 'internal'
         call_filter.surrogates_timeout = 20
@@ -381,6 +408,7 @@ class TestEdit(DAOTestCase):
         self.session.expire_all()
         assert_that(call_filter, has_properties(
             name='other_name',
+            label='other-label',
             strategy='all-recipients-then-all-surrogates',
             callfrom='internal',
             surrogates_timeout=20,

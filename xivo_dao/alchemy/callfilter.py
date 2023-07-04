@@ -33,6 +33,7 @@ class Callfilter(Base):
         nullable=False,
     )
     name = Column(String(128), nullable=False, server_default='')
+    label = Column(Text, nullable=False)
     type = Column(enum.callfilter_type, nullable=False)
     bosssecretary = Column(enum.callfilter_bosssecretary)
     callfrom = Column(enum.callfilter_callfrom)
