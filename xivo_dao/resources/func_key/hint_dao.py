@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import (
@@ -103,11 +103,11 @@ def user_shared_hints(session):
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
             elif line.endpoint_sip_uuid:
-                ifaces.append(f'pjsip/{line.name}')
+                ifaces.append(f'PJSIP/{line.name}')
             elif line.endpoint_sccp_id:
-                ifaces.append(f'sccp/{line.name}')
+                ifaces.append(f'SCCP/{line.name}')
             else:
-                ifaces.append(f'custom/{line.name}')
+                ifaces.append(f'CUSTOM/{line.name}')
 
         if not ifaces:
             continue
