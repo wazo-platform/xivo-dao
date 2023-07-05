@@ -327,7 +327,7 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
+        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name', label='label')
 
         call_filter = call_filter_dao.create(call_filter_model)
 
