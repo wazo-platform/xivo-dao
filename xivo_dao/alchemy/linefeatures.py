@@ -3,7 +3,7 @@
 
 import re
 
-from sqlalchemy import sql, func
+from sqlalchemy import sql, func, ForeignKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import bindparam, select
@@ -72,6 +72,12 @@ class LineFeatures(Base):
         Index('linefeatures__idx__endpoint_custom_id', 'endpoint_custom_id'),
         Index('linefeatures__idx__application_uuid', 'application_uuid'),
         Index('linefeatures__idx__endpoint_sip_uuid', 'endpoint_sip_uuid'),
+        ForeignKeyConstraint(
+            ('context',),
+            ('context.name',),
+            ondelete='CASCADE',
+            onupdate='CASCADE',
+        ),
     )
 
     id = Column(Integer)
