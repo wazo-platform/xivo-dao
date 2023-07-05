@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -20,14 +20,14 @@ from .. import dao as user_voicemail_dao
 
 class TestUserVoicemail(DAOTestCase):
 
-    def create_user_and_voicemail(self, firstname, exten, context):
-        user_row = self.add_user(enablevoicemail=1, firstname='King')
-        voicemail_row = self.add_voicemail(mailbox='1000', context='default')
+    def create_user_and_voicemail(self, firstname, exten):
+        user_row = self.add_user(enablevoicemail=1, firstname=firstname)
+        voicemail_row = self.add_voicemail(mailbox=exten)
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
         return user_row, voicemail_row
 
     def prepare_voicemail(self, number):
-        voicemail_row = self.add_voicemail(mailbox=number, context='default')
+        voicemail_row = self.add_voicemail(mailbox=number)
         return voicemail_row.uniqueid
 
 
@@ -35,7 +35,7 @@ class TestAssociateUserVoicemail(TestUserVoicemail):
 
     def test_associate(self):
         user_row = self.add_user()
-        voicemail_row = self.add_voicemail(mailbox='1000', context='default')
+        voicemail_row = self.add_voicemail(mailbox='1000')
 
         user_voicemail_dao.associate(user_row, voicemail_row)
 
@@ -66,7 +66,7 @@ class TestUserVoicemailGetByUserId(TestUserVoicemail):
         self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_line.user.id)
 
     def test_get_by_user_id_with_voicemail(self):
-        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')
+        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000')
 
         result = user_voicemail_dao.get_by_user_id(user_row.id)
 
@@ -97,7 +97,7 @@ class TestUserVoicemailFindByUserId(TestUserVoicemail):
         assert_that(result, none())
 
     def test_find_by_user_id_with_voicemail(self):
-        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')
+        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000')
 
         result = user_voicemail_dao.find_by_user_id(user_row.id)
 
@@ -114,7 +114,7 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
         assert_that(result, contains())
 
     def test_given_voicemail_has_no_user_associated_then_returns_empty_list(self):
-        voicemail_row = self.add_voicemail(mailbox='1000', context='default')
+        voicemail_row = self.add_voicemail(mailbox='1000')
 
         result = user_voicemail_dao.find_all_by_voicemail_id(voicemail_row.uniqueid)
 
@@ -148,7 +148,7 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
 class TestDissociateUserVoicemail(TestUserVoicemail):
 
     def test_dissociate(self):
-        voicemail_row = self.add_voicemail(mailbox='1000', context='default')
+        voicemail_row = self.add_voicemail(mailbox='1000')
         user_row = self.add_user(voicemailid=voicemail_row.uniqueid,
                                  enablevoicemail=1)
 
@@ -159,8 +159,8 @@ class TestDissociateUserVoicemail(TestUserVoicemail):
         assert_that(result.enablevoicemail, equal_to(0))
 
     def test_dissociate_not_associated(self):
-        voicemail1 = self.add_voicemail(mailbox='1000', context='default')
-        voicemail2 = self.add_voicemail(mailbox='1001', context='default')
+        voicemail1 = self.add_voicemail(mailbox='1000')
+        voicemail2 = self.add_voicemail(mailbox='1001')
         user = self.add_user(voicemailid=voicemail1.uniqueid,
                              enablevoicemail=1)
 

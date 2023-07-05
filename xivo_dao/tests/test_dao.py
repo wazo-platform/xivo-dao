@@ -747,7 +747,9 @@ class ItemInserter:
     def add_voicemail(self, **kwargs):
         if not kwargs.get('number'):
             kwargs.setdefault('mailbox', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
-        kwargs.setdefault('context', 'unittest')
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
         kwargs.setdefault('uniqueid', self._generate_int())
 
         voicemail = VoicemailSchema(**kwargs)
