@@ -275,10 +275,10 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
         expected = SearchResult(5, [
             self.call_filter1,
-            self.call_filter2,
             self.call_filter3,
             self.call_filter5,
             self.call_filter4,
+            self.call_filter2,
         ])
         self.assert_search_returns_result(expected, order='label')
 
@@ -293,10 +293,10 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
         expected = SearchResult(5, [
+            self.call_filter2,
             self.call_filter4,
             self.call_filter5,
             self.call_filter3,
-            self.call_filter2,
             self.call_filter1,
         ])
         self.assert_search_returns_result(expected, order='label', direction='desc')
