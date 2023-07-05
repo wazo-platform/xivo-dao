@@ -30,6 +30,7 @@ class Context(Base):
         ForeignKeyConstraint(
             ('tenant_uuid',),
             ('tenant.uuid',),
+            ondelete='CASCADE',
         ),
         Index('context__idx__tenant_uuid', 'tenant_uuid'),
     )

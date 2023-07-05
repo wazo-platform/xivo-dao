@@ -1,6 +1,7 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
@@ -11,6 +12,14 @@ from xivo_dao.helpers.db_manager import Base
 class ContextInclude(Base):
 
     __tablename__ = 'contextinclude'
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ('context',),
+            ('context.name',),
+            ondelete='CASCADE',
+            onupdate='CASCADE',
+        ),
+    )
 
     context = Column(String(39), primary_key=True)
     include = Column(String(39), primary_key=True)

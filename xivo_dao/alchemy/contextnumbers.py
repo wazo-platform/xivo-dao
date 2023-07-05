@@ -1,7 +1,8 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
 # Copyright (C) 2016 Proformatique Inc.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column
 from sqlalchemy.sql import case
@@ -13,6 +14,14 @@ from xivo_dao.helpers.db_manager import Base
 class ContextNumbers(Base):
 
     __tablename__ = 'contextnumbers'
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ('context',),
+            ('context.name',),
+            ondelete='CASCADE',
+            onupdate='CASCADE',
+        ),
+    )
 
     context = Column(String(39), primary_key=True)
     type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
