@@ -30,7 +30,7 @@ class FuncKeyMapping(Base):
         CheckConstraint('position > 0')
     )
 
-    template_id = Column(Integer, ForeignKey('func_key_template.id'), primary_key=True)
+    template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete='CASCADE'), primary_key=True)
     func_key_id = Column(Integer, primary_key=True)
     destination_type_id = Column(Integer, primary_key=True)
     label = Column(String(128))
