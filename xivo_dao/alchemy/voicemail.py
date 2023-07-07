@@ -36,7 +36,6 @@ class Voicemail(Base):
             ('context',),
             ('context.name',),
             ondelete='CASCADE',
-            onupdate='CASCADE',
         ),
     )
 
