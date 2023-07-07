@@ -17,7 +17,6 @@ class ContextInclude(Base):
             ('context',),
             ('context.name',),
             ondelete='CASCADE',
-            onupdate='CASCADE',
         ),
     )
 
