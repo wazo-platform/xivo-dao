@@ -76,7 +76,6 @@ class LineFeatures(Base):
             ('context',),
             ('context.name',),
             ondelete='CASCADE',
-            onupdate='CASCADE',
         ),
     )
 
