@@ -19,12 +19,12 @@ class SwitchboardMemberUser(Base):
 
     switchboard_uuid = Column(
         String(38),
-        ForeignKey('switchboard.uuid'),
+        ForeignKey('switchboard.uuid', ondelete='CASCADE'),
         nullable=False,
     )
     user_uuid = Column(
         String(38),
-        ForeignKey('userfeatures.uuid'),
+        ForeignKey('userfeatures.uuid', ondelete='CASCADE'),
         nullable=False,
     )
 
