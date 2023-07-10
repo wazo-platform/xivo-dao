@@ -7,11 +7,11 @@
     templates:
       - wazo-tox-linters-310
       - debian-packaging-bullseye
-    check:
+    wazo-check:
       jobs:
         - wazo-tox-xivo-dao-py39:
             nodeset: vm-debian-11-m1s
-    gate:
+    wazo-gate:
       jobs:
         - wazo-tox-xivo-dao-py39:
             nodeset: vm-debian-11-m1s
