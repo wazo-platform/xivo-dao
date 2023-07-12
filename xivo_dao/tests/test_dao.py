@@ -348,8 +348,12 @@ class ItemInserter:
         return context
 
     def add_context_include(self, **kwargs):
-        kwargs.setdefault('context', self._random_name())
-        kwargs.setdefault('include', self._random_name())
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
+        if not kwargs.get('include'):
+            include = self.add_context()
+            kwargs['include'] = include.name
         kwargs.setdefault('priority', 0)
 
         context_include = ContextInclude(**kwargs)
@@ -363,7 +367,9 @@ class ItemInserter:
         return context_number
 
     def add_context_member(self, **kwargs):
-        kwargs.setdefault('context', 'default')
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('varname', 'context')
 

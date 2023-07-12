@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -36,8 +36,9 @@ class TestCreator(DAOTestCase):
 
     def test_included_context_set_include(self):
         context = self.add_context()
-        context_include = ContextInclude(included_context=context, context='random')
+        include = self.add_context()
+        context_include = ContextInclude(included_context=include, context=context.name)
         self.session.add(context_include)
         self.session.flush()
 
-        assert_that(context_include, has_properties(include=context.name))
+        assert_that(context_include, has_properties(include=include.name))
