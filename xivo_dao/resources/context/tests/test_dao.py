@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -336,7 +336,6 @@ class TestEdit(DAOTestCase):
                                              enabled=False))
 
         context = context_dao.get(context.id)
-        context.name = 'OtherContext'
         context.label = 'Other Context Label'
         context.type = 'incall'
         context.user_ranges = [ContextNumbers(start='4000', end='4999')]
@@ -354,7 +353,6 @@ class TestEdit(DAOTestCase):
         assert_that(context, has_properties(
             id=is_not(none()),
             tenant_uuid=tenant.uuid,
-            name='OtherContext',
             label='Other Context Label',
             type='incall',
             user_ranges=contains(has_properties(start='4000', end='4999')),
