@@ -22,7 +22,7 @@ class AgentLoginStatus(Base):
     agent_id = Column(Integer, autoincrement=False)
     agent_number = Column(String(40), nullable=False)
     extension = Column(String(80), nullable=False)
-    context = Column(String(80), nullable=False)
+    context = Column(String(79), nullable=False)
     interface = Column(String(128), nullable=False)
     state_interface = Column(String(128), nullable=False)
     paused = Column(Boolean, nullable=False, server_default='false')

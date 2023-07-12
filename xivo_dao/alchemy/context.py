@@ -37,7 +37,7 @@ class Context(Base):
 
     id = Column(Integer)
     tenant_uuid = Column(String(36), nullable=False)
-    name = Column(String(39), nullable=False)
+    name = Column(String(79), nullable=False)
     displayname = Column(String(128))
     contexttype = Column(String(40), nullable=False, server_default='internal')
     commented = Column(Integer, nullable=False, server_default='0')

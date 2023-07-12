@@ -47,7 +47,7 @@ class Outcall(Base):
         nullable=False,
     )
     name = Column(String(128), nullable=False)
-    context = Column(String(39))
+    context = Column(String(79))
     internal = Column(Integer, nullable=False, server_default='0')
     preprocess_subroutine = Column(String(39))
     hangupringtime = Column(Integer, nullable=False, server_default='0')

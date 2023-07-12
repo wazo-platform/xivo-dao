@@ -74,7 +74,7 @@ class UserIAX(Base, AsteriskOptionsMixin):
     username = Column(String(80))
     secret = Column(String(80), nullable=False, server_default='')
     dbsecret = Column(String(255), nullable=False, server_default='')
-    context = Column(String(39))
+    context = Column(String(79))
     language = Column(String(20))
     accountcode = Column(String(20))
     amaflags = Column(

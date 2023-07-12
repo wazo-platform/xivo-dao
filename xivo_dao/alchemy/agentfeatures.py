@@ -22,7 +22,7 @@ class AgentFeatures(Base):
     lastname = Column(String(128))
     number = Column(String(40), nullable=False)
     passwd = Column(String(128))
-    context = Column(String(39))
+    context = Column(String(79))
     language = Column(String(20))
     autologoff = Column(Integer)
     group = Column(String(255))
