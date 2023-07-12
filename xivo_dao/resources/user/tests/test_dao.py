@@ -106,7 +106,7 @@ class TestFind(TestUser):
             preprocess_subroutine='preprocess_subroutine',
         )
 
-        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
+        voicemail_row = self.add_voicemail(mailbox='1234')
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
 
         user = user_dao.find(user_row.id)

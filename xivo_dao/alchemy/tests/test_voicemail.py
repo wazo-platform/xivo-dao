@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import and_
@@ -12,32 +12,35 @@ from ..voicemail import Voicemail
 class TestGetOldNumberContext(DAOTestCase):
 
     def test_when_number_context_are_modified(self):
-        voicemail = self.add_voicemail(number='1000', context='default')
+        context = self.add_context(name='default')
+        voicemail = self.add_voicemail(number='1000', context=context.name)
         voicemail.number = '1001'
         voicemail.context = 'not_default'
 
         old_number, old_context = voicemail.get_old_number_context()
 
         assert_that(old_number, equal_to('1000'))
-        assert_that(old_context, equal_to('default'))
+        assert_that(old_context, equal_to(context.name))
 
     def test_when_only_number_is_modified(self):
-        voicemail = self.add_voicemail(number='1000', context='default')
+        context = self.add_context(name='default')
+        voicemail = self.add_voicemail(number='1000', context=context.name)
         voicemail.number = '1001'
 
         old_number, old_context = voicemail.get_old_number_context()
 
         assert_that(old_number, equal_to('1000'))
-        assert_that(old_context, equal_to('default'))
+        assert_that(old_context, equal_to(context.name))
 
     def test_when_only_context_is_modified(self):
-        voicemail = self.add_voicemail(number='1000', context='default')
+        context = self.add_context(name='default')
+        voicemail = self.add_voicemail(number='1000', context=context.name)
         voicemail.context = 'not_default'
 
         old_number, old_context = voicemail.get_old_number_context()
 
         assert_that(old_number, equal_to('1000'))
-        assert_that(old_context, equal_to('default'))
+        assert_that(old_context, equal_to(context.name))
 
 
 class TestTenantUUID(DAOTestCase):
