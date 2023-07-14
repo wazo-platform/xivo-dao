@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import callfilter_dao
@@ -31,42 +31,42 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
         self.assertEqual(result, [])
 
     def test_given_boss_then_returns_empty_list(self):
-        context = 'mycontext'
+        context = self.add_context(name='mycontext')
         call_filter = self.add_call_filter()
-        self._create_user_and_add_to_filter(call_filter.id, 'boss', context)
+        self._create_user_and_add_to_filter(call_filter.id, 'boss', context.name)
 
-        result = callfilter_dao.get_secretaries_id_by_context(context)
+        result = callfilter_dao.get_secretaries_id_by_context(context.name)
 
         self.assertEqual(result, [])
 
     def test_given_one_secretary_then_returns_list_with_id(self):
-        context = 'mycontext'
+        context = self.add_context(name='mycontext')
         call_filter = self.add_call_filter()
-        member = self._create_user_and_add_to_filter(call_filter.id, 'secretary', context)
+        member = self._create_user_and_add_to_filter(call_filter.id, 'secretary', context.name)
 
-        result = callfilter_dao.get_secretaries_id_by_context(context)
+        result = callfilter_dao.get_secretaries_id_by_context(context.name)
 
         self.assertEqual(len(result), 1)
         self.assertIn((member.id,), result)
 
     def test_given_two_secretaries_then_returns_list_with_both_ids(self):
-        context = 'mycontext'
+        context = self.add_context(name='mycontext')
         call_filter = self.add_call_filter()
-        first_member = self._create_user_and_add_to_filter(call_filter.id, 'secretary', context)
-        second_member = self._create_user_and_add_to_filter(call_filter.id, 'secretary', context)
+        first_member = self._create_user_and_add_to_filter(call_filter.id, 'secretary', context.name)
+        second_member = self._create_user_and_add_to_filter(call_filter.id, 'secretary', context.name)
 
-        result = callfilter_dao.get_secretaries_id_by_context(context)
+        result = callfilter_dao.get_secretaries_id_by_context(context.name)
 
         self.assertEqual(len(result), 2)
         self.assertIn((first_member.id,), result)
         self.assertIn((second_member.id,), result)
 
     def test_given_line_with_multiple_users_then_returns_list_with_one_id(self):
-        context = 'mycontext'
+        context = self.add_context(name='mycontext')
         call_filter = self.add_call_filter()
-        extension = self.add_extension(context=context)
+        extension = self.add_extension(context=context.name)
 
-        line = self.add_line(context=context)
+        line = self.add_line(context=context.name)
         main_user = self.add_user()
         secondary_user = self.add_user()
 
@@ -83,18 +83,18 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         member = self._add_user_to_filter(main_user.id, call_filter.id, 'secretary')
 
-        result = callfilter_dao.get_secretaries_id_by_context(context)
+        result = callfilter_dao.get_secretaries_id_by_context(context.name)
 
         self.assertEqual(len(result), 1)
         self.assertIn((member.id,), result)
 
     def test_given_user_with_multiple_line_then_returns_list_with_one_id(self):
-        context = 'mycontext'
+        context = self.add_context(name='mycontext')
         call_filter = self.add_call_filter()
-        extension = self.add_extension(context=context)
+        extension = self.add_extension(context=context.name)
 
-        main_line = self.add_line(context=context)
-        secondary_line = self.add_line(context=context)
+        main_line = self.add_line(context=context.name)
+        secondary_line = self.add_line(context=context.name)
         user = self.add_user()
 
         self.add_user_line(user_id=user.id,
@@ -112,7 +112,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         member = self._add_user_to_filter(user.id, call_filter.id, 'secretary')
 
-        result = callfilter_dao.get_secretaries_id_by_context(context)
+        result = callfilter_dao.get_secretaries_id_by_context(context.name)
 
         self.assertEqual(len(result), 1)
         self.assertIn((member.id,), result)

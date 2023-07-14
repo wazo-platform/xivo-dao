@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -250,9 +250,10 @@ class TestDelete(DAOTestCase):
         assert_that(inspect(sccp).deleted)
 
     def test_given_line_associated_to_sccp_when_deleted_then_line_dissociated(self):
-        sccp = self.add_sccpline(context='default', name='1000')
+        context = self.add_context(name='default')
+        sccp = self.add_sccpline(context=context.name, name='1000')
         line = self.add_line(
-            context='default',
+            context=context.name,
             name='1000',
             number='1000',
             endpoint_sccp_id=sccp.id,

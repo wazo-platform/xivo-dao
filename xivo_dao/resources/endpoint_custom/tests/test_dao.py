@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -211,9 +211,10 @@ class TestDelete(DAOTestCase):
         assert_that(inspect(custom).deleted)
 
     def test_given_line_associated_to_custom_when_deleted_then_line_dissociated(self):
-        custom = self.add_usercustom(context='default')
+        context = self.add_context(name='default')
+        custom = self.add_usercustom(context=context.name)
         line = self.add_line(
-            context='default',
+            context=context.name,
             name='1000',
             number='1000',
             endpoint_custom_id=custom.id,
