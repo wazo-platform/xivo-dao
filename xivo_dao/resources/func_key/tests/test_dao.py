@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -28,8 +28,8 @@ class TestFindAllForwards(TestFuncKeyDao):
 
     def prepare_user_and_forward(self, exten, fwd_type, number=None):
         user_row = self.add_user()
-
-        exten_row = self.add_extenfeatures(exten, fwd_type)
+        context = self.add_context(name='xivo-features')
+        exten_row = self.add_extenfeatures(exten, fwd_type, context.name)
         forward_row = self.add_forward_destination(exten_row.id, number)
         self.add_func_key_mapping(func_key_id=forward_row.func_key_id,
                                   destination_type_id=forward_row.destination_type_id,

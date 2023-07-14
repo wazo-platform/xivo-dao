@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none, equal_to, calling, raises
@@ -593,7 +593,7 @@ class TestGet(TestDao):
         assert_that(expected, equal_to(result))
 
     def test_given_template_has_forward_func_key_when_getting_then_returns_service_func_key(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1000')
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', number='1000')
         expected = self.prepare_template(destination_row,
                                          FuncKeyDestForward(forward='busy',
                                                             exten='1000',
@@ -677,7 +677,7 @@ class TestDelete(TestDao):
         assert_that(count, equal_to(0))
 
     def test_given_template_has_forward_func_key_when_deleting_then_deletes_forward(self):
-        destination_row = self.create_forward_func_key('_*22.', 'fwdrna', '1000')
+        destination_row = self.create_forward_func_key('_*22.', 'fwdrna', number='1000')
         template = self.prepare_template(destination_row,
                                          FuncKeyDestForward(forward='noanswer',
                                                             exten='1000'))

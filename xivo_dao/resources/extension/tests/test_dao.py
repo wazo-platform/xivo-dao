@@ -328,10 +328,11 @@ class TestFindAllBy(TestExtension):
         assert_that(result, contains())
 
     def test_find_all_by_native_column(self):
-        extension1 = self.add_extension(exten='1000', context='mycontext')
-        extension2 = self.add_extension(exten='1001', context='mycontext')
+        context = self.add_context(name='mycontext')
+        extension1 = self.add_extension(exten='1000', context=context.name)
+        extension2 = self.add_extension(exten='1001', context=context.name)
 
-        extensions = extension_dao.find_all_by(context='mycontext')
+        extensions = extension_dao.find_all_by(context=context.name)
 
         assert_that(extensions, has_items(has_property('id', extension1.id),
                                           has_property('id', extension2.id)))
@@ -394,10 +395,10 @@ class TestCreate(TestExtension):
 
     def test_create(self):
         exten = 'extension'
-        context = 'toto'
+        context = self.add_context(name='toto')
 
         extension = Extension(exten=exten,
-                              context=context)
+                              context=context.name)
 
         created_extension = extension_dao.create(extension)
 
@@ -405,14 +406,15 @@ class TestCreate(TestExtension):
 
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to(exten))
-        assert_that(row.context, equal_to(context))
+        assert_that(row.context, equal_to(context.name))
         assert_that(row.commented, equal_to(0))
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
 
     def test_create_all_parameters(self):
+        context = self.add_context(name='default')
         extension = Extension(exten='1000',
-                              context='default',
+                              context=context.name,
                               commented=1)
 
         created_extension = extension_dao.create(extension)
@@ -421,7 +423,7 @@ class TestCreate(TestExtension):
 
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to('1000'))
-        assert_that(row.context, equal_to('default'))
+        assert_that(row.context, equal_to(context.name))
         assert_that(row.commented, equal_to(1))
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
@@ -431,17 +433,18 @@ class TestEdit(TestExtension):
 
     def setUp(self):
         super().setUp()
-        self.existing_extension = self.add_extension(exten='1635', context='my_context', type='user', typeval='0')
+        context = self.add_context(name='my_context')
+        self.existing_extension = self.add_extension(exten='1635', context=context.name, type='user', typeval='0')
 
     def test_edit(self):
         exten = 'extension'
-        context = 'toto'
+        context = self.add_context(name='toto')
         commented = 1
         row = self.add_extension()
 
         extension = extension_dao.get(row.id)
         extension.exten = exten
-        extension.context = context
+        extension.context = context.name
         extension.commented = commented
 
         extension_dao.edit(extension)
@@ -450,7 +453,7 @@ class TestEdit(TestExtension):
 
         assert_that(row.id, equal_to(extension.id))
         assert_that(row.exten, equal_to(exten))
-        assert_that(row.context, equal_to(context))
+        assert_that(row.context, equal_to(context.name))
         assert_that(row.commented, equal_to(1))
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
@@ -460,10 +463,10 @@ class TestDelete(TestExtension):
 
     def test_delete(self):
         exten = 'sdklfj'
-        context = 'toto'
+        context = self.add_context(name='toto')
 
         expected_extension = self.add_extension(exten=exten,
-                                                context=context)
+                                                context=context.name)
 
         extension = extension_dao.get(expected_extension.id)
 
@@ -505,10 +508,10 @@ class TestFindAllServiceExtensions(DAOTestCase):
 
     def add_extensions(self):
         service_extensions = []
-
+        context = self.add_context(name='xivo-features')
         for exten, service in self.SERVICES:
             self.add_extension(type='extenfeatures',
-                               context='xivo-features',
+                               context=context.name,
                                exten=exten,
                                typeval=service)
 
@@ -539,8 +542,9 @@ class TestFindAllServiceExtensions(DAOTestCase):
         assert_that(result, has_items(*expected))
 
     def test_given_extension_is_commented_then_returns_extension(self):
+        context = self.add_context(name='xivo-features')
         extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
+                                           context=context.name,
                                            exten='*92',
                                            typeval='vmuserpurge',
                                            commented=1)
@@ -558,9 +562,9 @@ class TestFindAllForwardExtensions(DAOTestCase):
 
     def add_extensions(self):
         extensions = []
-
+        context = self.add_context(name='xivo-features')
         row = self.add_extension(type='extenfeatures',
-                                 context='xivo-features',
+                                 context=context.name,
                                  exten='_*23.',
                                  typeval='fwdbusy')
         model = ForwardExtension(id=row.id,
@@ -569,7 +573,7 @@ class TestFindAllForwardExtensions(DAOTestCase):
         extensions.append(model)
 
         row = self.add_extension(type='extenfeatures',
-                                 context='xivo-features',
+                                 context=context.name,
                                  exten='_*22.',
                                  typeval='fwdrna')
         model = ForwardExtension(id=row.id,
@@ -578,7 +582,7 @@ class TestFindAllForwardExtensions(DAOTestCase):
         extensions.append(model)
 
         row = self.add_extension(type='extenfeatures',
-                                 context='xivo-features',
+                                 context=context.name,
                                  exten='_*21.',
                                  typeval='fwdunc')
         model = ForwardExtension(id=row.id,
@@ -601,8 +605,9 @@ class TestFindAllForwardExtensions(DAOTestCase):
         assert_that(result, has_items(*expected))
 
     def test_given_extension_is_commented_then_returns_extension(self):
+        context = self.add_context(name='xivo-features')
         extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
+                                           context=context.name,
                                            exten='_*23.',
                                            typeval='fwdbusy',
                                            commented=1)
@@ -620,9 +625,9 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
 
     def add_extensions(self):
         extensions = []
-
+        context = self.add_context(name='xivo-features')
         row = self.add_extension(type='extenfeatures',
-                                 context='xivo-features',
+                                 context=context.name,
                                  exten='_*31.',
                                  typeval='agentstaticlogin')
         model = AgentActionExtension(id=row.id,
@@ -631,7 +636,7 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         extensions.append(model)
 
         row = self.add_extension(type='extenfeatures',
-                                 context='xivo-features',
+                                 context=context.name,
                                  exten='_*32.',
                                  typeval='agentstaticlogoff')
         model = AgentActionExtension(id=row.id,
@@ -640,7 +645,7 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         extensions.append(model)
 
         row = self.add_extension(type='extenfeatures',
-                                 context='xivo-features',
+                                 context=context.name,
                                  exten='_*30.',
                                  typeval='agentstaticlogtoggle')
         model = AgentActionExtension(id=row.id,
@@ -663,8 +668,9 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         assert_that(result, has_items(*expected))
 
     def test_given_extension_is_commented_then_returns_extension(self):
+        context = self.add_context(name='xivo-features')
         extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
+                                           context=context.name,
                                            exten='_*30.',
                                            typeval='agentstaticlogtoggle',
                                            commented=1)
@@ -813,16 +819,17 @@ class TestAssociateQueue(DAOTestCase):
         ))
 
     def test_associate_fix_queue(self):
-        extension = self.add_extension(exten='1234', context='patate')
+        context = self.add_context(name='mycontext')
+        extension = self.add_extension(exten='1234', context=context.name)
         queue = self.add_queuefeatures()
         assert_that(queue, has_properties(
-            context=not_('patate'),
+            context=not_(context.name),
             number=not_('1234'),
         ))
 
         extension_dao.associate_queue(queue, extension)
         assert_that(queue, has_properties(
-            context='patate',
+            context=context.name,
             number='1234',
         ))
 
@@ -863,11 +870,12 @@ class TestAssociateQueue(DAOTestCase):
         ))
 
     def test_dissociate_fix_queue(self):
-        extension = self.add_extension(exten='1234', context='patate')
+        context = self.add_context(name='mycontext')
+        extension = self.add_extension(exten='1234', context=context.name)
         queue = self.add_queuefeatures()
         extension_dao.associate_queue(queue, extension)
         assert_that(queue, has_properties(
-            context='patate',
+            context=context.name,
             number='1234',
         ))
 

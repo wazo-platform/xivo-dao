@@ -19,8 +19,9 @@ from xivo_dao.resources.func_key.model import Hint
 class TestProgfunckeyExtension(DAOTestCase):
 
     def test_given_progfunc_key_extension_then_returns_cleaned_progfunckey(self):
+        context = self.add_context(name='xivo-features')
         self.add_extension(
-            context='xivo-features',
+            context=context.name,
             exten='_*735.',
             type='extenfeatures',
             typeval='phoneprogfunckey',
@@ -32,8 +33,9 @@ class TestProgfunckeyExtension(DAOTestCase):
 class TestCalluserExtension(DAOTestCase):
 
     def test_given_calluser_extension_then_returns_cleaned_calluser(self):
+        context = self.add_context(name='xivo-features')
         self.add_extension(
-            context='xivo-features',
+            context=context.name,
             exten='_*666.',
             type='extenfeatures',
             typeval='calluser',
@@ -49,6 +51,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         self.setup_funckeys()
         self.context = self.add_context(name='mycontext')
         self.context2 = self.add_context(name='mycontext2')
+        self.xivo_features_context = self.add_context(name='xivo-features')
 
     def add_user_and_func_key(
         self, endpoint_sip_uuid=None, exten='1000', commented=0, enablehint=1,
@@ -243,17 +246,17 @@ class TestConferenceHints(TestHints):
 
     def test_given_conference_then_returns_conference_hint(self):
         exten = '1234'
-        context = 'default'
+        context = self.add_context(name='default')
         conference = self.add_conference()
         self.add_extension(
-            context=context,
+            context=context.name,
             exten=exten,
             type='conference',
             typeval=str(conference.id),
         )
         self.add_conference_destination(conference.id)
 
-        hints = hint_dao.conference_hints(context)
+        hints = hint_dao.conference_hints(context.name)
         assert_that(
             hints,
             contains(
@@ -277,8 +280,9 @@ class TestConferenceHints(TestHints):
 
 class TestServiceHints(TestHints):
 
+
     def test_given_service_func_key_then_returns_service_hint(self):
-        destination_row = self.create_service_func_key('*25', 'enablednd')
+        destination_row = self.create_service_func_key('*25', 'enablednd', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -288,7 +292,7 @@ class TestServiceHints(TestHints):
         ))
 
     def test_given_commented_extension_then_returns_no_hints(self):
-        destination_row = self.create_service_func_key('*25', 'enablednd', commented=1)
+        destination_row = self.create_service_func_key('*25', 'enablednd', self.xivo_features_context.name, commented=1)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -296,7 +300,7 @@ class TestServiceHints(TestHints):
         assert_that(hint_dao.service_hints(self.context.name), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
-        destination_row = self.create_service_func_key('*25', 'enablednd')
+        destination_row = self.create_service_func_key('*25', 'enablednd', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -304,7 +308,7 @@ class TestServiceHints(TestHints):
         assert_that(hint_dao.service_hints(self.context.name), empty())
 
     def test_given_user_when_query_different_context_then_returns_no_hints(self):
-        destination_row = self.create_service_func_key('*25', 'enablednd')
+        destination_row = self.create_service_func_key('*25', 'enablednd', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -314,8 +318,9 @@ class TestServiceHints(TestHints):
 
 class TestForwardHints(TestHints):
 
+
     def test_given_forward_func_key_then_returns_forward_hint(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', self.xivo_features_context.name, '1234')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -325,7 +330,7 @@ class TestForwardHints(TestHints):
         ))
 
     def test_given_forward_without_number_then_returns_forward_hint(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy')
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -335,7 +340,7 @@ class TestForwardHints(TestHints):
         ))
 
     def test_given_commented_extension_then_returns_no_hints(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234', commented=1)
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', self.xivo_features_context.name, '1234', commented=1)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -343,7 +348,7 @@ class TestForwardHints(TestHints):
         assert_that(hint_dao.forward_hints(self.context.name), contains())
 
     def test_given_no_blf_then_returns_no_hints(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', self.xivo_features_context.name, '1234')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -351,7 +356,7 @@ class TestForwardHints(TestHints):
         assert_that(hint_dao.forward_hints(self.context.name), contains())
 
     def test_given_user_when_query_other_context_then_returns_no_hints(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', self.xivo_features_context.name, '1234')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -359,7 +364,7 @@ class TestForwardHints(TestHints):
         assert_that(hint_dao.forward_hints('othercontext'), contains())
 
     def test_forward_extension_with_xxx_pattern_is_cleaned(self):
-        destination_row = self.create_forward_func_key('_*23XXXX', 'fwdbusy', '1234')
+        destination_row = self.create_forward_func_key('_*23XXXX', 'fwdbusy', self.xivo_features_context.name, '1234')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -371,8 +376,9 @@ class TestForwardHints(TestHints):
 
 class TestAgentHints(TestHints):
 
+
     def test_given_agent_func_key_then_returns_agent_hint(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -382,7 +388,7 @@ class TestAgentHints(TestHints):
         ))
 
     def test_given_commented_extension_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -390,7 +396,7 @@ class TestAgentHints(TestHints):
         assert_that(hint_dao.agent_hints(self.context.name), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -398,7 +404,7 @@ class TestAgentHints(TestHints):
         assert_that(hint_dao.agent_hints(self.context.name), empty())
 
     def test_given_user_when_querying_other_context_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -406,7 +412,7 @@ class TestAgentHints(TestHints):
         assert_that(hint_dao.agent_hints('othercontext'), empty())
 
     def test_agent_extension_with_xxx_pattern_is_cleaned(self):
-        destination_row = self.create_agent_func_key('_*31XXXX', 'agentstaticlogin')
+        destination_row = self.create_agent_func_key('_*31XXXX', 'agentstaticlogin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -442,7 +448,7 @@ class TestBSFilterHints(TestHints):
     def setUp(self):
         super().setUp()
         self.add_extension(
-            context='xivo-features',
+            context=self.xivo_features_context.name,
             exten='_*37.',
             type='extenfeatures',
             typeval='bsfilter',
@@ -482,8 +488,9 @@ class TestBSFilterHints(TestHints):
 
 class TestGroupHints(TestHints):
 
+
     def test_given_group_member_func_key_then_returns_group_member_hint(self):
-        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -495,7 +502,7 @@ class TestGroupHints(TestHints):
         assert_that(hint_dao.groupmember_hints(self.context.name), contains(expected))
 
     def test_given_commented_extension_then_returns_no_hints(self):
-        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -503,7 +510,7 @@ class TestGroupHints(TestHints):
         assert_that(hint_dao.groupmember_hints(self.context.name), contains())
 
     def test_given_no_blf_then_returns_no_hints(self):
-        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -511,7 +518,7 @@ class TestGroupHints(TestHints):
         assert_that(hint_dao.groupmember_hints(self.context.name), contains())
 
     def test_given_user_when_querying_other_context_then_returns_no_hints(self):
-        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -519,7 +526,7 @@ class TestGroupHints(TestHints):
         assert_that(hint_dao.groupmember_hints('othercontext'), contains())
 
     def test_group_extension_with_xxx_pattern_is_cleaned(self):
-        destination_row = self.create_group_member_func_key('_*51XXXX', 'groupmemberjoin')
+        destination_row = self.create_group_member_func_key('_*51XXXX', 'groupmemberjoin', self.xivo_features_context.name)
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)

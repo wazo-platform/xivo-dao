@@ -91,7 +91,7 @@ class TestExtensionFixes(DAOTestCase):
         assert_that(extension.typeval, equal_to(str(user.id)))
 
     def test_given_extension_is_not_associated_to_user_then_destination_reset(self):
-        extension = self.add_extension(exten="1000", context="default",
+        extension = self.add_extension(exten="1000",
                                        type="user", typeval="1234")
 
         self.fixes.fix(extension.id)
@@ -101,7 +101,7 @@ class TestExtensionFixes(DAOTestCase):
         assert_that(extension.typeval, equal_to('0'))
 
     def test_given_extension_destination_is_other_than_user_or_incall_then_destination_is_unchanged(self):
-        extension = self.add_extension(exten="1000", context="default",
+        extension = self.add_extension(exten="1000",
                                        type="queue", typeval="1234")
 
         self.fixes.fix(extension.id)

@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
@@ -66,10 +66,10 @@ class FuncKeyHelper:
             self.add_func_key_destination_type(id=destination_id,
                                                name=name)
 
-    def add_extenfeatures(self, exten, typeval, commented=0):
+    def add_extenfeatures(self, exten, typeval, context=None, commented=0):
         extension_row = self.add_extension(exten=exten,
                                            type='extenfeatures',
-                                           context='xivo-features',
+                                           context=context,
                                            typeval=typeval,
                                            commented=commented)
         return extension_row
@@ -160,12 +160,12 @@ class FuncKeyHelper:
         return self.add_func_key(type_id=self.speeddial_id,
                                  destination_type_id=dest_type_id)
 
-    def create_forward_func_key(self, exten, fwd_type, number=None, commented=0):
-        extension_row = self.add_extenfeatures(exten, fwd_type, commented=commented)
+    def create_forward_func_key(self, exten, fwd_type, context=None, number=None, commented=0):
+        extension_row = self.add_extenfeatures(exten, fwd_type, context, commented=commented)
         return self.add_forward_destination(extension_row.id, number)
 
-    def create_service_func_key(self, exten, service_type, commented=0):
-        extension_row = self.add_extenfeatures(exten, service_type, commented=commented)
+    def create_service_func_key(self, exten, service_type, context=None, commented=0):
+        extension_row = self.add_extenfeatures(exten, service_type, context, commented=commented)
         return self.add_service_destination(extension_row.id)
 
     def create_user_func_key(self):
@@ -176,9 +176,9 @@ class FuncKeyHelper:
         group_row = self.add_group()
         return self.add_group_destination(group_row.id)
 
-    def create_group_member_func_key(self, exten, exten_action, commented=0):
+    def create_group_member_func_key(self, exten, exten_action, context, commented=0):
         group_row = self.add_group()
-        extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
+        extension_row = self.add_extenfeatures(exten, exten_action, context, commented=commented)
         return self.add_groupmember_destination(group_row.id, extension_row.id)
 
     def create_queue_func_key(self):
@@ -193,9 +193,9 @@ class FuncKeyHelper:
         paging_row = self.add_paging()
         return self.add_paging_destination(paging_row.id)
 
-    def create_agent_func_key(self, exten, exten_action, commented=0):
+    def create_agent_func_key(self, exten, exten_action, context=None, commented=0):
         agent_row = self.add_agent()
-        extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
+        extension_row = self.add_extenfeatures(exten, exten_action, context, commented=commented)
         return self.add_agent_destination(agent_row.id, extension_row.id)
 
     def create_custom_func_key(self, exten):

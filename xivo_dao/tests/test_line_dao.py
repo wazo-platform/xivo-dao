@@ -15,6 +15,10 @@ CONTEXT = 'foobar'
 
 class TestLineFeaturesDAO(DAOTestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.context = self.add_context(name=CONTEXT)
+
     def test_get_interface_from_exten_and_context_sip(self):
         name = 'abcdef'
         extension = self.add_extension(exten=EXTEN, context=CONTEXT)
