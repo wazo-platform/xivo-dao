@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -42,13 +42,6 @@ class TestTenantUUID(DAOTestCase):
 
         assert_that(extension, has_properties(
             tenant_uuid=context.tenant_uuid,
-        ))
-
-    def test_that_if_no_context_then_uuid_is_none(self):
-        extension = self.add_extension()
-
-        assert_that(extension, has_properties(
-            tenant_uuid=None,
         ))
 
 

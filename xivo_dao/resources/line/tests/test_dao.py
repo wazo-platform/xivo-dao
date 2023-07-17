@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -191,10 +191,11 @@ class TestGet(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_all_parameters(self):
+        context = self.add_context(name='mycontext')
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        line.context = 'mycontext'
+        line.context = context.name
         line.provisioning_code = '234567'
         line.position = 3
         line.registrar = 'otherregistrar'
@@ -206,7 +207,7 @@ class TestEdit(DAOTestCase):
             edited_line,
             has_properties(
                 id=line.id,
-                context='mycontext',
+                context=context.name,
                 provisioning_code='234567',
                 provisioningid=234567,
                 position=3,
@@ -397,7 +398,8 @@ class TestCreate(DAOTestCase):
 
     # The caller ID should only be set once associated to update the endpoint
     def test_when_setting_caller_id_to_null_then_nothing_happens(self):
-        line = Line(context='default', position=1, registrar='default')
+        context = self.add_context(name='default')
+        line = Line(context=context.name, position=1, registrar='default')
         line.caller_id_name = None
         line.caller_id_num = None
 
@@ -447,8 +449,9 @@ class TestDelete(DAOTestCase):
 class TestSearch(DAOTestCase):
 
     def test_search(self):
-        line1 = self.add_line(context='default', provisioningid=123456)
-        self.add_line(context='default', provisioningid=234567)
+        context = self.add_context(name='default')
+        line1 = self.add_line(context=context.name, provisioningid=123456)
+        self.add_line(context=context.name, provisioningid=234567)
 
         search_result = line_dao.search(search='123456')
 
@@ -462,7 +465,8 @@ class TestSearch(DAOTestCase):
 
     def test_search_returns_sip_line_associated(self):
         usersip = self.add_endpoint_sip()
-        line = self.add_line(context='default', endpoint_sip_uuid=usersip.uuid)
+        context = self.add_context(name='default')
+        line = self.add_line(context=context.name, endpoint_sip_uuid=usersip.uuid)
 
         search_result = line_dao.search()
         assert_that(search_result.total, equal_to(1))

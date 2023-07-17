@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -57,8 +57,10 @@ class TestSimpleSearch(TestExtension):
         self.assert_search_returns_result(expected)
 
     def test_given_one_feature_extension_then_returns_one_result(self):
-        extension1 = self.add_extension(exten='1000', context='xivo-features', typeval='im_feature')
-        extension2 = self.add_extension(exten='1000', context='not-features', typeval='im_not_feature')
+        xivo_features_context = self.add_context(name='xivo-features')
+        not_features_context = self.add_context(name='not-features')
+        extension1 = self.add_extension(exten='1000', context=xivo_features_context.name, typeval='im_feature')
+        extension2 = self.add_extension(exten='1000', context=not_features_context.name, typeval='im_not_feature')
 
         expected = SearchResult(1, [extension1])
         self.assert_search_returns_result(expected, is_feature=True)
@@ -102,11 +104,13 @@ class TestSearchGivenMultipleExtensions(TestExtension):
 
     def setUp(self):
         TestExtension.setUp(self)
-        self.extension1 = self.add_extension(exten='1000', context='inside')
-        self.extension2 = self.add_extension(exten='1001', context='inside')
-        self.extension3 = self.add_extension(exten='1002', context='inside')
-        self.extension4 = self.add_extension(exten='1103', context='inside')
-        self.extension5 = self.add_extension(exten='1103', context='default')
+        self.inside_context = self.add_context(name='inside')
+        self.default_context = self.add_context(name='default')
+        self.extension1 = self.add_extension(exten='1000', context=self.inside_context.name)
+        self.extension2 = self.add_extension(exten='1001', context=self.inside_context.name)
+        self.extension3 = self.add_extension(exten='1002', context=self.inside_context.name)
+        self.extension4 = self.add_extension(exten='1103', context=self.inside_context.name)
+        self.extension5 = self.add_extension(exten='1103', context=self.default_context.name)
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.extension2])
@@ -118,21 +122,21 @@ class TestSearchGivenMultipleExtensions(TestExtension):
         self.assert_search_returns_result(expected_all_1103, search='1103')
 
         expected_1103_inside = SearchResult(1, [self.extension4])
-        self.assert_search_returns_result(expected_1103_inside, search='1103', context='inside')
+        self.assert_search_returns_result(expected_1103_inside, search='1103', context=self.inside_context.name)
 
         expected_all_inside = SearchResult(4, [self.extension1, self.extension2,
                                                self.extension3, self.extension4])
-        self.assert_search_returns_result(expected_all_inside, context='inside', order='exten')
+        self.assert_search_returns_result(expected_all_inside, context=self.inside_context.name, order='exten')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [self.extension1, self.extension2, self.extension3, self.extension4])
 
-        self.assert_search_returns_result(expected, order='exten', context='inside')
+        self.assert_search_returns_result(expected, order='exten', context=self.inside_context.name)
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
         expected = SearchResult(4, [self.extension4, self.extension3, self.extension2, self.extension1])
 
-        self.assert_search_returns_result(expected, order='exten', direction='desc', context='inside')
+        self.assert_search_returns_result(expected, order='exten', direction='desc', context=self.inside_context.name)
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(5, [self.extension1])
@@ -160,9 +164,9 @@ class TestSearchGivenInternalExtensionType(TestExtension):
     def setUp(self):
         TestExtension.setUp(self)
 
-        self.add_context(name='internal_context', contexttype='internal')
-        self.extension1 = self.add_extension(exten='1000', context='internal_context')
-        self.extension2 = self.add_extension(exten='1001', context='internal_context')
+        internal_context = self.add_context(name='internal_context', contexttype='internal')
+        self.extension1 = self.add_extension(exten='1000', context=internal_context.name)
+        self.extension2 = self.add_extension(exten='1001', context=internal_context.name)
 
     def test_when_searching_type_internal_extensions_then_returns_internal_extensions(self):
         expected = SearchResult(2, [self.extension1, self.extension2])
@@ -185,9 +189,9 @@ class TestSearchGivenIncallExtensionType(TestExtension):
     def setUp(self):
         TestExtension.setUp(self)
 
-        self.add_context(name='incall_context', contexttype='incall')
-        self.extension1 = self.add_extension(exten='1000', context='incall_context')
-        self.extension2 = self.add_extension(exten='1001', context='incall_context')
+        incall_context = self.add_context(name='incall_context', contexttype='incall')
+        self.extension1 = self.add_extension(exten='1000', context=incall_context.name)
+        self.extension2 = self.add_extension(exten='1001', context=incall_context.name)
 
     def test_when_searching_type_internal_then_returns_empty_result(self):
         expected = SearchResult(0, [])
@@ -213,7 +217,8 @@ class TestFind(TestExtension):
         assert_that(result, none())
 
     def test_find(self):
-        extension_row = self.add_extension(exten='1234', context='default')
+        context = self.add_context(name='default')
+        extension_row = self.add_extension(exten='1234', context=context.name)
 
         result = extension_dao.find(extension_row.id)
 
@@ -266,10 +271,6 @@ class TestFindBy(TestExtension):
         result = extension_dao.find_by(exten='1000')
         assert_that(result, has_properties(tenant_uuid=tenant.uuid))
 
-        self.add_extension(exten='1001')
-        result = extension_dao.find_by(exten='1001')
-        assert_that(result, has_properties(tenant_uuid=None))
-
     def test_given_entension_exists_with_tenant_filtering(self):
         tenant = self.add_tenant()
         context = self.add_context(tenant_uuid=tenant.uuid)
@@ -305,10 +306,6 @@ class TestGetBy(TestExtension):
         self.add_extension(exten='1000', context=context.name)
         result = extension_dao.get_by(exten='1000')
         assert_that(result, has_properties(tenant_uuid=tenant.uuid))
-
-        self.add_extension(exten='1001')
-        result = extension_dao.get_by(exten='1001')
-        assert_that(result, has_properties(tenant_uuid=None))
 
     def test_given_entension_exists_with_tenant_filtering(self):
         tenant = self.add_tenant()

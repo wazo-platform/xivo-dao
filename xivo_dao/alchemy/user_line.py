@@ -17,8 +17,8 @@ class UserLine(Base):
         Index('user_line__idx__line_id', 'line_id'),
     )
 
-    user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
-    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('userfeatures.id', ondelete='CASCADE'), nullable=False)
+    line_id = Column(Integer, ForeignKey('linefeatures.id', ondelete='CASCADE'), nullable=False)
     main_user = Column(Boolean, nullable=False)
     main_line = Column(Boolean, nullable=False)
 

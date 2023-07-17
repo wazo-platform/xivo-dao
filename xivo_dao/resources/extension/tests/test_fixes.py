@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -17,19 +17,22 @@ class TestExtensionFixes(DAOTestCase):
         self.fixes = ExtensionFixes(self.session)
 
     def test_given_extension_associated_to_nothing_then_fixes_pass(self):
-        extension = self.add_extension(exten="1000", context="default")
+        context = self.add_context(name='default')
+        extension = self.add_extension(exten="1000", context=context.name)
         self.fixes.fix(extension.id)
 
     def test_given_extension_associated_to_line_then_number_and_context_updated(self):
-        line = self.add_line(context="mycontext", number="2000")
-        extension = self.add_extension(exten="1000", context="default")
+        mycontext = self.add_context(name='mycontext')
+        default_context = self.add_context(name='default')
+        line = self.add_line(context=mycontext.name, number="2000")
+        extension = self.add_extension(exten="1000", context=default_context.name)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(extension.id)
 
         line = self.session.query(Line).first()
         assert_that(line.number, equal_to('1000'))
-        assert_that(line.context, equal_to('default'))
+        assert_that(line.context, equal_to(default_context.name))
 
     def test_given_user_has_extension_then_destination_updated(self):
         extension = self.add_extension()

@@ -144,7 +144,6 @@ class ItemInserter:
         kwargs.setdefault('email', None)
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
         kwargs.setdefault('exten', f'{random.randint(1000, 1999)}')
-        kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -158,6 +157,9 @@ class ItemInserter:
         kwargs.setdefault('endpoint_sccp_id', None)
         kwargs.setdefault('endpoint_custom_id', None)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -195,7 +197,6 @@ class ItemInserter:
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
-        kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -206,6 +207,9 @@ class ItemInserter:
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
         kwargs.setdefault('endpoint_sip_uuid', None)
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -236,13 +240,15 @@ class ItemInserter:
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
-        kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
         kwargs.setdefault('voicemail_id', None)
         kwargs.setdefault('agentid', None)
         kwargs.setdefault('mobilephonenumber', '+14184765458')
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -295,8 +301,10 @@ class ItemInserter:
 
     def add_line(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
 
         line = LineFeatures(**kwargs)
         self.add_me(line)
@@ -395,7 +403,9 @@ class ItemInserter:
     def add_extension(self, **kwargs):
         kwargs.setdefault('exten', f'{self._generate_random_exten()}')
         kwargs.setdefault('type', 'user')
-        kwargs.setdefault('context', 'default')
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
 
         extension = Extension(**kwargs)
         self.add_me(extension)
@@ -697,10 +707,12 @@ class ItemInserter:
 
     def add_sccpline(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
-        kwargs.setdefault('context', 'default')
         kwargs.setdefault('cid_name', 'Tester One')
         kwargs.setdefault('cid_num', '1234')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        if not kwargs.get('context'):
+            context = self.add_context()
+            kwargs['context'] = context.name
 
         sccpline = SCCPLine(**kwargs)
         self.add_me(sccpline)

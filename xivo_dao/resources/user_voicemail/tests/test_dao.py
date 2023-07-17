@@ -20,14 +20,14 @@ from .. import dao as user_voicemail_dao
 
 class TestUserVoicemail(DAOTestCase):
 
-    def create_user_and_voicemail(self, firstname, exten):
+    def create_user_and_voicemail(self, firstname, exten, context):
         user_row = self.add_user(enablevoicemail=1, firstname=firstname)
-        voicemail_row = self.add_voicemail(mailbox=exten)
+        voicemail_row = self.add_voicemail(mailbox=exten, context=context)
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
         return user_row, voicemail_row
 
-    def prepare_voicemail(self, number):
-        voicemail_row = self.add_voicemail(mailbox=number)
+    def prepare_voicemail(self, number, context):
+        voicemail_row = self.add_voicemail(mailbox=number, context=context)
         return voicemail_row.uniqueid
 
 
@@ -35,7 +35,8 @@ class TestAssociateUserVoicemail(TestUserVoicemail):
 
     def test_associate(self):
         user_row = self.add_user()
-        voicemail_row = self.add_voicemail(mailbox='1000')
+        context = self.add_context(name='default')
+        voicemail_row = self.add_voicemail(mailbox='1000', context=context.name)
 
         user_voicemail_dao.associate(user_row, voicemail_row)
 
@@ -61,12 +62,14 @@ class TestUserVoicemailGetByUserId(TestUserVoicemail):
         self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_row.id)
 
     def test_get_by_user_id_with_user_without_voicemail(self):
-        user_line = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        context = self.add_context(name='default')
+        user_line = self.add_user_line_with_exten(firstname='King', exten='1000', context=context.name)
 
         self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_line.user.id)
 
     def test_get_by_user_id_with_voicemail(self):
-        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000')
+        context = self.add_context(name='default')
+        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context=context.name)
 
         result = user_voicemail_dao.get_by_user_id(user_row.id)
 
@@ -90,14 +93,16 @@ class TestUserVoicemailFindByUserId(TestUserVoicemail):
         assert_that(result, none())
 
     def test_find_by_user_id_with_user_without_voicemail(self):
-        user_line = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        context = self.add_context(name='default')
+        user_line = self.add_user_line_with_exten(firstname='King', exten='1000', context=context.name)
 
         result = user_voicemail_dao.find_by_user_id(user_line.user.id)
 
         assert_that(result, none())
 
     def test_find_by_user_id_with_voicemail(self):
-        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000')
+        context = self.add_context(name='default')
+        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context=context.name)
 
         result = user_voicemail_dao.find_by_user_id(user_row.id)
 
@@ -114,7 +119,8 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
         assert_that(result, contains())
 
     def test_given_voicemail_has_no_user_associated_then_returns_empty_list(self):
-        voicemail_row = self.add_voicemail(mailbox='1000')
+        context = self.add_context(name='default')
+        voicemail_row = self.add_voicemail(mailbox='1000', context=context.name)
 
         result = user_voicemail_dao.find_all_by_voicemail_id(voicemail_row.uniqueid)
 
@@ -148,7 +154,8 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
 class TestDissociateUserVoicemail(TestUserVoicemail):
 
     def test_dissociate(self):
-        voicemail_row = self.add_voicemail(mailbox='1000')
+        context = self.add_context(name='default')
+        voicemail_row = self.add_voicemail(mailbox='1000', context=context.name)
         user_row = self.add_user(voicemailid=voicemail_row.uniqueid,
                                  enablevoicemail=1)
 
@@ -159,8 +166,9 @@ class TestDissociateUserVoicemail(TestUserVoicemail):
         assert_that(result.enablevoicemail, equal_to(0))
 
     def test_dissociate_not_associated(self):
-        voicemail1 = self.add_voicemail(mailbox='1000')
-        voicemail2 = self.add_voicemail(mailbox='1001')
+        context = self.add_context(name='default')
+        voicemail1 = self.add_voicemail(mailbox='1000', context=context.name)
+        voicemail2 = self.add_voicemail(mailbox='1001', context=context.name)
         user = self.add_user(voicemailid=voicemail1.uniqueid,
                              enablevoicemail=1)
 

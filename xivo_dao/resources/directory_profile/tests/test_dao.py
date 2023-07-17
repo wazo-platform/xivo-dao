@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that
@@ -15,7 +15,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestDirectoryProfileDao(DAOTestCase):
 
     def test_find_by_incall_id(self):
-        user_line = self.add_user_line_with_exten(context='default')
+        user_line = self.add_user_line_with_exten()
         incall = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
         result = profile_dao.find_by_incall_id(incall_id=incall.id)
 
