@@ -159,7 +159,7 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sccp = self.session.query(SCCPLine).first()
-        assert_that(sccp.context, equal_to(context.name))
+        assert_that(sccp.context, equal_to(self.default_context.name))
 
     def test_given_line_has_multiple_users_then_sccp_caller_id_updated(self):
         main_user = self.add_user(callerid='"Jôhn Smith" <1000>')
