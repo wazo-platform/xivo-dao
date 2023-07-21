@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, Index
@@ -14,6 +14,7 @@ class CEL(Base):
         Index('cel__idx__call_log_id', 'call_log_id'),
         Index('cel__idx__eventtime', 'eventtime'),
         Index('cel__idx__linkedid', 'linkedid'),
+        Index('cel__idx__uniqueid', 'uniqueid'),
     )
 
     id = Column(Integer, primary_key=True, nullable=False)
