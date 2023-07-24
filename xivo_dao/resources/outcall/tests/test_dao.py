@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -246,10 +246,10 @@ class TestSearchGivenMultipleOutcall(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.outcall1 = self.add_outcall(name='O1', preprocess_subroutine='Ashton', description='resto')
-        self.outcall2 = self.add_outcall(name='O2', preprocess_subroutine='Beaugarton', description='bar')
-        self.outcall3 = self.add_outcall(name='O3', preprocess_subroutine='Casa', description='resto')
-        self.outcall4 = self.add_outcall(name='O4', preprocess_subroutine='Dunkin', description='resto')
+        self.outcall1 = self.add_outcall(name='O1', label='D O1', preprocess_subroutine='Ashton', description='resto')
+        self.outcall2 = self.add_outcall(name='O2', label='C O2', preprocess_subroutine='Beaugarton', description='bar')
+        self.outcall3 = self.add_outcall(name='O3', label='Aton O3', preprocess_subroutine='Casa', description='resto')
+        self.outcall4 = self.add_outcall(name='O4', label='B O4', preprocess_subroutine='Dunkin', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.outcall2])
@@ -257,7 +257,7 @@ class TestSearchGivenMultipleOutcall(TestSearch):
         self.assert_search_returns_result(expected, search='eau')
 
     def test_when_searching_with_an_extra_argument(self):
-        expected_resto = SearchResult(1, [self.outcall1])
+        expected_resto = SearchResult(2, [self.outcall1, self.outcall3])
         self.assert_search_returns_result(expected_resto, search='ton', description='resto')
 
         expected_bar = SearchResult(1, [self.outcall2])
@@ -270,15 +270,23 @@ class TestSearchGivenMultipleOutcall(TestSearch):
         expected = SearchResult(
             4, [self.outcall1, self.outcall2, self.outcall3, self.outcall4]
         )
-
         self.assert_search_returns_result(expected, order='preprocess_subroutine')
+
+        expected = SearchResult(
+            4, [self.outcall3, self.outcall4, self.outcall2, self.outcall1]
+        )
+        self.assert_search_returns_result(expected, order='label')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
         expected = SearchResult(
             4, [self.outcall4, self.outcall3, self.outcall2, self.outcall1]
         )
-
         self.assert_search_returns_result(expected, order='preprocess_subroutine', direction='desc')
+
+        expected = SearchResult(
+            4, [self.outcall1, self.outcall2, self.outcall4, self.outcall3]
+        )
+        self.assert_search_returns_result(expected, order='label', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.outcall1])
@@ -306,7 +314,7 @@ class TestSearchGivenMultipleOutcall(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        outcall = Outcall(name='myoutcall', tenant_uuid=self.default_tenant.uuid)
+        outcall = Outcall(name='myoutcall', label='myoutcall', tenant_uuid=self.default_tenant.uuid)
         created_outcall = outcall_dao.create(outcall)
 
         row = self.session.query(Outcall).first()
@@ -319,6 +327,7 @@ class TestCreate(DAOTestCase):
                     id=is_not(none()),
                     tenant_uuid=self.default_tenant.uuid,
                     name='myoutcall',
+                    label='myoutcall',
                     hangupringtime=0,
                     ring_time=none(),
                     internal=0,
@@ -334,6 +343,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         outcall = Outcall(
             name='myOutcall',
+            label='My outcall',
             ring_time=10,
             internal_caller_id=True,
             preprocess_subroutine='MySubroutine',
@@ -353,6 +363,8 @@ class TestCreate(DAOTestCase):
                 has_properties(
                     id=is_not(none()),
                     tenant_uuid=self.default_tenant.uuid,
+                    name='myOutcall',
+                    label='My outcall',
                     ring_time=10,
                     internal_caller_id=True,
                     preprocess_subroutine='MySubroutine',
@@ -368,6 +380,7 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         outcall = outcall_dao.create(Outcall(
             name='MyOutcall',
+            label='My outcall',
             ring_time=10,
             internal_caller_id=True,
             preprocess_subroutine='MySubroutine',
@@ -378,6 +391,7 @@ class TestEdit(DAOTestCase):
 
         outcall = outcall_dao.get(outcall.id)
         outcall.name = 'other_name'
+        outcall.label = 'other label'
         outcall.ring_time = 5
         outcall.internal_caller_id = False
         outcall.preprocess_subroutine = 'other_routine'
@@ -391,6 +405,7 @@ class TestEdit(DAOTestCase):
         assert_that(outcall, has_properties(
             id=is_not(none()),
             name='other_name',
+            label='other label',
             ring_time=5,
             internal_caller_id=False,
             preprocess_subroutine='other_routine',
@@ -401,6 +416,7 @@ class TestEdit(DAOTestCase):
     def test_edit_set_fields_to_null(self):
         outcall = outcall_dao.create(Outcall(
             name='MyOutcall',
+            label='my outcall',
             ring_time=10,
             preprocess_subroutine='MySubroutine',
             description='outcall description',

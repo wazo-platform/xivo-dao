@@ -47,6 +47,7 @@ class Outcall(Base):
         nullable=False,
     )
     name = Column(String(128), nullable=False)
+    label = Column(Text, nullable=False)
     context = Column(String(39))
     internal = Column(Integer, nullable=False, server_default='0')
     preprocess_subroutine = Column(String(39))
