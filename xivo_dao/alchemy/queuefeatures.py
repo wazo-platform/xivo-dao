@@ -90,7 +90,7 @@ class QueueFeatures(Base):
     url = Column(String(255), nullable=False, server_default='')
     announceoverride = Column(String(128), nullable=False, server_default='')
     timeout = Column(Integer)
-    preprocess_subroutine = Column(String(39))
+    preprocess_subroutine = Column(String(79))
     announce_holdtime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer)
     waitratio = Column(DOUBLE_PRECISION)
