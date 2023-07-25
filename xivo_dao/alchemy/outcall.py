@@ -49,7 +49,7 @@ class Outcall(Base):
     name = Column(String(128), nullable=False)
     context = Column(String(79))
     internal = Column(Integer, nullable=False, server_default='0')
-    preprocess_subroutine = Column(String(39))
+    preprocess_subroutine = Column(String(79))
     hangupringtime = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
