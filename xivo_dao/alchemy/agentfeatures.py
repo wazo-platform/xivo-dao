@@ -27,7 +27,7 @@ class AgentFeatures(Base):
     autologoff = Column(Integer)
     group = Column(String(255))
     description = Column(Text)
-    preprocess_subroutine = Column(String(40))
+    preprocess_subroutine = Column(String(79))
 
     func_keys = relationship(
         'FuncKeyDestAgent',
