@@ -40,7 +40,7 @@ class Conference(Base):
         nullable=False,
     )
     name = Column(String(128))
-    preprocess_subroutine = Column(String(39))
+    preprocess_subroutine = Column(String(79))
 
     max_users = Column(Integer, nullable=False, server_default='50')
     record = Column(Boolean, nullable=False, server_default='False')
