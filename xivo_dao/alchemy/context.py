@@ -5,6 +5,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import (
     Column,
     ForeignKeyConstraint,
@@ -12,7 +13,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.sql import cast, not_
+from sqlalchemy.sql import cast, not_, text
 from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
@@ -27,6 +28,7 @@ class Context(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
+        UniqueConstraint('uuid'),
         ForeignKeyConstraint(
             ('tenant_uuid',),
             ('tenant.uuid',),
@@ -36,6 +38,7 @@ class Context(Base):
     )
 
     id = Column(Integer)
+    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(String(36), nullable=False)
     name = Column(String(79), nullable=False)
     displayname = Column(String(128))
