@@ -1,14 +1,8 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Session
 
-from .database import (
-    agent_action_converter,
-    fwd_converter,
-    service_converter,
-)
 from .fixes import ExtensionFixes
 from .persistor import ExtensionPersistor
 from xivo_dao.resources.utils.search import SearchResult
@@ -98,39 +92,3 @@ def associate_parking_lot(parking_lot, extension):
 
 def dissociate_parking_lot(parking_lot, extension):
     persistor().dissociate_parking_lot(parking_lot, extension)
-
-
-def find_all_service_extensions():
-    typevals = service_converter.typevals()
-    query = (Session.query(Extension.id,
-                           Extension.exten,
-                           Extension.typeval)
-             .filter(Extension.type == 'extenfeatures')
-             .filter(Extension.typeval.in_(typevals))
-             )
-
-    return [service_converter.to_model(row) for row in query]
-
-
-def find_all_forward_extensions():
-    typevals = fwd_converter.typevals()
-    query = (Session.query(Extension.id,
-                           Extension.exten,
-                           Extension.typeval)
-             .filter(Extension.type == 'extenfeatures')
-             .filter(Extension.typeval.in_(typevals))
-             )
-
-    return [fwd_converter.to_model(row) for row in query]
-
-
-def find_all_agent_action_extensions():
-    typevals = agent_action_converter.typevals()
-    query = (Session.query(Extension.id,
-                           Extension.exten,
-                           Extension.typeval)
-             .filter(Extension.type == 'extenfeatures')
-             .filter(Extension.typeval.in_(typevals))
-             )
-
-    return [agent_action_converter.to_model(row) for row in query]

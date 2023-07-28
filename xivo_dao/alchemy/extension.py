@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -144,21 +144,5 @@ class Extension(Base):
     def enabled(self, value):
         self.commented = int(value is False)
 
-    @hybrid_property
-    def is_feature(self):
-        return self.context == 'xivo-features'
-
-    @is_feature.expression
-    def is_feature(cls):
-        return cast(cls.context == 'xivo-features', Boolean)
-
     def is_pattern(self):
         return self.exten.startswith('_')
-
-    @hybrid_property
-    def feature(self):
-        return self.typeval
-
-    @feature.expression
-    def feature(cls):
-        return case([(cls.is_feature.is_(True), cls.typeval)], else_=None)

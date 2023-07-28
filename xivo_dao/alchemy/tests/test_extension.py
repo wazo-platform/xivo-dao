@@ -23,17 +23,6 @@ class TestIsPattern(unittest.TestCase):
         assert_that(extension.is_pattern(), equal_to(True))
 
 
-class TestIsFeature(unittest.TestCase):
-
-    def test_is_not_feature(self):
-        extension = Extension(context='not-features')
-        assert_that(extension.is_feature, equal_to(False))
-
-    def test_is_feature(self):
-        extension = Extension(context='xivo-features')
-        assert_that(extension.is_feature, equal_to(True))
-
-
 class TestTenantUUID(DAOTestCase):
 
     def test_that_the_tenant_uuid_matches_the_context(self):
