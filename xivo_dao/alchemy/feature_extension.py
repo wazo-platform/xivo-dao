@@ -2,14 +2,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint
-from sqlalchemy.types import  String, Boolean
+from sqlalchemy.types import String, Boolean
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.helpers.uuid import new_uuid
 
 
 class FeatureExtension(Base):
-
     __tablename__ = 'feature_extension'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
