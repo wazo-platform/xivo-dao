@@ -31,20 +31,21 @@ from ..model import (
 
 
 class TestExtension(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
         expected_extensions = [
-            has_properties(id=e.id, exten=e.exten, context=e.context, commented=e.commented)
+            has_properties(
+                id=e.id, exten=e.exten, context=e.context, commented=e.commented
+            )
             for e in search_result.items
         ]
-        expected = has_properties(total=search_result.total,
-                                  items=contains_inanyorder(*expected_extensions))
+        expected = has_properties(
+            total=search_result.total, items=contains_inanyorder(*expected_extensions)
+        )
         assert_that(result, expected)
 
 
 class TestSimpleSearch(TestExtension):
-
     def test_given_no_extensions_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -58,7 +59,6 @@ class TestSimpleSearch(TestExtension):
 
 
 class TestSearchGivenMultipleTenants(TestExtension):
-
     def test_given_extensions_in_multiple_tenants(self):
         tenant_1 = self.add_tenant()
         tenant_2 = self.add_tenant()
@@ -73,7 +73,9 @@ class TestSearchGivenMultipleTenants(TestExtension):
         extension_3 = self.add_extension(exten='1003', context=context_3.name)
 
         expected = SearchResult(2, [extension_1, extension_2])
-        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+        self.assert_search_returns_result(
+            expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid]
+        )
 
         expected = SearchResult(0, [])
         self.assert_search_returns_result(expected, tenant_uuids=[])
@@ -83,16 +85,25 @@ class TestSearchGivenMultipleTenants(TestExtension):
 
 
 class TestSearchGivenMultipleExtensions(TestExtension):
-
     def setUp(self):
         TestExtension.setUp(self)
         self.inside_context = self.add_context(name='inside')
         self.default_context = self.add_context(name='default')
-        self.extension1 = self.add_extension(exten='1000', context=self.inside_context.name)
-        self.extension2 = self.add_extension(exten='1001', context=self.inside_context.name)
-        self.extension3 = self.add_extension(exten='1002', context=self.inside_context.name)
-        self.extension4 = self.add_extension(exten='1103', context=self.inside_context.name)
-        self.extension5 = self.add_extension(exten='1103', context=self.default_context.name)
+        self.extension1 = self.add_extension(
+            exten='1000', context=self.inside_context.name
+        )
+        self.extension2 = self.add_extension(
+            exten='1001', context=self.inside_context.name
+        )
+        self.extension3 = self.add_extension(
+            exten='1002', context=self.inside_context.name
+        )
+        self.extension4 = self.add_extension(
+            exten='1103', context=self.inside_context.name
+        )
+        self.extension5 = self.add_extension(
+            exten='1103', context=self.default_context.name
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.extension2])
@@ -104,21 +115,36 @@ class TestSearchGivenMultipleExtensions(TestExtension):
         self.assert_search_returns_result(expected_all_1103, search='1103')
 
         expected_1103_inside = SearchResult(1, [self.extension4])
-        self.assert_search_returns_result(expected_1103_inside, search='1103', context=self.inside_context.name)
+        self.assert_search_returns_result(
+            expected_1103_inside, search='1103', context=self.inside_context.name
+        )
 
-        expected_all_inside = SearchResult(4, [self.extension1, self.extension2,
-                                               self.extension3, self.extension4])
-        self.assert_search_returns_result(expected_all_inside, context=self.inside_context.name, order='exten')
+        expected_all_inside = SearchResult(
+            4, [self.extension1, self.extension2, self.extension3, self.extension4]
+        )
+        self.assert_search_returns_result(
+            expected_all_inside, context=self.inside_context.name, order='exten'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.extension1, self.extension2, self.extension3, self.extension4])
+        expected = SearchResult(
+            4, [self.extension1, self.extension2, self.extension3, self.extension4]
+        )
 
-        self.assert_search_returns_result(expected, order='exten', context=self.inside_context.name)
+        self.assert_search_returns_result(
+            expected, order='exten', context=self.inside_context.name
+        )
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.extension4, self.extension3, self.extension2, self.extension1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4, [self.extension4, self.extension3, self.extension2, self.extension1]
+        )
 
-        self.assert_search_returns_result(expected, order='exten', direction='desc', context=self.inside_context.name)
+        self.assert_search_returns_result(
+            expected, order='exten', direction='desc', context=self.inside_context.name
+        )
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(5, [self.extension1])
@@ -126,36 +152,44 @@ class TestSearchGivenMultipleExtensions(TestExtension):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(5, [self.extension2, self.extension3, self.extension4, self.extension5])
+        expected = SearchResult(
+            5, [self.extension2, self.extension3, self.extension4, self.extension5]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.extension2])
 
-        self.assert_search_returns_result(expected,
-                                          search='100',
-                                          order='exten',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, search='100', order='exten', direction='desc', offset=1, limit=1
+        )
 
 
 class TestSearchGivenInternalExtensionType(TestExtension):
-
     def setUp(self):
         TestExtension.setUp(self)
 
-        internal_context = self.add_context(name='internal_context', contexttype='internal')
-        self.extension1 = self.add_extension(exten='1000', context=internal_context.name)
-        self.extension2 = self.add_extension(exten='1001', context=internal_context.name)
+        internal_context = self.add_context(
+            name='internal_context', contexttype='internal'
+        )
+        self.extension1 = self.add_extension(
+            exten='1000', context=internal_context.name
+        )
+        self.extension2 = self.add_extension(
+            exten='1001', context=internal_context.name
+        )
 
-    def test_when_searching_type_internal_extensions_then_returns_internal_extensions(self):
+    def test_when_searching_type_internal_extensions_then_returns_internal_extensions(
+        self,
+    ):
         expected = SearchResult(2, [self.extension1, self.extension2])
 
         self.assert_search_returns_result(expected, type='internal')
 
-    def test_when_searching_type_internal_and_limit_then_returns_internal_extensions(self):
+    def test_when_searching_type_internal_and_limit_then_returns_internal_extensions(
+        self,
+    ):
         expected = SearchResult(2, [self.extension1])
 
         self.assert_search_returns_result(expected, type='internal', limit=1)
@@ -167,7 +201,6 @@ class TestSearchGivenInternalExtensionType(TestExtension):
 
 
 class TestSearchGivenIncallExtensionType(TestExtension):
-
     def setUp(self):
         TestExtension.setUp(self)
 
@@ -192,7 +225,6 @@ class TestSearchGivenIncallExtensionType(TestExtension):
 
 
 class TestFind(TestExtension):
-
     def test_find_no_extension(self):
         result = extension_dao.find(1)
 
@@ -204,9 +236,13 @@ class TestFind(TestExtension):
 
         result = extension_dao.find(extension_row.id)
 
-        assert_that(result, all_of(
-            has_property('exten', extension_row.exten),
-            has_property('context', extension_row.context)))
+        assert_that(
+            result,
+            all_of(
+                has_property('exten', extension_row.exten),
+                has_property('context', extension_row.context),
+            ),
+        )
 
     def test_find_multi_tenant(self):
         tenant = self.add_tenant()
@@ -221,15 +257,16 @@ class TestFind(TestExtension):
                 exten=extension.exten,
                 context=context.name,
                 tenant_uuid=tenant.uuid,
-            )
+            ),
         )
 
-        result = extension_dao.find(extension.id, tenant_uuids=[self.default_tenant.uuid])
+        result = extension_dao.find(
+            extension.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
 
 class TestFindBy(TestExtension):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, extension_dao.find_by, invalid=42)
 
@@ -259,7 +296,9 @@ class TestFindBy(TestExtension):
 
         extension = self.add_extension(exten='1000', context=context.name)
 
-        result = extension_dao.find_by(exten='1000', tenant_uuids=[self.default_tenant.uuid])
+        result = extension_dao.find_by(
+            exten='1000', tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
         result = extension_dao.find_by(exten='1000', tenant_uuids=[tenant.uuid])
@@ -267,7 +306,6 @@ class TestFindBy(TestExtension):
 
 
 class TestGetBy(TestExtension):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, extension_dao.get_by, invalid=42)
 
@@ -295,15 +333,18 @@ class TestGetBy(TestExtension):
 
         extension = self.add_extension(exten='1000', context=context.name)
 
-        self.assertRaises(NotFoundError, extension_dao.get_by,
-                          exten='1000', tenant_uuids=[self.default_tenant.uuid])
+        self.assertRaises(
+            NotFoundError,
+            extension_dao.get_by,
+            exten='1000',
+            tenant_uuids=[self.default_tenant.uuid],
+        )
 
         result = extension_dao.get_by(exten='1000', tenant_uuids=[tenant.uuid])
         assert_that(result, has_properties(id=extension.id))
 
 
 class TestFindAllBy(TestExtension):
-
     def test_find_all_by_no_extensions(self):
         result = extension_dao.find_all_by(exten='invalid')
 
@@ -315,8 +356,12 @@ class TestFindAllBy(TestExtension):
 
         extensions = extension_dao.find_all_by(context='mycontext')
 
-        assert_that(extensions, has_items(has_property('id', extension1.id),
-                                          has_property('id', extension2.id)))
+        assert_that(
+            extensions,
+            has_items(
+                has_property('id', extension1.id), has_property('id', extension2.id)
+            ),
+        )
 
     def test_find_all_by_with_multi_tenant(self):
         tenant = self.add_tenant()
@@ -324,7 +369,9 @@ class TestFindAllBy(TestExtension):
 
         extension = self.add_extension(exten='1000', context=context.name)
 
-        result = extension_dao.find_all_by(exten='1000', tenant_uuids=[self.default_tenant.uuid])
+        result = extension_dao.find_all_by(
+            exten='1000', tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, empty())
 
         result = extension_dao.find_all_by(exten='1000', tenant_uuids=[tenant.uuid])
@@ -335,7 +382,6 @@ class TestFindAllBy(TestExtension):
 
 
 class TestGet(TestExtension):
-
     def test_get_no_exist(self):
         self.assertRaises(NotFoundError, extension_dao.get, 666)
 
@@ -363,7 +409,12 @@ class TestGet(TestExtension):
 
         extension = self.add_extension(exten='1000', context=context.name)
 
-        self.assertRaises(NotFoundError, extension_dao.get, extension.id, tenant_uuids=[self.default_tenant.uuid])
+        self.assertRaises(
+            NotFoundError,
+            extension_dao.get,
+            extension.id,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
 
         result = extension_dao.get(extension.id, tenant_uuids=[tenant.uuid])
         assert_that(
@@ -373,17 +424,19 @@ class TestGet(TestExtension):
 
 
 class TestCreate(TestExtension):
-
     def test_create(self):
         exten = 'extension'
         context = 'toto'
 
-        extension = Extension(exten=exten,
-                              context=context)
+        extension = Extension(exten=exten, context=context)
 
         created_extension = extension_dao.create(extension)
 
-        row = self.session.query(Extension).filter(Extension.id == created_extension.id).first()
+        row = (
+            self.session.query(Extension)
+            .filter(Extension.id == created_extension.id)
+            .first()
+        )
 
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to(exten))
@@ -393,13 +446,15 @@ class TestCreate(TestExtension):
         assert_that(row.typeval, equal_to('0'))
 
     def test_create_all_parameters(self):
-        extension = Extension(exten='1000',
-                              context='default',
-                              commented=1)
+        extension = Extension(exten='1000', context='default', commented=1)
 
         created_extension = extension_dao.create(extension)
 
-        row = self.session.query(Extension).filter(Extension.id == created_extension.id).first()
+        row = (
+            self.session.query(Extension)
+            .filter(Extension.id == created_extension.id)
+            .first()
+        )
 
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to('1000'))
@@ -410,10 +465,11 @@ class TestCreate(TestExtension):
 
 
 class TestEdit(TestExtension):
-
     def setUp(self):
         super().setUp()
-        self.existing_extension = self.add_extension(exten='1635', context='my_context', type='user', typeval='0')
+        self.existing_extension = self.add_extension(
+            exten='1635', context='my_context', type='user', typeval='0'
+        )
 
     def test_edit(self):
         exten = 'extension'
@@ -439,25 +495,26 @@ class TestEdit(TestExtension):
 
 
 class TestDelete(TestExtension):
-
     def test_delete(self):
         exten = 'sdklfj'
         context = 'toto'
 
-        expected_extension = self.add_extension(exten=exten,
-                                                context=context)
+        expected_extension = self.add_extension(exten=exten, context=context)
 
         extension = extension_dao.get(expected_extension.id)
 
         extension_dao.delete(extension)
 
-        row = self.session.query(Extension).filter(Extension.id == expected_extension.id).first()
+        row = (
+            self.session.query(Extension)
+            .filter(Extension.id == expected_extension.id)
+            .first()
+        )
 
         self.assertEqual(row, None)
 
 
 class TestRelationship(TestExtension):
-
     def test_incall_relationship(self):
         incall_row = self.add_incall()
         extension_row = self.add_extension(type='incall', typeval=str(incall_row.id))
@@ -481,10 +538,8 @@ class TestRelationship(TestExtension):
         extension_row = self.add_extension()
         line1_row = self.add_line()
         line2_row = self.add_line()
-        self.add_line_extension(line_id=line1_row.id,
-                                extension_id=extension_row.id)
-        self.add_line_extension(line_id=line2_row.id,
-                                extension_id=extension_row.id)
+        self.add_line_extension(line_id=line1_row.id, extension_id=extension_row.id)
+        self.add_line_extension(line_id=line2_row.id, extension_id=extension_row.id)
 
         extension = extension_dao.get(extension_row.id)
         assert_that(extension, equal_to(extension_row))
@@ -515,19 +570,23 @@ class TestRelationship(TestExtension):
 
 
 class TestAssociateGroup(DAOTestCase):
-
     def test_associate_group(self):
         extension = self.add_extension()
         group = self.add_group()
 
         extension_dao.associate_group(group, extension)
 
-        assert_that(group.extensions, contains_inanyorder(
-            has_properties(exten=extension.exten,
-                           context=extension.context,
-                           type='group',
-                           typeval=str(group.id))
-        ))
+        assert_that(
+            group.extensions,
+            contains_inanyorder(
+                has_properties(
+                    exten=extension.exten,
+                    context=extension.context,
+                    type='group',
+                    typeval=str(group.id),
+                )
+            ),
+        )
 
     def test_associate_multiple_groups(self):
         extension1 = self.add_extension()
@@ -539,7 +598,9 @@ class TestAssociateGroup(DAOTestCase):
         extension_dao.associate_group(group, extension2)
         extension_dao.associate_group(group, extension3)
 
-        assert_that(group.extensions, contains_inanyorder(extension1, extension2, extension3))
+        assert_that(
+            group.extensions, contains_inanyorder(extension1, extension2, extension3)
+        )
 
     def test_dissociate_groups(self):
         extension1 = self.add_extension()
@@ -559,9 +620,14 @@ class TestAssociateGroup(DAOTestCase):
         assert_that(group.extensions, empty())
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0')))
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+            ),
+        )
 
     def test_dissociate_group_not_associated(self):
         extension = self.add_extension(typeval='123')
@@ -574,35 +640,43 @@ class TestAssociateGroup(DAOTestCase):
 
 
 class TestAssociateQueue(DAOTestCase):
-
     def test_associate_queue(self):
         extension = self.add_extension()
         queue = self.add_queuefeatures()
 
         extension_dao.associate_queue(queue, extension)
 
-        assert_that(queue.extensions, contains_inanyorder(
-            has_properties(
-                exten=extension.exten,
-                context=extension.context,
-                type='queue',
-                typeval=str(queue.id),
-            )
-        ))
+        assert_that(
+            queue.extensions,
+            contains_inanyorder(
+                has_properties(
+                    exten=extension.exten,
+                    context=extension.context,
+                    type='queue',
+                    typeval=str(queue.id),
+                )
+            ),
+        )
 
     def test_associate_fix_queue(self):
         extension = self.add_extension(exten='1234', context='patate')
         queue = self.add_queuefeatures()
-        assert_that(queue, has_properties(
-            context=not_('patate'),
-            number=not_('1234'),
-        ))
+        assert_that(
+            queue,
+            has_properties(
+                context=not_('patate'),
+                number=not_('1234'),
+            ),
+        )
 
         extension_dao.associate_queue(queue, extension)
-        assert_that(queue, has_properties(
-            context='patate',
-            number='1234',
-        ))
+        assert_that(
+            queue,
+            has_properties(
+                context='patate',
+                number='1234',
+            ),
+        )
 
     def test_associate_multiple_queues(self):
         extension1 = self.add_extension()
@@ -614,7 +688,9 @@ class TestAssociateQueue(DAOTestCase):
         extension_dao.associate_queue(queue, extension2)
         extension_dao.associate_queue(queue, extension3)
 
-        assert_that(queue.extensions, contains_inanyorder(extension1, extension2, extension3))
+        assert_that(
+            queue.extensions, contains_inanyorder(extension1, extension2, extension3)
+        )
 
     def test_dissociate_queues(self):
         extension1 = self.add_extension()
@@ -634,27 +710,30 @@ class TestAssociateQueue(DAOTestCase):
         assert_that(queue.extensions, empty())
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains_inanyorder(
-            has_properties(type='user', typeval='0'),
-            has_properties(type='user', typeval='0'),
-            has_properties(type='user', typeval='0')
-        ))
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+            ),
+        )
 
     def test_dissociate_fix_queue(self):
         extension = self.add_extension(exten='1234', context='patate')
         queue = self.add_queuefeatures()
         extension_dao.associate_queue(queue, extension)
-        assert_that(queue, has_properties(
-            context='patate',
-            number='1234',
-        ))
+        assert_that(
+            queue,
+            has_properties(
+                context='patate',
+                number='1234',
+            ),
+        )
 
         extension_dao.dissociate_queue(queue, extension)
 
-        assert_that(queue, has_properties(
-            context=None,
-            number=None
-        ))
+        assert_that(queue, has_properties(context=None, number=None))
 
     def test_dissociate_queue_not_associated(self):
         extension = self.add_extension(typeval='123')
@@ -667,19 +746,23 @@ class TestAssociateQueue(DAOTestCase):
 
 
 class TestAssociateIncall(DAOTestCase):
-
     def test_associate_incall(self):
         extension = self.add_extension()
         incall = self.add_incall()
 
         extension_dao.associate_incall(incall, extension)
 
-        assert_that(incall.extensions, contains_inanyorder(
-            has_properties(exten=extension.exten,
-                           context=extension.context,
-                           type='incall',
-                           typeval=str(incall.id))
-        ))
+        assert_that(
+            incall.extensions,
+            contains_inanyorder(
+                has_properties(
+                    exten=extension.exten,
+                    context=extension.context,
+                    type='incall',
+                    typeval=str(incall.id),
+                )
+            ),
+        )
 
     def test_associate_multiple_incalls(self):
         extension1 = self.add_extension()
@@ -691,7 +774,9 @@ class TestAssociateIncall(DAOTestCase):
         extension_dao.associate_incall(incall, extension2)
         extension_dao.associate_incall(incall, extension3)
 
-        assert_that(incall.extensions, contains_inanyorder(extension1, extension2, extension3))
+        assert_that(
+            incall.extensions, contains_inanyorder(extension1, extension2, extension3)
+        )
 
     def test_dissociate_incalls(self):
         extension1 = self.add_extension()
@@ -711,9 +796,14 @@ class TestAssociateIncall(DAOTestCase):
         assert_that(incall.extensions, empty())
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0')))
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+            ),
+        )
 
     def test_dissociate_incall_not_associated(self):
         extension = self.add_extension()
@@ -728,19 +818,23 @@ class TestAssociateIncall(DAOTestCase):
 
 
 class TestAssociateConference(DAOTestCase):
-
     def test_associate_conference(self):
         extension = self.add_extension()
         conference = self.add_conference()
 
         extension_dao.associate_conference(conference, extension)
 
-        assert_that(conference.extensions, contains_inanyorder(
-            has_properties(exten=extension.exten,
-                           context=extension.context,
-                           type='conference',
-                           typeval=str(conference.id))
-        ))
+        assert_that(
+            conference.extensions,
+            contains_inanyorder(
+                has_properties(
+                    exten=extension.exten,
+                    context=extension.context,
+                    type='conference',
+                    typeval=str(conference.id),
+                )
+            ),
+        )
 
     def test_associate_multiple_conferences(self):
         extension1 = self.add_extension()
@@ -752,7 +846,10 @@ class TestAssociateConference(DAOTestCase):
         extension_dao.associate_conference(conference, extension2)
         extension_dao.associate_conference(conference, extension3)
 
-        assert_that(conference.extensions, contains_inanyorder(extension1, extension2, extension3))
+        assert_that(
+            conference.extensions,
+            contains_inanyorder(extension1, extension2, extension3),
+        )
 
     def test_dissociate_conferences(self):
         extension1 = self.add_extension()
@@ -772,9 +869,14 @@ class TestAssociateConference(DAOTestCase):
         assert_that(conference.extensions, empty())
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0')))
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+            ),
+        )
 
     def test_dissociate_conference_not_associated(self):
         extension = self.add_extension(typeval='123')
@@ -787,19 +889,23 @@ class TestAssociateConference(DAOTestCase):
 
 
 class TestAssociateParkingLot(DAOTestCase):
-
     def test_associate_parking_lot(self):
         extension = self.add_extension()
         parking_lot = self.add_parking_lot()
 
         extension_dao.associate_parking_lot(parking_lot, extension)
 
-        assert_that(parking_lot.extensions, contains_inanyorder(
-            has_properties(exten=extension.exten,
-                           context=extension.context,
-                           type='parking',
-                           typeval=str(parking_lot.id))
-        ))
+        assert_that(
+            parking_lot.extensions,
+            contains_inanyorder(
+                has_properties(
+                    exten=extension.exten,
+                    context=extension.context,
+                    type='parking',
+                    typeval=str(parking_lot.id),
+                )
+            ),
+        )
 
     def test_associate_multiple_parking_lots(self):
         extension1 = self.add_extension()
@@ -811,7 +917,10 @@ class TestAssociateParkingLot(DAOTestCase):
         extension_dao.associate_parking_lot(parking_lot, extension2)
         extension_dao.associate_parking_lot(parking_lot, extension3)
 
-        assert_that(parking_lot.extensions, contains_inanyorder(extension1, extension2, extension3))
+        assert_that(
+            parking_lot.extensions,
+            contains_inanyorder(extension1, extension2, extension3),
+        )
 
     def test_dissociate_parking_lots(self):
         extension1 = self.add_extension()
@@ -831,9 +940,14 @@ class TestAssociateParkingLot(DAOTestCase):
         assert_that(parking_lot.extensions, empty())
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0')))
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+            ),
+        )
 
     def test_dissociate_parking_lot_not_associated(self):
         extension = self.add_extension(typeval='123')

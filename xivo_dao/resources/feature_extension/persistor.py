@@ -11,7 +11,6 @@ from xivo_dao.resources.feature_extension.search import feature_extension_search
 
 
 class FeatureExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = FeatureExtension
 
     def __init__(self, session):
@@ -25,9 +24,7 @@ class FeatureExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
         return query
 
     def _search_query(self):
-        return (self.session
-                .query(FeatureExtension)
-                )
+        return self.session.query(FeatureExtension)
 
     def create(self, extension):
         self.session.add(extension)
@@ -35,5 +32,7 @@ class FeatureExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
         return extension
 
     def delete(self, extension):
-        self.session.query(FeatureExtension).filter(FeatureExtension.uuid == extension.uuid).delete()
+        self.session.query(FeatureExtension).filter(
+            FeatureExtension.uuid == extension.uuid
+        ).delete()
         self.session.flush()
