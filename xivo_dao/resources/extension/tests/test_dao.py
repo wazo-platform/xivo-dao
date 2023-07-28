@@ -23,11 +23,6 @@ from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 
 from .. import dao as extension_dao
-from ..model import (
-    AgentActionExtension,
-    ForwardExtension,
-    ServiceExtension,
-)
 
 
 class TestExtension(DAOTestCase):
