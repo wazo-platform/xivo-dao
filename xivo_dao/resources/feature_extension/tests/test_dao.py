@@ -195,8 +195,8 @@ class TestGet(TestExtension):
 class TestCreate(TestExtension):
     def test_create(self):
         exten = 'extension'
-
-        extension = FeatureExtension(exten=exten)
+        feature = 'myfeature'
+        extension = FeatureExtension(exten=exten, feature=feature)
 
         created_extension = feature_extension_dao.create(extension)
 
@@ -209,10 +209,11 @@ class TestCreate(TestExtension):
         assert_that(row.uuid, equal_to(created_extension.uuid))
         assert_that(row.exten, equal_to(exten))
         assert_that(row.enabled, equal_to(True))
-        assert_that(row.feature, equal_to(''))
+        assert_that(row.feature, equal_to(feature))
 
     def test_create_all_parameters(self):
-        extension = FeatureExtension(exten='1000', feature='myfeature', enabled=False)
+        feature = 'myfeature'
+        extension = FeatureExtension(exten='1000', feature=feature, enabled=False)
 
         created_extension = feature_extension_dao.create(extension)
 
@@ -225,7 +226,7 @@ class TestCreate(TestExtension):
         assert_that(row.uuid, equal_to(created_extension.uuid))
         assert_that(row.exten, equal_to('1000'))
         assert_that(row.enabled, equal_to(False))
-        assert_that(row.feature, equal_to('myfeature'))
+        assert_that(row.feature, equal_to(feature))
 
 
 class TestEdit(TestExtension):

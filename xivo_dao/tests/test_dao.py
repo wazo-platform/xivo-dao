@@ -414,6 +414,7 @@ class ItemInserter:
 
     def add_feature_extension(self, **kwargs):
         kwargs.setdefault('exten', f'{self._generate_random_exten()}')
+        kwargs.setdefault('feature', '')
 
         feature_extension = FeatureExtension(**kwargs)
         self.add_me(feature_extension)
