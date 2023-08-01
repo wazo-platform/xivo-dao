@@ -19,25 +19,31 @@ from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.dialects.postgresql import UUID
 
-class FuncKeyDestService(Base):
 
+class FuncKeyDestService(Base):
     DESTINATION_TYPE_ID = 5
 
     __tablename__ = 'func_key_dest_service'
     __table_args__ = (
-        PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'feature_extension_uuid'),
+        PrimaryKeyConstraint(
+            'func_key_id', 'destination_type_id', 'feature_extension_uuid'
+        ),
         ForeignKeyConstraint(
             ('func_key_id', 'destination_type_id'),
             ('func_key.id', 'func_key.destination_type_id'),
         ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
-        Index('func_key_dest_service__idx__feature_extension_uuid', 'feature_extension_uuid'),
+        Index(
+            'func_key_dest_service__idx__feature_extension_uuid',
+            'feature_extension_uuid',
+        ),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    feature_extension_uuid = Column(UUID(as_uuid=True), ForeignKey('feature_extension.uuid'),
-                                    nullable=False)
+    feature_extension_uuid = Column(
+        UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False
+    )
 
     type = 'service'
 
@@ -45,9 +51,10 @@ class FuncKeyDestService(Base):
 
     feature_extension = relationship(FeatureExtension, viewonly=True)
     feature_extension_feature = association_proxy(
-        'feature_extension', 'feature',
+        'feature_extension',
+        'feature',
         # Only to keep value persistent in the instance
-        creator=lambda _feature: FeatureExtension(feature=_feature)
+        creator=lambda _feature: FeatureExtension(feature=_feature),
     )
 
     def to_tuple(self):

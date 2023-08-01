@@ -21,8 +21,8 @@ from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.dialects.postgresql import UUID
 
-class FuncKeyDestAgent(Base):
 
+class FuncKeyDestAgent(Base):
     DESTINATION_TYPE_ID = 11
 
     __tablename__ = 'func_key_dest_agent'
@@ -35,13 +35,17 @@ class FuncKeyDestAgent(Base):
         UniqueConstraint('agent_id', 'feature_extension_uuid'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         Index('func_key_dest_agent__idx__agent_id', 'agent_id'),
-        Index('func_key_dest_agent__idx__feature_extension_uuid', 'feature_extension_uuid'),
+        Index(
+            'func_key_dest_agent__idx__feature_extension_uuid', 'feature_extension_uuid'
+        ),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
     agent_id = Column(Integer, ForeignKey('agentfeatures.id'), nullable=False)
-    feature_extension_uuid = Column(UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False)
+    feature_extension_uuid = Column(
+        UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False
+    )
 
     type = 'agent'
 
@@ -50,9 +54,10 @@ class FuncKeyDestAgent(Base):
 
     feature_extension = relationship(FeatureExtension, viewonly=True)
     feature_extension_feature = association_proxy(
-        'feature_extension', 'feature',
+        'feature_extension',
+        'feature',
         # Only to keep value persistent in the instance
-        creator=lambda _feature: FeatureExtension(feature=_feature)
+        creator=lambda _feature: FeatureExtension(feature=_feature),
     )
 
     def to_tuple(self):
@@ -63,10 +68,14 @@ class FuncKeyDestAgent(Base):
 
     @hybrid_property
     def action(self):
-        ACTIONS = {'agentstaticlogin': 'login',
-                   'agentstaticlogoff': 'logout',
-                   'agentstaticlogtoggle': 'toggle'}
-        return ACTIONS.get(self.feature_extension_feature, self.feature_extension_feature)
+        ACTIONS = {
+            'agentstaticlogin': 'login',
+            'agentstaticlogoff': 'logout',
+            'agentstaticlogtoggle': 'toggle',
+        }
+        return ACTIONS.get(
+            self.feature_extension_feature, self.feature_extension_feature
+        )
 
     @action.expression
     def action(cls):
@@ -74,7 +83,9 @@ class FuncKeyDestAgent(Base):
 
     @action.setter
     def action(self, value):
-        TYPEVALS = {'login': 'agentstaticlogin',
-                    'logout': 'agentstaticlogoff',
-                    'toggle': 'agentstaticlogtoggle'}
+        TYPEVALS = {
+            'login': 'agentstaticlogin',
+            'logout': 'agentstaticlogoff',
+            'toggle': 'agentstaticlogtoggle',
+        }
         self.feature_extension_feature = TYPEVALS.get(value, value)
