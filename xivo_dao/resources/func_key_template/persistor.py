@@ -5,7 +5,6 @@ import abc
 
 from sqlalchemy import text
 
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping

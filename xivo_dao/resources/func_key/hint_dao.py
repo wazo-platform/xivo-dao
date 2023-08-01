@@ -12,6 +12,8 @@ from sqlalchemy.orm import (
     aliased,
     joinedload,
 )
+from sqlalchemy.sql.expression import true
+
 from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -259,7 +261,7 @@ def service_hints(session, context):
             FuncKeyMapping,
             FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
         )
-        .filter(FeatureExtension.enabled == True)
+        .filter(FeatureExtension.enabled == true())
     )
 
     query = _common_filter(query, context)
@@ -286,7 +288,7 @@ def forward_hints(session, context):
             FuncKeyMapping,
             FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
         )
-        .filter(FeatureExtension.enabled == True)
+        .filter(FeatureExtension.enabled == true())
     )
 
     query = _common_filter(query, context)
@@ -317,7 +319,7 @@ def agent_hints(session, context):
             FuncKeyMapping,
             FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
         )
-        .filter(FeatureExtension.enabled == True)
+        .filter(FeatureExtension.enabled == true())
     )
 
     query = _common_filter(query, context)
@@ -411,7 +413,7 @@ def groupmember_hints(session, context):
             FuncKeyMapping,
             FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id,
         )
-        .filter(FeatureExtension.enabled == True)
+        .filter(FeatureExtension.enabled == true())
     )
     query = _common_filter(query, context)
 
