@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -484,9 +484,9 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         assert_that(row, none())
 
     def test_funckeys_group_member_are_deleted(self):
-        extension = self.add_extension()
+        feature_extension = self.add_feature_extension()
         group = self.add_group()
-        self.add_groupmember_destination(group.id, extension.id)
+        self.add_groupmember_destination(group.id, feature_extension.uuid)
 
         self.session.delete(group)
         self.session.flush()

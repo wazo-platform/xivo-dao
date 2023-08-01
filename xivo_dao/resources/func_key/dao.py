@@ -1,9 +1,9 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import or_
 
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -17,14 +17,14 @@ def find_all_forwards(session, user_id, fwd_type):
 
     query = (
         session.query(FuncKeyDestForward.number.label('number'))
-        .join(Extension,
-              FuncKeyDestForward.extension_id == Extension.id)
+        .join(FeatureExtension,
+              FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid)
         .join(FuncKeyMapping,
               FuncKeyMapping.func_key_id == FuncKeyDestForward.func_key_id)
         .join(UserFeatures,
               UserFeatures.func_key_private_template_id == FuncKeyMapping.template_id)
         .filter(UserFeatures.id == user_id)
-        .filter(Extension.typeval == type_converter.model_to_db(fwd_type))
+        .filter(FeatureExtension.feature == type_converter.model_to_db(fwd_type))
     )
     return query.all()
 

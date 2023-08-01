@@ -16,10 +16,10 @@ from sqlalchemy.schema import (
 from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
-
+from sqlalchemy.dialects.postgresql import UUID
 
 class FuncKeyDestAgent(Base):
 
@@ -32,27 +32,27 @@ class FuncKeyDestAgent(Base):
             ('func_key_id', 'destination_type_id'),
             ('func_key.id', 'func_key.destination_type_id'),
         ),
-        UniqueConstraint('agent_id', 'extension_id'),
+        UniqueConstraint('agent_id', 'feature_extension_uuid'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         Index('func_key_dest_agent__idx__agent_id', 'agent_id'),
-        Index('func_key_dest_agent__idx__extension_id', 'extension_id'),
+        Index('func_key_dest_agent__idx__feature_extension_uuid', 'feature_extension_uuid'),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
     agent_id = Column(Integer, ForeignKey('agentfeatures.id'), nullable=False)
-    extension_id = Column(Integer, ForeignKey('extensions.id'), nullable=False)
+    feature_extension_uuid = Column(UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False)
 
     type = 'agent'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     agent = relationship(AgentFeatures)
 
-    extension = relationship(Extension, viewonly=True)
-    extension_typeval = association_proxy(
-        'extension', 'typeval',
+    feature_extension = relationship(FeatureExtension, viewonly=True)
+    feature_extension_feature = association_proxy(
+        'feature_extension', 'feature',
         # Only to keep value persistent in the instance
-        creator=lambda _typeval: Extension(type='extenfeatures', typeval=_typeval)
+        creator=lambda _feature: FeatureExtension(feature=_feature)
     )
 
     def to_tuple(self):
@@ -66,15 +66,15 @@ class FuncKeyDestAgent(Base):
         ACTIONS = {'agentstaticlogin': 'login',
                    'agentstaticlogoff': 'logout',
                    'agentstaticlogtoggle': 'toggle'}
-        return ACTIONS.get(self.extension_typeval, self.extension_typeval)
+        return ACTIONS.get(self.feature_extension_feature, self.feature_extension_feature)
 
     @action.expression
     def action(cls):
-        return cls.extension_typeval  # only used to pass test
+        return cls.feature_extension_feature  # only used to pass test
 
     @action.setter
     def action(self, value):
         TYPEVALS = {'login': 'agentstaticlogin',
                     'logout': 'agentstaticlogoff',
                     'toggle': 'agentstaticlogtoggle'}
-        self.extension_typeval = TYPEVALS.get(value, value)
+        self.feature_extension_feature = TYPEVALS.get(value, value)

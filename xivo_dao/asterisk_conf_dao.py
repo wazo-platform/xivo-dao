@@ -1,5 +1,6 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 from __future__ import annotations
 
 from typing import NamedTuple
@@ -15,6 +16,7 @@ from sqlalchemy.sql.expression import (
 )
 from sqlalchemy.types import Integer
 
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -65,10 +67,9 @@ def find_sccp_general_settings(session):
 
     voicemail_consult_exten = session.query(
         literal('vmexten').label('option_name'),
-        Extension.exten.label('option_value'),
+        FeatureExtension.exten.label('option_value'),
     ).filter(and_(
-        Extension.type == 'extenfeatures',
-        Extension.typeval == 'vmusermsg',
+        FeatureExtension.feature == 'vmusermsg',
     )).first()
 
     res = [{
@@ -318,10 +319,8 @@ def find_exten_xivofeatures_setting(session):
 
 @daosession
 def find_extenfeatures_settings(session, features):
-    query = session.query(Extension).filter(and_(
-        Extension.context == 'xivo-features',
-        Extension.type == 'extenfeatures',
-        Extension.typeval.in_(features),
+    query = session.query(FeatureExtension).filter(and_(
+        FeatureExtension.feature.in_(features),
     )).order_by('exten')
 
     return query.all()

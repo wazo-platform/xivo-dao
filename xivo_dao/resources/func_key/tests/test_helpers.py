@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
@@ -43,13 +43,13 @@ class FuncKeyHelper:
         'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
         'custom': (FuncKeyDestCustomSchema, 'exten', 10),
         'features': (FuncKeyDestFeaturesSchema, 'features_id', 8),
-        'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
+        'forward': (FuncKeyDestForwardSchema, 'feature_extension_uuid', 6),
         'group': (FuncKeyDestGroupSchema, 'group_id', 2),
         'groupmember': (FuncKeyDestGroupMemberSchema, 'group_id', 13),
         'paging': (FuncKeyDestPagingSchema, 'paging_id', 9),
         'park_position': (FuncKeyDestParkPositionSchema, 'park_position', 7),
         'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
-        'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
+        'service': (FuncKeyDestServiceSchema, 'feature_extension_uuid', 5),
         'user': (FuncKeyDestUserSchema, 'user_id', 1),
     }
 
@@ -66,12 +66,10 @@ class FuncKeyHelper:
             self.add_func_key_destination_type(id=destination_id,
                                                name=name)
 
-    def add_extenfeatures(self, exten, typeval, commented=0):
-        extension_row = self.add_extension(exten=exten,
-                                           type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval=typeval,
-                                           commented=commented)
+    def add_extenfeatures(self, exten, feature, commented=0):
+        extension_row = self.add_feature_extension(exten=exten,
+                                           feature=feature,
+                                           enabled=(commented==0))
         return extension_row
 
     def add_user_destination(self, dest_id):
@@ -80,13 +78,13 @@ class FuncKeyHelper:
     def add_group_destination(self, dest_id):
         return self._add_destination('group', dest_id)
 
-    def add_groupmember_destination(self, group_id, extension_id):
+    def add_groupmember_destination(self, group_id, feature_extension_uuid):
         destination_type_id = 13
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestGroupMemberSchema(func_key_id=func_key_row.id,
                                                        destination_type_id=destination_type_id,
                                                        group_id=group_id,
-                                                       extension_id=extension_id)
+                                                       feature_extension_uuid=feature_extension_uuid)
         self.add_me(destination_row)
         return destination_row
 
@@ -102,23 +100,23 @@ class FuncKeyHelper:
     def add_paging_destination(self, dest_id):
         return self._add_destination('paging', dest_id)
 
-    def add_forward_destination(self, extension_id, number=None):
+    def add_forward_destination(self, feature_extension_uuid, number=None):
         destination_type_id = 6
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestForwardSchema(func_key_id=func_key_row.id,
-                                                   extension_id=extension_id,
+                                                   feature_extension_uuid=feature_extension_uuid,
                                                    destination_type_id=destination_type_id,
                                                    number=number)
         self.add_me(destination_row)
         return destination_row
 
-    def add_agent_destination(self, agent_id, extension_id):
+    def add_agent_destination(self, agent_id, feature_extension_uuid):
         destination_type_id = 11
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestAgentSchema(func_key_id=func_key_row.id,
                                                  destination_type_id=destination_type_id,
                                                  agent_id=agent_id,
-                                                 extension_id=extension_id)
+                                                 feature_extension_uuid=feature_extension_uuid)
         self.add_me(destination_row)
         return destination_row
 
@@ -162,11 +160,11 @@ class FuncKeyHelper:
 
     def create_forward_func_key(self, exten, fwd_type, number=None, commented=0):
         extension_row = self.add_extenfeatures(exten, fwd_type, commented=commented)
-        return self.add_forward_destination(extension_row.id, number)
+        return self.add_forward_destination(extension_row.uuid, number)
 
     def create_service_func_key(self, exten, service_type, commented=0):
-        extension_row = self.add_extenfeatures(exten, service_type, commented=commented)
-        return self.add_service_destination(extension_row.id)
+        feature_extension_row = self.add_extenfeatures(exten, service_type, commented=commented)
+        return self.add_service_destination(feature_extension_row.uuid)
 
     def create_user_func_key(self):
         user_row = self.add_user()
@@ -178,8 +176,8 @@ class FuncKeyHelper:
 
     def create_group_member_func_key(self, exten, exten_action, commented=0):
         group_row = self.add_group()
-        extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
-        return self.add_groupmember_destination(group_row.id, extension_row.id)
+        feature_extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
+        return self.add_groupmember_destination(group_row.id, feature_extension_row.uuid)
 
     def create_queue_func_key(self):
         queue_row = self.add_queuefeatures()
@@ -195,8 +193,8 @@ class FuncKeyHelper:
 
     def create_agent_func_key(self, exten, exten_action, commented=0):
         agent_row = self.add_agent()
-        extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
-        return self.add_agent_destination(agent_row.id, extension_row.id)
+        feature_extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
+        return self.add_agent_destination(agent_row.id, feature_extension_row.uuid)
 
     def create_custom_func_key(self, exten):
         return self.add_custom_destination(exten)

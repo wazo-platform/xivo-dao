@@ -19,6 +19,7 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
@@ -37,11 +38,9 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.func_key.model import Hint
 
 
-def _find_extenfeatures(session, typeval):
-    return session.query(Extension.exten).filter(and_(
-        Extension.context == 'xivo-features',
-        Extension.type == 'extenfeatures',
-        Extension.typeval == typeval,
+def _find_extenfeatures(session, feature):
+    return session.query(FeatureExtension.exten).filter(and_(
+        FeatureExtension.feature == feature,
     )).scalar()
 
 
@@ -192,18 +191,18 @@ def conference_hints(session, context):
 @daosession
 def service_hints(session, context):
     query = session.query(
-        Extension.exten.label('extension'),
+        FeatureExtension.exten.label('feature_extension'),
         UserFeatures.id.label('user_id'),
     ).join(
-        FuncKeyDestService, FuncKeyDestService.extension_id == Extension.id,
+        FuncKeyDestService, FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid,
     ).join(
         FuncKeyMapping, FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
-    ).filter(Extension.commented == 0)
+    ).filter(FeatureExtension.enabled == True)
 
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
-                      extension=row.extension,
+                      extension=row.feature_extension,
                       argument=None)
                  for row in query)
 
@@ -211,19 +210,19 @@ def service_hints(session, context):
 @daosession
 def forward_hints(session, context):
     query = session.query(
-        Extension.exten.label('extension'),
+        FeatureExtension.exten.label('feature_extension'),
         UserFeatures.id.label('user_id'),
         FuncKeyDestForward.number.label('argument'),
     ).join(
-        FuncKeyDestForward, FuncKeyDestForward.extension_id == Extension.id,
+        FuncKeyDestForward, FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid,
     ).join(
         FuncKeyMapping, FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
-    ).filter(Extension.commented == 0)
+    ).filter(FeatureExtension.enabled == True)
 
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
-                      extension=clean_extension(row.extension),
+                      extension=clean_extension(row.feature_extension),
                       argument=row.argument)
                  for row in query)
 
@@ -233,17 +232,17 @@ def agent_hints(session, context):
     query = session.query(
         sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
         UserFeatures.id.label('user_id'),
-        Extension.exten.label('extension'),
+        FeatureExtension.exten.label('feature_extension'),
     ).join(
-        Extension, Extension.id == FuncKeyDestAgent.extension_id,
+        FeatureExtension, FeatureExtension.uuid == FuncKeyDestAgent.feature_extension_uuid,
     ).join(
         FuncKeyMapping, FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
-    ).filter(Extension.commented == 0)
+    ).filter(FeatureExtension.enabled == True)
 
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
-                      extension=clean_extension(row.extension),
+                      extension=clean_extension(row.feature_extension),
                       argument=row.argument)
                  for row in query)
 
@@ -298,15 +297,15 @@ def bsfilter_hints(session, context):
 def groupmember_hints(session, context):
     query = (session.query(sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
                            UserFeatures.id.label('user_id'),
-                           Extension.exten.label('extension'))
-             .join(Extension,
-                   Extension.id == FuncKeyDestGroupMember.extension_id)
+                           FeatureExtension.exten.label('feature_extension'))
+             .join(FeatureExtension,
+                   FeatureExtension.uuid == FuncKeyDestGroupMember.feature_extension_uuid)
              .join(FuncKeyMapping,
                    FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id)
-             .filter(Extension.commented == 0))
+             .filter(FeatureExtension.enabled == True))
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
-                      extension=clean_extension(row.extension),
+                      extension=clean_extension(row.feature_extension),
                       argument=row.argument)
                  for row in query)

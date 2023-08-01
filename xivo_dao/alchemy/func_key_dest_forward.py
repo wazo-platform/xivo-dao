@@ -14,10 +14,10 @@ from sqlalchemy.schema import (
 )
 from sqlalchemy.types import Integer, String
 
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
-
+from sqlalchemy.dialects.postgresql import UUID
 
 class FuncKeyDestForward(Base):
 
@@ -25,29 +25,29 @@ class FuncKeyDestForward(Base):
 
     __tablename__ = 'func_key_dest_forward'
     __table_args__ = (
-        PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
+        PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'feature_extension_uuid'),
         ForeignKeyConstraint(
             ('func_key_id', 'destination_type_id'),
             ('func_key.id', 'func_key.destination_type_id'),
         ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
-        Index('func_key_dest_forward__idx__extension_id', 'extension_id'),
+        Index('func_key_dest_forward__idx__feature_extension_uuid', 'feature_extension_uuid'),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    extension_id = Column(Integer, ForeignKey('extensions.id'))
+    feature_extension_uuid = Column(UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False)
     number = Column(String(40))
 
     type = 'forward'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
 
-    extension = relationship(Extension)
-    extension_typeval = association_proxy(
-        'extension', 'typeval',
+    feature_extension = relationship(FeatureExtension, viewonly=True)
+    feature_extension_feature = association_proxy(
+        'feature_extension', 'feature',
         # Only to keep value persistent in the instance
-        creator=lambda _typeval: Extension(type='extenfeatures', typeval=_typeval)
+        creator=lambda _feature: FeatureExtension(feature=_feature)
     )
 
     def to_tuple(self):
@@ -69,15 +69,15 @@ class FuncKeyDestForward(Base):
         FORWARDS = {'fwdbusy': 'busy',
                     'fwdrna': 'noanswer',
                     'fwdunc': 'unconditional'}
-        return FORWARDS.get(self.extension_typeval, self.extension_typeval)
+        return FORWARDS.get(self.feature_extension_feature, self.feature_extension_feature)
 
     @forward.expression
     def forward(cls):
-        return cls.extension_typeval  # only used to pass test
+        return cls.feature_extension_feature  # only used to pass test
 
     @forward.setter
     def forward(self, value):
         TYPEVALS = {'busy': 'fwdbusy',
                     'noanswer': 'fwdrna',
                     'unconditional': 'fwdunc'}
-        self.extension_typeval = TYPEVALS.get(value, value)
+        self.feature_extension_feature = TYPEVALS.get(value, value)

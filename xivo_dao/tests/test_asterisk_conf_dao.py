@@ -218,7 +218,7 @@ class TestSccpConfDAO(DAOTestCase):
         self.add_sccp_general_settings(**expected_result[0])
         self.add_sccp_general_settings(**expected_result[1])
         self.add_sccp_general_settings(**expected_result[2])
-        self.add_extension(exten='*98', type='extenfeatures', typeval='vmusermsg')
+        self.add_feature_extension(exten='*98', feature='vmusermsg')
 
         sccp_general_settings = asterisk_conf_dao.find_sccp_general_settings()
 
@@ -498,17 +498,13 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ))
 
     def test_find_extenfeatures_settings(self):
-        exten1 = self.add_extension(
+        exten1 = self.add_feature_extension(
             exten='*98',
-            context='xivo-features',
-            type='extenfeatures',
-            typeval='vmusermsg',
+            feature='vmusermsg',
         )
-        exten2 = self.add_extension(
+        exten2 = self.add_feature_extension(
             exten='*92',
-            context='xivo-features',
-            type='extenfeatures',
-            typeval='vmuserpurge',
+            feature='vmuserpurge',
         )
         self.add_extension(
             exten='3492',
@@ -522,19 +518,15 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(extensions, contains_inanyorder(
             has_properties(
                 exten='*98',
-                commented=0,
-                context='xivo-features',
-                typeval='vmusermsg',
-                type='extenfeatures',
-                id=exten1.id
+                enabled=True,
+                feature='vmusermsg',
+                uuid=exten1.uuid
             ),
             has_properties(
                 exten='*92',
-                commented=0,
-                context='xivo-features',
-                typeval='vmuserpurge',
-                type='extenfeatures',
-                id=exten2.id
+                enabled=True,
+                feature='vmuserpurge',
+                uuid=exten2.uuid
             ),
         ))
 

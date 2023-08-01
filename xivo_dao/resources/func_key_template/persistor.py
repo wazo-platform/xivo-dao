@@ -39,6 +39,7 @@ from xivo_dao.resources.extension.database import (
 from xivo_dao.resources.utils.search import SearchResult
 
 from .search import template_search
+from ...alchemy.feature_extension import FeatureExtension
 
 
 def build_persistor(session, tenant_uuids=None):
@@ -350,21 +351,19 @@ class GroupMemberPersistor(DestinationPersistor):
         typeval = self.find_typeval(destination.action)
 
         destination_row = (self.session.query(FuncKeyDestGroupMember)
-                           .join(Extension, FuncKeyDestGroupMember.extension_id == Extension.id)
+                           .join(FeatureExtension, FuncKeyDestGroupMember.feature_extension_uuid == FeatureExtension.uuid)
                            .filter(FuncKeyDestGroupMember.group_id == destination.group_id)
-                           .filter(Extension.type == 'extenfeatures')
-                           .filter(Extension.typeval == typeval)
+                           .filter(FeatureExtension.feature == typeval)
                            .first())
         if not destination_row:
-            extension = (self.session.query(Extension)
-                         .filter(Extension.type == 'extenfeatures')
-                         .filter(Extension.typeval == typeval)
+            feature_extension = (self.session.query(FeatureExtension)
+                         .filter(FeatureExtension.feature == typeval)
                          .first())
 
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
             destination_row = FuncKeyDestGroupMember(func_key_id=func_key_row.id,
                                                      group_id=destination.group_id,
-                                                     extension_id=extension.id)
+                                                     feature_extension_uuid=feature_extension.uuid)
             self.session.add(destination_row)
             self.session.flush()
 
@@ -489,9 +488,8 @@ class ServicePersistor(DestinationPersistor):
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestService)
-                 .join(Extension, FuncKeyDestService.extension_id == Extension.id)
-                 .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == destination.service))
+                 .join(FeatureExtension, FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid)
+                 .filter(FeatureExtension.feature == destination.service))
         # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()
@@ -514,10 +512,10 @@ class ForwardPersistor(DestinationPersistor):
     def find_or_create(self, destination):
         func_key_row = self.create_func_key(self.TYPE_ID,
                                             self.DESTINATION_TYPE_ID)
-        extension_id = self.find_extension_id(destination.forward)
+        feature_extension_uuid = self.find_extension_id(destination.forward)
 
         destination_row = FuncKeyDestForward(func_key_id=func_key_row.id,
-                                             extension_id=extension_id,
+                                             feature_extension_uuid=feature_extension_uuid,
                                              number=destination.exten)
         self.session.add(destination_row)
         self.session.flush()
@@ -527,9 +525,8 @@ class ForwardPersistor(DestinationPersistor):
     def find_extension_id(self, forward):
         typeval = ForwardExtensionConverter().to_typeval(forward)
 
-        query = (self.session.query(Extension.id)
-                 .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == typeval))
+        query = (self.session.query(FeatureExtension.uuid)
+                 .filter(FeatureExtension.feature == typeval))
 
         return query.scalar()
 
@@ -612,21 +609,19 @@ class AgentPersistor(DestinationPersistor):
         typeval = self.find_typeval(destination.action)
 
         destination_row = (self.session.query(FuncKeyDestAgent)
-                           .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
+                           .join(FeatureExtension, FuncKeyDestAgent.feature_extension_uuid == FeatureExtension.uuid)
                            .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
-                           .filter(Extension.type == 'extenfeatures')
-                           .filter(Extension.typeval == typeval)
+                           .filter(FeatureExtension.feature == typeval)
                            .first())
         if not destination_row:
-            extension = (self.session.query(Extension)
-                         .filter(Extension.type == 'extenfeatures')
-                         .filter(Extension.typeval == typeval)
+            feature_extension = (self.session.query(FeatureExtension)
+                         .filter(FeatureExtension.feature == typeval)
                          .first())
 
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
             destination_row = FuncKeyDestAgent(func_key_id=func_key_row.id,
                                                agent_id=destination.agent_id,
-                                               extension_id=extension.id)
+                                               feature_extension_uuid=feature_extension.uuid)
             self.session.add(destination_row)
             self.session.flush()
 
