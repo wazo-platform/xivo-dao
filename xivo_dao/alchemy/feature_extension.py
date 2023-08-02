@@ -27,3 +27,6 @@ class FeatureExtension(Base):
 
     def is_pattern(self):
         return self.exten.startswith('_')
+
+    def clean_exten(self):
+        return self.exten.strip('._')
