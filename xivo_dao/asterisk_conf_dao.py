@@ -13,6 +13,7 @@ from sqlalchemy.sql.expression import (
     func,
     literal,
     or_,
+    true,
 )
 from sqlalchemy.types import Integer
 
@@ -309,10 +310,9 @@ def find_exten_conferences_settings(session, context_name):
 
 @daosession
 def find_exten_xivofeatures_setting(session):
-    rows = session.query(Extension).filter(and_(
-        Extension.context == 'xivo-features',
-        Extension.commented == 0,
-    )).order_by('exten').all()
+    rows = session.query(FeatureExtension).filter(
+        FeatureExtension.enabled == true(),
+    ).order_by('exten').all()
 
     return [row.todict() for row in rows]
 

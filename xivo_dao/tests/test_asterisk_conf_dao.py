@@ -16,6 +16,7 @@ from hamcrest import (
     has_items,
     has_properties,
     not_,
+    is_,
 )
 
 from unittest.mock import patch
@@ -472,37 +473,33 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(extens, empty())
 
     def test_find_exten_xivofeatures_setting(self):
-        exten1 = self.add_extension(exten='*25', context='xivo-features')
-        exten2 = self.add_extension(exten='*26', context='xivo-features')
+        feature_exten1 = self.add_feature_extension(exten='*25')
+        feature_exten2 = self.add_feature_extension(exten='*26')
         self.add_extension(exten='3492', context='robert', type='user', typeval='14')
 
-        extensions = asterisk_conf_dao.find_exten_xivofeatures_setting()
+        feature_extensions = asterisk_conf_dao.find_exten_xivofeatures_setting()
 
-        assert_that(extensions, contains_inanyorder(
+        assert_that(feature_extensions, contains_inanyorder(
             has_entries(
                 exten='*25',
-                commented=0,
-                context='xivo-features',
-                typeval='',
-                type='user',
-                id=exten1.id,
+                enabled=True,
+                feature='',
+                uuid=feature_exten1.uuid,
             ),
             has_entries(
                 exten='*26',
-                commented=0,
-                context='xivo-features',
-                typeval='',
-                type='user',
-                id=exten2.id,
+                enabled=True,
+                feature='',
+                uuid=feature_exten2.uuid,
             ),
         ))
 
     def test_find_extenfeatures_settings(self):
-        exten1 = self.add_feature_extension(
+        feature_exten1 = self.add_feature_extension(
             exten='*98',
             feature='vmusermsg',
         )
-        exten2 = self.add_feature_extension(
+        feature_exten2 = self.add_feature_extension(
             exten='*92',
             feature='vmuserpurge',
         )
@@ -513,20 +510,20 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             typeval='14',
         )
 
-        extensions = asterisk_conf_dao.find_extenfeatures_settings(['vmusermsg', 'vmuserpurge'])
+        feature_extensions = asterisk_conf_dao.find_extenfeatures_settings(['vmusermsg', 'vmuserpurge'])
 
-        assert_that(extensions, contains_inanyorder(
+        assert_that(feature_extensions, contains_inanyorder(
             has_properties(
                 exten='*98',
                 enabled=True,
                 feature='vmusermsg',
-                uuid=exten1.uuid
+                uuid=feature_exten1.uuid
             ),
             has_properties(
                 exten='*92',
                 enabled=True,
                 feature='vmuserpurge',
-                uuid=exten2.uuid
+                uuid=feature_exten2.uuid
             ),
         ))
 
