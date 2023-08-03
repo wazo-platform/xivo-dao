@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 
 
-call_permission_preload_relationships = (
+preload_relationships = (
     joinedload(CallPermission.rightcall_groups)
     .joinedload('group')
     .load_only('uuid', 'id', 'name'),

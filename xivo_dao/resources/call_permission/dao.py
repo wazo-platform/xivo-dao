@@ -1,9 +1,12 @@
 # Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from contextlib import contextmanager
-from xivo_dao.helpers.db_manager import daosession
+from __future__ import annotations
 
+from contextlib import contextmanager
+from sqlalchemy.orm.strategy_options import Load, loader_option
+
+from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.call_permission.persistor import CallPermissionPersistor
 from xivo_dao.resources.call_permission.search import call_permission_search
 
@@ -54,6 +57,6 @@ def delete(session, call_permission):
 
 
 @contextmanager
-def query_options(*options):
-    with CallPermissionPersistor.query_options(*options):
+def query_options(*options: Load | loader_option):
+    with CallPermissionPersistor.context_query_options(*options):
         yield

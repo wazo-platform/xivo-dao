@@ -5,7 +5,7 @@ from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
-from xivo_dao.resources.utils.options import QueryOptionsMixin
+from xivo_dao.resources.utils.query_options import QueryOptionsMixin
 
 
 class CallPermissionPersistor(QueryOptionsMixin, CriteriaBuilderMixin, BasePersistor):
