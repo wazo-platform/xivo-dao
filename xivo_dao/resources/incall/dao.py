@@ -1,5 +1,7 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from contextlib import contextmanager
 
 from xivo_dao.resources.incall.persistor import IncallPersistor
 from xivo_dao.resources.incall.search import incall_search
@@ -50,3 +52,9 @@ def edit(session, incall):
 @daosession
 def delete(session, incall):
     IncallPersistor(session, incall_search).delete(incall)
+
+
+@contextmanager
+def query_options(*options):
+    with IncallPersistor.context_query_options(*options):
+        yield
