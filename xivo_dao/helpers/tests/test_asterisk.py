@@ -1,11 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
 from hamcrest import assert_that, equal_to
-from xivo_dao.helpers.asterisk import convert_ast_true_to_int,\
-    convert_int_to_ast_true
+from xivo_dao.helpers.asterisk import convert_ast_true_to_int, convert_int_to_ast_true
 
 
 class TestASTTrue(unittest.TestCase):
