@@ -44,7 +44,7 @@ def _find_extenfeatures(session, feature):
     return (
         session.query(FeatureExtension.exten)
         .filter(
-                FeatureExtension.feature == feature,
+            FeatureExtension.feature == feature,
         )
         .scalar()
     )
