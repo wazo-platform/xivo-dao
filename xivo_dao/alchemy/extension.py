@@ -76,8 +76,10 @@ class Extension(Base):
 
     dialpattern = relationship(
         'DialPattern',
-        primaryjoin="""and_(Extension.type == 'outcall',
-                                                   Extension.typeval == cast(DialPattern.id, String))""",
+        primaryjoin="""and_(
+            Extension.type == 'outcall',
+            Extension.typeval == cast(DialPattern.id, String)
+        )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
     )
@@ -131,9 +133,6 @@ class Extension(Base):
     @property
     def name(self):
         return self.typeval
-
-    def clean_exten(self):
-        return self.exten.strip('._')
 
     @hybrid_property
     def legacy_commented(self):

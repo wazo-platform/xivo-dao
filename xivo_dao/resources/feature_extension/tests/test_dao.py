@@ -20,7 +20,7 @@ from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 
 from .. import dao as feature_extension_dao
-from ..model import (
+from ..database import (
     AgentActionFeatureExtension,
     ForwardFeatureExtension,
     ServiceFeatureExtension,

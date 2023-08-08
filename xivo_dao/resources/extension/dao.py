@@ -1,10 +1,9 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.helpers.db_manager import Session
-
 from .fixes import ExtensionFixes
 from .persistor import ExtensionPersistor
+from xivo_dao.helpers.db_manager import Session
 from xivo_dao.resources.utils.search import SearchResult
 
 

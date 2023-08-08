@@ -1,15 +1,28 @@
 # Copyright 2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.resources.feature_extension.model import (
-    ForwardFeatureExtension,
-    ServiceFeatureExtension,
-    AgentActionFeatureExtension,
-)
+from __future__ import annotations
+from typing import NamedTuple
+
+from xivo.xivo_helpers import clean_extension
 
 
-def clean_exten(exten):
-    return exten.strip('_.')
+class ServiceFeatureExtension(NamedTuple):
+    uuid: str
+    exten: str
+    service: str
+
+
+class ForwardFeatureExtension(NamedTuple):
+    uuid: str
+    exten: str
+    forward: str
+
+
+class AgentActionFeatureExtension(NamedTuple):
+    uuid: str
+    exten: str
+    action: str
 
 
 class ServiceFeatureExtensionConverter:
@@ -33,7 +46,7 @@ class ServiceFeatureExtensionConverter:
         return cls.SERVICES
 
     def to_model(self, row):
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return ServiceFeatureExtension(uuid=row.uuid, exten=exten, service=row.feature)
 
 
@@ -53,7 +66,7 @@ class ForwardFeatureExtensionConverter:
 
     def to_model(self, row):
         forward = self.FORWARDS[row.feature]
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return ForwardFeatureExtension(uuid=row.uuid, exten=exten, forward=forward)
 
 
@@ -77,7 +90,7 @@ class AgentActionFeatureExtensionConverter:
 
     def to_model(self, row):
         action = self.ACTIONS[row.feature]
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return AgentActionFeatureExtension(uuid=row.uuid, exten=exten, action=action)
 
 
@@ -101,7 +114,7 @@ class GroupMemberActionFeatureExtensionConverter:
 
     def to_model(self, row):
         action = self.ACTIONS[row.feature]
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return AgentActionFeatureExtension(uuid=row.uuid, exten=exten, action=action)
 
 
