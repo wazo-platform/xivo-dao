@@ -17,7 +17,6 @@ class FeatureExtension(Base):
         UniqueConstraint('exten'),
         Index('feature_extension__idx__exten', 'exten'),
         Index('feature_extension__idx__feature', 'feature'),
-        Index('feature_extension__idx__uuid', 'uuid'),
     )
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
