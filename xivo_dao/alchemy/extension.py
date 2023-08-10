@@ -92,40 +92,50 @@ class Extension(Base):
 
     group = relationship(
         'GroupFeatures',
-        primaryjoin="""and_(Extension.type == 'group',
-                                             Extension.typeval == cast(GroupFeatures.id, String))""",
+        primaryjoin="""and_(
+            Extension.type == 'group',
+            Extension.typeval == cast(GroupFeatures.id, String)
+        )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
     )
 
     queue = relationship(
         'QueueFeatures',
-        primaryjoin="""and_(Extension.type == 'queue',
-                                             Extension.typeval == cast(QueueFeatures.id, String))""",
+        primaryjoin="""and_(
+            Extension.type == 'queue',
+            Extension.typeval == cast(QueueFeatures.id, String)
+        )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
     )
 
     incall = relationship(
         'Incall',
-        primaryjoin="""and_(Extension.type == 'incall',
-                                              Extension.typeval == cast(Incall.id, String))""",
+        primaryjoin="""and_(
+            Extension.type == 'incall',
+            Extension.typeval == cast(Incall.id, String)
+        )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
     )
 
     conference = relationship(
         'Conference',
-        primaryjoin="""and_(Extension.type == 'conference',
-                                                  Extension.typeval == cast(Conference.id, String))""",
+        primaryjoin="""and_(
+            Extension.type == 'conference',
+            Extension.typeval == cast(Conference.id, String)
+        )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
     )
 
     parking_lot = relationship(
         'ParkingLot',
-        primaryjoin="""and_(Extension.type == 'parking',
-                                                   Extension.typeval == cast(ParkingLot.id, String))""",
+        primaryjoin="""and_(
+            Extension.type == 'parking',
+            Extension.typeval == cast(ParkingLot.id, String)
+        )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
     )
