@@ -84,7 +84,7 @@ class LineFeatures(Base):
     configregistrar = Column(String(128))
     name = Column(String(128))
     number = Column(String(40))
-    context = Column(String(39), nullable=False)
+    context = Column(String(79), nullable=False)
     provisioningid = Column(Integer, nullable=False)
     num = Column(Integer, server_default='1')
     ipfrom = Column(String(15))

@@ -20,8 +20,8 @@ class ContextInclude(Base):
         ),
     )
 
-    context = Column(String(39), primary_key=True)
-    include = Column(String(39), primary_key=True)
+    context = Column(String(79), primary_key=True)
+    include = Column(String(79), primary_key=True)
     priority = Column(Integer, nullable=False, server_default='0')
 
     included_context = relationship(

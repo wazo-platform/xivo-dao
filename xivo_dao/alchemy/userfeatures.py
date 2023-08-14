@@ -128,7 +128,7 @@ class UserFeatures(Base):
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
     bsfilter = Column(enum.generic_bsfilter, nullable=False, server_default='no')
-    preprocess_subroutine = Column(String(39))
+    preprocess_subroutine = Column(String(79))
     timezone = Column(String(128))
     language = Column(String(20))
     ringintern = Column(String(64))

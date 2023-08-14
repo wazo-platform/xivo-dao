@@ -26,7 +26,7 @@ class SCCPLine(Base):
         nullable=False,
     )
     name = Column(String(80), nullable=False)
-    context = Column(String(80), nullable=False)
+    context = Column(String(79), nullable=False)
     cid_name = Column(String(80), nullable=False)
     cid_num = Column(String(80), nullable=False)
     disallow = Column(String(100))

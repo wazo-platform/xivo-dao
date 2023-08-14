@@ -22,7 +22,7 @@ class ContextNumbers(Base):
         ),
     )
 
-    context = Column(String(39), primary_key=True)
+    context = Column(String(79), primary_key=True)
     type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
                        name='contextnumbers_type',
                        metadata=Base.metadata),

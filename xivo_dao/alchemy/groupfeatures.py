@@ -44,7 +44,7 @@ class GroupFeatures(Base):
     write_calling = Column(Integer, nullable=False, server_default='0')
     ignore_forward = Column(Integer, nullable=False, server_default='1')
     timeout = Column(Integer)
-    preprocess_subroutine = Column(String(39))
+    preprocess_subroutine = Column(String(79))
     mark_answered_elsewhere = Column(Integer, nullable=False, server_default='0')
 
     caller_id = relationship(

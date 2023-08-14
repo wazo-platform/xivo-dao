@@ -41,7 +41,7 @@ class Incall(Base):
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
         nullable=False,
     )
-    preprocess_subroutine = Column(String(39))
+    preprocess_subroutine = Column(String(79))
     greeting_sound = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)

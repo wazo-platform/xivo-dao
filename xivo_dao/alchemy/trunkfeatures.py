@@ -73,7 +73,7 @@ class TrunkFeatures(Base):
     register_iax_id = Column(Integer, ForeignKey('staticiax.id', ondelete='SET NULL'))
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
-    context = Column(String(39))
+    context = Column(String(79))
     twilio_incoming = Column(Boolean, nullable=False, server_default='False')
 
     endpoint_sip = relationship('EndpointSIP', viewonly=True)

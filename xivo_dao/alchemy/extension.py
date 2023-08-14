@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -28,7 +28,7 @@ class Extension(Base):
 
     id = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
-    context = Column(String(39), nullable=False, server_default='')
+    context = Column(String(79), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
     type = Column(enum.extenumbers_type, nullable=False)
     typeval = Column(IntAsString(255), nullable=False, server_default='')

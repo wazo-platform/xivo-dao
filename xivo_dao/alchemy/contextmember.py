@@ -22,7 +22,7 @@ class ContextMember(Base):
         ),
     )
 
-    context = Column(String(39))
+    context = Column(String(79))
     type = Column(String(32))
     typeval = Column(String(128), server_default='')
     varname = Column(String(128), server_default='')

@@ -40,7 +40,7 @@ class Voicemail(Base):
     )
 
     uniqueid = Column(Integer)
-    context = Column(String(39), nullable=False)
+    context = Column(String(79), nullable=False)
     mailbox = Column(String(40), nullable=False)
     password = Column(String(80))
     fullname = Column(String(80), nullable=False, server_default='')

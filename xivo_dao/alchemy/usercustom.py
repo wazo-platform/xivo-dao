@@ -37,7 +37,7 @@ class UserCustom(Base):
         nullable=False,
     )
     name = Column(String(40))
-    context = Column(String(39))
+    context = Column(String(79))
     interface = Column(String(128), nullable=False)
     intfsuffix = Column(String(32), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, server_default='0')
