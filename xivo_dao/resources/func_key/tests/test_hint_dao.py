@@ -19,11 +19,9 @@ from xivo_dao.resources.func_key.model import Hint
 class TestProgfunckeyExtension(DAOTestCase):
 
     def test_given_progfunc_key_extension_then_returns_cleaned_progfunckey(self):
-        self.add_extension(
-            context='xivo-features',
+        self.add_feature_extension(
             exten='_*735.',
-            type='extenfeatures',
-            typeval='phoneprogfunckey',
+            feature='phoneprogfunckey',
         )
 
         assert_that(hint_dao.progfunckey_extension(), equal_to('*735'))
@@ -32,11 +30,9 @@ class TestProgfunckeyExtension(DAOTestCase):
 class TestCalluserExtension(DAOTestCase):
 
     def test_given_calluser_extension_then_returns_cleaned_calluser(self):
-        self.add_extension(
-            context='xivo-features',
+        self.add_feature_extension(
             exten='_*666.',
-            type='extenfeatures',
-            typeval='calluser',
+            feature='calluser',
         )
 
         assert_that(hint_dao.calluser_extension(), equal_to('*666'))
@@ -441,11 +437,9 @@ class TestBSFilterHints(TestHints):
 
     def setUp(self):
         super().setUp()
-        self.add_extension(
-            context='xivo-features',
+        self.add_feature_extension(
             exten='_*37.',
-            type='extenfeatures',
-            typeval='bsfilter',
+            feature='bsfilter',
         )
 
     def create_boss_and_secretary(self, commented=0):

@@ -42,6 +42,7 @@ from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.external_app import ExternalApp
 from xivo_dao.alchemy.features import Features
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -410,6 +411,14 @@ class ItemInserter:
         extension = Extension(**kwargs)
         self.add_me(extension)
         return extension
+
+    def add_feature_extension(self, **kwargs):
+        kwargs.setdefault('exten', f'{self._generate_random_exten()}')
+        kwargs.setdefault('feature', '')
+
+        feature_extension = FeatureExtension(**kwargs)
+        self.add_me(feature_extension)
+        return feature_extension
 
     def _generate_random_exten(self):
         extensions = self.session.query(Extension).all()

@@ -5,7 +5,6 @@ import abc
 
 from sqlalchemy import text
 
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -39,6 +38,7 @@ from xivo_dao.resources.extension.database import (
 from xivo_dao.resources.utils.search import SearchResult
 
 from .search import template_search
+from ...alchemy.feature_extension import FeatureExtension
 
 
 def build_persistor(session, tenant_uuids=None):
@@ -70,7 +70,6 @@ def build_persistor(session, tenant_uuids=None):
 
 
 class FuncKeyPersistor:
-
     def __init__(self, session, persistors, template_search, tenant_uuids=None):
         self.persistors = persistors
         self.session = session
@@ -104,12 +103,14 @@ class FuncKeyPersistor:
 
     def add_mapping(self, template_id, position, funckey):
         destination_row = self.find_or_create_destination(funckey.destination)
-        mapping = FuncKeyMapping(template_id=template_id,
-                                 func_key_id=destination_row.func_key_id,
-                                 destination_type_id=destination_row.destination_type_id,
-                                 position=position,
-                                 label=funckey.label,
-                                 blf=funckey.blf)
+        mapping = FuncKeyMapping(
+            template_id=template_id,
+            func_key_id=destination_row.func_key_id,
+            destination_type_id=destination_row.destination_type_id,
+            position=position,
+            label=funckey.label,
+            blf=funckey.blf,
+        )
 
         self.session.add(mapping)
         self.session.flush()
@@ -121,9 +122,11 @@ class FuncKeyPersistor:
         destination_row = persistor.find_or_create(destination)
 
         if not destination_row:
-            raise errors.param_not_found('destination',
-                                         'func key representing destination',
-                                         type=destination.type)
+            raise errors.param_not_found(
+                'destination',
+                'func key representing destination',
+                type=destination.type,
+            )
         return destination_row
 
     def build_persistor(self, dest_type):
@@ -147,7 +150,9 @@ class FuncKeyPersistor:
     def get_keys_for_template(self, template_id):
         keys = {}
         for row in self.query_mappings(template_id):
-            row.destination = self.build_destination(row.func_key_id, row.destination_type_name)
+            row.destination = self.build_destination(
+                row.func_key_id, row.destination_type_name
+            )
             keys[row.position] = row
         return keys
 
@@ -161,8 +166,9 @@ class FuncKeyPersistor:
         return query.filter(FuncKeyTemplate.tenant_uuid.in_(self.tenant_uuids))
 
     def query_mappings(self, template_id):
-        query = (self.session.query(FuncKeyMapping)
-                 .filter(FuncKeyMapping.template_id == template_id))
+        query = self.session.query(FuncKeyMapping).filter(
+            FuncKeyMapping.template_id == template_id
+        )
 
         return query.all()
 
@@ -181,20 +187,24 @@ class FuncKeyPersistor:
             self.delete_destination(row)
 
     def delete_mapping(self, mapping_row):
-        (self.session.query(FuncKeyMapping)
-         .filter(FuncKeyMapping.template_id == mapping_row.template_id)
-         .filter(FuncKeyMapping.func_key_id == mapping_row.func_key_id)
-         .filter(FuncKeyMapping.position == mapping_row.position)
-         .delete())
+        (
+            self.session.query(FuncKeyMapping)
+            .filter(FuncKeyMapping.template_id == mapping_row.template_id)
+            .filter(FuncKeyMapping.func_key_id == mapping_row.func_key_id)
+            .filter(FuncKeyMapping.position == mapping_row.position)
+            .delete()
+        )
 
     def delete_destination(self, row):
         persistor = self.build_persistor(row.destination_type_name)
         persistor.delete(row.func_key_id)
 
     def delete_template(self, template):
-        (self.session.query(FuncKeyTemplate)
-         .filter(FuncKeyTemplate.id == template.id)
-         .delete())
+        (
+            self.session.query(FuncKeyTemplate)
+            .filter(FuncKeyTemplate.id == template.id)
+            .delete()
+        )
 
     def edit(self, template):
         self.update_template(template)
@@ -211,7 +221,6 @@ class FuncKeyPersistor:
 
 
 class DestinationPersistor(metaclass=abc.ABCMeta):
-
     def __init__(self, session):
         self.session = session
 
@@ -228,37 +237,42 @@ class DestinationPersistor(metaclass=abc.ABCMeta):
         return
 
     def create_func_key(self, type_id, destination_type_id):
-        func_key_row = FuncKey(type_id=type_id,
-                               destination_type_id=destination_type_id)
+        func_key_row = FuncKey(type_id=type_id, destination_type_id=destination_type_id)
         self.session.add(func_key_row)
         self.session.flush()
         return func_key_row
 
     def _func_key_is_still_mapped(self, func_key_id):
-        return (self.session.query(FuncKeyMapping)
-                .filter(FuncKeyMapping.func_key_id == func_key_id)
-                .first())
+        return (
+            self.session.query(FuncKeyMapping)
+            .filter(FuncKeyMapping.func_key_id == func_key_id)
+            .first()
+        )
 
 
 class UserPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 1
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestUser)
-                 .filter(FuncKeyDestUser.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestUser).filter(
+            FuncKeyDestUser.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        destination_row = (self.session.query(FuncKeyDestUser)
-                           .filter(FuncKeyDestUser.user_id == destination.user_id)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestUser)
+            .filter(FuncKeyDestUser.user_id == destination.user_id)
+            .first()
+        )
 
         if not destination_row:
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestUser(func_key_id=func_key_row.id, user_id=destination.user_id)
+            destination_row = FuncKeyDestUser(
+                func_key_id=func_key_row.id, user_id=destination.user_id
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -266,30 +280,36 @@ class UserPersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestUser)
-             .filter(FuncKeyDestUser.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestUser)
+                .filter(FuncKeyDestUser.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class QueuePersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 3
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestQueue)
-                 .filter(FuncKeyDestQueue.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestQueue).filter(
+            FuncKeyDestQueue.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        destination_row = (self.session.query(FuncKeyDestQueue)
-                           .filter(FuncKeyDestQueue.queue_id == destination.queue_id)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestQueue)
+            .filter(FuncKeyDestQueue.queue_id == destination.queue_id)
+            .first()
+        )
 
         if not destination_row:
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestQueue(func_key_id=func_key_row.id, queue_id=destination.queue_id)
+            destination_row = FuncKeyDestQueue(
+                func_key_id=func_key_row.id, queue_id=destination.queue_id
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -297,32 +317,36 @@ class QueuePersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestQueue)
-             .filter(FuncKeyDestQueue.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestQueue)
+                .filter(FuncKeyDestQueue.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class GroupPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 2
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestGroup)
-                 .filter(FuncKeyDestGroup.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestGroup).filter(
+            FuncKeyDestGroup.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        destination_row = (self.session.query(FuncKeyDestGroup)
-                           .filter(FuncKeyDestGroup.group_id == destination.group_id)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestGroup)
+            .filter(FuncKeyDestGroup.group_id == destination.group_id)
+            .first()
+        )
 
         if not destination_row:
-            func_key_row = self.create_func_key(self.TYPE_ID,
-                                                self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestGroup(func_key_id=func_key_row.id,
-                                               group_id=destination.group_id)
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestGroup(
+                func_key_id=func_key_row.id, group_id=destination.group_id
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -330,41 +354,50 @@ class GroupPersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestGroup)
-             .filter(FuncKeyDestGroup.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestGroup)
+                .filter(FuncKeyDestGroup.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class GroupMemberPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 13
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestGroupMember)
-                 .filter(FuncKeyDestGroupMember.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestGroupMember).filter(
+            FuncKeyDestGroupMember.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
         typeval = self.find_typeval(destination.action)
 
-        destination_row = (self.session.query(FuncKeyDestGroupMember)
-                           .join(Extension, FuncKeyDestGroupMember.extension_id == Extension.id)
-                           .filter(FuncKeyDestGroupMember.group_id == destination.group_id)
-                           .filter(Extension.type == 'extenfeatures')
-                           .filter(Extension.typeval == typeval)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestGroupMember)
+            .join(
+                FeatureExtension,
+                FuncKeyDestGroupMember.feature_extension_uuid == FeatureExtension.uuid,
+            )
+            .filter(FuncKeyDestGroupMember.group_id == destination.group_id)
+            .filter(FeatureExtension.feature == typeval)
+            .first()
+        )
         if not destination_row:
-            extension = (self.session.query(Extension)
-                         .filter(Extension.type == 'extenfeatures')
-                         .filter(Extension.typeval == typeval)
-                         .first())
+            feature_extension = (
+                self.session.query(FeatureExtension)
+                .filter(FeatureExtension.feature == typeval)
+                .first()
+            )
 
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestGroupMember(func_key_id=func_key_row.id,
-                                                     group_id=destination.group_id,
-                                                     extension_id=extension.id)
+            destination_row = FuncKeyDestGroupMember(
+                func_key_id=func_key_row.id,
+                group_id=destination.group_id,
+                feature_extension_uuid=feature_extension.uuid,
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -375,32 +408,36 @@ class GroupMemberPersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestGroupMember)
-             .filter(FuncKeyDestGroupMember.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestGroupMember)
+                .filter(FuncKeyDestGroupMember.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class ConferencePersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 4
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestConference)
-                 .filter(FuncKeyDestConference.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestConference).filter(
+            FuncKeyDestConference.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        destination_row = (self.session.query(FuncKeyDestConference)
-                           .filter(FuncKeyDestConference.conference_id == destination.conference_id)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestConference)
+            .filter(FuncKeyDestConference.conference_id == destination.conference_id)
+            .first()
+        )
 
         if not destination_row:
-            func_key_row = self.create_func_key(self.TYPE_ID,
-                                                self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestConference(func_key_id=func_key_row.id,
-                                                    conference_id=destination.conference_id)
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestConference(
+                func_key_id=func_key_row.id, conference_id=destination.conference_id
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -408,32 +445,36 @@ class ConferencePersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestConference)
-             .filter(FuncKeyDestConference.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestConference)
+                .filter(FuncKeyDestConference.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class PagingPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 9
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestPaging)
-                 .filter(FuncKeyDestPaging.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestPaging).filter(
+            FuncKeyDestPaging.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        destination_row = (self.session.query(FuncKeyDestPaging)
-                           .filter(FuncKeyDestPaging.paging_id == destination.paging_id)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestPaging)
+            .filter(FuncKeyDestPaging.paging_id == destination.paging_id)
+            .first()
+        )
 
         if not destination_row:
-            func_key_row = self.create_func_key(self.TYPE_ID,
-                                                self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestPaging(func_key_id=func_key_row.id,
-                                                paging_id=destination.paging_id)
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestPaging(
+                func_key_id=func_key_row.id, paging_id=destination.paging_id
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -441,32 +482,37 @@ class PagingPersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestPaging)
-             .filter(FuncKeyDestPaging.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestPaging)
+                .filter(FuncKeyDestPaging.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class BSFilterPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 12
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestBSFilter)
-                 .filter(FuncKeyDestBSFilter.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestBSFilter).filter(
+            FuncKeyDestBSFilter.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        destination_row = (self.session.query(FuncKeyDestBSFilter)
-                           .filter(FuncKeyDestBSFilter.filtermember_id == destination.filter_member_id)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestBSFilter)
+            .filter(FuncKeyDestBSFilter.filtermember_id == destination.filter_member_id)
+            .first()
+        )
 
         if not destination_row:
-            func_key_row = self.create_func_key(self.TYPE_ID,
-                                                self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestBSFilter(func_key_id=func_key_row.id,
-                                                  filter_member_id=destination.filter_member_id)
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestBSFilter(
+                func_key_id=func_key_row.id,
+                filter_member_id=destination.filter_member_id,
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -474,24 +520,30 @@ class BSFilterPersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestBSFilter)
-             .filter(FuncKeyDestBSFilter.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestBSFilter)
+                .filter(FuncKeyDestBSFilter.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class ServicePersistor(DestinationPersistor):
-
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestService)
-                 .filter(FuncKeyDestService.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestService).filter(
+            FuncKeyDestService.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestService)
-                 .join(Extension, FuncKeyDestService.extension_id == Extension.id)
-                 .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == destination.service))
+        query = (
+            self.session.query(FuncKeyDestService)
+            .join(
+                FeatureExtension,
+                FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid,
+            )
+            .filter(FeatureExtension.feature == destination.service)
+        )
         # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()
@@ -501,24 +553,25 @@ class ServicePersistor(DestinationPersistor):
 
 
 class ForwardPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 6
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestForward)
-                 .filter(FuncKeyDestForward.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestForward).filter(
+            FuncKeyDestForward.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        func_key_row = self.create_func_key(self.TYPE_ID,
-                                            self.DESTINATION_TYPE_ID)
-        extension_id = self.find_extension_id(destination.forward)
+        func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+        feature_extension_uuid = self.find_extension_id(destination.forward)
 
-        destination_row = FuncKeyDestForward(func_key_id=func_key_row.id,
-                                             extension_id=extension_id,
-                                             number=destination.exten)
+        destination_row = FuncKeyDestForward(
+            func_key_id=func_key_row.id,
+            feature_extension_uuid=feature_extension_uuid,
+            number=destination.exten,
+        )
         self.session.add(destination_row)
         self.session.flush()
 
@@ -527,35 +580,37 @@ class ForwardPersistor(DestinationPersistor):
     def find_extension_id(self, forward):
         typeval = ForwardExtensionConverter().to_typeval(forward)
 
-        query = (self.session.query(Extension.id)
-                 .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == typeval))
+        query = self.session.query(FeatureExtension.uuid).filter(
+            FeatureExtension.feature == typeval
+        )
 
         return query.scalar()
 
     def delete(self, func_key_id):
-        (self.session.query(FuncKeyDestForward)
-         .filter(FuncKeyDestForward.func_key_id == func_key_id)
-         .delete())
+        (
+            self.session.query(FuncKeyDestForward)
+            .filter(FuncKeyDestForward.func_key_id == func_key_id)
+            .delete()
+        )
 
 
 class ParkPositionPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 7
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestParkPosition)
-                 .filter(FuncKeyDestParkPosition.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestParkPosition).filter(
+            FuncKeyDestParkPosition.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        func_key_row = self.create_func_key(self.TYPE_ID,
-                                            self.DESTINATION_TYPE_ID)
+        func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
 
-        destination_row = FuncKeyDestParkPosition(func_key_id=func_key_row.id,
-                                                  park_position=str(destination.position))
+        destination_row = FuncKeyDestParkPosition(
+            func_key_id=func_key_row.id, park_position=str(destination.position)
+        )
 
         self.session.add(destination_row)
         self.session.flush()
@@ -563,28 +618,30 @@ class ParkPositionPersistor(DestinationPersistor):
         return destination_row
 
     def delete(self, func_key_id):
-        (self.session.query(FuncKeyDestParkPosition)
-         .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
-         .delete())
+        (
+            self.session.query(FuncKeyDestParkPosition)
+            .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
+            .delete()
+        )
 
 
 class CustomPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 10
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestCustom)
-                 .filter(FuncKeyDestCustom.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestCustom).filter(
+            FuncKeyDestCustom.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
-        func_key_row = self.create_func_key(self.TYPE_ID,
-                                            self.DESTINATION_TYPE_ID)
+        func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
 
-        destination_row = FuncKeyDestCustom(func_key_id=func_key_row.id,
-                                            exten=destination.exten)
+        destination_row = FuncKeyDestCustom(
+            func_key_id=func_key_row.id, exten=destination.exten
+        )
 
         self.session.add(destination_row)
         self.session.flush()
@@ -592,41 +649,50 @@ class CustomPersistor(DestinationPersistor):
         return destination_row
 
     def delete(self, func_key_id):
-        (self.session.query(FuncKeyDestCustom)
-         .filter(FuncKeyDestCustom.func_key_id == func_key_id)
-         .delete())
+        (
+            self.session.query(FuncKeyDestCustom)
+            .filter(FuncKeyDestCustom.func_key_id == func_key_id)
+            .delete()
+        )
 
 
 class AgentPersistor(DestinationPersistor):
-
     TYPE_ID = 1
     DESTINATION_TYPE_ID = 11
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestAgent)
-                 .filter(FuncKeyDestAgent.func_key_id == func_key_id))
+        query = self.session.query(FuncKeyDestAgent).filter(
+            FuncKeyDestAgent.func_key_id == func_key_id
+        )
 
         return query.first()
 
     def find_or_create(self, destination):
         typeval = self.find_typeval(destination.action)
 
-        destination_row = (self.session.query(FuncKeyDestAgent)
-                           .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
-                           .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
-                           .filter(Extension.type == 'extenfeatures')
-                           .filter(Extension.typeval == typeval)
-                           .first())
+        destination_row = (
+            self.session.query(FuncKeyDestAgent)
+            .join(
+                FeatureExtension,
+                FuncKeyDestAgent.feature_extension_uuid == FeatureExtension.uuid,
+            )
+            .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
+            .filter(FeatureExtension.feature == typeval)
+            .first()
+        )
         if not destination_row:
-            extension = (self.session.query(Extension)
-                         .filter(Extension.type == 'extenfeatures')
-                         .filter(Extension.typeval == typeval)
-                         .first())
+            feature_extension = (
+                self.session.query(FeatureExtension)
+                .filter(FeatureExtension.feature == typeval)
+                .first()
+            )
 
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
-            destination_row = FuncKeyDestAgent(func_key_id=func_key_row.id,
-                                               agent_id=destination.agent_id,
-                                               extension_id=extension.id)
+            destination_row = FuncKeyDestAgent(
+                func_key_id=func_key_row.id,
+                agent_id=destination.agent_id,
+                feature_extension_uuid=feature_extension.uuid,
+            )
             self.session.add(destination_row)
             self.session.flush()
 
@@ -637,25 +703,24 @@ class AgentPersistor(DestinationPersistor):
 
     def delete(self, func_key_id):
         if not self._func_key_is_still_mapped(func_key_id):
-            (self.session.query(FuncKeyDestAgent)
-             .filter(FuncKeyDestAgent.func_key_id == func_key_id)
-             .delete())
+            (
+                self.session.query(FuncKeyDestAgent)
+                .filter(FuncKeyDestAgent.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class FeaturesPersistor(DestinationPersistor):
+    TRANSFERS_TO_API = {'blindxfer': 'blind', 'atxfer': 'attended'}
 
-    TRANSFERS_TO_API = {'blindxfer': 'blind',
-                        'atxfer': 'attended'}
-
-    TRANSFERS_TO_DB = {'blind': 'blindxfer',
-                       'attended': 'atxfer'}
+    TRANSFERS_TO_DB = {'blind': 'blindxfer', 'attended': 'atxfer'}
 
     def get(self, func_key_id):
-        query = (self.session.query(FuncKeyDestFeatures,
-                                    Features.var_name,
-                                    Features.id)
-                 .join(Features, FuncKeyDestFeatures.features_id == Features.id)
-                 .filter(FuncKeyDestFeatures.func_key_id == func_key_id))
+        query = (
+            self.session.query(FuncKeyDestFeatures, Features.var_name, Features.id)
+            .join(Features, FuncKeyDestFeatures.features_id == Features.id)
+            .filter(FuncKeyDestFeatures.func_key_id == func_key_id)
+        )
 
         result = query.first()
 
@@ -670,9 +735,11 @@ class FeaturesPersistor(DestinationPersistor):
     def find_or_create(self, destination):
         varname = self.find_var_name(destination)
 
-        query = (self.session.query(FuncKeyDestFeatures)
-                 .join(Features, FuncKeyDestFeatures.features_id == Features.id)
-                 .filter(Features.var_name == varname))
+        query = (
+            self.session.query(FuncKeyDestFeatures)
+            .join(Features, FuncKeyDestFeatures.features_id == Features.id)
+            .filter(Features.var_name == varname)
+        )
         # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()

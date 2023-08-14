@@ -9,8 +9,6 @@ from xivo_dao.resources.utils.search import SearchConfig
 config = SearchConfig(table=Extension,
                       columns={'exten': Extension.exten,
                                'context': Extension.context,
-                               'feature': Extension.feature,
-                               'is_feature': Extension.is_feature,
                                'type': Extension.context_type},
                       default_sort='exten')
 

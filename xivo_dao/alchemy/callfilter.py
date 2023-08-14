@@ -8,10 +8,11 @@ from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_, and_, select
+from sqlalchemy.sql.expression import true
 from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 
 from . import enum
 from .callerid import Callerid
@@ -41,9 +42,9 @@ class Callfilter(Base):
     description = Column(Text)
 
     exten = column_property(
-        select([Extension.exten])
-        .where(and_(Extension.typeval == 'bsfilter', Extension.commented == '0'))
-        .correlate_except(Extension)
+        select([FeatureExtension.exten])
+        .where(and_(FeatureExtension.feature == 'bsfilter', FeatureExtension.enabled == true()))
+        .correlate_except(FeatureExtension)
         .as_scalar()
     )
 

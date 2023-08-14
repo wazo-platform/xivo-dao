@@ -1,12 +1,28 @@
 # Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.resources.extension.model import ForwardExtension, \
-    ServiceExtension, AgentActionExtension
+from __future__ import annotations
+from typing import NamedTuple
+
+from xivo.xivo_helpers import clean_extension
 
 
-def clean_exten(exten):
-    return exten.strip('_.')
+class ServiceExtension(NamedTuple):
+    id: int
+    exten: str
+    service: str
+
+
+class ForwardExtension(NamedTuple):
+    id: int
+    exten: str
+    forward: str
+
+
+class AgentActionExtension(NamedTuple):
+    id: int
+    exten: str
+    action: str
 
 
 class ServiceExtensionConverter:
@@ -29,7 +45,7 @@ class ServiceExtensionConverter:
         return cls.SERVICES
 
     def to_model(self, row):
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return ServiceExtension(id=row.id,
                                 exten=exten,
                                 service=row.typeval)
@@ -54,7 +70,7 @@ class ForwardExtensionConverter:
 
     def to_model(self, row):
         forward = self.FORWARDS[row.typeval]
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return ForwardExtension(id=row.id,
                                 exten=exten,
                                 forward=forward)
@@ -79,7 +95,7 @@ class AgentActionExtensionConverter:
 
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return AgentActionExtension(id=row.id,
                                     exten=exten,
                                     action=action)
@@ -104,7 +120,7 @@ class GroupMemberActionExtensionConverter:
 
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]
-        exten = clean_exten(row.exten)
+        exten = clean_extension(row.exten)
         return AgentActionExtension(id=row.id,
                                     exten=exten,
                                     action=action)

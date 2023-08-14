@@ -1,5 +1,6 @@
 # Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+from uuid import uuid4
 
 from hamcrest import assert_that, none, equal_to, calling, raises
 
@@ -191,38 +192,38 @@ class TestCreate(TestDao):
         self.assert_mapping_has_destination('service', destination_row)
 
     def test_given_template_has_forward_func_key_when_creating_then_creates_mapping(self):
-        extension_row = self.add_extenfeatures('*21', 'fwdbusy')
+        feature_extension_row = self.add_extenfeatures('*21', 'fwdbusy')
 
         template = self.build_template_with_key(FuncKeyDestForward(forward='busy'))
 
         result = dao.create(template)
 
-        destination_row = self.find_destination('forward', extension_row.id)
+        destination_row = self.find_destination('forward', feature_extension_row.uuid)
         assert_that(destination_row.number, none())
 
         self.assert_mapping_has_destination('forward', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
     def test_given_template_has_forward_func_key_with_exten_when_creating_then_creates_destination_with_number(self):
-        extension_row = self.add_extenfeatures('*22', 'fwdrna')
+        feature_extension_row = self.add_extenfeatures('*22', 'fwdrna')
 
         template = self.build_template_with_key(FuncKeyDestForward(forward='noanswer',
                                                                    exten='1000'))
 
         result = dao.create(template)
 
-        destination_row = self.find_destination('forward', extension_row.id)
+        destination_row = self.find_destination('forward', feature_extension_row.uuid)
         assert_that(destination_row.number, equal_to('1000'))
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
     def test_given_template_has_commented_forward_func_key_when_creating_then_creates_destination(self):
-        extension_row = self.add_extenfeatures('*22', 'fwdrna', commented=1)
+        feature_extension_row = self.add_extenfeatures('*22', 'fwdrna', commented=1)
 
         template = self.build_template_with_key(FuncKeyDestForward(forward='noanswer'))
 
         dao.create(template)
 
-        destination_row = self.find_destination('forward', extension_row.id)
+        destination_row = self.find_destination('forward', feature_extension_row.uuid)
         self.assert_mapping_has_destination('forward', destination_row)
 
     def test_given_template_has_park_position_func_key_when_creating_then_creates_mapping(self):
@@ -319,7 +320,7 @@ class TestCreate(TestDao):
     def test_given_destination_funckey_does_not_exist_then_raises_error(self):
         self.create_service_func_key('', '')
 
-        template = self.build_template_with_key(FuncKeyDestService(extension_id=999999999))
+        template = self.build_template_with_key(FuncKeyDestService(feature_extension_uuid=uuid4()))
 
         assert_that(calling(dao.create).with_args(template),
                     raises(InputError))
@@ -364,7 +365,7 @@ class TestCreate(TestDao):
 
     def test_given_no_group_member_func_key_when_created_then_create_new_group_func_key(self):
         group = self.add_group()
-        self.add_extension(type='extenfeatures', typeval='groupmemberjoin')
+        self.add_feature_extension(feature='groupmemberjoin')
 
         dest_groupmember_count = (self.session.query(FuncKeyDestGroupMember)
                                   .filter(FuncKeyDestGroupMember.group_id == group.id)
@@ -461,7 +462,7 @@ class TestCreate(TestDao):
 
     def test_given_no_agent_func_key_when_created_then_create_new_agent_func_key(self):
         agent = self.add_agent()
-        self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
+        self.add_feature_extension(feature='agentstaticlogin')
 
         dest_agent_count = (self.session.query(FuncKeyDestAgent)
                             .filter(FuncKeyDestAgent.agent_id == agent.id)
@@ -586,7 +587,7 @@ class TestGet(TestDao):
         destination_row = self.create_service_func_key('*25', 'enablednd')
         expected = self.prepare_template(destination_row,
                                          FuncKeyDestService(service='enablednd',
-                                                            extension_id=destination_row.extension_id))
+                                                            feature_extension_uuid=destination_row.feature_extension_uuid))
 
         result = dao.get(expected.id)
 
@@ -597,7 +598,7 @@ class TestGet(TestDao):
         expected = self.prepare_template(destination_row,
                                          FuncKeyDestForward(forward='busy',
                                                             exten='1000',
-                                                            extension_id=destination_row.extension_id))
+                                                            feature_extension_uuid=destination_row.feature_extension_uuid))
 
         result = dao.get(expected.id)
 
@@ -626,7 +627,7 @@ class TestGet(TestDao):
         expected = self.prepare_template(destination_row,
                                          FuncKeyDestAgent(action='login',
                                                           agent_id=destination_row.agent_id,
-                                                          extension_id=destination_row.extension_id))
+                                                          feature_extension_uuid=destination_row.feature_extension_uuid))
 
         result = dao.get(expected.id)
 
@@ -684,7 +685,7 @@ class TestDelete(TestDao):
 
         dao.delete(template)
 
-        self.assert_destination_deleted('forward', destination_row.extension_id)
+        self.assert_destination_deleted('forward', destination_row.feature_extension_uuid)
 
     def test_given_template_has_park_position_func_key_when_deleting_then_deletes_park_position(self):
         destination_row = self.create_park_position_func_key('701')
@@ -896,7 +897,7 @@ class TestDelete(TestDao):
 
     def test_given_template_is_associated_to_agent_when_deleting_template(self):
         agent = self.add_agent()
-        self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
+        self.add_feature_extension(feature='agentstaticlogin')
         template = self.build_template_with_key(
             FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin')
         )
@@ -911,7 +912,7 @@ class TestDelete(TestDao):
 
     def test_given_multi_template_is_associated_to_agent_when_deleting_template(self):
         agent = self.add_agent()
-        self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
+        self.add_feature_extension(feature='agentstaticlogin')
         template = self.build_template_with_key(
             FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin')
         )

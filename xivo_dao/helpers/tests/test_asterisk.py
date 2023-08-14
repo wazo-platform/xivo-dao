@@ -8,7 +8,6 @@ from xivo_dao.helpers.asterisk import convert_ast_true_to_int, convert_int_to_as
 
 
 class TestASTTrue(unittest.TestCase):
-
     def test_convert_ast_true_truth_values(self):
         values = [
             'yes',

@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -21,8 +21,8 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def test_func_key_deleted(self):
         agent = self.add_agent()
-        extension = self.add_extension()
-        func_key_dest_agent = self.add_agent_destination(agent.id, extension.id)
+        feature_extension = self.add_feature_extension()
+        func_key_dest_agent = self.add_agent_destination(agent.id, feature_extension.uuid)
 
         row = self.session.query(FuncKey).first()
         assert_that(row, not_none())

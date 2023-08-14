@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -294,12 +294,12 @@ class TestExten(DAOTestCase):
 
     def test_get_exten(self):
         call_filter = self.add_call_filter()
-        self.add_extension(typeval='bsfilter', exten='_*37')
+        self.add_feature_extension(feature='bsfilter', exten='_*37')
 
         assert_that(call_filter.exten, equal_to('_*37'))
 
     def test_dont_get_exten_if_disabled(self):
         call_filter = self.add_call_filter()
-        self.add_extension(typeval='bsfilter', exten='_*37', commented='1')
+        self.add_feature_extension(feature='bsfilter', exten='_*37', enabled=False)
 
         assert_that(call_filter.exten, equal_to(None))

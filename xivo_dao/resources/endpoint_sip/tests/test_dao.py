@@ -480,7 +480,6 @@ class TestEdit(DAOTestCase):
 
             sip_dao.edit(sip)
 
-            print(sip._options)
             assert_that(sip.get_option_value('new-key'), equal_to(options[0][1]))
 
 

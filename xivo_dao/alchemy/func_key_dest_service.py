@@ -14,39 +14,47 @@ from sqlalchemy.schema import (
 )
 from sqlalchemy.types import Integer
 
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class FuncKeyDestService(Base):
-
     DESTINATION_TYPE_ID = 5
 
     __tablename__ = 'func_key_dest_service'
     __table_args__ = (
-        PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
+        PrimaryKeyConstraint(
+            'func_key_id', 'destination_type_id', 'feature_extension_uuid'
+        ),
         ForeignKeyConstraint(
             ('func_key_id', 'destination_type_id'),
             ('func_key.id', 'func_key.destination_type_id'),
         ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
-        Index('func_key_dest_service__idx__extension_id', 'extension_id'),
+        Index(
+            'func_key_dest_service__idx__feature_extension_uuid',
+            'feature_extension_uuid',
+        ),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    extension_id = Column(Integer, ForeignKey('extensions.id'))
+    feature_extension_uuid = Column(
+        UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False
+    )
 
     type = 'service'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
 
-    extension = relationship(Extension)
-    extension_typeval = association_proxy(
-        'extension', 'typeval',
+    feature_extension = relationship(FeatureExtension, viewonly=True)
+    feature_extension_feature = association_proxy(
+        'feature_extension',
+        'feature',
         # Only to keep value persistent in the instance
-        creator=lambda _typeval: Extension(type='extenfeatures', typeval=_typeval)
+        creator=lambda _feature: FeatureExtension(feature=_feature),
     )
 
     def to_tuple(self):
@@ -54,8 +62,8 @@ class FuncKeyDestService(Base):
 
     @hybrid_property
     def service(self):
-        return self.extension_typeval
+        return self.feature_extension_feature
 
     @service.setter
     def service(self, value):
-        self.extension_typeval = value
+        self.feature_extension_feature = value
