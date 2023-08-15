@@ -45,6 +45,7 @@ class Conference(Base):
     max_users = Column(Integer, nullable=False, server_default='50')
     record = Column(Boolean, nullable=False, server_default='False')
 
+    fail_compare_db = Column(String(80))
     pin = Column(String(80))
     quiet_join_leave = Column(Boolean, nullable=False, server_default='False')
     announce_join_leave = Column(Boolean, nullable=False, server_default='False')
