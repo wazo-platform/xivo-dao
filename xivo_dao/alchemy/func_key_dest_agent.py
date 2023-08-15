@@ -35,9 +35,6 @@ class FuncKeyDestAgent(Base):
         UniqueConstraint('agent_id', 'feature_extension_uuid'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         Index('func_key_dest_agent__idx__agent_id', 'agent_id'),
-        Index(
-            'func_key_dest_agent__idx__feature_extension_uuid', 'feature_extension_uuid'
-        ),
     )
 
     func_key_id = Column(Integer)

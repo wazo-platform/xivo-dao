@@ -9,7 +9,6 @@ from sqlalchemy.schema import (
     Column,
     ForeignKey,
     ForeignKeyConstraint,
-    Index,
     PrimaryKeyConstraint,
 )
 from sqlalchemy.types import Integer
@@ -33,10 +32,6 @@ class FuncKeyDestService(Base):
             ('func_key.id', 'func_key.destination_type_id'),
         ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
-        Index(
-            'func_key_dest_service__idx__feature_extension_uuid',
-            'feature_extension_uuid',
-        ),
     )
 
     func_key_id = Column(Integer)

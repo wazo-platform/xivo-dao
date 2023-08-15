@@ -35,10 +35,6 @@ class FuncKeyDestGroupMember(Base):
         UniqueConstraint('group_id', 'feature_extension_uuid'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         Index('func_key_dest_groupmember__idx__group_id', 'group_id'),
-        Index(
-            'func_key_dest_groupmember__idx__feature_extension_uuid',
-            'feature_extension_uuid',
-        ),
     )
 
     func_key_id = Column(Integer)
