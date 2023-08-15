@@ -7,6 +7,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint
 from sqlalchemy.types import String, Boolean
 
+from xivo.xivo_helpers import clean_extension
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -26,3 +28,6 @@ class FeatureExtension(Base):
 
     def is_pattern(self):
         return self.exten.startswith('_')
+
+    def clean_exten(self):
+        return clean_extension(self.exten)
