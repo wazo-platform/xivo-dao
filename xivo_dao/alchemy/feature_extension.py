@@ -4,7 +4,7 @@
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
 
-from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import String, Boolean
 
 from xivo.xivo_helpers import clean_extension
@@ -17,8 +17,6 @@ class FeatureExtension(Base):
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
         UniqueConstraint('exten'),
-        Index('feature_extension__idx__exten', 'exten'),
-        Index('feature_extension__idx__feature', 'feature'),
     )
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
