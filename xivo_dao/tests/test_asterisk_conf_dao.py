@@ -81,7 +81,6 @@ class PickupHelperMixin:
 
 
 class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
-
     def setUp(self):
         super().setUp()
         self.context = self.add_context()
@@ -214,7 +213,6 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
 
 class TestSccpConfDAO(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.default_context = self.add_context(name='default')
@@ -280,7 +278,6 @@ class TestSccpConfDAO(DAOTestCase):
 
 
 class TestFindSccpSpeeddialSettings(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.default_context = self.add_context(name='default')
@@ -379,7 +376,6 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
 
 class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
-
     def test_find_pickup_members_empty(self):
         self.add_pickup()
 
@@ -520,7 +516,9 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         context = self.add_context()
         feature_exten1 = self.add_feature_extension(exten='*25')
         feature_exten2 = self.add_feature_extension(exten='*26')
-        self.add_extension(exten='3492', context=context.name, type='user', typeval='14')
+        self.add_extension(
+            exten='3492', context=context.name, type='user', typeval='14'
+        )
 
         feature_extensions = asterisk_conf_dao.find_exten_xivofeatures_setting()
 
@@ -1414,7 +1412,10 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
     def test_that_doubles_are_removed(self):
         template = self.add_endpoint_sip(
             template=True,
-            endpoint_section_options=[['webrtc', 'true'], ['context', self.context.name]],
+            endpoint_section_options=[
+                ['webrtc', 'true'],
+                ['context', self.context.name],
+            ],
         )
         endpoint = self.add_endpoint_sip(
             templates=[template],

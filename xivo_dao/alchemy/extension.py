@@ -2,7 +2,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy.schema import (
+    Column,
+    UniqueConstraint,
+    Index,
+    PrimaryKeyConstraint,
+    ForeignKeyConstraint,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.attributes import get_history
 from sqlalchemy.types import Integer, String, Boolean

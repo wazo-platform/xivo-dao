@@ -13,7 +13,6 @@ EXTEN = '1666'
 
 
 class TestLineFeaturesDAO(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.context = self.add_context()
@@ -25,7 +24,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         line = self.add_line(name=name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
+        interface = line_dao.get_interface_from_exten_and_context(
+            EXTEN, self.context.name
+        )
 
         self.assertEqual('PJSIP/abcdef', interface)
 
@@ -36,7 +37,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         line = self.add_line(name=name, endpoint_sccp_id=sccp.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
+        interface = line_dao.get_interface_from_exten_and_context(
+            EXTEN, self.context.name
+        )
 
         self.assertEqual('SCCP/1001', interface)
 
@@ -47,7 +50,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         line = self.add_line(name=name, endpoint_custom_id=custom.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
+        interface = line_dao.get_interface_from_exten_and_context(
+            EXTEN, self.context.name
+        )
 
         self.assertEqual('custom/g1/12345', interface)
 
@@ -70,7 +75,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(second_exten, self.context.name)
+        interface = line_dao.get_interface_from_exten_and_context(
+            second_exten, self.context.name
+        )
 
         self.assertEqual('PJSIP/idbehold', interface)
 
@@ -89,13 +96,20 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
+        interface = line_dao.get_interface_from_exten_and_context(
+            EXTEN, self.context.name
+        )
 
         expected = f'PJSIP/{main_line_name}'
         self.assertEqual(expected, interface)
 
     def test_get_interface_no_matching_exten(self):
-        self.assertRaises(LookupError, line_dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
+        self.assertRaises(
+            LookupError,
+            line_dao.get_interface_from_exten_and_context,
+            '555',
+            'fijsifjsif',
+        )
 
     def test_get_interface_from_line_id(self):
         line_name = 'sdofiuwoe'
@@ -152,7 +166,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         extension = self.add_extension(exten=main_exten, context=self.context.name)
         sip = self.add_endpoint_sip()
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
-        self.add_line_extension(line_id=line.id, extension_id=extension.id, main_extension=True)
+        self.add_line_extension(
+            line_id=line.id, extension_id=extension.id, main_extension=True
+        )
 
         extension = self.add_extension(exten=second_exten, context=self.context.name)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)

@@ -14,7 +14,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestLineFixes(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.fixes = LineFixes(self.session)
@@ -40,7 +39,10 @@ class TestLineFixes(DAOTestCase):
         sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(
-            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+            user_id=user.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
         )
 
         self.fixes.fix(line.id)
@@ -53,7 +55,10 @@ class TestLineFixes(DAOTestCase):
         sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(
-            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+            user_id=user.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
         )
 
         self.fixes.fix(line.id)
@@ -67,7 +72,10 @@ class TestLineFixes(DAOTestCase):
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         extension = self.add_extension(exten="3000", context=self.default_context.name)
         self.add_user_line(
-            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+            user_id=user.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
         )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
@@ -76,13 +84,18 @@ class TestLineFixes(DAOTestCase):
         sip = self.session.query(EndpointSIP).first()
         assert_that(sip.caller_id, equal_to('"Jôhn Smith" <3000>'))
 
-    def test_given_user_has_caller_number_and_extension_then_caller_number_updated(self):
+    def test_given_user_has_caller_number_and_extension_then_caller_number_updated(
+        self,
+    ):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
         sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         extension = self.add_extension(exten="3000", context=self.default_context.name)
         self.add_user_line(
-            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+            user_id=user.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
         )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
@@ -95,8 +108,9 @@ class TestLineFixes(DAOTestCase):
         user = self.add_user(callerid='"Jôhn Smith"')
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True
+        )
 
         self.fixes.fix(line.id)
 
@@ -108,8 +122,9 @@ class TestLineFixes(DAOTestCase):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True
+        )
 
         self.fixes.fix(line.id)
 
@@ -122,8 +137,9 @@ class TestLineFixes(DAOTestCase):
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
         extension = self.add_extension(exten="3000", context=self.default_context.name)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True
+        )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
@@ -132,13 +148,16 @@ class TestLineFixes(DAOTestCase):
         assert_that(sccp.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp.cid_num, equal_to('3000'))
 
-    def test_given_user_has_caller_number_and_extension_then_sccp_caller_number_updated(self):
+    def test_given_user_has_caller_number_and_extension_then_sccp_caller_number_updated(
+        self,
+    ):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
         extension = self.add_extension(exten="3000", context=self.default_context.name)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True
+        )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
@@ -152,8 +171,9 @@ class TestLineFixes(DAOTestCase):
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
         extension = self.add_extension(exten="3000", context=self.default_context.name)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True
+        )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
@@ -166,10 +186,12 @@ class TestLineFixes(DAOTestCase):
         other_user = self.add_user(callerid='"Géorge Green" <1001>')
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
-        self.add_user_line(user_id=main_user.id, line_id=line.id,
-                           main_user=True, main_line=True)
-        self.add_user_line(user_id=other_user.id, line_id=line.id,
-                           main_user=False, main_line=True)
+        self.add_user_line(
+            user_id=main_user.id, line_id=line.id, main_user=True, main_line=True
+        )
+        self.add_user_line(
+            user_id=other_user.id, line_id=line.id, main_user=False, main_line=True
+        )
 
         self.fixes.fix(line.id)
 
@@ -225,9 +247,13 @@ class TestLineFixes(DAOTestCase):
         line = self.session.query(Line).first()
         assert_that(line.name, none())
 
-    def test_given_line_is_associated_to_custom_protocol_then_context_and_interface_updated(self):
+    def test_given_line_is_associated_to_custom_protocol_then_context_and_interface_updated(
+        self,
+    ):
         custom = self.add_usercustom(context=None, interface='custom/abcdef')
-        line = self.add_line(endpoint_custom_id=custom.id, context=self.default_context.name)
+        line = self.add_line(
+            endpoint_custom_id=custom.id, context=self.default_context.name
+        )
 
         self.fixes.fix(line.id)
 
@@ -242,7 +268,9 @@ class TestLineFixes(DAOTestCase):
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_queue_member(usertype='user', userid=user.id, interface='PJSIP/default')
+        self.add_queue_member(
+            usertype='user', userid=user.id, interface='PJSIP/default'
+        )
 
         self.fixes.fix(line.id)
 
@@ -268,7 +296,9 @@ class TestLineFixes(DAOTestCase):
         line = self.add_line(endpoint_custom_id=custom.id)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_queue_member(usertype='user', userid=user.id, interface='custom/invalid')
+        self.add_queue_member(
+            usertype='user', userid=user.id, interface='custom/invalid'
+        )
 
         self.fixes.fix(line.id)
 
@@ -284,7 +314,9 @@ class TestLineFixes(DAOTestCase):
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line1.id, main_line=True)
         self.add_user_line(user_id=user.id, line_id=line2.id, main_line=False)
-        self.add_queue_member(usertype='user', userid=user.id, interface='PJSIP/default')
+        self.add_queue_member(
+            usertype='user', userid=user.id, interface='PJSIP/default'
+        )
 
         self.fixes.fix(line2.id)
 
@@ -292,13 +324,18 @@ class TestLineFixes(DAOTestCase):
 
         assert_that(queue_member.interface, equal_to('PJSIP/default'))
 
-    def test_given_queuemember_local_without_extension_then_queue_member_iface_not_updated(self):
+    def test_given_queuemember_local_without_extension_then_queue_member_iface_not_updated(
+        self,
+    ):
         sip = self.add_endpoint_sip(name='abcdef')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_queue_member(
-            usertype='user', userid=user.id, interface='PJSIP/default', channel='Local',
+            usertype='user',
+            userid=user.id,
+            interface='PJSIP/default',
+            channel='Local',
         )
 
         self.fixes.fix(line.id)
@@ -307,7 +344,9 @@ class TestLineFixes(DAOTestCase):
 
         assert_that(queue_member.interface, equal_to('PJSIP/default'))
 
-    def test_given_queuemember_local_with_extension_then_queue_member_interface_updated(self):
+    def test_given_queuemember_local_with_extension_then_queue_member_interface_updated(
+        self,
+    ):
         context = self.add_context()
         sip = self.add_endpoint_sip(name='abcdef')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
@@ -316,7 +355,10 @@ class TestLineFixes(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_queue_member(
-            usertype='user', userid=user.id, interface='PJSIP/default', channel='Local',
+            usertype='user',
+            userid=user.id,
+            interface='PJSIP/default',
+            channel='Local',
         )
 
         self.fixes.fix(line.id)
