@@ -43,8 +43,8 @@ class TestHints(DAOTestCase, FuncKeyHelper):
     def setUp(self):
         super().setUp()
         self.setup_funckeys()
-        self.context = self.add_context(name='mycontext')
-        self.context2 = self.add_context(name='mycontext2')
+        self.context = self.add_context()
+        self.context2 = self.add_context()
 
     def add_user_and_func_key(
         self, endpoint_sip_uuid=None, exten='1000', commented=0, enablehint=1,
@@ -239,17 +239,17 @@ class TestConferenceHints(TestHints):
 
     def test_given_conference_then_returns_conference_hint(self):
         exten = '1234'
-        context = 'default'
+        context = self.add_context(name='default')
         conference = self.add_conference()
         self.add_extension(
-            context=context,
+            context=context.name,
             exten=exten,
             type='conference',
             typeval=str(conference.id),
         )
         self.add_conference_destination(conference.id)
 
-        hints = hint_dao.conference_hints(context)
+        hints = hint_dao.conference_hints(context.name)
         assert_that(
             hints,
             contains(

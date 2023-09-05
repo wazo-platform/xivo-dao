@@ -10,41 +10,44 @@ from xivo_dao.tests.test_dao import (
 from .. import line_dao
 
 EXTEN = '1666'
-CONTEXT = 'foobar'
 
 
 class TestLineFeaturesDAO(DAOTestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.context = self.add_context()
+
     def test_get_interface_from_exten_and_context_sip(self):
         name = 'abcdef'
-        extension = self.add_extension(exten=EXTEN, context=CONTEXT)
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
         sip = self.add_endpoint_sip()
         line = self.add_line(name=name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
+        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
 
         self.assertEqual('PJSIP/abcdef', interface)
 
     def test_get_interface_from_exten_and_context_sccp(self):
         name = '1001'
-        extension = self.add_extension(exten=EXTEN, context=CONTEXT)
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
         sccp = self.add_sccpline()
         line = self.add_line(name=name, endpoint_sccp_id=sccp.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
+        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
 
         self.assertEqual('SCCP/1001', interface)
 
     def test_get_interface_from_exten_and_context_custom(self):
         name = 'custom/g1/12345'
-        extension = self.add_extension(exten=EXTEN, context=CONTEXT)
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
         custom = self.add_usercustom()
         line = self.add_line(name=name, endpoint_custom_id=custom.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
+        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
 
         self.assertEqual('custom/g1/12345', interface)
 
@@ -55,25 +58,25 @@ class TestLineFeaturesDAO(DAOTestCase):
         second_name = 'idbehold'
         user = self.add_user()
 
-        extension = self.add_extension(exten=main_exten, context=CONTEXT)
+        extension = self.add_extension(exten=main_exten, context=self.context.name)
         sip = self.add_endpoint_sip()
         line = self.add_line(name=main_name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
 
-        extension = self.add_extension(exten=second_exten, context=CONTEXT)
+        extension = self.add_extension(exten=second_exten, context=self.context.name)
         sip = self.add_endpoint_sip()
         line = self.add_line(name=second_name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(second_exten, CONTEXT)
+        interface = line_dao.get_interface_from_exten_and_context(second_exten, self.context.name)
 
         self.assertEqual('PJSIP/idbehold', interface)
 
     def test_get_interface_from_exten_and_context_multiple_lines_same_exten(self):
         user = self.add_user()
-        extension = self.add_extension(exten=EXTEN, context=CONTEXT)
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
 
         sip = self.add_endpoint_sip()
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
@@ -86,7 +89,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
-        interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
+        interface = line_dao.get_interface_from_exten_and_context(EXTEN, self.context.name)
 
         expected = f'PJSIP/{main_line_name}'
         self.assertEqual(expected, interface)
@@ -119,7 +122,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_get_main_extension_context_from_line_id(self):
         main_exten = '1234'
-        extension = self.add_extension(exten=main_exten, context=CONTEXT)
+        extension = self.add_extension(exten=main_exten, context=self.context.name)
         sip = self.add_endpoint_sip()
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
@@ -127,7 +130,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
 
         self.assertEqual(exten, main_exten)
-        self.assertEqual(context, CONTEXT)
+        self.assertEqual(context, self.context.name)
 
     def test_get_main_extension_context_from_line_id_unknown(self):
         result = line_dao.get_main_extension_context_from_line_id(UNKNOWN_ID)
@@ -146,18 +149,18 @@ class TestLineFeaturesDAO(DAOTestCase):
         main_exten = '1234'
         second_exten = '5555'
 
-        extension = self.add_extension(exten=main_exten, context=CONTEXT)
+        extension = self.add_extension(exten=main_exten, context=self.context.name)
         sip = self.add_endpoint_sip()
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id, main_extension=True)
 
-        extension = self.add_extension(exten=second_exten, context=CONTEXT)
+        extension = self.add_extension(exten=second_exten, context=self.context.name)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
 
         self.assertEqual(exten, main_exten)
-        self.assertEqual(context, CONTEXT)
+        self.assertEqual(context, self.context.name)
 
     def test_is_line_owned_by_user(self):
         user = self.add_user()
