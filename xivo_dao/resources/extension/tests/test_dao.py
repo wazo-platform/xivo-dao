@@ -462,13 +462,6 @@ class TestCreate(TestExtension):
 
 
 class TestEdit(TestExtension):
-    def setUp(self):
-        super().setUp()
-        existing_context = self.add_context(name='my_context')
-        self.existing_extension = self.add_extension(
-            exten='1635', context=existing_context.name, type='user', typeval='0'
-        )
-
     def test_edit(self):
         exten = 'extension'
         context = self.add_context(name='new_context')
