@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -16,5 +16,6 @@ class Provisioning(Base):
 
     id = Column(Integer, nullable=False)
     net4_ip = Column(String(39))
+    http_base_url = Column(String(255))
     dhcp_integration = Column(Integer, nullable=False, server_default='0')
     http_port = Column(Integer, nullable=False)
