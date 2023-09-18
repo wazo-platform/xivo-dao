@@ -10,7 +10,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class IVRChoice(Base):
-
     __tablename__ = 'ivr_choice'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -28,7 +27,7 @@ class IVRChoice(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         back_populates='ivr_choice',
-        uselist=False
+        uselist=False,
     )
 
     @property

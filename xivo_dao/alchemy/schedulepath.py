@@ -10,7 +10,6 @@ from . import enum
 
 
 class SchedulePath(Base):
-
     __tablename__ = 'schedule_path'
     __table_args__ = (
         PrimaryKeyConstraint('schedule_id', 'path', 'pathid'),

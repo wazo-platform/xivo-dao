@@ -10,22 +10,21 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class OutcallTrunk(Base):
-
     __tablename__ = 'outcalltrunk'
     __table_args__ = (
         PrimaryKeyConstraint('outcallid', 'trunkfeaturesid'),
         Index('outcalltrunk__idx__priority', 'priority'),
     )
 
-    outcallid = Column(Integer, ForeignKey('outcall.id', ondelete='CASCADE'), nullable=False)
+    outcallid = Column(
+        Integer, ForeignKey('outcall.id', ondelete='CASCADE'), nullable=False
+    )
     trunkfeaturesid = Column(Integer, ForeignKey('trunkfeatures.id'), nullable=False)
     priority = Column(Integer, nullable=False, server_default='0')
 
-    trunk = relationship('TrunkFeatures',
-                         back_populates='outcall_trunks')
+    trunk = relationship('TrunkFeatures', back_populates='outcall_trunks')
 
-    outcall = relationship('Outcall',
-                           back_populates='outcall_trunks')
+    outcall = relationship('Outcall', back_populates='outcall_trunks')
 
     @hybrid_property
     def outcall_id(self):
