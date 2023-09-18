@@ -81,12 +81,15 @@ class PickupHelperMixin:
 
 
 class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
+    def setUp(self):
+        super().setUp()
+        self.context = self.add_context()
+
     def test_find_sccp_line_settings_when_line_enabled(self):
         number = '1234'
-        context = self.add_context(name='mycontext')
-        sccp_line = self.add_sccpline(cid_num=number)
+        sccp_line = self.add_sccpline(cid_num=number, context=self.context.name)
         ule = self.add_user_line_with_exten(
-            endpoint_sccp_id=sccp_line.id, exten=number, context=context.name
+            endpoint_sccp_id=sccp_line.id, exten=number, context=self.context.name
         )
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
@@ -100,7 +103,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                     language=None,
                     number=number,
                     cid_name='Tester One',
-                    context=context.name,
+                    context=self.context.name,
                     cid_num=number,
                     uuid=uuid_(),
                 )
@@ -120,12 +123,11 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
     def test_find_sccp_line_allow(self):
         number = '1234'
-        context = self.add_context(name='mycontext')
         sccp_line = self.add_sccpline(
-            cid_num=number, allow='g729', context=context.name
+            cid_num=number, allow='g729', context=self.context.name
         )
         ule = self.add_user_line_with_exten(
-            endpoint_sccp_id=sccp_line.id, exten=number, context=context.name
+            endpoint_sccp_id=sccp_line.id, exten=number, context=self.context.name
         )
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
@@ -139,7 +141,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                     language=None,
                     number=number,
                     cid_name='Tester One',
-                    context=context.name,
+                    context=self.context.name,
                     cid_num=number,
                     allow='g729',
                     uuid=uuid_(),
@@ -148,13 +150,12 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         )
 
     def test_find_sccp_line_disallow(self):
-        context = self.add_context(name='mycontext')
         number = '1234'
         sccp_line = self.add_sccpline(
-            cid_num=number, allow='g729', disallow='all', context=context.name
+            cid_num=number, allow='g729', disallow='all', context=self.context.name
         )
         ule = self.add_user_line_with_exten(
-            endpoint_sccp_id=sccp_line.id, exten=number, context=context.name
+            endpoint_sccp_id=sccp_line.id, exten=number, context=self.context.name
         )
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
@@ -168,7 +169,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                     language=None,
                     number=number,
                     cid_name='Tester One',
-                    context=context.name,
+                    context=self.context.name,
                     cid_num=number,
                     allow='g729',
                     disallow='all',
@@ -179,10 +180,9 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
     @patch('xivo_dao.asterisk_conf_dao.find_pickup_members')
     def test_find_sccp_line_pickup_group(self, mock_find_pickup_members):
-        context = self.add_context(name='mycontext')
-        sccp_line = self.add_sccpline(context=context.name)
+        sccp_line = self.add_sccpline(context=self.context.name)
         ule = self.add_user_line_with_exten(
-            endpoint_sccp_id=sccp_line.id, context=context.name
+            endpoint_sccp_id=sccp_line.id, context=self.context.name
         )
         callgroups = {1, 2, 3, 4}
         pickupgroups = {3, 4}
@@ -202,7 +202,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                     language=None,
                     number=ule.extension.exten,
                     cid_name='Tester One',
-                    context=context.name,
+                    context=self.context.name,
                     cid_num=sccp_line.cid_num,
                     callgroup=callgroups,
                     pickupgroup=pickupgroups,
@@ -213,6 +213,10 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
 
 class TestSccpConfDAO(DAOTestCase):
+    def setUp(self):
+        super().setUp()
+        self.default_context = self.add_context(name='default')
+
     def test_find_sccp_general_settings(self):
         expected_result = [
             {'option_name': 'directmedia', 'option_value': 'no'},
@@ -249,8 +253,7 @@ class TestSccpConfDAO(DAOTestCase):
         )
 
     def test_find_sccp_device_settings(self):
-        context = self.add_context(name='default')
-        extension = self.add_extension(exten='1000', context=context.name)
+        extension = self.add_extension(exten='1000', context=self.default_context.name)
         sccp_device = self.add_sccpdevice(line=extension.exten)
         sccp_line = self.add_sccpline(name=extension.exten, context=extension.context)
         line = self.add_line(endpoint_sccp_id=sccp_line.id, context=extension.context)
@@ -275,6 +278,10 @@ class TestSccpConfDAO(DAOTestCase):
 
 
 class TestFindSccpSpeeddialSettings(DAOTestCase):
+    def setUp(self):
+        super().setUp()
+        self.default_context = self.add_context(name='default')
+
     def test_given_no_func_key_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sccp_speeddial_settings()
 
@@ -283,10 +290,9 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
     def test_given_custom_func_key_then_returns_converted_func_key(self):
         exten = '1000'
         func_key_exten = '2000'
-        context = self.add_context(name='default')
 
         user_row, sccp_device_row = self.add_user_with_sccp_device(
-            exten=exten, context=context.name
+            exten=exten, context=self.default_context.name
         )
         func_key_mapping_row = self.add_custom_func_key_to_user(
             user_row, func_key_exten
@@ -311,11 +317,10 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
     def test_given_func_key_with_invalid_characters_then_characters_are_escaped(self):
         exten = '1000'
         func_key_exten = '\n2;0\t0\r0'
-        context = self.add_context(name='default')
         label = '\nhe;l\tlo\r'
 
         user_row, sccp_device_row = self.add_user_with_sccp_device(
-            exten=exten, context=context.name
+            exten=exten, context=self.default_context.name
         )
         self.add_custom_func_key_to_user(user_row, func_key_exten, label=label)
 
@@ -492,23 +497,28 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
     def test_find_exten_conferences_settings(self):
         exten = '1234'
-        self.add_extension(exten=exten, context='test', type='conference')
+        context = self.add_context()
+        self.add_extension(exten=exten, context=context.name, type='conference')
 
-        extens = asterisk_conf_dao.find_exten_conferences_settings('test')
+        extens = asterisk_conf_dao.find_exten_conferences_settings(context.name)
 
         assert_that(extens, contains_inanyorder(has_entries(exten=exten)))
 
     def test_find_exten_conferences_settings_different_context(self):
-        self.add_extension(exten='1234', context='test', type='conference')
+        context = self.add_context()
+        self.add_extension(exten='1234', context=context.name, type='conference')
 
         extens = asterisk_conf_dao.find_exten_conferences_settings('default')
 
         assert_that(extens, empty())
 
     def test_find_exten_xivofeatures_setting(self):
+        context = self.add_context()
         feature_exten1 = self.add_feature_extension(exten='*25')
         feature_exten2 = self.add_feature_extension(exten='*26')
-        self.add_extension(exten='3492', context='robert', type='user', typeval='14')
+        self.add_extension(
+            exten='3492', context=context.name, type='user', typeval='14'
+        )
 
         feature_extensions = asterisk_conf_dao.find_exten_xivofeatures_setting()
 
@@ -531,6 +541,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         )
 
     def test_find_extenfeatures_settings(self):
+        context = self.add_context()
         feature_exten1 = self.add_feature_extension(
             exten='*98',
             feature='vmusermsg',
@@ -541,7 +552,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         )
         self.add_extension(
             exten='3492',
-            context='robert',
+            context=context.name,
             type='user',
             typeval='14',
         )
@@ -569,14 +580,14 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         )
 
     def test_find_exten_settings_when_line_enabled(self):
-        default = self.add_context(name='default')
+        default_context = self.add_context(name='default')
         user_row = self.add_user()
         line_row = self.add_line()
-        extension_row = self.add_extension(exten='12', context='default')
+        extension_row = self.add_extension(exten='12', context=default_context.name)
         self.add_user_line(user_id=user_row.id, line_id=line_row.id)
         self.add_line_extension(line_id=line_row.id, extension_id=extension_row.id)
 
-        result = asterisk_conf_dao.find_exten_settings('default')
+        result = asterisk_conf_dao.find_exten_settings(default_context.name)
 
         assert_that(
             result,
@@ -584,34 +595,35 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                 has_entries(
                     exten='12',
                     commented=0,
-                    context='default',
+                    context=default_context.name,
                     typeval='',
                     type='user',
                     id=extension_row.id,
-                    tenant_uuid=default.tenant_uuid,
+                    tenant_uuid=default_context.tenant_uuid,
                 ),
             ),
         )
 
     def test_find_exten_settings_when_line_disabled(self):
+        default_context = self.add_context(name='default')
         user_row = self.add_user()
         line_row = self.add_line(commented=1)
-        extension_row = self.add_extension(exten='13', context='default')
+        extension_row = self.add_extension(exten='13', context=default_context.name)
         self.add_user_line(user_id=user_row.id, line_id=line_row.id)
         self.add_line_extension(line_id=line_row.id, extension_id=extension_row.id)
 
-        result = asterisk_conf_dao.find_exten_settings('default')
+        result = asterisk_conf_dao.find_exten_settings(default_context.name)
 
         assert_that(result, contains())
 
     def test_find_exten_settings_multiple_extensions(self):
-        default = self.add_context(name='default')
-        self.add_context(name='toto')
-        exten1 = self.add_extension(exten='12', context=default.name)
-        exten2 = self.add_extension(exten='23', context=default.name)
-        self.add_extension(exten='41', context='toto')
+        context = self.add_context()
+        default_context = self.add_context(name='default')
+        exten1 = self.add_extension(exten='12', context=default_context.name)
+        exten2 = self.add_extension(exten='23', context=default_context.name)
+        self.add_extension(exten='41', context=context.name)
 
-        extensions = asterisk_conf_dao.find_exten_settings('default')
+        extensions = asterisk_conf_dao.find_exten_settings(default_context.name)
 
         assert_that(
             extensions,
@@ -619,32 +631,34 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                 has_entries(
                     exten='12',
                     commented=0,
-                    context='default',
+                    context=default_context.name,
                     typeval='',
                     type='user',
                     id=exten1.id,
-                    tenant_uuid=default.tenant_uuid,
+                    tenant_uuid=default_context.tenant_uuid,
                 ),
                 has_entries(
                     exten='23',
                     commented=0,
-                    context='default',
+                    context=default_context.name,
                     typeval='',
                     type='user',
                     id=exten2.id,
-                    tenant_uuid=default.tenant_uuid,
+                    tenant_uuid=default_context.tenant_uuid,
                 ),
             ),
         )
 
     def test_find_exten_settings_when_not_associated(self):
-        self.add_extension(context='default', typeval='0')
-        extensions = asterisk_conf_dao.find_exten_settings('default')
+        default_context = self.add_context(name='default')
+        self.add_extension(context=default_context.name, typeval='0')
+        extensions = asterisk_conf_dao.find_exten_settings(default_context.name)
         assert_that(extensions, empty())
 
     def test_find_exten_settings_when_type_parking(self):
-        self.add_extension(context='default', type='parking')
-        extensions = asterisk_conf_dao.find_exten_settings('default')
+        default_context = self.add_context(name='default')
+        self.add_extension(context=default_context.name, type='parking')
+        extensions = asterisk_conf_dao.find_exten_settings(default_context.name)
         assert_that(extensions, empty())
 
     def test_find_context_settings(self):
@@ -674,14 +688,14 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         )
 
     def test_find_contextincludes_settings(self):
-        context_default = self.add_context(name='default')
+        default_context = self.add_context(name='default')
         context_koki = self.add_context(name='koki')
         context_toto = self.add_context(name='toto')
         self.add_context_include(context=context_koki.name)
-        context_include = self.add_context_include(context=context_default.name)
+        context_include = self.add_context_include(context=default_context.name)
         self.add_context_include(context=context_toto.name)
 
-        context = asterisk_conf_dao.find_contextincludes_settings(context_default.name)
+        context = asterisk_conf_dao.find_contextincludes_settings(default_context.name)
 
         assert_that(
             context,
@@ -1185,6 +1199,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         self.meeting_guest_config_template = self.add_endpoint_sip(
             transport=transport_wss, **guest_meeting_template_body
         )
+        self.context = self.add_context()
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
@@ -1395,10 +1410,12 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         )
 
     def test_that_doubles_are_removed(self):
-        context = self.add_context(name='wazo-meeting-uuid-guest')
         template = self.add_endpoint_sip(
             template=True,
-            endpoint_section_options=[['webrtc', 'true'], ['context', context.name]],
+            endpoint_section_options=[
+                ['webrtc', 'true'],
+                ['context', self.context.name],
+            ],
         )
         endpoint = self.add_endpoint_sip(
             templates=[template],
@@ -1425,7 +1442,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains('set_var', f'WAZO_MEETING_UUID={meeting.uuid}'),
                         contains('set_var', f'WAZO_MEETING_NAME={meeting.name}'),
-                        contains('context', context.name),
+                        contains('context', self.context.name),
                     )
                 )
             ),
@@ -1487,6 +1504,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         self.webrtc_config_template = self.add_endpoint_sip(
             transport=transport_wss, **webrtc_body
         )
+        self.context = self.add_context()
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_user_settings()
@@ -1559,9 +1577,8 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         )
 
     def test_that_the_line_context_is_used(self):
-        context = self.add_context()
         endpoint = self.add_endpoint_sip(template=False)
-        self.add_line(endpoint_sip_uuid=endpoint.uuid, context=context.name)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid, context=self.context.name)
 
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
@@ -1569,20 +1586,19 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('context', context.name)
+                        contains('context', self.context.name)
                     ),
                 )
             ),
         )
 
     def test_that_the_application_is_used(self):
-        context = self.add_context()
         application = self.add_application(name='MyApplication')
         endpoint = self.add_endpoint_sip(template=False)
         self.add_line(
             endpoint_sip_uuid=endpoint.uuid,
             application_uuid=application.uuid,
-            context=context.name,
+            context=self.context.name,
         )
 
         result = asterisk_conf_dao.find_sip_user_settings()
@@ -1592,16 +1608,15 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 has_entries(
                     endpoint_section_options=has_items(
                         contains('context', f'stasis-wazo-app-{application.uuid}'),
-                        contains('set_var', f'TRANSFER_CONTEXT={context.name}'),
+                        contains('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
                     )
                 )
             ),
         )
 
     def test_that_the_transfer_context_is_added(self):
-        context = self.add_context()
         endpoint = self.add_endpoint_sip(template=False)
-        self.add_line(endpoint_sip_uuid=endpoint.uuid, context=context.name)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid, context=self.context.name)
 
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
@@ -1609,7 +1624,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('set_var', f'TRANSFER_CONTEXT={context.name}'),
+                        contains('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
                     ),
                 )
             ),
@@ -1902,8 +1917,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 ['webrtc', 'true'],
             ],
         )
-        context = self.add_context(name='mycontext')
-        line = self.add_line(endpoint_sip_uuid=endpoint.uuid, context=context.name)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid, context=self.context.name)
 
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
@@ -1919,8 +1933,8 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         ),
                         contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains('set_var', f'WAZO_LINE_ID={line.id}'),
-                        contains('context', context.name),
-                        contains('set_var', f'TRANSFER_CONTEXT={context.name}'),
+                        contains('context', self.context.name),
+                        contains('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
                     )
                 )
             ),
@@ -1995,6 +2009,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             **registration_trunk_body
         )
         self.twilio_template = self.add_endpoint_sip(**twilio_trunk_body)
+        self.context = self.add_context()
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_trunk_settings()
@@ -2091,9 +2106,8 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         )
 
     def test_that_the_trunk_context_is_used(self):
-        context = self.add_context()
         endpoint = self.add_endpoint_sip(template=False)
-        self.add_trunk(endpoint_sip_uuid=endpoint.uuid, context=context.name)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid, context=self.context.name)
 
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
@@ -2101,7 +2115,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             contains(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('context', context.name)
+                        contains('context', self.context.name)
                     ),
                 )
             ),
