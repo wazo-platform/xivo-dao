@@ -17,7 +17,7 @@ class OutcallTrunk(Base):
         Index('outcalltrunk__idx__priority', 'priority'),
     )
 
-    outcallid = Column(Integer, ForeignKey('outcall.id'), nullable=False)
+    outcallid = Column(Integer, ForeignKey('outcall.id', ondelete='CASCADE'), nullable=False)
     trunkfeaturesid = Column(Integer, ForeignKey('trunkfeatures.id'), nullable=False)
     priority = Column(Integer, nullable=False, server_default='0')
 

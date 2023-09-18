@@ -18,7 +18,7 @@ class IVRChoice(Base):
     )
 
     id = Column(Integer)
-    ivr_id = Column(Integer, ForeignKey('ivr.id'), nullable=False)
+    ivr_id = Column(Integer, ForeignKey('ivr.id', ondelete='CASCADE'), nullable=False)
     exten = Column(String(40), nullable=False)
 
     dialaction = relationship(

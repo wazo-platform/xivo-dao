@@ -16,5 +16,5 @@ class RightCallExten(Base):
     )
 
     id = Column(Integer, nullable=False)
-    rightcallid = Column(Integer, ForeignKey('rightcall.id'), nullable=False, server_default='0')
+    rightcallid = Column(Integer, ForeignKey('rightcall.id', ondelete='CASCADE'), nullable=False, server_default='0')
     exten = Column(String(40), nullable=False, server_default='')
