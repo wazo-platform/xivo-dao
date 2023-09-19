@@ -10,7 +10,6 @@ from . import enum
 
 
 class SchedulePath(Base):
-
     __tablename__ = 'schedule_path'
     __table_args__ = (
         PrimaryKeyConstraint('schedule_id', 'path', 'pathid'),
@@ -18,7 +17,7 @@ class SchedulePath(Base):
         Index('schedule_path__idx__schedule_id', 'schedule_id'),
     )
 
-    schedule_id = Column(Integer, ForeignKey('schedule.id'))
+    schedule_id = Column(Integer, ForeignKey('schedule.id', ondelete='CASCADE'))
     path = Column(enum.schedule_path_type, nullable=False)
     pathid = Column(Integer, autoincrement=False)
 

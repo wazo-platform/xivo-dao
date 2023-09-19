@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
@@ -8,7 +8,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class RightCallExten(Base):
-
     __tablename__ = 'rightcallexten'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -16,5 +15,10 @@ class RightCallExten(Base):
     )
 
     id = Column(Integer, nullable=False)
-    rightcallid = Column(Integer, ForeignKey('rightcall.id'), nullable=False, server_default='0')
+    rightcallid = Column(
+        Integer,
+        ForeignKey('rightcall.id', ondelete='CASCADE'),
+        nullable=False,
+        server_default='0',
+    )
     exten = Column(String(40), nullable=False, server_default='')
