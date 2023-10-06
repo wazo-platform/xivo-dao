@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -119,7 +119,6 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail
 
 __all__ = [
@@ -242,6 +241,5 @@ __all__ = [
     "UserCustom",
     "UserFeatures",
     "UserIAX",
-    "UserSIP",
     "Voicemail",
 ]
