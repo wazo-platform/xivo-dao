@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -105,14 +105,6 @@ class TestFindBy(DAOTestCase):
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.description, equal_to('mydescription'))
 
-    def test_find_by_user_id(self):
-        incall_row = self.add_incall(destination=Dialaction(action='user', actionarg1='2'))
-
-        incall = incall_dao.find_by(user_id=2)
-
-        assert_that(incall, equal_to(incall_row))
-        assert_that(incall.user_id, equal_to(2))
-
     def test_given_incall_does_not_exist_then_returns_null(self):
         incall = incall_dao.find_by(id=42)
 
@@ -161,14 +153,6 @@ class TestGetBy(DAOTestCase):
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.description, equal_to('mydescription'))
 
-    def test_get_by_user_id(self):
-        incall_row = self.add_incall(destination=Dialaction(action='user', actionarg1='2'))
-
-        incall = incall_dao.get_by(user_id=2)
-
-        assert_that(incall, equal_to(incall_row))
-        assert_that(incall.user_id, equal_to(2))
-
     def test_given_incall_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, incall_dao.get_by, id='42')
 
@@ -195,11 +179,11 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, contains())
 
     def test_find_all_by_custom_column(self):
-        incall1 = self.add_incall(destination=Dialaction(action='user', actionarg1='2'))
-        incall2 = self.add_incall(destination=Dialaction(action='user', actionarg1='2'))
+        incall1 = self.add_incall(preprocess_subroutine='mysub', destination=Dialaction(action='user', actionarg1='2'))
+        incall2 = self.add_incall(preprocess_subroutine='mysub', destination=Dialaction(action='user', actionarg1='2'))
         self.add_incall(destination=Dialaction(action='user', actionarg1='3'))
 
-        incalls = incall_dao.find_all_by(user_id=2)
+        incalls = incall_dao.find_all_by(preprocess_subroutine='mysub')
 
         assert_that(
             incalls, has_items(has_property('id', incall1.id), has_property('id', incall2.id)),
