@@ -1132,17 +1132,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             ),
         )
 
-    def _create_user_with_usersip(self, **kwargs):
-        context = self.add_context()
-        endpoint_sip = self.add_endpoint_sip(context=context.name)
-        ule = self.add_user_line_with_exten(
-            endpoint_sip_uuid=endpoint_sip.uuid,
-            name_line=endpoint_sip.name,
-            context=context.name,
-            **kwargs,
-        )
-        return endpoint_sip.name, ule.user_id
-
 
 class BaseFindSIPSettings(DAOTestCase):
     def setUp(self):
