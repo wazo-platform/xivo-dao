@@ -142,10 +142,10 @@ class TestGet(DAOTestCase):
         )
 
     def test_given_line_has_sip_endpoint_when_getting_then_line_has_caller_id(self):
-        usersip_row = self.add_endpoint_sip(
+        endpoint_sip_row = self.add_endpoint_sip(
             endpoint_section_options=[['callerid', '"Jôhn Smith" <1000>']],
         )
-        line_row = self.add_line(endpoint_sip_uuid=usersip_row.uuid)
+        line_row = self.add_line(endpoint_sip_uuid=endpoint_sip_row.uuid)
 
         line = line_dao.get(line_row.id)
 
@@ -251,10 +251,10 @@ class TestEdit(DAOTestCase):
         self.assertRaises(InputError, setattr, line, 'caller_id_num', "1000")
 
     def test_given_line_has_sip_endpoint_when_editing_then_endpoint_updated(self):
-        usersip_row = self.add_endpoint_sip(
+        endpoint_sip_row = self.add_endpoint_sip(
             endpoint_section_options=[['callerid', '"Jôhn Smith" <1000>']]
         )
-        line_row = self.add_line(endpoint_sip_uuid=usersip_row.uuid)
+        line_row = self.add_line(endpoint_sip_uuid=endpoint_sip_row.uuid)
         line_id = line_row.id
         self.session.expire(line_row)
 
@@ -264,14 +264,14 @@ class TestEdit(DAOTestCase):
 
         line_dao.edit(line)
 
-        edited_endpoint = self.session.query(EndpointSIP).get(usersip_row.uuid)
+        edited_endpoint = self.session.query(EndpointSIP).get(endpoint_sip_row.uuid)
         assert_that(edited_endpoint.caller_id, equal_to('"Rôger Rabbit" <2000>'))
 
     def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
-        usersip_row = self.add_endpoint_sip(
+        endpoint_sip_row = self.add_endpoint_sip(
             endpoint_section_options=[['callerid', '"Jôhn Smith" <1000>']]
         )
-        line_row = self.add_line(endpoint_sip_uuid=usersip_row.uuid)
+        line_row = self.add_line(endpoint_sip_uuid=endpoint_sip_row.uuid)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
@@ -305,15 +305,15 @@ class TestEdit(DAOTestCase):
         self.assertRaises(InputError, setattr, line, 'caller_id_num', '2000')
 
     def test_linefeatures_name_updated_after_sip_endpoint_association(self):
-        usersip_row = self.add_endpoint_sip()
+        endpoint_sip_row = self.add_endpoint_sip()
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        line_dao.associate_endpoint_sip(line, usersip_row)
+        line_dao.associate_endpoint_sip(line, endpoint_sip_row)
         line_dao.edit(line)
 
         edited_linefeatures = self.session.query(Line).get(line_row.id)
-        assert_that(edited_linefeatures.name, equal_to(usersip_row.name))
+        assert_that(edited_linefeatures.name, equal_to(endpoint_sip_row.name))
 
     def test_linefeatures_name_updated_after_sccp_endpoint_association(self):
         sccpline_row = self.add_sccpline()
@@ -464,15 +464,15 @@ class TestSearch(DAOTestCase):
         )
 
     def test_search_returns_sip_line_associated(self):
-        usersip = self.add_endpoint_sip()
+        endpoint_sip = self.add_endpoint_sip()
         context = self.add_context(name='default')
-        line = self.add_line(context=context.name, endpoint_sip_uuid=usersip.uuid)
+        line = self.add_line(context=context.name, endpoint_sip_uuid=endpoint_sip.uuid)
 
         search_result = line_dao.search()
         assert_that(search_result.total, equal_to(1))
 
         line = search_result.items[0]
-        assert_that(line.endpoint_sip_uuid, usersip.uuid)
+        assert_that(line.endpoint_sip_uuid, endpoint_sip.uuid)
 
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()

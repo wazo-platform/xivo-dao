@@ -1,4 +1,4 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -369,7 +369,7 @@ class EndpointSIP(Base):
         self._endpoint_section.add_or_replace('callerid', caller_id)
 
     def update_caller_id(self, user, extension=None):
-        # Copied from usersip
+        # Copied from old table
         name, num = user.extrapolate_caller_id(extension)
         caller_id = f'"{name}"'
         if num:
