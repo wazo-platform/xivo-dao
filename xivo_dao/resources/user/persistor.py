@@ -58,7 +58,12 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         return query.all()
 
     def _search(self, parameters, is_collated=False):
-        view = self.user_view.select(parameters.get('view'))
+        selected_view = parameters.get('view')
+        if not selected_view:
+            limit = parameters.get('limit') or 0
+            if 0 < limit < 101:
+                selected_view = 'paginated'
+        view = self.user_view.select(selected_view)
         query = view.query(self.session)
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
