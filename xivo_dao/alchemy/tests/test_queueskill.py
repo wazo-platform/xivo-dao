@@ -14,14 +14,15 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestAgentQueueSkills(DAOTestCase):
-
     def test_getter(self):
         skill = self.add_queue_skill()
         agent_skill1 = self.add_agent_queue_skill(skillid=skill.id)
         agent_skill2 = self.add_agent_queue_skill(skillid=skill.id)
 
         self.session.expire_all()
-        assert_that(skill.agent_queue_skills, contains_inanyorder(agent_skill1, agent_skill2))
+        assert_that(
+            skill.agent_queue_skills, contains_inanyorder(agent_skill1, agent_skill2)
+        )
 
     def test_setter(self):
         skill = self.add_queue_skill()
@@ -48,8 +49,8 @@ class TestAgentQueueSkills(DAOTestCase):
         assert_that(not inspect(skill).deleted)
         assert_that(not inspect(agent).deleted)
 
-class TestDeleter(DAOTestCase):
 
+class TestDeleter(DAOTestCase):
     def test_queue_skill(self):
         skill = self.add_queue_skill()
 

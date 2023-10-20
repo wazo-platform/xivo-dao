@@ -1,7 +1,6 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
@@ -15,9 +14,7 @@ from sqlalchemy.types import Integer, String, Text
 from xivo_dao.helpers.db_manager import Base
 
 
-
 class QueueSkill(Base):
-
     __tablename__ = 'queueskill'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
