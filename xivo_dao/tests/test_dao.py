@@ -69,7 +69,6 @@ from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
@@ -591,12 +590,6 @@ class ItemInserter:
         queue_skill = QueueSkill(**kwargs)
         self.add_me(queue_skill)
         return queue_skill
-
-    def add_queue_skill_category(self, **kwargs):
-        kwargs.setdefault('name', self._random_name())
-        skill_category = QueueSkillCat(**kwargs)
-        self.add_me(skill_category)
-        return skill_category
 
     def add_queue_skill_rule(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
