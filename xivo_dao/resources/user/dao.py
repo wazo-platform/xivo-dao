@@ -1,6 +1,7 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from contextlib import contextmanager
 
 from xivo_dao.helpers.db_manager import Session
 
@@ -80,3 +81,9 @@ def delete(user):
 
 def associate_all_groups(user, groups):
     persistor().associate_all_groups(user, groups)
+
+
+@contextmanager
+def query_options(*options):
+    with UserPersistor.context_query_options(*options):
+        yield
