@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -6,7 +6,6 @@ from hamcrest import (
     all_of,
     assert_that,
     contains,
-    empty,
     equal_to,
     has_items,
     has_properties,
@@ -18,7 +17,6 @@ from hamcrest import (
 
 from sqlalchemy.inspection import inspect
 from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -27,7 +25,6 @@ from .. import dao as skill_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_skill(self):
         result = skill_dao.find(42)
 
@@ -53,7 +50,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_skill(self):
         self.assertRaises(NotFoundError, skill_dao.get, 42)
 
@@ -72,11 +68,12 @@ class TestGet(DAOTestCase):
         assert_that(skill, equal_to(skill_row))
 
         skill_row = self.add_queue_skill()
-        self.assertRaises(NotFoundError, skill_dao.get, skill_row.id, tenant_uuids=[tenant.uuid])
+        self.assertRaises(
+            NotFoundError, skill_dao.get, skill_row.id, tenant_uuids=[tenant.uuid]
+        )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, skill_dao.find_by, invalid=42)
 
@@ -106,7 +103,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, skill_dao.get_by, invalid=42)
 
@@ -127,7 +123,9 @@ class TestGetBy(DAOTestCase):
         skill_row = self.add_queue_skill()
         self.assertRaises(
             NotFoundError,
-            skill_dao.get_by, id=skill_row.id, tenant_uuids=[tenant.uuid],
+            skill_dao.get_by,
+            id=skill_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         skill_row = self.add_queue_skill(tenant_uuid=tenant.uuid)
@@ -136,7 +134,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_skills(self):
         result = skill_dao.find_all_by(name='123')
 
@@ -148,10 +145,13 @@ class TestFindAllBy(DAOTestCase):
 
         skills = skill_dao.find_all_by(description='description')
 
-        assert_that(skills, has_items(
-            has_property('id', skill1.id),
-            has_property('id', skill2.id),
-        ))
+        assert_that(
+            skills,
+            has_items(
+                has_property('id', skill1.id),
+                has_property('id', skill2.id),
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -169,14 +169,12 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = skill_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_skills_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -190,7 +188,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleSkills(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.skill1 = self.add_queue_skill(name='Ashton', description='resto')
@@ -205,46 +202,50 @@ class TestSearchGivenMultipleSkills(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.skill1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.skill2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [
-            self.skill1,
-            self.skill3,
-            self.skill4
-        ])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='description')
+        expected_all_resto = SearchResult(3, [self.skill1, self.skill3, self.skill4])
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='description'
+        )
 
     def test_when_searching_with_a_custom_extra_argument(self):
         expected_allow = SearchResult(1, [self.skill2])
         self.assert_search_returns_result(expected_allow, description='bar')
 
-        expected_all_deny = SearchResult(3, [
-            self.skill1,
-            self.skill3,
-            self.skill4
-        ])
+        expected_all_deny = SearchResult(3, [self.skill1, self.skill3, self.skill4])
         self.assert_search_returns_result(expected_all_deny, description='resto')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.skill1,
-            self.skill2,
-            self.skill3,
-            self.skill4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.skill1,
+                self.skill2,
+                self.skill3,
+                self.skill4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.skill4,
-            self.skill3,
-            self.skill2,
-            self.skill1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.skill4,
+                self.skill3,
+                self.skill2,
+                self.skill1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -254,11 +255,7 @@ class TestSearchGivenMultipleSkills(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_name_of_items(self):
-        expected = SearchResult(4, [
-            self.skill2,
-            self.skill3,
-            self.skill4
-        ])
+        expected = SearchResult(4, [self.skill2, self.skill3, self.skill4])
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -276,7 +273,6 @@ class TestSearchGivenMultipleSkills(TestSearch):
 
 
 class TestSearchGivenMultipleTenants(TestSearch):
-
     def test_multiple_tenants(self):
         tenant_1 = self.add_tenant()
         tenant_2 = self.add_tenant()
@@ -287,7 +283,9 @@ class TestSearchGivenMultipleTenants(TestSearch):
         skill_3 = self.add_queue_skill(name='c', tenant_uuid=tenant_3.uuid)
 
         expected = SearchResult(2, [skill_1, skill_2])
-        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+        self.assert_search_returns_result(
+            expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid]
+        )
 
         expected = SearchResult(0, [])
         self.assert_search_returns_result(expected, tenant_uuids=[])
@@ -297,170 +295,81 @@ class TestSearchGivenMultipleTenants(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         skill = QueueSkill(tenant_uuid=self.default_tenant.uuid, name='name')
         skill = skill_dao.create(skill)
 
         assert_that(inspect(skill).persistent)
-        assert_that(skill, has_properties(
-            id=not_none(),
-            name='name',
-            description=None,
-            category=None,
-        ))
+        assert_that(
+            skill,
+            has_properties(
+                id=not_none(),
+                name='name',
+                description=None,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         skill = QueueSkill(
             tenant_uuid=self.default_tenant.uuid,
             name='MyName',
             description='MyDescription',
-            category='MyCategory',
         )
         skill = skill_dao.create(skill)
 
         assert_that(inspect(skill).persistent)
-        assert_that(skill, has_properties(
-            name='MyName',
-            description='MyDescription',
-            category='MyCategory',
-        ))
-
-    def test_create_with_create_category(self):
-        skill = QueueSkill(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyName',
-            category='MyCategory',
+        assert_that(
+            skill,
+            has_properties(
+                name='MyName',
+                description='MyDescription',
+            ),
         )
-
-        skill = skill_dao.create(skill)
-
-        self.session.expire_all()
-        assert_that(skill.queue_skill_cat, has_properties(
-            name='MyCategory',
-        ))
-        result = self.session.query(QueueSkillCat).all()
-        assert_that(result, contains(skill.queue_skill_cat))
-
-    def test_create_without_create_category(self):
-        category = self.add_queue_skill_category(name='default')
-        skill = QueueSkill(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyName',
-            category='default',
-        )
-
-        skill = skill_dao.create(skill)
-
-        self.session.expire_all()
-        assert_that(skill.queue_skill_cat, has_properties(
-            name='default',
-        ))
-        result = self.session.query(QueueSkillCat).all()
-        assert_that(result, contains(category))
-
-    def test_create_category_to_none(self):
-        skill = QueueSkill(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyName',
-            category=None,
-        )
-
-        skill = skill_dao.create(skill)
-
-        self.session.expire_all()
-        assert_that(skill.queue_skill_cat, equal_to(None))
-
-        result = self.session.query(QueueSkillCat).all()
-        assert_that(result, empty())
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         skill = self.add_queue_skill(
             name='MyName',
             description='MyDescription',
-            category='MyCategory',
         )
 
         self.session.expire_all()
         skill.name = 'OtherName'
         skill.description = 'OtherDescription'
-        skill.category = 'OtherCategory'
 
         skill_dao.edit(skill)
 
         self.session.expire_all()
-        assert_that(skill, has_properties(
-            name='OtherName',
-            description='OtherDescription',
-            category='OtherCategory',
-        ))
+        assert_that(
+            skill,
+            has_properties(
+                name='OtherName',
+                description='OtherDescription',
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
         skill = self.add_queue_skill(
             name='MyName',
             description='MyDescription',
-            category='MyCategory',
         )
 
         self.session.expire_all()
         skill.description = None
-        skill.category = None
 
         skill_dao.edit(skill)
 
         self.session.expire_all()
-        assert_that(skill, has_properties(
-            description=none(),
-            category=none(),
-        ))
-
-    def test_edit_with_create_category(self):
-        skill = self.add_queue_skill()
-
-        skill.category = 'MyCategory'
-        skill_dao.edit(skill)
-
-        self.session.expire_all()
-        assert_that(skill.queue_skill_cat, has_properties(
-            name='MyCategory',
-        ))
-        result = self.session.query(QueueSkillCat).all()
-        assert_that(result, contains(skill.queue_skill_cat))
-
-    def test_edit_without_create_category(self):
-        category = self.add_queue_skill_category(name='default')
-        skill = self.add_queue_skill()
-
-        skill.category = 'default'
-        skill_dao.edit(skill)
-
-        self.session.expire_all()
-        assert_that(skill.queue_skill_cat, has_properties(
-            name='default',
-        ))
-        result = self.session.query(QueueSkillCat).all()
-        assert_that(result, contains(category))
-
-    def test_edit_category_to_none(self):
-        category = self.add_queue_skill_category(name='default')
-        skill = self.add_queue_skill(category='default')
-
-        skill.category = None
-        skill_dao.edit(skill)
-
-        self.session.expire_all()
-        assert_that(skill.queue_skill_cat, equal_to(None))
-
-        # TODO Maybe we should delete category if not skill associated
-        result = self.session.query(QueueSkillCat).all()
-        assert_that(result, contains(category))
+        assert_that(
+            skill,
+            has_properties(
+                description=none(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         skill = self.add_queue_skill()
 

@@ -84,7 +84,6 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.resolvconf import Resolvconf
 from xivo_dao.alchemy.rightcall import RightCall
@@ -206,7 +205,6 @@ __all__ = [
     "QueuePenalty",
     "QueuePenaltyChange",
     "QueueSkill",
-    "QueueSkillCat",
     "QueueSkillRule",
     "Resolvconf",
     "RightCall",

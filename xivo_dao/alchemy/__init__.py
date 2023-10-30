@@ -51,7 +51,6 @@ from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.pjsip_transport_option import PJSIPTransportOption
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.sccpline import SCCPLine
@@ -118,7 +117,6 @@ __all__ = [
     'PJSIPTransportOption',
     'QueueMember',
     'QueueSkill',
-    'QueueSkillCat',
     'RightCall',
     'RightCallMember',
     'SCCPLine',

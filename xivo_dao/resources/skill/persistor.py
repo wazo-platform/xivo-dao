@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.persistor import BasePersistor
@@ -33,25 +32,10 @@ class SkillPersistor(CriteriaBuilderMixin, BasePersistor):
         return self.session.query(self.search_system.config.table)
 
     def create(self, skill):
-        self._set_or_create_category(skill)
         self.session.add(skill)
         self.session.flush()
         return skill
 
     def edit(self, skill):
-        self._set_or_create_category(skill)
         self.session.add(skill)
         self.session.flush()
-
-    def _set_or_create_category(self, skill):
-        if not hasattr(skill, '_category'):
-            return
-
-        if skill._category is None:
-            self.queue_skill_cat = None
-            return
-
-        category = self.session.query(QueueSkillCat).filter_by(name=skill._category).first()
-        if not category:
-            category = QueueSkillCat(name=skill._category)
-        skill.queue_skill_cat = category
