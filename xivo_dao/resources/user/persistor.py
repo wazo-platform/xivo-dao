@@ -9,10 +9,11 @@ from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.persistor import BasePersistor
+from xivo_dao.resources.utils.query_options import QueryOptionsMixin
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class UserPersistor(CriteriaBuilderMixin, BasePersistor):
+class UserPersistor(QueryOptionsMixin, CriteriaBuilderMixin, BasePersistor):
     _search_table = User
 
     def __init__(self, session, user_view, user_search, tenant_uuids=None):
@@ -58,7 +59,10 @@ class UserPersistor(CriteriaBuilderMixin, BasePersistor):
         return query.all()
 
     def _search(self, parameters, is_collated=False):
-        view = self.user_view.select(parameters.get('view'))
+        view = self.user_view.select(
+            parameters.get('view'),
+            default_query=self._generate_query(),
+        )
         query = view.query(self.session)
         if self.tenant_uuids is not None:
             query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
