@@ -14,6 +14,14 @@ from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.user_line import UserLine
 
 
+class PaginatedView(View):
+    def query(self, session):
+        return session.query(User)
+
+    def convert(self, model):
+        return model
+
+
 class UserView(View):
     def query(self, session):
         return session.query(User).options(
@@ -137,5 +145,5 @@ class SummaryView(View):
 
 
 user_view = ViewSelector(
-    default=UserView(), directory=DirectoryView(), summary=SummaryView()
+    default=UserView(), directory=DirectoryView(), summary=SummaryView(), paginated=PaginatedView(),
 )
