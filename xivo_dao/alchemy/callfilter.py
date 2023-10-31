@@ -1,6 +1,8 @@
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -24,16 +26,19 @@ class Callfilter(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
+        UniqueConstraint('uuid'),
         Index('callfilter__idx__tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer, nullable=False)
+    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(
         String(36),
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
         nullable=False,
     )
     name = Column(String(128), nullable=False, server_default='')
+    label = Column(Text, nullable=False)
     type = Column(enum.callfilter_type, nullable=False)
     bosssecretary = Column(enum.callfilter_bosssecretary)
     callfrom = Column(enum.callfilter_callfrom)
