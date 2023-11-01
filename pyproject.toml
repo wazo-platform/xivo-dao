@@ -1,0 +1,16 @@
+[tool.black]
+skip-string-normalization = true
+
+[tool.flake8]
+show-source = true
+max-line-length = 99
+application-import-names = "xivo_dao"
+ignore = [
+  "E501", # line too long
+  "E203", # whitespace before ':'
+  "W503", # line break before binary operator
+]
+exclude = [
+    ".tox",
+    ".eggs",
+]
