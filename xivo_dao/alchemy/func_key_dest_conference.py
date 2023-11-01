@@ -11,7 +11,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestConference(Base):
-
     DESTINATION_TYPE_ID = 4
 
     __tablename__ = 'func_key_dest_conference'
@@ -24,8 +23,12 @@ class FuncKeyDestConference(Base):
     )
 
     func_key_id = Column(Integer, primary_key=True)
-    destination_type_id = Column(Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}")
-    conference_id = Column(Integer, ForeignKey('conference.id'), primary_key=True)
+    destination_type_id = Column(
+        Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}"
+    )
+    conference_id = Column(
+        Integer, ForeignKey('conference.id', ondelete='CASCADE'), primary_key=True
+    )
 
     type = 'conference'
 
