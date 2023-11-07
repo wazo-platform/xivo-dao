@@ -25,6 +25,7 @@ def find_or_create_tenant(session, tenant_uuid):
         tenant = session.query(Tenant).get(tenant_uuid)
     return tenant
 
+
 @daosession
 def find(session):
     return session.query(Tenant).first()
