@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -9,9 +9,11 @@ from hamcrest import (
 )
 
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..conference import Conference
+from ..func_key_dest_conference import FuncKeyDestConference
 
 
 class TestIncalls(DAOTestCase):
@@ -48,7 +50,11 @@ class TestExten(DAOTestCase):
         assert_that(result.exten, equal_to(extension.exten))
 
 
-class TestDelete(DAOTestCase):
+class TestDelete(DAOTestCase, FuncKeyHelper):
+
+    def setUp(self):
+        super().setUp()
+        self.setup_funckeys()
 
     def test_dialaction_actions_are_deleted(self):
         conference = self.add_conference()
@@ -61,4 +67,14 @@ class TestDelete(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(Dialaction).first()
+        assert_that(row, none())
+
+    def test_funckeys_conference_are_deleted(self):
+        conference = self.add_conference()
+        self.add_conference_destination(conference.id)
+
+        self.session.delete(conference)
+        self.session.flush()
+
+        row = self.session.query(FuncKeyDestConference).first()
         assert_that(row, none())
