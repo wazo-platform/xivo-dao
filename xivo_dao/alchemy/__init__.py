@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # explicitly import modules that are referenced in relationship to prevent
@@ -23,6 +23,7 @@ from xivo_dao.alchemy.endpoint_sip_options_view import EndpointSIPOptionsView
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
+from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
@@ -89,6 +90,7 @@ __all__ = [
     'Extension',
     'FuncKeyDestAgent',
     'FuncKeyDestBSFilter',
+    'FuncKeyDestConference',
     'FuncKeyDestGroup',
     'FuncKeyDestGroupMember',
     'FuncKeyDestPaging',
