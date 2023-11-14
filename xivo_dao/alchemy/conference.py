@@ -81,6 +81,11 @@ class Conference(Base):
         cascade='all, delete-orphan',
     )
 
+    func_keys_conference = relationship(
+        'FuncKeyDestConference',
+        cascade='all, delete-orphan',
+    )
+
     @hybrid_property
     def exten(self):
         for extension in self.extensions:
