@@ -132,6 +132,7 @@ class TestStatDAO(DAOTestCase):
                 assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
 
     def test_get_completed_logins(self):
+        self.add_context(name='default')
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
         start = dt(2012, 6, 1, tzinfo=UTC)

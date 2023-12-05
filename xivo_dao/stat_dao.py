@@ -279,10 +279,12 @@ def _get_completed_logins(session, start, end):
 WITH agent_logins AS (
 SELECT
     agent,
+    context.tenant_uuid as tenant_uuid,
     time AS logout_timestamp,
     time - (data2 || ' seconds')::INTERVAL AS login_timestamp
 FROM
     queue_log
+JOIN context ON split_part(queue_log.data1, '@', 2) = context.name
 WHERE
     event = 'AGENTCALLBACKLOGOFF'
     AND data1 <> ''
@@ -298,7 +300,7 @@ SELECT
 FROM
     stat_agent
     INNER JOIN agent_logins
-        ON agent_logins.agent = stat_agent.name
+        ON agent_logins.agent = stat_agent.name AND agent_logins.tenant_uuid = stat_agent.tenant_uuid
 ORDER BY
     agent_logins.agent, agent_logins.logout_timestamp
 '''
