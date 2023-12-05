@@ -146,8 +146,8 @@ class TestStatDAO(DAOTestCase):
 | 2012-06-01 06:05:00.000000+00 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-06-01 06:30:00.000000+00 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
 | 2012-06-01 06:30:00.000001+00 | agent_2  | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
-| 2012-06-01 06:40:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
-| 2012-06-01 06:45:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:45:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |   300 | CommandLogoff |       |       |
 '''
 
         self._insert_queue_log_data(queue_log_data)
@@ -183,8 +183,8 @@ class TestStatDAO(DAOTestCase):
 | 2012-06-01 06:05:00.000000+00 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-06-01 06:30:00.000000+00 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
 | 2012-06-01 06:30:00.000001+00 | agent_2  | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
-| 2012-06-01 06:40:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
-| 2012-06-01 06:45:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:45:00.000000+00 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |   300 | CommandLogoff |       |       |
 '''
 
         self._insert_queue_log_data(queue_log_data)
@@ -208,7 +208,7 @@ class TestStatDAO(DAOTestCase):
         queue_log_data = '''\
 | time                          | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
 | 2012-01-01 10:00:00.000000+00 | agent_3    | NONE      | Agent/3 | AGENTCALLBACKLOGIN  | 1003@default |       |               |       |       |
-| 2012-05-31 20:00:00.000000+00 | not_logged | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-05-31 20:00:00.000000+00 | not_logged | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-05-31 22:00:00.000000+00 | logout_0   | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
 | 2012-05-31 23:00:00.000000+00 | login_1    | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-06-01 00:00:00.000000+00 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
@@ -216,8 +216,8 @@ class TestStatDAO(DAOTestCase):
 | 2012-06-01 06:05:00.000000+00 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-06-01 06:30:00.000000+00 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
 | 2012-06-01 06:30:00.000001+00 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
-| 2012-06-01 06:40:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
-| 2012-06-01 06:45:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:45:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |   300 | CommandLogoff |       |       |
 | 2012-06-01 09:00:00.000000+00 | agent_4    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
 '''
 
@@ -243,7 +243,7 @@ class TestStatDAO(DAOTestCase):
 
         queue_log_data = '''\
 | time                          | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
-| 2012-05-31 20:00:00.000000+00 | not_logged | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-05-31 20:00:00.000000+00 | not_logged | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-05-31 22:00:00.000000+00 | logout_0   | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
 | 2012-05-31 23:00:00.000000+00 | login_1    | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-06-01 00:00:00.000000+00 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
@@ -251,8 +251,8 @@ class TestStatDAO(DAOTestCase):
 | 2012-06-01 06:05:00.000000+00 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
 | 2012-06-01 06:30:00.000000+00 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
 | 2012-06-01 06:30:00.000001+00 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
-| 2012-06-01 06:40:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
-| 2012-06-01 06:45:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:45:00.000000+00 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |   300 | CommandLogoff |       |       |
 | 2012-06-01 09:00:00.000000+00 | agent_4    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
 | 2012-06-01 10:00:00.000000+00 | agent_5    | NONE      | Agent/4 | AGENTCALLBACKLOGOFF | 1004@default |   300 |               |       |       |
 | 2012-01-01 10:00:00.000000+00 | agent_3    | NONE      | Agent/3 | AGENTCALLBACKLOGIN  | 1003@default |       |               |       |       |

@@ -284,7 +284,7 @@ SELECT
 FROM
     queue_log
 WHERE
-    event like 'AGENT%LOGOFF'
+    event = 'AGENTCALLBACKLOGOFF'
     AND data1 <> ''
     AND data2::INTEGER > 0
     AND time > :start
@@ -353,18 +353,18 @@ def _get_last_logins_and_logouts(session, start, end):
     query = '''\
 SELECT
   stat_agent.id AS agent,
-  MAX(case when event like '%LOGIN' then time end) AS login,
-  MAX(case when event like '%LOGOFF' then time end) AS logout
+  MAX(case when event = 'AGENTCALLBACKLOGIN' then time end) AS login,
+  MAX(case when event = 'AGENTCALLBACKLOGOFF' then time end) AS logout
 FROM
   stat_agent
 JOIN
   queue_log ON queue_log.agent = stat_agent.name
 WHERE
-  event LIKE 'AGENT%'
+  event LIKE 'AGENTCALLBACKLOG%'
 GROUP BY
   stat_agent.id
 HAVING
-  MAX(case when event like '%LOGIN' then time end) < :end
+  MAX(case when event = 'AGENTCALLBACKLOGIN' then time end) < :end
 '''
 
     start = start.strftime(_STR_TIME_FMT)
