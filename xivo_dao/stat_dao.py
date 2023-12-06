@@ -103,9 +103,9 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_i
     FROM
         all_calls
     LEFT JOIN
-        stat_agent ON all_calls.agent = stat_agent.name
-    LEFT JOIN
         stat_queue ON all_calls.queuename = stat_queue.name
+    LEFT JOIN
+        stat_agent ON all_calls.agent = stat_agent.name AND stat_agent.tenant_uuid = stat_queue.tenant_uuid
     ORDER BY
         all_calls.time
 )

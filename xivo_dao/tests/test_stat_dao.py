@@ -7,7 +7,7 @@ import pytz
 from datetime import datetime as t
 import pathlib
 
-from hamcrest import assert_that, contains, equal_to, has_properties
+from hamcrest import assert_that, contains, contains_inanyorder, equal_to, has_properties
 
 from sqlalchemy import func
 
@@ -88,6 +88,128 @@ class TestFillAnsweredCall(DAOTestCase):
         ).filter(StatCallOnQueue.callid == self.callid).scalar()
 
         assert_that(count, equal_to(1))
+
+    def test_multitenant_answered_calls(self):
+        begin = t(2014, 7, 3, 11, 0, 0)
+        end = t(2014, 7, 3, 11, 59, 59, 999999)
+
+        callid_1 = '1404377805.6457'
+        callid_2 = '1404377805.6458'
+
+        tenant_1 = self.add_tenant()
+        tenant_2 = self.add_tenant()
+
+        stat_queue_1 = StatQueue(
+            name='q1',
+            tenant_uuid=tenant_1.uuid,
+            queue_id=1,
+        )
+        stat_queue_2 = StatQueue(
+            name='q2',
+            tenant_uuid=tenant_2.uuid,
+            queue_id=2,
+        )
+        self.add_me_all([stat_queue_1, stat_queue_2])
+
+        stat_agent_1 = StatAgent(
+            name='Agent/1001',
+            tenant_uuid=tenant_1.uuid,
+            agent_id=1,
+        )
+        stat_agent_2 = StatAgent(
+            name='Agent/1001',
+            tenant_uuid=tenant_2.uuid,
+            agent_id=2,
+        )
+        self.add_me_all([stat_agent_1, stat_agent_2])
+
+        self.add_me_all([
+            # Call on tenant 1
+            QueueLog(
+                time='2014-07-03 10:57:11.559080',
+                callid=callid_1,
+                queuename=stat_queue_1.name,
+                agent='NONE',
+                event='ENTERQUEUE',
+                data2='00049242184770',
+                data3='1',
+            ),
+            QueueLog(
+                time='2014-07-03 10:57:19.461280',
+                callid=callid_1,
+                queuename=stat_queue_1.name,
+                agent=stat_agent_1.name,
+                event='CONNECT',
+                data1='8',
+                data2='1404377831.6460',
+                data3='4',
+            ),
+            QueueLog(
+                time='2014-07-03 11:06:10.374302',
+                callid=callid_1,
+                queuename=stat_queue_1.name,
+                agent=stat_agent_1.name,
+                event='COMPLETEAGENT',
+                data1='8',
+                data2='531',
+                data3='1',
+            ),
+
+            # Call on tenant 2
+            QueueLog(
+                time='2014-07-03 10:57:11.559080',
+                callid=callid_2,
+                queuename=stat_queue_2.name,
+                agent='NONE',
+                event='ENTERQUEUE',
+                data2='00049242184770',
+                data3='1',
+            ),
+            QueueLog(
+                time='2014-07-03 10:57:19.461280',
+                callid=callid_2,
+                queuename=stat_queue_2.name,
+                agent=stat_agent_2.name,
+                event='CONNECT',
+                data1='8',
+                data2='1404377831.6460',
+                data3='4',
+            ),
+            QueueLog(
+                time='2014-07-03 11:06:10.374302',
+                callid=callid_2,
+                queuename=stat_queue_2.name,
+                agent=stat_agent_2.name,
+                event='COMPLETEAGENT',
+                data1='8',
+                data2='531',
+                data3='1',
+            ),
+        ])
+
+        stat_dao.fill_answered_calls(self.session, begin, end)
+
+        results = self.session.query(StatCallOnQueue).filter(
+            StatCallOnQueue.callid.in_([callid_1, callid_2])
+        ).all()
+
+        assert_that(
+            results,
+            contains_inanyorder(
+                has_properties(
+                    callid=callid_1,
+                    stat_queue_id=stat_queue_1.id,
+                    stat_agent_id=stat_agent_1.id,
+                    status='answered',
+                ),
+                has_properties(
+                    callid=callid_2,
+                    stat_queue_id=stat_queue_2.id,
+                    stat_agent_id=stat_agent_2.id,
+                    status='answered',
+                ),
+            )
+        )
 
 
 class TestFillSimpleCall(DAOTestCase):
