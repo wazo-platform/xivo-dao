@@ -12,7 +12,7 @@ class AgentFeatures(Base):
 
     __tablename__ = 'agentfeatures'
     __table_args__ = (
-        UniqueConstraint('number'),
+        UniqueConstraint('number', 'tenant_uuid'),
         Index('agentfeatures__idx__tenant_uuid', 'tenant_uuid'),
     )
 

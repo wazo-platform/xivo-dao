@@ -103,9 +103,9 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_i
     FROM
         all_calls
     LEFT JOIN
-        stat_agent ON all_calls.agent = stat_agent.name
-    LEFT JOIN
         stat_queue ON all_calls.queuename = stat_queue.name
+    LEFT JOIN
+        stat_agent ON all_calls.agent = stat_agent.name AND stat_agent.tenant_uuid = stat_queue.tenant_uuid
     ORDER BY
         all_calls.time
 )
@@ -279,12 +279,14 @@ def _get_completed_logins(session, start, end):
 WITH agent_logins AS (
 SELECT
     agent,
+    context.tenant_uuid as tenant_uuid,
     time AS logout_timestamp,
     time - (data2 || ' seconds')::INTERVAL AS login_timestamp
 FROM
     queue_log
+JOIN context ON split_part(queue_log.data1, '@', 2) = context.name
 WHERE
-    event like 'AGENT%LOGOFF'
+    event = 'AGENTCALLBACKLOGOFF'
     AND data1 <> ''
     AND data2::INTEGER > 0
     AND time > :start
@@ -298,7 +300,7 @@ SELECT
 FROM
     stat_agent
     INNER JOIN agent_logins
-        ON agent_logins.agent = stat_agent.name
+        ON agent_logins.agent = stat_agent.name AND agent_logins.tenant_uuid = stat_agent.tenant_uuid
 ORDER BY
     agent_logins.agent, agent_logins.logout_timestamp
 '''
@@ -353,18 +355,18 @@ def _get_last_logins_and_logouts(session, start, end):
     query = '''\
 SELECT
   stat_agent.id AS agent,
-  MAX(case when event like '%LOGIN' then time end) AS login,
-  MAX(case when event like '%LOGOFF' then time end) AS logout
+  MAX(case when event = 'AGENTCALLBACKLOGIN' then time end) AS login,
+  MAX(case when event = 'AGENTCALLBACKLOGOFF' then time end) AS logout
 FROM
   stat_agent
 JOIN
   queue_log ON queue_log.agent = stat_agent.name
 WHERE
-  event LIKE 'AGENT%'
+  event LIKE 'AGENTCALLBACKLOG%'
 GROUP BY
   stat_agent.id
 HAVING
-  MAX(case when event like '%LOGIN' then time end) < :end
+  MAX(case when event = 'AGENTCALLBACKLOGIN' then time end) < :end
 '''
 
     start = start.strftime(_STR_TIME_FMT)

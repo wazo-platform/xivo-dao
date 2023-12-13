@@ -8,6 +8,8 @@ from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from ..stat_agent_dao import AgentKey
+
 
 class TestStatAgentDAO(DAOTestCase):
 
@@ -21,7 +23,8 @@ class TestStatAgentDAO(DAOTestCase):
     def test_insert_missing_agents(self):
         # 1: in confd + in stat
         # 2: in confd + not in stat',
-        # 3: not in confd + in stat',
+        # 3: in confd + not in stat same number,
+        # 4: not in confd + in stat',
         confd_agents = [
             {
                 'id': 1,
@@ -33,9 +36,14 @@ class TestStatAgentDAO(DAOTestCase):
                 'number': '2',
                 'tenant_uuid': 'tenant2',
             },
+            {
+                'id': 3,
+                'number': '2',
+                'tenant_uuid': 'tenant1',
+            },
         ]
         self._insert_agent('Agent/1', 'tenant1', 1)
-        self._insert_agent('Agent/3', 'tenant3', 3)
+        self._insert_agent('Agent/3', 'tenant3', 4)
 
         with flush_session(self.session):
             stat_agent_dao.insert_missing_agents(self.session, confd_agents)
@@ -43,8 +51,9 @@ class TestStatAgentDAO(DAOTestCase):
         result = self._fetch_stat_agents()
         assert_that(result, contains_inanyorder(
             ('Agent/1', 'tenant1', 1, False),
+            ('Agent/2', 'tenant1', 3, False),
             ('Agent/2', 'tenant2', 2, False),
-            ('Agent/3', 'tenant3', 3, True),
+            ('Agent/3', 'tenant3', 4, True),
         ))
 
     def test_when_agent_marked_as_deleted_then_new_one_is_created(self):
@@ -61,11 +70,16 @@ class TestStatAgentDAO(DAOTestCase):
         ))
 
     def test_mark_recreated_agents_with_same_number_as_deleted(self):
-        confd_agents = {'Agent/1': {'id': 1, 'number': '1', 'tenant_uuid': 'tenant'}}
+        confd_agents_by_key = {
+            AgentKey('Agent/1', 'tenant'): {'id': 1, 'number': '1', 'tenant_uuid': 'tenant'},
+        }
         self._insert_agent('Agent/1', 'tenant', agent_id=999, deleted=False)
 
         with flush_session(self.session):
-            stat_agent_dao._mark_recreated_agents_with_same_number_as_deleted(self.session, confd_agents)
+            stat_agent_dao._mark_recreated_agents_with_same_number_as_deleted(
+                self.session,
+                confd_agents_by_key,
+            )
 
         result = self._fetch_stat_agents()
         assert_that(result, contains_inanyorder(
@@ -73,12 +87,14 @@ class TestStatAgentDAO(DAOTestCase):
         ))
 
     def test_mark_non_confd_agents_as_deleted(self):
-        confd_agents = [{'id': 1, 'number': '1', 'tenant_uuid': 'tenant'}]
+        confd_agents_by_key = {
+            AgentKey('Agent/1', 'tenant'): {'id': 1, 'number': '1', 'tenant_uuid': 'tenant'},
+        }
         self._insert_agent('Agent/2', 'tenant', agent_id=2, deleted=False)
         self._insert_agent('Agent/3', 'tenant', agent_id=None, deleted=False)
 
         with flush_session(self.session):
-            stat_agent_dao._mark_non_confd_agents_as_deleted(self.session, confd_agents)
+            stat_agent_dao._mark_non_confd_agents_as_deleted(self.session, confd_agents_by_key)
 
         result = self._fetch_stat_agents()
         assert_that(result, contains_inanyorder(
@@ -87,13 +103,13 @@ class TestStatAgentDAO(DAOTestCase):
         ))
 
     def test_create_missing_agents(self):
-        confd_agents = {
-            'Agent/1': {'id': 1, 'number': '1', 'tenant_uuid': 'tenant'},
+        confd_agents_by_key = {
+            AgentKey('Agent/1', 'tenant'): {'id': 1, 'number': '1', 'tenant_uuid': 'tenant'},
         }
         self._insert_agent('Agent/2', 'tenant', deleted=True)
 
         with flush_session(self.session):
-            stat_agent_dao._create_missing_agents(self.session, confd_agents)
+            stat_agent_dao._create_missing_agents(self.session, confd_agents_by_key)
 
         result = self._fetch_stat_agents()
         assert_that(result, contains_inanyorder(
@@ -102,13 +118,16 @@ class TestStatAgentDAO(DAOTestCase):
         ))
 
     def test_rename_deleted_agents_with_duplicate_name(self):
-        confd_agents = {'Agent/1': {'id': 1, 'number': 'agent', 'tenant_uuid': 'tenant'}}
+        confd_agents_by_key = {
+            AgentKey('Agent/1', 'tenant'): {'id': 1, 'number': 'agent', 'tenant_uuid': 'tenant'},
+        }
         self._insert_agent('Agent/1', 'tenant', agent_id=1, deleted=True)
         self._insert_agent('Agent/1', 'tenant', agent_id=1, deleted=True)
 
         with flush_session(self.session):
             stat_agent_dao._rename_deleted_agents_with_duplicate_name(
-                self.session, confd_agents
+                self.session,
+                confd_agents_by_key,
             )
 
         result = self._fetch_stat_agents()
