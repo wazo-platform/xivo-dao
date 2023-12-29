@@ -662,7 +662,8 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
             options.append(('set_var', f'TRANSFER_CONTEXT={context_name}'))
 
         for user in self._line.users:
-            options.append(('set_var', f'XIVO_USERID={user.id}'))
+            options.append(('set_var', f'XIVO_USERID={user.id}'))  # Deprecated in 24.01
+            options.append(('set_var', f'WAZO_USERID={user.id}'))
             options.append(('set_var', f'XIVO_USERUUID={user.uuid}'))
             if user.enableonlinerec:
                 options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
