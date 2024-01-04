@@ -1,19 +1,19 @@
-# Copyright 2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 
 
 preload_relationships = (
-    joinedload(CallPermission.rightcall_groups)
-    .joinedload('group')
+    selectinload(CallPermission.rightcall_groups)
+    .selectinload('group')
     .load_only('uuid', 'id', 'name'),
-    joinedload(CallPermission.rightcall_users)
-    .joinedload('user')
+    selectinload(CallPermission.rightcall_users)
+    .selectinload('user')
     .load_only('uuid', 'firstname', 'webi_lastname'),
-    joinedload(CallPermission.rightcall_outcalls)
-    .joinedload('outcall')
+    selectinload(CallPermission.rightcall_outcalls)
+    .selectinload('outcall')
     .load_only('id', 'name'),
-    joinedload(CallPermission.rightcallextens),
+    selectinload(CallPermission.rightcallextens),
 )
