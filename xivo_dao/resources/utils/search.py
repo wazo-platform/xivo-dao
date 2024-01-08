@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
@@ -190,7 +190,7 @@ class SearchSystem:
     def _apply_search_params(self, rows, order, limit, offset, reverse):
         def _get_attr(o):
             a = getattr(o, order, '')
-            return a if a is not None else ''
+            return str(a) if a is not None else ''
 
         if order:
             rows = sorted(
@@ -207,4 +207,4 @@ class SearchSystem:
         if not limit:
             return rows[offset:]
         else:
-            return rows[offset:offset + limit]
+            return rows[offset : offset + limit]
