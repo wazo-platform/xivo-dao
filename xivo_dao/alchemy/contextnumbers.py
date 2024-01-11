@@ -1,5 +1,4 @@
 # Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
-# Copyright (C) 2016 Proformatique Inc.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import ForeignKeyConstraint
