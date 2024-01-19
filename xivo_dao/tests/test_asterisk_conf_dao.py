@@ -1755,7 +1755,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', f'XIVO_USERUUID={user.uuid}'],   # Deprecated in 24.01
+                        ['set_var', f'XIVO_USERUUID={user.uuid}'],  # Deprecatd in 24.01
                         ['set_var', f'WAZO_USERUUID={user.uuid}'],
                     ),
                 )
