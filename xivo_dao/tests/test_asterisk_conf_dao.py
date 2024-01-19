@@ -472,29 +472,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             ),
         )
 
-    def test_find_parking_settings(self):
-        self.add_features(var_name='parkeddynamic', var_val='no')
-        self.add_features(var_name='atxferdropcall', var_val='no')
-        self.add_features(var_name='parkext', var_val='700')
-
-        settings = asterisk_conf_dao.find_parking_settings()
-
-        assert_that(
-            settings['general_options'],
-            contains_inanyorder(
-                ('parkeddynamic', 'no'),
-            ),
-        )
-        assert_that(
-            settings['parking_lots'],
-            contains_inanyorder(
-                has_entries(
-                    name='default',
-                    options=[('parkext', '700')],
-                ),
-            ),
-        )
-
     def test_find_exten_conferences_settings(self):
         exten = '1234'
         context = self.add_context()
