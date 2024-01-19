@@ -434,7 +434,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
     def test_find_features_settings(self):
         self.add_features(var_name='atxfernoanswertimeout', var_val='15')
-        self.add_features(var_name='parkext', var_val='700')
         self.add_features(category='featuremap', var_name='atxfer', var_val='*2')
         self.add_features(category='featuremap', var_name='automixmon', var_val='*3')
 

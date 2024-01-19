@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.features import Features
@@ -20,24 +20,8 @@ def edit_all(session, section, features):
 
 
 @daosession
-def find_park_position_range(session):
-    query = (session.query(Features.var_val)
-             .filter(Features.commented == 0)
-             .filter(Features.var_name == 'parkpos')
-             )
-
-    raw_range = query.scalar()
-    if not raw_range:
-        return None
-
-    return tuple(int(x) for x in raw_range.split("-"))
-
-
-@daosession
 def get_value(session, feature_id):
-    value = (session.query(Features.var_val)
-             .filter(Features.id == feature_id)
-             .scalar())
+    value = session.query(Features.var_val).filter(Features.id == feature_id).scalar()
 
     if not value:
         raise errors.not_found('Features', id=feature_id)

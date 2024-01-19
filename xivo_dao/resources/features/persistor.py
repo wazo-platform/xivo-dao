@@ -1,4 +1,4 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.expression import and_, not_, or_
@@ -8,7 +8,6 @@ from xivo_dao.alchemy.features import Features
 from .search import (
     FUNC_KEY_FEATUREMAP_FOREIGN_KEY,
     FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY,
-    PARKING_OPTIONS
 )
 
 
@@ -22,9 +21,6 @@ class FeaturesPersistor:
                  .filter(Features.category == section)
                  .filter(Features.var_val != None)  # noqa
                  .order_by(Features.var_metric.asc()))
-
-        if section == 'general':
-            query = query.filter(not_(Features.var_name.in_(PARKING_OPTIONS)))
 
         return query.all()
 
@@ -44,8 +40,6 @@ class FeaturesPersistor:
     def _delete_all_section(self, section):
         query = (self.session.query(Features)
                  .filter(Features.category == section))
-        if section == 'general':
-            query = query.filter(not_(Features.var_name.in_(PARKING_OPTIONS)))
 
         if section == 'featuremap':
             query = query.filter(not_(Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)))
