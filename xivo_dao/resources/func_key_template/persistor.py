@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
@@ -16,7 +16,6 @@ from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_features import (
     FuncKeyDestFeatures,
     FuncKeyDestOnlineRecording,
-    FuncKeyDestParking,
     FuncKeyDestTransfer,
 )
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
@@ -724,9 +723,7 @@ class FeaturesPersistor(DestinationPersistor):
 
         result = query.first()
 
-        if result.var_name == 'parkext':
-            return FuncKeyDestParking(feature_id=result.id)
-        elif result.var_name == 'togglerecord':
+        if result.var_name == 'togglerecord':
             return FuncKeyDestOnlineRecording(feature_id=result.id)
 
         transfer = self.TRANSFERS_TO_API[result.var_name]
@@ -747,8 +744,6 @@ class FeaturesPersistor(DestinationPersistor):
     def find_var_name(self, destination):
         if destination.type == 'transfer':
             return self.TRANSFERS_TO_DB[destination.transfer]
-        elif destination.type == 'parking':
-            return 'parkext'
         elif destination.type == 'onlinerec':
             return 'togglerecord'
 

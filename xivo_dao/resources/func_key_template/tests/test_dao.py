@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 from uuid import uuid4
 
@@ -16,7 +16,6 @@ from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_features import (
-    FuncKeyDestParking,
     FuncKeyDestOnlineRecording,
     FuncKeyDestTransfer,
 )
@@ -24,7 +23,6 @@ from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
-from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
@@ -226,17 +224,6 @@ class TestCreate(TestDao):
         destination_row = self.find_destination('forward', feature_extension_row.uuid)
         self.assert_mapping_has_destination('forward', destination_row)
 
-    def test_given_template_has_park_position_func_key_when_creating_then_creates_mapping(self):
-        template = self.build_template_with_key(FuncKeyDestParkPosition(position=701))
-
-        result = dao.create(template)
-
-        destination_row = self.find_destination('park_position', '701')
-        assert_that(destination_row.park_position, equal_to('701'))
-
-        self.assert_mapping_has_destination('park_position', destination_row)
-        assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
-
     def test_given_template_has_custom_func_key_when_creating_then_creates_mapping(self):
         template = self.build_template_with_key(FuncKeyDestCustom(exten='1234'))
 
@@ -283,25 +270,6 @@ class TestCreate(TestDao):
         destination_row = self.create_features_func_key('featuremap', 'blindxfer', '*1', commented=1)
 
         template = self.build_template_with_key(FuncKeyDestTransfer(transfer='blind'))
-
-        dao.create(template)
-
-        self.assert_mapping_has_destination('features', destination_row)
-
-    def test_given_template_has_parking_destination_when_creating_then_creates_mapping(self):
-        destination_row = self.create_features_func_key('general', 'parkext', '700')
-
-        template = self.build_template_with_key(FuncKeyDestParking())
-
-        result = dao.create(template)
-
-        self.assert_mapping_has_destination('features', destination_row)
-        assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
-
-    def test_given_template_has_commented_parking_destination_when_creating_then_creates_mapping(self):
-        destination_row = self.create_features_func_key('general', 'parkext', '700', commented=1)
-
-        template = self.build_template_with_key(FuncKeyDestParking())
 
         dao.create(template)
 
@@ -604,15 +572,6 @@ class TestGet(TestDao):
 
         assert_that(expected, equal_to(result))
 
-    def test_given_template_has_park_position_func_key_when_getting_then_returns_service_func_key(self):
-        destination_row = self.create_park_position_func_key('701')
-        expected = self.prepare_template(destination_row,
-                                         FuncKeyDestParkPosition(position=701))
-
-        result = dao.get(expected.id)
-
-        assert_that(expected, equal_to(result))
-
     def test_given_template_has_custom_func_key_when_getting_then_returns_service_func_key(self):
         destination_row = self.create_custom_func_key('1234')
         expected = self.prepare_template(destination_row,
@@ -638,15 +597,6 @@ class TestGet(TestDao):
         expected = self.prepare_template(destination_row,
                                          FuncKeyDestTransfer(transfer='attended',
                                                              feature_id=destination_row.features_id))
-
-        result = dao.get(expected.id)
-
-        assert_that(expected, equal_to(result))
-
-    def test_given_template_has_parking_func_key_when_getting_then_returns_parking_func_key(self):
-        destination_row = self.create_features_func_key('general', 'parkext', '701')
-        expected = self.prepare_template(destination_row,
-                                         FuncKeyDestParking(feature_id=destination_row.features_id))
 
         result = dao.get(expected.id)
 
@@ -686,15 +636,6 @@ class TestDelete(TestDao):
         dao.delete(template)
 
         self.assert_destination_deleted('forward', destination_row.feature_extension_uuid)
-
-    def test_given_template_has_park_position_func_key_when_deleting_then_deletes_park_position(self):
-        destination_row = self.create_park_position_func_key('701')
-        template = self.prepare_template(destination_row,
-                                         FuncKeyDestParkPosition(position=701))
-
-        dao.delete(template)
-
-        self.assert_destination_deleted('park_position', destination_row.park_position)
 
     def test_given_template_has_custom_func_key_when_deleting_then_deletes_custom(self):
         destination_row = self.create_custom_func_key('1234')
