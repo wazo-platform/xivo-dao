@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -125,7 +125,7 @@ class TestQueueLogDAO(DAOTestCase):
             },
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_get_first_time(self):
         self.assertRaises(LookupError, queue_log_dao.get_first_time, self.session)
@@ -140,7 +140,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         result = queue_log_dao.get_first_time(self.session)
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_get_queue_names_in_range(self):
         queue_names = sorted([f'queue_{x}' for x in range(10)])
@@ -151,7 +151,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         result = sorted(queue_log_dao.get_queue_names_in_range(self.session, t - ONE_HOUR, t + ONE_HOUR))
 
-        self.assertEqual(result, queue_names)
+        assert result == queue_names
 
     def test_get_queue_abandoned_call(self):
         start = datetime(2012, 1, 1, 1, 0, 0, tzinfo=UTC)
@@ -331,30 +331,30 @@ class TestQueueLogDAO(DAOTestCase):
 
         expected = ['delete_between_1', 'delete_between_3', 'delete_between_4']
 
-        self.assertEqual(callids, expected)
+        assert callids == expected
 
     def test_insert_entry(self):
         time = datetime.now(UTC)
         queue_log_dao.insert_entry(time, 'callid', 'queue', 'agent', 'event', '1', '2', '3', '4', '5')
 
         result = [r for r in self.session.query(QueueLog).all()][0]
-        self.assertEqual(result.time, time)
-        self.assertEqual(result.callid, 'callid')
-        self.assertEqual(result.queuename, 'queue')
-        self.assertEqual(result.agent, 'agent')
-        self.assertEqual(result.event, 'event')
-        self.assertEqual(result.data1, '1')
-        self.assertEqual(result.data2, '2')
-        self.assertEqual(result.data3, '3')
-        self.assertEqual(result.data4, '4')
-        self.assertEqual(result.data5, '5')
+        assert result.time == time
+        assert result.callid == 'callid'
+        assert result.queuename == 'queue'
+        assert result.agent == 'agent'
+        assert result.event == 'event'
+        assert result.data1 == '1'
+        assert result.data2 == '2'
+        assert result.data3 == '3'
+        assert result.data4 == '4'
+        assert result.data5 == '5'
 
     def test_hours_with_calls(self):
         start = datetime(2012, 1, 1, tzinfo=UTC)
         end = datetime(2012, 6, 30, 23, 59, 59, 999999)
         res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
 
-        self.assertEqual(res, [])
+        assert res == []
 
         def _insert_at(t):
             queue_log_dao.insert_entry(t, 'hours', 'queue', 'agent', 'event')
@@ -371,7 +371,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
 
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_last_callid_with_event_for_agent(self):
         t = datetime(2012, 1, 1, tzinfo=UTC)
@@ -400,7 +400,7 @@ class TestQueueLogDAO(DAOTestCase):
             agent,
         )
 
-        self.assertEqual(res, 'two')
+        assert res == 'two'
 
     def _insert_queue_log_data(self, queue_log_data):
         with flush_session(self.session):

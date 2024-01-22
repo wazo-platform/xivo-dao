@@ -1,9 +1,9 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     equal_to,
     has_properties,
@@ -116,7 +116,7 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
     def test_given_no_voicemails_then_returns_empty_list(self):
         result = user_voicemail_dao.find_all_by_voicemail_id(1)
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_voicemail_has_no_user_associated_then_returns_empty_list(self):
         context = self.add_context(name='default')
@@ -124,7 +124,7 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
 
         result = user_voicemail_dao.find_all_by_voicemail_id(voicemail_row.uniqueid)
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_voicemail_is_associated_to_user_then_returns_one_item(self):
         user = self.add_user()
@@ -133,8 +133,10 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
 
         result = user_voicemail_dao.find_all_by_voicemail_id(voicemail.id)
 
-        assert_that(result, contains(has_properties(user_id=user.id,
-                                                    voicemail_id=voicemail.id)))
+        assert_that(result, contains_exactly(has_properties(
+            user_id=user.id,
+            voicemail_id=voicemail.id
+        )))
 
     def test_given_voicemail_is_associated_to_two_users_then_returns_two_items(self):
         user1 = self.add_user()

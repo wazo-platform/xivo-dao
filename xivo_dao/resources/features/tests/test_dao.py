@@ -1,10 +1,10 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -42,7 +42,7 @@ class TestFindAll(DAOTestCase):
 
         features = features_dao.find_all('general')
 
-        assert_that(features, contains(row3, row2, row1, row4))
+        assert_that(features, contains_exactly(row3, row2, row1, row4))
 
     def test_find_all_do_not_find_var_val_none(self):
         self.add_features(var_name='setting1',

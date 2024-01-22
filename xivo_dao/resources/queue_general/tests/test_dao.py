@@ -1,10 +1,10 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
 )
@@ -30,7 +30,7 @@ class TestFindAll(DAOTestCase):
 
         queue_general = queue_general_dao.find_all()
 
-        assert_that(queue_general, contains(row3, row2, row1, row4))
+        assert_that(queue_general, contains_exactly(row3, row2, row1, row4))
 
     def test_find_all_do_not_find_var_val_none(self):
         self.add_queue_general_settings(var_metric=1, var_name='monitor-type', var_val=None)
@@ -38,7 +38,7 @@ class TestFindAll(DAOTestCase):
 
         queue_general = queue_general_dao.find_all()
 
-        assert_that(queue_general, contains(row2))
+        assert_that(queue_general, contains_exactly(row2))
 
 
 class TestEditAll(DAOTestCase):
@@ -64,4 +64,4 @@ class TestEditAll(DAOTestCase):
 
         self.session.expire_all()
         queue_general = queue_general_dao.find_all()
-        assert_that(queue_general, contains(row))
+        assert_that(queue_general, contains_exactly(row))

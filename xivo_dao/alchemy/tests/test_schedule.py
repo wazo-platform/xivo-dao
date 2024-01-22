@@ -1,11 +1,11 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     equal_to,
     none,
@@ -26,7 +26,7 @@ class TestIncalls(DAOTestCase):
         self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.incalls, contains(incall))
+        assert_that(schedule.incalls, contains_exactly(incall))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
@@ -45,7 +45,7 @@ class TestGroups(DAOTestCase):
         self.add_schedule_path(path='group', pathid=group.id, schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.groups, contains(group))
+        assert_that(schedule.groups, contains_exactly(group))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
@@ -64,7 +64,7 @@ class TestOutcalls(DAOTestCase):
         self.add_schedule_path(path='outcall', pathid=outcall.id, schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.outcalls, contains(outcall))
+        assert_that(schedule.outcalls, contains_exactly(outcall))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
@@ -83,7 +83,7 @@ class TestQueues(DAOTestCase):
         self.add_schedule_path(path='queue', pathid=queue.id, schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.queues, contains(queue))
+        assert_that(schedule.queues, contains_exactly(queue))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
@@ -102,7 +102,7 @@ class TestUsers(DAOTestCase):
         self.add_schedule_path(path='user', pathid=user.id, schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.users, contains(user))
+        assert_that(schedule.users, contains_exactly(user))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
@@ -121,7 +121,7 @@ class TestOpenPeriods(DAOTestCase):
         self.add_schedule_time(mode='closed', schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.open_periods, contains(open_period))
+        assert_that(schedule.open_periods, contains_exactly(open_period))
 
     def test_setter(self):
         schedule = self.add_schedule()
@@ -131,7 +131,7 @@ class TestOpenPeriods(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(schedule.open_periods, contains(open_period))
+        assert_that(schedule.open_periods, contains_exactly(open_period))
         assert_that(schedule.exceptional_periods, empty())
 
     def test_setter_to_empty(self):
@@ -144,7 +144,7 @@ class TestOpenPeriods(DAOTestCase):
 
         self.session.expire_all()
         assert_that(schedule.open_periods, empty())
-        assert_that(schedule.exceptional_periods, contains(exceptional_period))
+        assert_that(schedule.exceptional_periods, contains_exactly(exceptional_period))
 
 
 class TestExceptionalPeriods(DAOTestCase):
@@ -155,7 +155,7 @@ class TestExceptionalPeriods(DAOTestCase):
         self.add_schedule_time(mode='opened', schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(schedule.exceptional_periods, contains(exceptional_period))
+        assert_that(schedule.exceptional_periods, contains_exactly(exceptional_period))
 
     def test_setter(self):
         schedule = self.add_schedule()
@@ -165,7 +165,7 @@ class TestExceptionalPeriods(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(schedule.exceptional_periods, contains(exceptional_period))
+        assert_that(schedule.exceptional_periods, contains_exactly(exceptional_period))
         assert_that(schedule.open_periods, empty())
 
     def test_setter_to_empty(self):
@@ -178,7 +178,7 @@ class TestExceptionalPeriods(DAOTestCase):
 
         self.session.expire_all()
         assert_that(schedule.exceptional_periods, empty())
-        assert_that(schedule.open_periods, contains(open_period))
+        assert_that(schedule.open_periods, contains_exactly(open_period))
 
 
 class TestType(unittest.TestCase):

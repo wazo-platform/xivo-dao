@@ -1,7 +1,7 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that, contains, contains_inanyorder, empty
+from hamcrest import assert_that, contains_exactly, contains_inanyorder, empty
 
 from xivo_dao import phone_access_dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -15,7 +15,7 @@ class TestPhoneAccessDao(DAOTestCase):
 
         hosts = phone_access_dao.get_authorized_subnets()
 
-        assert_that(hosts, contains(host))
+        assert_that(hosts, contains_exactly(host))
 
     def test_get_authorized_subnets_with_commented(self):
         host = '169.254.0.0/16'

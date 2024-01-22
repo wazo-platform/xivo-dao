@@ -1,9 +1,9 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -233,7 +233,7 @@ class TestUserQueueMembers(DAOTestCase):
         queue_member2 = self.add_queue_member(category='queue', usertype='user', queue_name=queue.name, position=2)
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains(queue_member1, queue_member2))
+        assert_that(queue.user_queue_members, contains_exactly(queue_member1, queue_member2))
 
     def test_setter(self):
         queue = self.add_queuefeatures()
@@ -242,7 +242,7 @@ class TestUserQueueMembers(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains(queue_member))
+        assert_that(queue.user_queue_members, contains_exactly(queue_member))
         assert_that(queue_member.queue_name, equal_to(queue.name))
 
     def test_deleter(self):
@@ -276,7 +276,7 @@ class TestAgentQueueMembers(DAOTestCase):
         queue_member2 = self.add_queue_member(category='queue', usertype='agent', queue_name=queue.name, position=2)
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains(queue_member1, queue_member2))
+        assert_that(queue.agent_queue_members, contains_exactly(queue_member1, queue_member2))
 
     def test_setter(self):
         queue = self.add_queuefeatures()
@@ -285,7 +285,7 @@ class TestAgentQueueMembers(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains(queue_member))
+        assert_that(queue.agent_queue_members, contains_exactly(queue_member))
         assert_that(queue_member.queue_name, equal_to(queue.name))
 
     def test_deleter(self):
@@ -319,7 +319,7 @@ class TestSchedules(DAOTestCase):
         self.add_schedule_path(path='queue', pathid=queue.id, schedule_id=schedule.id)
 
         self.session.expire_all()
-        assert_that(queue.schedules, contains(schedule))
+        assert_that(queue.schedules, contains_exactly(schedule))
 
     def test_setter(self):
         queue = self.add_queuefeatures()
@@ -579,7 +579,7 @@ class TestExtensions(DAOTestCase):
         extension = self.add_extension(type='queue', typeval=str(queue.id))
 
         self.session.expire_all()
-        assert_that(queue.extensions, contains(extension))
+        assert_that(queue.extensions, contains_exactly(extension))
 
 
 class TestExten(DAOTestCase):

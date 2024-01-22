@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -34,7 +34,7 @@ class TestSchedules(DAOTestCase):
 
         row = self.session.query(Outcall).filter_by(id=outcall.id).first()
         assert_that(row, equal_to(outcall))
-        assert_that(row.schedules, contains(schedule))
+        assert_that(row.schedules, contains_exactly(schedule))
 
     def test_setter(self):
         outcall = self.add_outcall()
@@ -128,7 +128,7 @@ class TestTrunks(DAOTestCase):
 
         outcall = self.session.query(Outcall).filter_by(id=outcall_row.id).first()
         assert_that(outcall, equal_to(outcall_row))
-        assert_that(outcall.trunks, contains(trunk2_row, trunk3_row, trunk1_row))
+        assert_that(outcall.trunks, contains_exactly(trunk2_row, trunk3_row, trunk1_row))
 
     def test_trunks_dissociate(self):
         outcall_row = self.add_outcall()
@@ -261,10 +261,10 @@ class TestUpdateExtensionAssociation(DAOTestCase):
                                                  external_prefix='123')
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains(extension_row))
+        assert_that(rows, contains_exactly(extension_row))
 
         rows = self.session.query(DialPattern).all()
-        assert_that(rows, contains(has_properties(
+        assert_that(rows, contains_exactly(has_properties(
             caller_id='tata',
             external_prefix='123',
             prefix='1',

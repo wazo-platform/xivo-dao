@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -8,7 +8,7 @@ from unittest.mock import Mock, sentinel as s
 from hamcrest import assert_that
 from hamcrest import calling
 from hamcrest import equal_to
-from hamcrest import contains
+from hamcrest import contains_exactly
 from hamcrest import contains_inanyorder
 from hamcrest import has_length
 from hamcrest import is_in
@@ -81,14 +81,14 @@ class TestSearchSystem(DAOTestCase):
     def assert_search_raises_exception(self, exception, exception_msg, **parameters):
         with self.assertRaises(exception) as exc:
             self.search.search(self.session, parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
     def assert_search_collated_raises_exception(
         self, exception, exception_msg, **parameters
     ):
         with self.assertRaises(exception) as exc:
             self.search.search_collated(self.session, parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
     def test_given_no_parameters_then_sorts_rows_using_default_sort_and_direction(self):
         last_user_row = self.add_user(lastname='Zintrabi')
@@ -97,12 +97,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session)
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(first_user_row, last_user_row))
+        assert_that(rows, contains_exactly(first_user_row, last_user_row))
 
         rows, total = self.search.search_collated(self.session)
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(first_user_row, last_user_row))
+        assert_that(rows, contains_exactly(first_user_row, last_user_row))
 
     def test_given_order_then_sorts_rows_using_order(self):
         user_row1 = self.add_user(firstname='Bob', lastname='Abigale')
@@ -112,12 +112,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'order': 'firstname'})
 
         assert_that(total, equal_to(3))
-        assert_that(rows, contains(user_row2, user_row1, user_row3))
+        assert_that(rows, contains_exactly(user_row2, user_row1, user_row3))
 
         rows, total = self.search.search_collated(self.session, {'order': 'firstname'})
 
         assert_that(total, equal_to(3))
-        assert_that(rows, contains(user_row2, user_row3, user_row1))
+        assert_that(rows, contains_exactly(user_row2, user_row3, user_row1))
 
     def test_given_direction_then_sorts_rows_using_direction(self):
         first_user_row = self.add_user(lastname='Abigale')
@@ -126,12 +126,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'direction': 'desc'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(last_user_row, first_user_row))
+        assert_that(rows, contains_exactly(last_user_row, first_user_row))
 
         rows, total = self.search.search_collated(self.session, {'direction': 'desc'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(last_user_row, first_user_row))
+        assert_that(rows, contains_exactly(last_user_row, first_user_row))
 
     def test_given_limit_is_negative_number_then_raises_error(self):
         self.assertRaises(InputError, self.search.search, self.session, {'limit': -1})
@@ -172,12 +172,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'offset': 1})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(last_user_row))
+        assert_that(rows, contains_exactly(last_user_row))
 
         rows, total = self.search.search_collated(self.session, {'offset': 1})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(last_user_row))
+        assert_that(rows, contains_exactly(last_user_row))
 
     def test_given_offset_is_zero_then_does_not_offset_rows(self):
         first_user_row = self.add_user(lastname='Abigale')
@@ -186,12 +186,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'offset': 0})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(first_user_row, last_user_row))
+        assert_that(rows, contains_exactly(first_user_row, last_user_row))
 
         rows, total = self.search.search_collated(self.session, {'offset': 0})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(first_user_row, last_user_row))
+        assert_that(rows, contains_exactly(first_user_row, last_user_row))
 
     def test_given_search_without_accent_term_then_searches_in_column_with_accent(self):
         user_row = self.add_user(firstname='accênt')
@@ -199,12 +199,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'search': 'accent'})
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row))
+        assert_that(rows, contains_exactly(user_row))
 
         rows, total = self.search.search_collated(self.session, {'search': 'accent'})
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row))
+        assert_that(rows, contains_exactly(user_row))
 
     def test_given_search_with_accent_term_then_searches_in_column_without_accent(self):
         user_row1 = self.add_user(firstname='accént')
@@ -213,12 +213,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'search': 'accént'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(user_row1, user_row2))
+        assert_that(rows, contains_exactly(user_row1, user_row2))
 
         rows, total = self.search.search_collated(self.session, {'search': 'accént'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(user_row1, user_row2))
+        assert_that(rows, contains_exactly(user_row1, user_row2))
 
     def test_given_search_term_then_searches_in_columns_and_uses_default_sort(self):
         user_row1 = self.add_user(firstname='a123bcd', lastname='eeefghi')
@@ -228,12 +228,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'search': '123'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(user_row2, user_row1))
+        assert_that(rows, contains_exactly(user_row2, user_row1))
 
         rows, total = self.search.search_collated(self.session, {'search': '123'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(user_row2, user_row1))
+        assert_that(rows, contains_exactly(user_row2, user_row1))
 
     def test_given_search_term_then_searches_in_numeric_columns(self):
         self.add_user(simultcalls=1)
@@ -242,12 +242,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'search': '2'})
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row2))
+        assert_that(rows, contains_exactly(user_row2))
 
         rows, total = self.search.search_collated(self.session, {'search': '2'})
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row2))
+        assert_that(rows, contains_exactly(user_row2))
 
     def test_given_exact_match_numeric_term_in_param(self):
         self.add_user(firstname='Alice', lastname='First', simultcalls=3)
@@ -258,14 +258,14 @@ class TestSearchSystem(DAOTestCase):
         )
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row2))
+        assert_that(rows, contains_exactly(user_row2))
 
         rows, total = self.search.search_collated(
             self.session, {'search': 'ali', 'simultcalls': '2'}
         )
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row2))
+        assert_that(rows, contains_exactly(user_row2))
 
     def test_given_exact_match_userfield_term_in_param(self):
         self.add_user(firstname='Alice', lastname='First', userfield='mtl')
@@ -276,14 +276,14 @@ class TestSearchSystem(DAOTestCase):
         )
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row2))
+        assert_that(rows, contains_exactly(user_row2))
 
         rows, total = self.search.search_collated(
             self.session, {'search': 'ali', 'userfield': 'qc'}
         )
 
         assert_that(total, equal_to(1))
-        assert_that(rows, contains(user_row2))
+        assert_that(rows, contains_exactly(user_row2))
 
     def test_given_exact_match_string_term_in_param_numeric_column(self):
         self.add_user(firstname='Alice', lastname='First', simultcalls=2)
@@ -308,12 +308,12 @@ class TestSearchSystem(DAOTestCase):
         rows, total = self.search.search(self.session, {'userfield': 'qc'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(user_row2, user_row3))
+        assert_that(rows, contains_exactly(user_row2, user_row3))
 
         rows, total = self.search.search_collated(self.session, {'userfield': 'qc'})
 
         assert_that(total, equal_to(2))
-        assert_that(rows, contains(user_row2, user_row3))
+        assert_that(rows, contains_exactly(user_row2, user_row3))
 
     def test_when_invalid_column(self):
         self.assert_search_raises_exception(
@@ -385,7 +385,7 @@ class TestSearchConfig(unittest.TestCase):
 
         result = config.all_search_columns()
 
-        assert_that(result, contains(column))
+        assert_that(result, contains_exactly(column))
 
     def test_given_list_of_columns_then_returns_all_all_search_columns(self):
         table = Mock()

@@ -1,7 +1,7 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql import text
+from sqlalchemy.sql import literal_column, text
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f%z"
 
@@ -142,7 +142,7 @@ def _run_sql_function_returning_void(session, start, end, function):
     end = end.strftime(_STR_TIME_FMT)
 
     (session
-     .query('place_holder')
+     .query(literal_column('place_holder'))
      .from_statement(text(function))
      .params(start=start, end=end)
      .first())
@@ -176,7 +176,7 @@ SELECT stat_agent.id AS agent,
     end = end.strftime(_STR_TIME_FMT)
 
     rows = (session
-            .query('agent', 'pauseall', 'unpauseall')
+            .query(literal_column('agent'), literal_column('pauseall'), literal_column('unpauseall'))
             .from_statement(text(pause_in_range))
             .params(start=start, end=end))
 
@@ -308,9 +308,15 @@ ORDER BY
     formatted_start = start.strftime(_STR_TIME_FMT)
     formatted_end = end.strftime(_STR_TIME_FMT)
 
-    rows = (session.query('agent', 'login_timestamp', 'logout_timestamp')
-            .from_statement(text(completed_logins_query))
-            .params(start=formatted_start, end=formatted_end))
+    rows = (
+        session.query(
+            literal_column('agent'),
+            literal_column('login_timestamp'),
+            literal_column('logout_timestamp')
+        )
+        .from_statement(text(completed_logins_query))
+        .params(start=formatted_start, end=formatted_end)
+    )
 
     results = {}
 
@@ -373,9 +379,9 @@ HAVING
     end = end.strftime(_STR_TIME_FMT)
 
     rows = session.query(
-        'agent',
-        'login',
-        'logout',
+        literal_column('agent'),
+        literal_column('login'),
+        literal_column('logout'),
     ).from_statement(text(query)).params(start=start, end=end)
 
     agent_last_logins = {}

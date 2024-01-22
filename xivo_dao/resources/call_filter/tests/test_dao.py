@@ -1,11 +1,11 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     empty,
     has_items,
@@ -159,7 +159,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_call_filters(self):
         result = call_filter_dao.find_all_by(name='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_renamed_column(self):
         call_filter1 = self.add_call_filter(name='bob', enabled=True)
@@ -408,7 +408,7 @@ class TestAssociateTargets(DAOTestCase):
         call_filter_dao.associate_recipients(call_filter, [recipient])
 
         self.session.expire_all()
-        assert_that(call_filter.recipients, contains(recipient))
+        assert_that(call_filter.recipients, contains_exactly(recipient))
 
     def test_associate_multiple(self):
         call_filter = self.add_call_filter()
@@ -418,7 +418,7 @@ class TestAssociateTargets(DAOTestCase):
         call_filter_dao.associate_recipients(call_filter, [recipient1, recipient2])
 
         self.session.expire_all()
-        assert_that(call_filter.recipients, contains(recipient1, recipient2))
+        assert_that(call_filter.recipients, contains_exactly(recipient1, recipient2))
 
     def test_dissociate(self):
         call_filter = self.add_call_filter()
@@ -443,7 +443,7 @@ class TestAssociateInterceptors(DAOTestCase):
         call_filter_dao.associate_surrogates(call_filter, [surrogate])
 
         self.session.expire_all()
-        assert_that(call_filter.surrogates, contains(surrogate))
+        assert_that(call_filter.surrogates, contains_exactly(surrogate))
 
     def test_associate_multiple(self):
         call_filter = self.add_call_filter()
@@ -453,7 +453,7 @@ class TestAssociateInterceptors(DAOTestCase):
         call_filter_dao.associate_surrogates(call_filter, [surrogate1, surrogate2])
 
         self.session.expire_all()
-        assert_that(call_filter.surrogates, contains(surrogate1, surrogate2))
+        assert_that(call_filter.surrogates, contains_exactly(surrogate1, surrogate2))
 
     def test_dissociate(self):
         call_filter = self.add_call_filter()

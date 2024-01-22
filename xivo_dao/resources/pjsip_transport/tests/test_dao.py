@@ -1,9 +1,9 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     has_items,
     has_properties,
@@ -92,7 +92,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_transports(self):
         result = dao.find_all_by(name='not-here')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_native_column(self):
         transport = self.add_transport(name='the-transport')
@@ -218,8 +218,8 @@ class TestCreate(DAOTestCase):
         assert_that(transport, has_properties(
             name='transport',
             options=contains_inanyorder(
-                contains('bind', '0.0.0.0'),
-                contains('protocol', 'wss'),
+                contains_exactly('bind', '0.0.0.0'),
+                contains_exactly('protocol', 'wss'),
             ),
         ))
 
@@ -253,11 +253,11 @@ class TestEdit(DAOTestCase):
         assert_that(transport, has_properties(
             name='other_transport',
             options=contains_inanyorder(
-                contains('bind', '0.0.0.0'),
-                contains('protocol', 'udp'),
-                contains('cos', '1'),
-                contains('local_net', '192.168.0.0/16'),
-                contains('local_net', '10.1.42.0/24'),
+                contains_exactly('bind', '0.0.0.0'),
+                contains_exactly('protocol', 'udp'),
+                contains_exactly('cos', '1'),
+                contains_exactly('local_net', '192.168.0.0/16'),
+                contains_exactly('local_net', '10.1.42.0/24'),
             ),
         ))
 

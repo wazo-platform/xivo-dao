@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -119,7 +119,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
-        assert_that(sccp_line, contains())
+        assert_that(sccp_line, contains_exactly())
 
     def test_find_sccp_line_allow(self):
         number = '1234'
@@ -134,7 +134,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(
             sccp_lines,
-            contains(
+            contains_exactly(
                 has_entries(
                     user_id=ule.user_id,
                     name=sccp_line.name,
@@ -162,7 +162,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(
             sccp_lines,
-            contains(
+            contains_exactly(
                 has_entries(
                     user_id=ule.user_id,
                     name=sccp_line.name,
@@ -195,7 +195,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(
             sccp_lines,
-            contains(
+            contains_exactly(
                 has_entries(
                     user_id=ule.user_id,
                     name=sccp_line.name,
@@ -241,7 +241,7 @@ class TestSccpConfDAO(DAOTestCase):
 
         assert_that(
             sccp_devices,
-            contains(
+            contains_exactly(
                 has_entries(
                     id=sccp_device.id,
                     name=sccp_device.name,
@@ -265,7 +265,7 @@ class TestSccpConfDAO(DAOTestCase):
 
         assert_that(
             sccp_devices,
-            contains(
+            contains_exactly(
                 has_entries(
                     id=sccp_device.id,
                     name=sccp_device.name,
@@ -285,7 +285,7 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
     def test_given_no_func_key_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sccp_speeddial_settings()
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_custom_func_key_then_returns_converted_func_key(self):
         exten = '1000'
@@ -302,7 +302,7 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     user_id=user_row.id,
                     fknum=func_key_mapping_row.position,
@@ -326,7 +326,7 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
         result = asterisk_conf_dao.find_sccp_speeddial_settings()
 
-        assert_that(result, contains(has_entries(exten='2000', label='hello')))
+        assert_that(result, contains_exactly(has_entries(exten='2000', label='hello')))
 
     def add_user_with_sccp_device(self, exten, context):
         user_row = self.add_user()
@@ -381,7 +381,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
-        assert_that(pickup_members, contains())
+        assert_that(pickup_members, contains_exactly())
 
     def test_find_pickup_members_with_sip_users(self):
         pickup = self.add_pickup()
@@ -591,7 +591,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     exten='12',
                     commented=0,
@@ -614,7 +614,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         result = asterisk_conf_dao.find_exten_settings(default_context.name)
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_exten_settings_multiple_extensions(self):
         context = self.add_context()
@@ -716,7 +716,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(
             voicemails,
-            contains(
+            contains_exactly(
                 has_entries(
                     uniqueid=vm.uniqueid,
                     deletevoicemail=0,
@@ -1042,9 +1042,9 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(
             result,
             contains_inanyorder(
-                contains('Local/100@default', '1', '', ''),
-                contains('PJSIP/3m6dsc', '5', '', ''),
-                contains('SCCP/1003', '15', '', ''),
+                contains_exactly('Local/100@default', '1', '', ''),
+                contains_exactly('PJSIP/3m6dsc', '5', '', ''),
+                contains_exactly('SCCP/1003', '15', '', ''),
             ),
         )
 
@@ -1064,7 +1064,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(
             result,
             contains_inanyorder(
-                contains(
+                contains_exactly(
                     f'Local/{user.uuid}@usersharedlines',
                     '0',
                     '',
@@ -1192,18 +1192,18 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_not_associated_then_returns_empty_list(self):
         self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_associated_to_trunk_then_returns_empty_list(self):
         endpoint = self.add_endpoint_sip(template=False)
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_no_endpoint_on_the_meeting_return_empty_list(self):
         self.add_meeting()
@@ -1236,33 +1236,33 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                     name=endpoint.name,
                     label=endpoint.label,
                     aor_section_options=has_items(
-                        contains('qualify_frequency', '60'),
-                        contains('maximum_expiration', '3600'),
-                        contains('minimum_expiration', '60'),
-                        contains('default_expiration', '120'),
-                        contains('max_contacts', '50'),
-                        contains('remove_existing', 'false'),
+                        contains_exactly('qualify_frequency', '60'),
+                        contains_exactly('maximum_expiration', '3600'),
+                        contains_exactly('minimum_expiration', '60'),
+                        contains_exactly('default_expiration', '120'),
+                        contains_exactly('max_contacts', '50'),
+                        contains_exactly('remove_existing', 'false'),
                     ),
                     auth_section_options=has_items(
-                        contains('username', 'iddqd'),
-                        contains('password', 'idbehold'),
+                        contains_exactly('username', 'iddqd'),
+                        contains_exactly('password', 'idbehold'),
                     ),
                     endpoint_section_options=has_items(
-                        contains('allow', '!all,ulaw'),
-                        contains('allow_subscribe', 'yes'),
-                        contains('allow_transfer', 'yes'),
-                        contains('use_ptime', 'yes'),
-                        contains('rtp_timeout', '7200'),
-                        contains('rtp_timeout_hold', '0'),
-                        contains('timers_sess_expires', '600'),
-                        contains('timers_min_se', '90'),
-                        contains('trust_id_inbound', 'yes'),
-                        contains('dtmf_mode', 'rfc4733'),
-                        contains('send_rpid', 'yes'),
-                        contains('inband_progress', 'no'),
-                        contains('direct_media', 'no'),
-                        contains('callerid', '"Foo Bar" <101>'),
-                        contains('webrtc', 'yes'),
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('allow_subscribe', 'yes'),
+                        contains_exactly('allow_transfer', 'yes'),
+                        contains_exactly('use_ptime', 'yes'),
+                        contains_exactly('rtp_timeout', '7200'),
+                        contains_exactly('rtp_timeout_hold', '0'),
+                        contains_exactly('timers_sess_expires', '600'),
+                        contains_exactly('timers_min_se', '90'),
+                        contains_exactly('trust_id_inbound', 'yes'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                        contains_exactly('send_rpid', 'yes'),
+                        contains_exactly('inband_progress', 'no'),
+                        contains_exactly('direct_media', 'no'),
+                        contains_exactly('callerid', '"Foo Bar" <101>'),
+                        contains_exactly('webrtc', 'yes'),
                     ),
                 ),
             ),
@@ -1283,10 +1283,10 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('transport', transport.name),
+                        contains_exactly('transport', transport.name),
                     ),
                 )
             ),
@@ -1305,11 +1305,11 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         # inherited from the webrtc template
-                        contains('transport', 'transport-wss'),
+                        contains_exactly('transport', 'transport-wss'),
                     ),
                 )
             ),
@@ -1326,10 +1326,10 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains(
+                        contains_exactly(
                             'set_var',
                             f'XIVO_ORIGINAL_CALLER_ID={caller_id}',
                         ),
@@ -1345,7 +1345,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
@@ -1361,7 +1361,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'],
@@ -1381,18 +1381,18 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     aor_section_options=has_items(
-                        contains('type', 'aor'),
+                        contains_exactly('type', 'aor'),
                     ),
                     auth_section_options=has_items(
-                        contains('type', 'auth'),
+                        contains_exactly('type', 'auth'),
                     ),
                     endpoint_section_options=has_items(
-                        contains('type', 'endpoint'),
-                        contains('auth', endpoint.name),
-                        contains('aors', endpoint.name),
+                        contains_exactly('type', 'endpoint'),
+                        contains_exactly('auth', endpoint.name),
+                        contains_exactly('aors', endpoint.name),
                     ),
                 )
             ),
@@ -1419,19 +1419,19 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_meeting_guests_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=contains_inanyorder(
-                        contains('type', 'endpoint'),  # only showed once
-                        contains('codecs', '!all,ulaw'),
-                        contains('webrtc', 'true'),  # only showed once
-                        contains(
+                        contains_exactly('type', 'endpoint'),  # only showed once
+                        contains_exactly('codecs', '!all,ulaw'),
+                        contains_exactly('webrtc', 'true'),  # only showed once
+                        contains_exactly(
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
-                        contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-                        contains('set_var', f'WAZO_MEETING_UUID={meeting.uuid}'),
-                        contains('set_var', f'WAZO_MEETING_NAME={meeting.name}'),
-                        contains('context', self.context.name),
+                        contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+                        contains_exactly('set_var', f'WAZO_MEETING_UUID={meeting.uuid}'),
+                        contains_exactly('set_var', f'WAZO_MEETING_NAME={meeting.name}'),
+                        contains_exactly('context', self.context.name),
                     )
                 )
             ),
@@ -1454,19 +1454,19 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
         assert_that(
             result,
             all_of(
-                contains(
+                contains_exactly(
                     has_entries(
                         endpoint_section_options=has_items(
-                            contains('type', 'endpoint'),
-                            contains('webrtc', 'no'),  # From the endpoint
+                            contains_exactly('type', 'endpoint'),
+                            contains_exactly('webrtc', 'no'),  # From the endpoint
                         )
                     )
                 ),
                 not_(
-                    contains(
+                    contains_exactly(
                         has_entries(
                             endpoint_section_options=has_items(
-                                contains('webrtc', 'yes'),  # From the template
+                                contains_exactly('webrtc', 'yes'),  # From the template
                             )
                         )
                     ),
@@ -1497,18 +1497,18 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_user_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_not_associated_then_returns_empty_list(self):
         self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_user_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_associated_to_trunk_then_returns_empty_list(self):
         endpoint = self.add_endpoint_sip(template=False)
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
         result = asterisk_conf_dao.find_sip_user_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_that_templates_are_included(self):
         endpoint = self.add_endpoint_sip(
@@ -1533,33 +1533,33 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                     name=endpoint.name,
                     label=endpoint.label,
                     aor_section_options=has_items(
-                        contains('qualify_frequency', '60'),
-                        contains('maximum_expiration', '3600'),
-                        contains('minimum_expiration', '60'),
-                        contains('default_expiration', '120'),
-                        contains('max_contacts', '10'),
-                        contains('remove_existing', 'false'),
+                        contains_exactly('qualify_frequency', '60'),
+                        contains_exactly('maximum_expiration', '3600'),
+                        contains_exactly('minimum_expiration', '60'),
+                        contains_exactly('default_expiration', '120'),
+                        contains_exactly('max_contacts', '10'),
+                        contains_exactly('remove_existing', 'false'),
                     ),
                     auth_section_options=has_items(
-                        contains('username', 'iddqd'),
-                        contains('password', 'idbehold'),
+                        contains_exactly('username', 'iddqd'),
+                        contains_exactly('password', 'idbehold'),
                     ),
                     endpoint_section_options=has_items(
-                        contains('allow', '!all,ulaw'),
-                        contains('allow_subscribe', 'yes'),
-                        contains('allow_transfer', 'yes'),
-                        contains('use_ptime', 'yes'),
-                        contains('rtp_timeout', '7200'),
-                        contains('rtp_timeout_hold', '0'),
-                        contains('timers_sess_expires', '600'),
-                        contains('timers_min_se', '90'),
-                        contains('trust_id_inbound', 'yes'),
-                        contains('dtmf_mode', 'rfc4733'),
-                        contains('send_rpid', 'yes'),
-                        contains('inband_progress', 'no'),
-                        contains('direct_media', 'no'),
-                        contains('callerid', '"Foo Bar" <101>'),
-                        contains('webrtc', 'yes'),
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('allow_subscribe', 'yes'),
+                        contains_exactly('allow_transfer', 'yes'),
+                        contains_exactly('use_ptime', 'yes'),
+                        contains_exactly('rtp_timeout', '7200'),
+                        contains_exactly('rtp_timeout_hold', '0'),
+                        contains_exactly('timers_sess_expires', '600'),
+                        contains_exactly('timers_min_se', '90'),
+                        contains_exactly('trust_id_inbound', 'yes'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                        contains_exactly('send_rpid', 'yes'),
+                        contains_exactly('inband_progress', 'no'),
+                        contains_exactly('direct_media', 'no'),
+                        contains_exactly('callerid', '"Foo Bar" <101>'),
+                        contains_exactly('webrtc', 'yes'),
                     ),
                 ),
             ),
@@ -1572,10 +1572,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('context', self.context.name)
+                        contains_exactly('context', self.context.name)
                     ),
                 )
             ),
@@ -1593,11 +1593,11 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('context', f'stasis-wazo-app-{application.uuid}'),
-                        contains('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
+                        contains_exactly('context', f'stasis-wazo-app-{application.uuid}'),
+                        contains_exactly('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
                     )
                 )
             ),
@@ -1610,10 +1610,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
+                        contains_exactly('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
                     ),
                 )
             ),
@@ -1631,10 +1631,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('transport', transport.name),
+                        contains_exactly('transport', transport.name),
                     ),
                 )
             ),
@@ -1650,11 +1650,11 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         # inherited from the webrtc template
-                        contains('transport', 'transport-wss'),
+                        contains_exactly('transport', 'transport-wss'),
                     ),
                 )
             ),
@@ -1669,10 +1669,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains(
+                        contains_exactly(
                             'set_var',
                             f'PICKUPMARK={extension.exten}%{extension.context}',
                         ),
@@ -1692,15 +1692,15 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     aor_section_options=has_items(
-                        contains(
+                        contains_exactly(
                             'mailboxes', f'{voicemail.number}@{voicemail.context}'
                         ),
                     ),
                     endpoint_section_options=has_items(
-                        contains(
+                        contains_exactly(
                             'mailboxes', f'{voicemail.number}@{voicemail.context}'
                         ),
                     ),
@@ -1719,10 +1719,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains(
+                        contains_exactly(
                             'set_var',
                             f'XIVO_ORIGINAL_CALLER_ID={caller_id}',
                         ),
@@ -1738,7 +1738,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
@@ -1756,7 +1756,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', f'XIVO_USERID={user.id}'],  # Deprecated in 24.01
@@ -1775,7 +1775,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', f'XIVO_USERUUID={user.uuid}'],   # Deprecated in 24.01
@@ -1792,7 +1792,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'],
@@ -1810,7 +1810,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', f'WAZO_LINE_ID={line.id}'],
@@ -1830,18 +1830,18 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     aor_section_options=has_items(
-                        contains('type', 'aor'),
+                        contains_exactly('type', 'aor'),
                     ),
                     auth_section_options=has_items(
-                        contains('type', 'auth'),
+                        contains_exactly('type', 'auth'),
                     ),
                     endpoint_section_options=has_items(
-                        contains('type', 'endpoint'),
-                        contains('auth', endpoint.name),
-                        contains('aors', endpoint.name),
+                        contains_exactly('type', 'endpoint'),
+                        contains_exactly('auth', endpoint.name),
+                        contains_exactly('aors', endpoint.name),
                     ),
                 )
             ),
@@ -1912,19 +1912,19 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=contains_inanyorder(
-                        contains('type', 'endpoint'),  # only showed once
-                        contains('codecs', '!all,ulaw'),
-                        contains('webrtc', 'true'),  # only showed once
-                        contains(
+                        contains_exactly('type', 'endpoint'),  # only showed once
+                        contains_exactly('codecs', '!all,ulaw'),
+                        contains_exactly('webrtc', 'true'),  # only showed once
+                        contains_exactly(
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
-                        contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-                        contains('set_var', f'WAZO_LINE_ID={line.id}'),
-                        contains('context', self.context.name),
-                        contains('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
+                        contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+                        contains_exactly('set_var', f'WAZO_LINE_ID={line.id}'),
+                        contains_exactly('context', self.context.name),
+                        contains_exactly('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
                     )
                 )
             ),
@@ -1947,19 +1947,19 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         assert_that(
             result,
             all_of(
-                contains(
+                contains_exactly(
                     has_entries(
                         endpoint_section_options=has_items(
-                            contains('type', 'endpoint'),
-                            contains('webrtc', 'no'),  # From the endpoint
+                            contains_exactly('type', 'endpoint'),
+                            contains_exactly('webrtc', 'no'),  # From the endpoint
                         )
                     )
                 ),
                 not_(
-                    contains(
+                    contains_exactly(
                         has_entries(
                             endpoint_section_options=has_items(
-                                contains('webrtc', 'yes'),  # From the template
+                                contains_exactly('webrtc', 'yes'),  # From the template
                             )
                         )
                     ),
@@ -2003,23 +2003,23 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_trunk_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_not_category_user_then_returns_empty_list(self):
         self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_trunk_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_deactivated_then_returns_empty_list(self):
         self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_trunk_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_sip_account_is_associated_to_a_line_then_returns_empty_list(self):
         endpoint = self.add_endpoint_sip(template=False)
         self.add_line(endpoint_sip_uuid=endpoint.uuid)
         result = asterisk_conf_dao.find_sip_trunk_settings()
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_that_templates_are_included(self):
         endpoint = self.add_endpoint_sip(
@@ -2047,48 +2047,48 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     name=endpoint.name,
                     label=endpoint.label,
                     aor_section_options=has_items(
-                        contains('qualify_frequency', '60'),
-                        contains('maximum_expiration', '3600'),
-                        contains('minimum_expiration', '60'),
-                        contains('default_expiration', '120'),
-                        contains('max_contacts', '1'),
-                        contains('remove_existing', 'true'),
+                        contains_exactly('qualify_frequency', '60'),
+                        contains_exactly('maximum_expiration', '3600'),
+                        contains_exactly('minimum_expiration', '60'),
+                        contains_exactly('default_expiration', '120'),
+                        contains_exactly('max_contacts', '1'),
+                        contains_exactly('remove_existing', 'true'),
                     ),
                     auth_section_options=has_items(
-                        contains('username', 'iddqd'),
-                        contains('password', 'idbehold'),
+                        contains_exactly('username', 'iddqd'),
+                        contains_exactly('password', 'idbehold'),
                     ),
                     endpoint_section_options=has_items(
-                        contains('allow', '!all,ulaw'),
-                        contains('allow_subscribe', 'yes'),
-                        contains('allow_transfer', 'yes'),
-                        contains('use_ptime', 'yes'),
-                        contains('rtp_timeout', '7200'),
-                        contains('rtp_timeout_hold', '0'),
-                        contains('timers_sess_expires', '600'),
-                        contains('timers_min_se', '90'),
-                        contains('trust_id_inbound', 'yes'),
-                        contains('dtmf_mode', 'rfc4733'),
-                        contains('send_rpid', 'yes'),
-                        contains('inband_progress', 'no'),
-                        contains('direct_media', 'no'),
-                        contains('callerid', '"Foo Bar" <101>'),
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('allow_subscribe', 'yes'),
+                        contains_exactly('allow_transfer', 'yes'),
+                        contains_exactly('use_ptime', 'yes'),
+                        contains_exactly('rtp_timeout', '7200'),
+                        contains_exactly('rtp_timeout_hold', '0'),
+                        contains_exactly('timers_sess_expires', '600'),
+                        contains_exactly('timers_min_se', '90'),
+                        contains_exactly('trust_id_inbound', 'yes'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                        contains_exactly('send_rpid', 'yes'),
+                        contains_exactly('inband_progress', 'no'),
+                        contains_exactly('direct_media', 'no'),
+                        contains_exactly('callerid', '"Foo Bar" <101>'),
                     ),
                     identify_section_options=has_items(
-                        contains('match', '54.172.60.0'),
-                        contains('match', '54.172.60.1'),
-                        contains('match', '54.172.60.2'),
+                        contains_exactly('match', '54.172.60.0'),
+                        contains_exactly('match', '54.172.60.1'),
+                        contains_exactly('match', '54.172.60.2'),
                     ),
                     registration_section_options=has_items(
-                        contains('outbound_auth', f'auth_reg_{endpoint.name}'),
-                        contains('retry_interval', '20'),
-                        contains('auth_rejection_permanent', 'off'),
-                        contains('forbidden_retry_interval', '30'),
-                        contains('fatal_retry_interval', '30'),
-                        contains('max_retries', '10000'),
+                        contains_exactly('outbound_auth', f'auth_reg_{endpoint.name}'),
+                        contains_exactly('retry_interval', '20'),
+                        contains_exactly('auth_rejection_permanent', 'off'),
+                        contains_exactly('forbidden_retry_interval', '30'),
+                        contains_exactly('fatal_retry_interval', '30'),
+                        contains_exactly('max_retries', '10000'),
                     ),
                     registration_outbound_auth_section_options=has_items(
-                        contains('username', 'outbound_reg_username'),
+                        contains_exactly('username', 'outbound_reg_username'),
                     ),
                     outbound_auth_section_options=has_items(),
                 ),
@@ -2102,10 +2102,10 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('context', self.context.name)
+                        contains_exactly('context', self.context.name)
                     ),
                 )
             ),
@@ -2123,10 +2123,10 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('transport', transport.name),
+                        contains_exactly('transport', transport.name),
                     ),
                 )
             ),
@@ -2141,10 +2141,10 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     registration_section_options=has_items(
-                        contains('endpoint', endpoint.name),
+                        contains_exactly('endpoint', endpoint.name),
                     )
                 )
             ),
@@ -2166,10 +2166,10 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains('transport', transport.name),
+                        contains_exactly('transport', transport.name),
                     ),
                 )
             ),
@@ -2194,40 +2194,40 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     aor_section_options=has_items(
-                        contains('type', 'aor'),
-                        contains('contact', 'sip:name@proxy:port'),
+                        contains_exactly('type', 'aor'),
+                        contains_exactly('contact', 'sip:name@proxy:port'),
                     ),
                     auth_section_options=has_items(
-                        contains('type', 'auth'),
-                        contains('username', 'username'),
+                        contains_exactly('type', 'auth'),
+                        contains_exactly('username', 'username'),
                     ),
                     endpoint_section_options=has_items(
-                        contains('type', 'endpoint'),
-                        contains('aors', endpoint.name),
-                        contains('auth', endpoint.name),
-                        contains('identify_by', 'auth_username,username'),
-                        contains('outbound_auth', f'outbound_auth_{endpoint.name}'),
+                        contains_exactly('type', 'endpoint'),
+                        contains_exactly('aors', endpoint.name),
+                        contains_exactly('auth', endpoint.name),
+                        contains_exactly('identify_by', 'auth_username,username'),
+                        contains_exactly('outbound_auth', f'outbound_auth_{endpoint.name}'),
                     ),
                     registration_section_options=has_items(
-                        contains('type', 'registration'),
-                        contains('expiration', '120'),
-                        contains('outbound_auth', f'auth_reg_{endpoint.name}'),
+                        contains_exactly('type', 'registration'),
+                        contains_exactly('expiration', '120'),
+                        contains_exactly('outbound_auth', f'auth_reg_{endpoint.name}'),
                     ),
                     registration_outbound_auth_section_options=has_items(
-                        contains('type', 'auth'),
-                        contains('password', 'secret'),
+                        contains_exactly('type', 'auth'),
+                        contains_exactly('password', 'secret'),
                     ),
                     identify_section_options=has_items(
-                        contains('type', 'identify'),
-                        contains('match', '192.168.1.1'),
-                        contains('endpoint', endpoint.name),
+                        contains_exactly('type', 'identify'),
+                        contains_exactly('match', '192.168.1.1'),
+                        contains_exactly('endpoint', endpoint.name),
                     ),
                     outbound_auth_section_options=has_items(
-                        contains('type', 'auth'),
-                        contains('username', 'outbound'),
+                        contains_exactly('type', 'auth'),
+                        contains_exactly('username', 'outbound'),
                     ),
                 )
             ),
@@ -2264,7 +2264,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         assert_that(
             result,
             not_(
-                contains(
+                contains_exactly(
                     has_entries(
                         endpoint_section_options=has_items(
                             ['aors', template.name],
@@ -2298,13 +2298,13 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(
             result,
-            contains(
+            contains_exactly(
                 has_entries(
                     endpoint_section_options=contains_inanyorder(
-                        contains('type', 'endpoint'),  # only showed once
-                        contains('codecs', '!all,ulaw'),
-                        contains('webrtc', 'true'),  # only showed once
-                        contains(
+                        contains_exactly('type', 'endpoint'),  # only showed once
+                        contains_exactly('codecs', '!all,ulaw'),
+                        contains_exactly('webrtc', 'true'),  # only showed once
+                        contains_exactly(
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
                     )
@@ -2329,19 +2329,19 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         assert_that(
             result,
             all_of(
-                contains(
+                contains_exactly(
                     has_entries(
                         endpoint_section_options=has_items(
-                            contains('type', 'endpoint'),
-                            contains('webrtc', 'no'),  # From the endpoint
+                            contains_exactly('type', 'endpoint'),
+                            contains_exactly('webrtc', 'no'),  # From the endpoint
                         )
                     )
                 ),
                 not_(
-                    contains(
+                    contains_exactly(
                         has_entries(
                             endpoint_section_options=has_items(
-                                contains('webrtc', 'yes'),  # From the template
+                                contains_exactly('webrtc', 'yes'),  # From the template
                             )
                         )
                     ),

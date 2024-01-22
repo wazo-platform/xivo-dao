@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
@@ -18,7 +18,7 @@ class TestStatQueueDAO(DAOTestCase):
 
         result = stat_queue_dao.id_from_name(queue.name)
 
-        self.assertEqual(result, queue.id)
+        assert result == queue.id
 
     def test_insert_if_missing(self):
         # queue1: in confd + in cel + in stat

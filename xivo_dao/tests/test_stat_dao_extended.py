@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -166,7 +166,7 @@ class TestStatDAO(DAOTestCase):
             ],
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_get_last_logouts(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -197,7 +197,7 @@ class TestStatDAO(DAOTestCase):
             agent_id_2: dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=UTC),
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_get_last_logins(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -232,7 +232,7 @@ class TestStatDAO(DAOTestCase):
             agent_id_3: dt(2012, 1, 1, 10, tzinfo=UTC),
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_get_ongoing_logins(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -272,7 +272,7 @@ class TestStatDAO(DAOTestCase):
             ],
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_get_pause_intervals_in_range(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -306,7 +306,7 @@ class TestStatDAO(DAOTestCase):
             ]
         }
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_get_pause_intervals_in_range_multiple_pauseall(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -341,7 +341,7 @@ class TestStatDAO(DAOTestCase):
             ]
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def _insert_queue_log_data(self, queue_log_data):
         with flush_session(self.session):

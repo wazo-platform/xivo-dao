@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from unittest.mock import Mock
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     empty,
     has_properties,
@@ -258,11 +258,11 @@ class TestUsersFromCallPickupGroupInterceptorUserTargets(DAOTestCase):
 
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_user_targets,
-            contains(contains(user_target1, user_target2)),
+            contains_exactly(contains_exactly(user_target1, user_target2)),
         )
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_group_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -305,11 +305,11 @@ class TestUsersFromCallPickupGroupInterceptorUserTargets(DAOTestCase):
 
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_user_targets,
-            contains(contains(user_target1), contains(user_target2)),
+            contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2)),
         )
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_group_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
 
 
@@ -361,11 +361,11 @@ class TestUsersFromCallPickupGroupInterceptorGroupTargets(DAOTestCase):
 
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_user_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_group_targets,
-            contains(contains(contains(user_target1), contains(user_target2))),
+            contains_exactly(contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2))),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -422,12 +422,12 @@ class TestUsersFromCallPickupGroupInterceptorGroupTargets(DAOTestCase):
 
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_user_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_group_targets,
-            contains(
-                contains(contains(user_target1)),
-                contains(contains(user_target2)),
+            contains_exactly(
+                contains_exactly(contains_exactly(user_target1)),
+                contains_exactly(contains_exactly(user_target2)),
             ),
         )

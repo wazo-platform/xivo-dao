@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import callfilter_dao
@@ -33,7 +33,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
     def test_given_no_secretaries_then_returns_empty_list(self):
         result = callfilter_dao.get_secretaries_id_by_context(self.default_context.name)
 
-        self.assertEqual(result, [])
+        assert result == []
 
     def test_given_boss_then_returns_empty_list(self):
         call_filter = self.add_call_filter()
@@ -41,7 +41,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get_secretaries_id_by_context(self.context.name)
 
-        self.assertEqual(result, [])
+        assert result == []
 
     def test_given_one_secretary_then_returns_list_with_id(self):
         call_filter = self.add_call_filter()
@@ -51,7 +51,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get_secretaries_id_by_context(self.context.name)
 
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
         self.assertIn((member.id,), result)
 
     def test_given_two_secretaries_then_returns_list_with_both_ids(self):
@@ -65,7 +65,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get_secretaries_id_by_context(self.context.name)
 
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
         self.assertIn((first_member.id,), result)
         self.assertIn((second_member.id,), result)
 
@@ -89,7 +89,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get_secretaries_id_by_context(self.context.name)
 
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
         self.assertIn((member.id,), result)
 
     def test_given_user_with_multiple_line_then_returns_list_with_one_id(self):
@@ -113,7 +113,7 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get_secretaries_id_by_context(self.context.name)
 
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
         self.assertIn((member.id,), result)
 
 
@@ -123,14 +123,14 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get(call_filter_id)
 
-        self.assertEqual(result, [])
+        assert result == []
 
     def test_get_with_filter_but_no_members(self):
         call_filter = self.add_call_filter()
 
         result = callfilter_dao.get(call_filter.id)
 
-        self.assertEqual(result, [])
+        assert result == []
 
     def test_get_with_filter_having_members(self):
         boss_id = 1
@@ -139,11 +139,11 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get(call_filter.id)
 
-        self.assertEqual(1, len(result))
+        assert 1 == len(result)
         callfilter = result[0][0]
         member = result[0][1]
-        self.assertEqual(callfilter.id, call_filter.id)
-        self.assertEqual(member.typeval, str(boss_id))
+        assert callfilter.id == call_filter.id
+        assert member.typeval == str(boss_id)
 
     def test_get_with_filter_having_2_members(self):
         boss_id = 1
@@ -154,7 +154,7 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
 
         result = callfilter_dao.get(call_filter.id)
 
-        self.assertEqual(2, len(result))
+        assert 2 == len(result)
         member_ids = [int(c[1].typeval) for c in result]
         self.assertIn(boss_id, member_ids)
         self.assertIn(secretary_id, member_ids)

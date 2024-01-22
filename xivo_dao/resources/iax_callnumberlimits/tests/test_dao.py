@@ -1,10 +1,10 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
 )
@@ -53,4 +53,4 @@ class TestEditAll(DAOTestCase):
         iax_callnumberlimits_dao.edit_all([row])
 
         iax_callnumberlimits = iax_callnumberlimits_dao.find_all()
-        assert_that(iax_callnumberlimits, contains(row))
+        assert_that(iax_callnumberlimits, contains_exactly(row))

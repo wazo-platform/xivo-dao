@@ -1,11 +1,11 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -148,7 +148,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_trunk(self):
         result = trunk_dao.find_all_by(context='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_native_column(self):
         trunk1 = self.add_trunk(context='MyCôntext')

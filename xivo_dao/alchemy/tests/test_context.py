@@ -1,9 +1,9 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     has_properties,
@@ -28,7 +28,7 @@ class TestContexts(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(context.contexts, contains(has_properties(name='included_context')))
+        assert_that(context.contexts, contains_exactly(has_properties(name='included_context')))
 
     def test_associate_order_by(self):
         context = self.add_context()
@@ -40,7 +40,7 @@ class TestContexts(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(context.contexts, contains(
+        assert_that(context.contexts, contains_exactly(
             included_context2,
             included_context3,
             included_context1,

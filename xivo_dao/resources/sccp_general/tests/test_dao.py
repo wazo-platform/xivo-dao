@@ -1,10 +1,10 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
 )
@@ -49,4 +49,4 @@ class TestEditAll(DAOTestCase):
         sccp_general_dao.edit_all([row])
 
         sccp_general = sccp_general_dao.find_all()
-        assert_that(sccp_general, contains(row))
+        assert_that(sccp_general, contains_exactly(row))

@@ -1,11 +1,11 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     has_items,
     none,
@@ -124,7 +124,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_resource(self):
         result = dao.find_all_by(uuid=UNKNOWN_UUID)
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_multi_tenant(self):
         row = self.add_tenant()
@@ -133,7 +133,7 @@ class TestFindAllBy(DAOTestCase):
         assert_that(resources, has_items(row))
 
         resources = dao.find_all_by(uuid=row.uuid, tenant_uuids=[UNKNOWN_UUID])
-        assert_that(resources, contains())
+        assert_that(resources, contains_exactly())
 
 
 class TestSearch(DAOTestCase):

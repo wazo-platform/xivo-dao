@@ -1,7 +1,7 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import between, distinct
+from sqlalchemy import between, distinct, literal_column
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import min
@@ -36,9 +36,9 @@ AND
     formatted_end = end.strftime('%Y-%m-%d %H:%M:%S%z')
 
     rows = session.query(
-        'start',
-        'end',
-        'agent_id'
+        literal_column('start'),
+        literal_column('end'),
+        literal_column('agent_id')
     ).from_statement(text(wrapup_times_query)).params(start=formatted_start,
                                                       end=formatted_end)
 

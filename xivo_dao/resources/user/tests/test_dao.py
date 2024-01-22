@@ -1,4 +1,4 @@
-# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -6,7 +6,7 @@ import uuid
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -285,7 +285,7 @@ class TestFindAllBy(TestUser):
     def test_find_all_by_no_users(self):
         result = user_dao.find_all_by(firstname='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_renamed_column(self):
         template_row = self.add_func_key_template()
@@ -313,7 +313,7 @@ class TestCountAllBy(TestUser):
     def test_count_all_by_no_users(self):
         result = user_dao.count_all_by('subscription_type')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_count_all_by(self):
         self.add_user(subscription_type=1)
@@ -375,7 +375,7 @@ class TestSearch(TestUser):
         with self.assertRaises(exception) as exc:
             parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
             user_dao.search(**parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
     def assert_search_collated_raises_exception(
         self, exception, exception_msg, **parameters
@@ -383,7 +383,7 @@ class TestSearch(TestUser):
         with self.assertRaises(exception) as exc:
             parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
             user_dao.search_collated(**parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
 
 class TestSimpleSearch(TestSearch):
@@ -1234,7 +1234,7 @@ class TestAssociateGroups(DAOTestCase):
         assert_that(user, equal_to(user_row))
         assert_that(
             user.group_members,
-            contains(
+            contains_exactly(
                 has_properties(
                     queue_name=group.name,
                     interface='PJSIP/sipname',
@@ -1272,7 +1272,7 @@ class TestAssociateGroups(DAOTestCase):
         user = self.session.query(User).first()
         assert_that(
             user.group_members,
-            contains(
+            contains_exactly(
                 has_properties(
                     queue_name=group.name, interface='PJSIP/sipname', channel='SIP'
                 )
@@ -1291,7 +1291,7 @@ class TestAssociateGroups(DAOTestCase):
         user = self.session.query(User).first()
         assert_that(
             user.group_members,
-            contains(
+            contains_exactly(
                 has_properties(
                     queue_name=group.name, interface='SCCP/sccpname', channel='SCCP'
                 )
@@ -1310,7 +1310,7 @@ class TestAssociateGroups(DAOTestCase):
         user = self.session.query(User).first()
         assert_that(
             user.group_members,
-            contains(
+            contains_exactly(
                 has_properties(
                     queue_name=group.name,
                     interface='custom/interface',
@@ -1328,7 +1328,7 @@ class TestAssociateGroups(DAOTestCase):
         user_dao.associate_all_groups(user_row, [group])
 
         user = self.session.query(User).first()
-        assert_that(user.groups, contains(group))
+        assert_that(user.groups, contains_exactly(group))
 
         user_dao.associate_all_groups(user_row, [])
 

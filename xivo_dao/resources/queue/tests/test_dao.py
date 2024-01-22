@@ -1,9 +1,9 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     empty,
     has_items,
@@ -160,7 +160,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_queue(self):
         result = queue_dao.find_all_by(name='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         pass
@@ -538,8 +538,8 @@ class TestAssociateSchedule(DAOTestCase):
         queue_dao.associate_schedule(queue, schedule)
 
         self.session.expire_all()
-        assert_that(queue.schedules, contains(schedule))
-        assert_that(schedule.queues, contains(queue))
+        assert_that(queue.schedules, contains_exactly(schedule))
+        assert_that(schedule.queues, contains_exactly(queue))
 
     def test_associate_already_associated(self):
         queue = self.add_queuefeatures()
@@ -549,7 +549,7 @@ class TestAssociateSchedule(DAOTestCase):
         queue_dao.associate_schedule(queue, schedule)
 
         self.session.expire_all()
-        assert_that(queue.schedules, contains(schedule))
+        assert_that(queue.schedules, contains_exactly(schedule))
 
 
 class TestDissociateSchedule(DAOTestCase):
@@ -586,7 +586,7 @@ class TestAssociateMemberUser(DAOTestCase):
         queue_dao.associate_member_user(queue, QueueMember(user=user))
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains(
+        assert_that(queue.user_queue_members, contains_exactly(
             has_properties(
                 queue_name=queue.name,
                 category='queue',
@@ -605,7 +605,7 @@ class TestAssociateMemberUser(DAOTestCase):
         queue_dao.associate_member_user(queue, QueueMember(user=user))
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains(
+        assert_that(queue.user_queue_members, contains_exactly(
             has_properties(
                 interface='PJSIP/sipname',
                 channel='SIP',
@@ -626,7 +626,7 @@ class TestAssociateMemberUser(DAOTestCase):
         queue_dao.associate_member_user(queue, queue_member)
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains(queue_member))
+        assert_that(queue.user_queue_members, contains_exactly(queue_member))
 
 
 class TestDissociateMemberUser(DAOTestCase):
@@ -662,7 +662,7 @@ class TestAssociateMemberAgent(DAOTestCase):
         queue_dao.associate_member_agent(queue, QueueMember(agent=agent))
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains(
+        assert_that(queue.agent_queue_members, contains_exactly(
             has_properties(
                 queue_name=queue.name,
                 category='queue',
@@ -678,7 +678,7 @@ class TestAssociateMemberAgent(DAOTestCase):
         queue_dao.associate_member_agent(queue, QueueMember(agent=agent))
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains(
+        assert_that(queue.agent_queue_members, contains_exactly(
             has_properties(
                 interface='Agent/1234',
                 channel='Agent',
@@ -696,7 +696,7 @@ class TestAssociateMemberAgent(DAOTestCase):
         queue_dao.associate_member_agent(queue, queue_member)
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains(queue_member))
+        assert_that(queue.agent_queue_members, contains_exactly(queue_member))
 
 
 class TestDissociateMemberAgent(DAOTestCase):

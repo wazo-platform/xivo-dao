@@ -1,9 +1,9 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
-from hamcrest import assert_that, contains, equal_to
+from hamcrest import assert_that, contains_exactly, equal_to
 
 
 from xivo_dao.alchemy.schedule_time import ScheduleTime
@@ -67,11 +67,11 @@ class TestWeekDays(unittest.TestCase):
 
     def test_getter_mix_range(self):
         schedule_time = ScheduleTime(weekdays='1,4-7,10')
-        assert_that(schedule_time.week_days, contains(1, 4, 5, 6, 7, 10))
+        assert_that(schedule_time.week_days, contains_exactly(1, 4, 5, 6, 7, 10))
 
     def test_getter_none(self):
         schedule_time = ScheduleTime(weekdays=None)
-        assert_that(schedule_time.week_days, contains(
+        assert_that(schedule_time.week_days, contains_exactly(
             1, 2, 3, 4, 5, 6, 7,
         ))
 
@@ -88,11 +88,11 @@ class TestMonthDays(unittest.TestCase):
 
     def test_getter_mix_range(self):
         schedule_time = ScheduleTime(monthdays='1,4-7,10')
-        assert_that(schedule_time.month_days, contains(1, 4, 5, 6, 7, 10))
+        assert_that(schedule_time.month_days, contains_exactly(1, 4, 5, 6, 7, 10))
 
     def test_getter_none(self):
         schedule_time = ScheduleTime(monthdays=None)
-        assert_that(schedule_time.month_days, contains(
+        assert_that(schedule_time.month_days, contains_exactly(
             1, 2, 3, 4, 5, 6, 7, 8, 9,
             10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
             20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -112,11 +112,11 @@ class TestMonthsList(unittest.TestCase):
 
     def test_getter_mix_range(self):
         schedule_time = ScheduleTime(months='1,4-7,10')
-        assert_that(schedule_time.months_list, contains(1, 4, 5, 6, 7, 10))
+        assert_that(schedule_time.months_list, contains_exactly(1, 4, 5, 6, 7, 10))
 
     def test_getter_none(self):
         schedule_time = ScheduleTime(months=None)
-        assert_that(schedule_time.months_list, contains(
+        assert_that(schedule_time.months_list, contains_exactly(
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
         ))
 

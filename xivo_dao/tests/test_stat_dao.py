@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -7,7 +7,7 @@ import pytz
 from datetime import datetime as t
 import pathlib
 
-from hamcrest import assert_that, contains, contains_inanyorder, equal_to, has_properties
+from hamcrest import assert_that, contains_exactly, contains_inanyorder, equal_to, has_properties
 
 from sqlalchemy import func
 
@@ -248,7 +248,7 @@ class TestFillSimpleCall(DAOTestCase):
         stat_dao.fill_simple_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(status='full')))
+        assert_that(result, contains_exactly(has_properties(status='full')))
 
     def test_with_specific_timezone(self):
         # Asia/Shanghai is +08
@@ -258,7 +258,7 @@ class TestFillSimpleCall(DAOTestCase):
         stat_dao.fill_simple_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(status='full')))
+        assert_that(result, contains_exactly(has_properties(status='full')))
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
@@ -322,7 +322,7 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         stat_dao.fill_leaveempty_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(callid=self.callid_found)))
+        assert_that(result, contains_exactly(has_properties(callid=self.callid_found)))
 
     def test_with_specific_timezone(self):
         # Asia/Shanghai is +08
@@ -332,7 +332,7 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         stat_dao.fill_leaveempty_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(callid=self.callid_found)))
+        assert_that(result, contains_exactly(has_properties(callid=self.callid_found)))
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
@@ -358,7 +358,7 @@ class TestStatDAO(DAOTestCase):
     def test_get_login_intervals_in_range_calls_empty(self):
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
-        self.assertEqual(len(result), 0)
+        assert len(result) == 0
 
     def test_get_login_intervals_when_login_same_as_start_no_logoff(self):
         context = self.add_context()
@@ -382,7 +382,7 @@ class TestStatDAO(DAOTestCase):
             self.aid1: sorted([(logins[0]['time'], self.end)])
         }
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_get_login_intervals_when_logoff_same_as_start_no_login(self):
         context = self.add_context()
@@ -403,7 +403,7 @@ class TestStatDAO(DAOTestCase):
 
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
-        self.assertEqual(len(result), 0)
+        assert len(result) == 0
 
     def test_get_login_intervals_when_logoff_after_end_no_login(self):
         context = self.add_context()
@@ -428,7 +428,7 @@ class TestStatDAO(DAOTestCase):
 
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
-        self.assertEqual(len(result), 0)
+        assert len(result) == 0
 
     def test_get_login_intervals_when_login_after_range(self):
         context = self.add_context()
@@ -475,7 +475,7 @@ class TestStatDAO(DAOTestCase):
             self.aid1: sorted([(logintime, logouttime)])
         }
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_get_login_intervals_when_login_after_range_no_logoff(self):
         context = self.add_context()
@@ -500,7 +500,7 @@ class TestStatDAO(DAOTestCase):
 
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
-        self.assertEqual(len(result), 0)
+        assert len(result) == 0
 
     def test_get_login_intervals_when_logoff_same_as_end_no_login(self):
         context = self.add_context()
@@ -529,7 +529,7 @@ class TestStatDAO(DAOTestCase):
             self.aid1: sorted([(logintime, logouttime)])
         }
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_get_login_intervals_in_range_calls_logins_in_range(self):
         context = self.add_context()
@@ -588,7 +588,7 @@ class TestStatDAO(DAOTestCase):
                                (cb_logins[1]['time'], cb_logoffs[1]['time'])]),
         }
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_get_login_intervals_in_range_logins_before_no_logout(self):
         context = self.add_context()
@@ -619,7 +619,7 @@ class TestStatDAO(DAOTestCase):
             self.aid1: [(self.start, self.end)],
         }
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_get_login_intervals_in_range_no_login_logout_calls(self):
         connect1 = QueueLog(
@@ -650,7 +650,7 @@ class TestStatDAO(DAOTestCase):
 
         expected = {}
 
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def _insert_agent_callback_logins_logoffs(self, logins, logoffs):
         with flush_session(self.session):
@@ -878,7 +878,7 @@ class TestStatDAO(DAOTestCase):
                         (4, 5),
                         (5, 8)]}
 
-        self.assertEqual(len(statistics), len(expected))
+        assert len(statistics) == len(expected)
 
         for agent, statistic in statistics.items():
             for login in statistic:
@@ -892,16 +892,16 @@ class TestStatDAO(DAOTestCase):
         items = [(1, 2), (2, 3)]
         result = stat_dao._filter_overlap(items)
 
-        self.assertEqual(sorted(result), sorted(items))
+        assert sorted(result) == sorted(items)
 
         items = [(1, 2), (2, 3), (2, 4)]
         expected = [(1, 2), (2, 4)]
         result = stat_dao._filter_overlap(items)
 
-        self.assertEqual(sorted(result), sorted(expected))
+        assert sorted(result) == sorted(expected)
 
         items = [(1, 2), (2, 4), (3, 4)]
         expected = [(1, 2), (2, 4)]
         result = stat_dao._filter_overlap(items)
 
-        self.assertEqual(sorted(result), sorted(expected))
+        assert sorted(result) == sorted(expected)

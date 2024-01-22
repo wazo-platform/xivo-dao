@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     equal_to,
     empty,
@@ -161,7 +161,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_voicemail(self):
         result = voicemail_dao.find_all_by(name='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         voicemail1 = self.add_voicemail(timezone='MyTimezone')

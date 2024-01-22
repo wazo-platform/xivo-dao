@@ -1,9 +1,9 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (assert_that,
                       any_of,
-                      contains,
+                      contains_exactly,
                       equal_to,
                       has_properties,
                       is_not,
@@ -119,7 +119,7 @@ class TestFindAllByLineId(TestLineExtensionDAO):
     def test_given_no_line_extensions_then_returns_empty_list(self):
         result = dao.find_all_by_line_id(1)
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_one_line_extension_then_returns_one_item(self):
         line = self.add_line()
@@ -129,8 +129,10 @@ class TestFindAllByLineId(TestLineExtensionDAO):
 
         result = dao.find_all_by_line_id(line_extension.line_id)
 
-        assert_that(result, contains(has_properties(line_id=line_extension.line_id,
-                                                    extension_id=line_extension.extension_id)))
+        assert_that(result, contains_exactly(has_properties(
+            line_id=line_extension.line_id,
+            extension_id=line_extension.extension_id,
+        )))
 
     def test_line_multiple_extensions(self):
         line = self.add_line()
@@ -143,10 +145,19 @@ class TestFindAllByLineId(TestLineExtensionDAO):
 
         result = dao.find_all_by_line_id(line.id)
 
-        assert_that(result, contains(has_properties(line_id=line.id,
-                                                    extension_id=extension1.id),
-                                     has_properties(line_id=line.id,
-                                                    extension_id=extension2.id)))
+        assert_that(
+            result,
+            contains_exactly(
+                has_properties(
+                    line_id=line.id,
+                    extension_id=extension1.id
+                ),
+                has_properties(
+                    line_id=line.id,
+                    extension_id=extension2.id
+                )
+            )
+        )
 
 
 class TestFindByExtensionId(TestLineExtensionDAO):

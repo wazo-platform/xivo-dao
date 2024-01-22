@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (assert_that,
@@ -8,7 +8,7 @@ from hamcrest import (assert_that,
                       has_length,
                       none,
                       has_items,
-                      contains)
+                      contains_exactly)
 
 from xivo_dao.alchemy.rightcallmember import RightCallMember as UserCallPermission
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -30,14 +30,14 @@ class TestFindAllBy(DAOTestCase):
         user_call_permission = self.add_user_call_permission_with_user_and_call_permission()
 
         result = user_call_permission_dao.find_all_by(user_id=user_call_permission.user_id)
-        assert_that(result, contains(user_call_permission))
+        assert_that(result, contains_exactly(user_call_permission))
 
         result = user_call_permission_dao.find_all_by(call_permission_id=user_call_permission.call_permission_id)
-        assert_that(result, contains(user_call_permission))
+        assert_that(result, contains_exactly(user_call_permission))
 
         result = user_call_permission_dao.find_all_by(user_id=user_call_permission.user_id,
                                                       call_permission_id=user_call_permission.call_permission_id)
-        assert_that(result, contains(user_call_permission))
+        assert_that(result, contains_exactly(user_call_permission))
 
     def test_find_all_by_user_id_two_user_call_permissions(self):
         user = self.add_user()

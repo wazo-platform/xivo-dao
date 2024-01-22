@@ -1,9 +1,9 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao import stat_queue_dao
-from sqlalchemy import func, between, literal
+from sqlalchemy import func, between, literal, literal_column
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import extract, cast
 from sqlalchemy.types import Integer
@@ -101,7 +101,7 @@ def find_all_callid_between_date(session, start_date, end_date):
          from stat_call_on_queue) as foo
        where foo.end between :start_date and :end_date
     '''
-    rows = session.query('callid').from_statement(text(sql)).params(start_date=start_date, end_date=end_date)
+    rows = session.query(literal_column('callid')).from_statement(text(sql)).params(start_date=start_date, end_date=end_date)
 
     return [row[0] for row in rows]
 

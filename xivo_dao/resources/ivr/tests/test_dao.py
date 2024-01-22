@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -64,7 +64,7 @@ class TestGet(DAOTestCase):
         ivr = ivr_dao.get(ivr_row.id)
 
         assert_that(ivr, equal_to(ivr_row))
-        assert_that(ivr.choices, contains())
+        assert_that(ivr.choices, contains_exactly())
 
     def test_get_multi_tenant(self):
         tenant = self.add_tenant()
@@ -161,7 +161,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_ivr(self):
         result = ivr_dao.find_all_by(description='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_native_column(self):
         ivr1 = self.add_ivr(description='MyIVR')
@@ -398,7 +398,7 @@ class TestCreate(DAOTestCase):
             timeout_destination=has_properties(action='user', actionarg1='2'),
             abort_destination=has_properties(action='user', actionarg1='3'),
         ))
-        assert_that(ivr.choices, contains(
+        assert_that(ivr.choices, contains_exactly(
             has_properties(exten='1', destination=has_properties(action='user', actionarg1='4')),
         ))
 
@@ -450,7 +450,7 @@ class TestEdit(DAOTestCase):
             invalid_destination=has_properties(action='user', actionarg1='3'),
             timeout_destination=has_properties(action='user', actionarg1='4'),
         ))
-        assert_that(ivr.choices, contains(
+        assert_that(ivr.choices, contains_exactly(
             has_properties(exten='2', destination=has_properties(action='none')),
         ))
 
@@ -544,7 +544,7 @@ class TestRelationship(DAOTestCase):
         )
 
         self.session.expire_all()
-        assert_that(ivr.choices, contains(ivr_choice))
+        assert_that(ivr.choices, contains_exactly(ivr_choice))
         assert_that(ivr.choices[0].destination, equal_to(dialaction))
 
     def test_incalls_relationship(self):

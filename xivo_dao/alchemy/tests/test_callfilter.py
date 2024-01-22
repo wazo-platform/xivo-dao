@@ -1,11 +1,11 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     empty,
     has_properties,
@@ -153,7 +153,7 @@ class TestRecipients(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.recipients, contains(recipient))
+        assert_that(call_filter.recipients, contains_exactly(recipient))
 
     def test_associate_order_by(self):
         call_filter = self.add_call_filter()
@@ -165,7 +165,7 @@ class TestRecipients(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.recipients, contains(recipient2, recipient3, recipient1))
+        assert_that(call_filter.recipients, contains_exactly(recipient2, recipient3, recipient1))
 
     def test_dissociate(self):
         call_filter = self.add_call_filter()
@@ -195,7 +195,7 @@ class TestSurrogates(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.surrogates, contains(surrogate))
+        assert_that(call_filter.surrogates, contains_exactly(surrogate))
 
     def test_associate_order_by(self):
         call_filter = self.add_call_filter()
@@ -207,7 +207,7 @@ class TestSurrogates(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.surrogates, contains(surrogate2, surrogate3, surrogate1))
+        assert_that(call_filter.surrogates, contains_exactly(surrogate2, surrogate3, surrogate1))
 
     def test_dissociate(self):
         call_filter = self.add_call_filter()

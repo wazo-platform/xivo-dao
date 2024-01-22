@@ -1,11 +1,11 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
     calling,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -343,7 +343,7 @@ class TestFindAllBy(TestExtension):
     def test_find_all_by_no_extensions(self):
         result = extension_dao.find_all_by(exten='invalid')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_native_column(self):
         context = self.add_context(name='mycontext')
@@ -500,7 +500,7 @@ class TestDelete(TestExtension):
             .first()
         )
 
-        self.assertEqual(row, None)
+        assert row is None
 
 
 class TestRelationship(TestExtension):

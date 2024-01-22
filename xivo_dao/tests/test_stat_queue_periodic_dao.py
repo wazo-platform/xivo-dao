@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -54,16 +54,16 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             result = (self.session.query(StatQueuePeriodic)
                       .filter(StatQueuePeriodic.time == period_start)[0])
 
-            self.assertEqual(result.abandoned, 7)
-            self.assertEqual(result.answered, 27)
-            self.assertEqual(result.closed, 5)
-            self.assertEqual(result.full, 4)
-            self.assertEqual(result.joinempty, 2)
-            self.assertEqual(result.leaveempty, 11)
-            self.assertEqual(result.timeout, 5)
-            self.assertEqual(result.divert_ca_ratio, 22)
-            self.assertEqual(result.divert_waittime, 15)
-            self.assertEqual(result.total, 98)
+            assert result.abandoned == 7
+            assert result.answered == 27
+            assert result.closed == 5
+            assert result.full == 4
+            assert result.joinempty == 2
+            assert result.leaveempty == 11
+            assert result.timeout == 5
+            assert result.divert_ca_ratio == 22
+            assert result.divert_waittime == 15
+            assert result.total == 98
         except LookupError:
             self.fail('Should have found a row')
 
@@ -82,7 +82,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         result = stat_queue_periodic_dao.get_most_recent_time(self.session)
         expected = start + timedelta(minutes=120)
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_clean_table(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
@@ -100,7 +100,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
         total = self.session.query(func.count(StatQueuePeriodic.time))[0][0]
 
-        self.assertEqual(total, 0)
+        assert total == 0
 
     def test_remove_after(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
@@ -120,5 +120,5 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
         res = self.session.query(StatQueuePeriodic.time)
 
-        self.assertEqual(res.count(), 1)
-        self.assertEqual(res[0].time, dt(2012, 1, 1, tzinfo=UTC))
+        assert res.count() == 1
+        assert res[0].time == dt(2012, 1, 1, tzinfo=UTC)

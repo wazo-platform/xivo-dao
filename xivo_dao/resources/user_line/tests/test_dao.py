@@ -1,9 +1,9 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     equal_to,
     has_length,
@@ -51,7 +51,7 @@ class TestFindAllByUserId(DAOTestCase):
 
         result = user_line_dao.find_all_by_user_id(user.id)
 
-        assert_that(result, contains(user_line))
+        assert_that(result, contains_exactly(user_line))
 
     def test_find_all_by_user_id_two_users(self):
         user = self.add_user()
@@ -336,7 +336,7 @@ class TestFindAllByLineId(DAOTestCase):
 
         result = user_line_dao.find_all_by_line_id(line.id)
 
-        assert_that(result, contains(user_line))
+        assert_that(result, contains_exactly(user_line))
 
     def test_find_all_by_line_id_two_user_lines(self):
         user1 = self.add_user()
@@ -367,7 +367,7 @@ class TestAssociateAllLines(DAOTestCase):
 
         result = user_line_dao.associate_all_lines(user, [line_1, line_2])
 
-        assert_that(result, contains(
+        assert_that(result, contains_exactly(
             has_properties(
                 user_id=user.id,
                 line_id=line_1.id,

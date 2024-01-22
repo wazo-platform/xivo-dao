@@ -1,9 +1,9 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -55,7 +55,7 @@ class TestLines(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line1.id, main_line=False)
         self.add_user_line(user_id=user.id, line_id=line2.id, main_line=True)
 
-        assert_that(user.lines, contains(line2, line1))
+        assert_that(user.lines, contains_exactly(line2, line1))
 
     def test_creator(self):
         user = self.add_user()
@@ -64,13 +64,13 @@ class TestLines(DAOTestCase):
         user.lines = [line2, line1]
         self.session.flush()
 
-        assert_that(user.user_lines, contains(
+        assert_that(user.user_lines, contains_exactly(
             has_properties(line_id=line2.id,
                            main_line=True),
             has_properties(line_id=line1.id,
                            main_line=False)
         ))
-        assert_that(user.lines, contains(line2, line1))
+        assert_that(user.lines, contains_exactly(line2, line1))
 
 
 class TestIncalls(DAOTestCase):
@@ -184,7 +184,7 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         )
 
         assert_that(
-            user_interceptor.call_pickup_interceptor_pickups, contains(call_pickup)
+            user_interceptor.call_pickup_interceptor_pickups, contains_exactly(call_pickup)
         )
 
     def test_one_pickup_two_user_targets(self):
@@ -200,15 +200,15 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup1),
+            contains_exactly(call_pickup1),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains(contains_inanyorder(user_target1, user_target2)),
+            contains_exactly(contains_inanyorder(user_target1, user_target2)),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -228,16 +228,16 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup1, call_pickup2),
+            contains_exactly(call_pickup1, call_pickup2),
         )
 
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains_inanyorder(contains(user_target1), contains(user_target2)),
+            contains_inanyorder(contains_exactly(user_target1), contains_exactly(user_target2)),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
 
     # Groups
@@ -260,16 +260,16 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup),
+            contains_exactly(call_pickup),
         )
 
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
-            contains(contains(contains(user_target))),
+            contains_exactly(contains_exactly(contains_exactly(user_target))),
         )
 
     def test_one_pickup_two_group_targets(self):
@@ -299,19 +299,19 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup1),
+            contains_exactly(call_pickup1),
         )
 
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
-            contains(
+            contains_exactly(
                 contains_inanyorder(
-                    contains(user_target1),
-                    contains(user_target2),
+                    contains_exactly(user_target1),
+                    contains_exactly(user_target2),
                 ),
             ),
         )
@@ -346,18 +346,18 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup1, call_pickup2),
+            contains_exactly(call_pickup1, call_pickup2),
         )
 
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
-            contains(
-                contains(contains(user_target1)),
-                contains(contains(user_target2)),
+            contains_exactly(
+                contains_exactly(contains_exactly(user_target1)),
+                contains_exactly(contains_exactly(user_target2)),
             ),
         )
 
@@ -396,11 +396,11 @@ class TestUsersFromCallPickupGroupInterceptorsUserTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains(contains(contains_inanyorder(user_target1, user_target2))),
+            contains_exactly(contains_exactly(contains_inanyorder(user_target1, user_target2))),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
-            contains(contains(empty())),
+            contains_exactly(contains_exactly(empty())),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -443,16 +443,16 @@ class TestUsersFromCallPickupGroupInterceptorsUserTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains(
+            contains_exactly(
                 contains_inanyorder(
-                    contains(user_target1),
-                    contains(user_target2),
+                    contains_exactly(user_target1),
+                    contains_exactly(user_target2),
                 )
             ),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
-            contains(contains(empty(), empty())),
+            contains_exactly(contains_exactly(empty(), empty())),
         )
 
 
@@ -504,15 +504,15 @@ class TestUsersFromCallPickupGroupInterceptorsGroupTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains(contains(empty())),
+            contains_exactly(contains_exactly(empty())),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
-            contains(
-                contains(
+            contains_exactly(
+                contains_exactly(
                     contains_inanyorder(
-                        contains(user_target1),
-                        contains(user_target2),
+                        contains_exactly(user_target1),
+                        contains_exactly(user_target2),
                     ),
                 ),
             ),
@@ -572,13 +572,13 @@ class TestUsersFromCallPickupGroupInterceptorsGroupTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains(contains(empty(), empty())),
+            contains_exactly(contains_exactly(empty(), empty())),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
-            contains(contains(
-                contains(contains(user_target1)),
-                contains(contains(user_target2)),
+            contains_exactly(contains_exactly(
+                contains_exactly(contains_exactly(user_target1)),
+                contains_exactly(contains_exactly(user_target2)),
             )),
         )
 
@@ -649,7 +649,7 @@ class TestSchedules(DAOTestCase):
 
         row = self.session.query(UserFeatures).filter_by(uuid=user.uuid).first()
         assert_that(row, equal_to(user))
-        assert_that(row.schedules, contains(schedule))
+        assert_that(row.schedules, contains_exactly(schedule))
 
     def test_setter(self):
         user = self.add_user()
