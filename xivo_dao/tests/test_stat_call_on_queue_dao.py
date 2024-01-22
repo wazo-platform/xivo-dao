@@ -54,7 +54,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
-        self.assertEqual(res[0].callid, 'callid')
+        assert res[0].callid == 'callid'
 
     def test_add_closed_call(self):
         timestamp = dt(2012, 1, 2, 0, 0, 0, tzinfo=UTC)
@@ -64,8 +64,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
-        self.assertEqual(res[0].callid, 'callid')
-        self.assertEqual(res[0].time, timestamp)
+        assert res[0].callid == 'callid'
+        assert res[0].time == timestamp
 
     def test_add_abandoned_call(self):
         timestamp = dt(2012, 1, 2, 0, 0, 0, tzinfo=UTC)
@@ -74,9 +74,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         stat_call_on_queue_dao.add_abandoned_call(self.session, 'callid', timestamp, queue_name, 42)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
-        self.assertEqual(res[0].callid, 'callid')
-        self.assertEqual(res[0].waittime, 42)
-        self.assertEqual(res[0].time, timestamp)
+        assert res[0].callid == 'callid'
+        assert res[0].waittime == 42
+        assert res[0].time == timestamp
 
     def test_add_joinempty_call(self):
         timestamp = dt(2012, 1, 2, 0, 0, 0, tzinfo=UTC)
@@ -85,8 +85,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         stat_call_on_queue_dao.add_joinempty_call(self.session, 'callid', timestamp, queue_name)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
-        self.assertEqual(res[0].callid, 'callid')
-        self.assertEqual(res[0].time, timestamp)
+        assert res[0].callid == 'callid'
+        assert res[0].time == timestamp
 
     def test_add_leaveempty_call(self):
         timestamp = dt(2012, 1, 2, 0, 0, 0, tzinfo=UTC)
@@ -95,8 +95,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         stat_call_on_queue_dao.add_leaveempty_call(self.session, 'callid', timestamp, queue_name, 13)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
-        self.assertEqual(res[0].callid, 'callid')
-        self.assertEqual(res[0].waittime, 13)
+        assert res[0].callid == 'callid'
+        assert res[0].waittime == 13
 
     def test_add_timeout_call(self):
         timestamp = dt(2012, 1, 2, 0, 0, 0, tzinfo=UTC)
@@ -105,8 +105,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         stat_call_on_queue_dao.add_timeout_call(self.session, 'callid', timestamp, queue_name, 27)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
-        self.assertEqual(res[0].callid, 'callid')
-        self.assertEqual(res[0].waittime, 27)
+        assert res[0].callid == 'callid'
+        assert res[0].waittime == 27
 
     def test_get_periodic_stats_full(self):
         start = dt(2012, 1, 1, 0, 0, 0, tzinfo=UTC)
@@ -125,9 +125,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(dt(2012, 1, 1, 1, tzinfo=UTC) in stats_quarter_hour)
         self.assertTrue(dt(2012, 1, 1, 2, tzinfo=UTC) in stats_quarter_hour)
 
-        self.assertEqual(stats_quarter_hour[start][queue_id]['full'], 1)
-        self.assertEqual(stats_quarter_hour[start + timedelta(minutes=15)][queue_id]['full'], 2)
-        self.assertEqual(stats_quarter_hour[start + timedelta(minutes=30)][queue_id]['full'], 1)
+        assert stats_quarter_hour[start][queue_id]['full'] == 1
+        assert stats_quarter_hour[start + timedelta(minutes=15)][queue_id]['full'] == 2
+        assert stats_quarter_hour[start + timedelta(minutes=30)][queue_id]['full'] == 1
 
         stats_hour = stat_call_on_queue_dao.get_periodic_stats_hour(self.session, start, end)
 
@@ -135,7 +135,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(dt(2012, 1, 1, 1, tzinfo=UTC) in stats_hour)
         self.assertTrue(dt(2012, 1, 1, 2, tzinfo=UTC) in stats_hour)
 
-        self.assertEqual(stats_hour[start][queue_id]['full'], 4)
+        assert stats_hour[start][queue_id]['full'] == 4
 
     def test_get_periodic_stats_closed(self):
         start = dt(2012, 1, 1, 0, 0, 0, tzinfo=UTC)
@@ -154,9 +154,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(dt(2012, 1, 1, 1, tzinfo=UTC) in stats_quarter_hour)
         self.assertTrue(dt(2012, 1, 1, 2, tzinfo=UTC) in stats_quarter_hour)
 
-        self.assertEqual(stats_quarter_hour[start][queue_id]['closed'], 1)
-        self.assertEqual(stats_quarter_hour[start + timedelta(minutes=15)][queue_id]['closed'], 2)
-        self.assertEqual(stats_quarter_hour[start + timedelta(minutes=30)][queue_id]['closed'], 1)
+        assert stats_quarter_hour[start][queue_id]['closed'] == 1
+        assert stats_quarter_hour[start + timedelta(minutes=15)][queue_id]['closed'] == 2
+        assert stats_quarter_hour[start + timedelta(minutes=30)][queue_id]['closed'] == 1
 
         stats_hour = stat_call_on_queue_dao.get_periodic_stats_hour(self.session, start, end)
 
@@ -164,7 +164,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(dt(2012, 1, 1, 1, tzinfo=UTC) in stats_hour)
         self.assertTrue(dt(2012, 1, 1, 2, tzinfo=UTC) in stats_hour)
 
-        self.assertEqual(stats_hour[start][queue_id]['closed'], 4)
+        assert stats_hour[start][queue_id]['closed'] == 4
 
     def test_get_periodic_stats_total(self):
         start = dt(2012, 1, 1, 0, 0, 0, tzinfo=UTC)
@@ -196,9 +196,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(dt(2012, 1, 1, 1, tzinfo=UTC) in stats_quarter_hour)
         self.assertTrue(dt(2012, 1, 1, 2, tzinfo=UTC) in stats_quarter_hour)
 
-        self.assertEqual(stats_quarter_hour[start][queue_id]['total'], 3)
-        self.assertEqual(stats_quarter_hour[start + timedelta(minutes=15)][queue_id]['total'], 4)
-        self.assertEqual(stats_quarter_hour[start + timedelta(minutes=30)][queue_id]['total'], 2)
+        assert stats_quarter_hour[start][queue_id]['total'] == 3
+        assert stats_quarter_hour[start + timedelta(minutes=15)][queue_id]['total'] == 4
+        assert stats_quarter_hour[start + timedelta(minutes=30)][queue_id]['total'] == 2
 
         stats_hour = stat_call_on_queue_dao.get_periodic_stats_hour(self.session, start, end)
 
@@ -206,7 +206,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(dt(2012, 1, 1, 1, tzinfo=UTC) in stats_hour)
         self.assertTrue(dt(2012, 1, 1, 2, tzinfo=UTC) in stats_hour)
 
-        self.assertEqual(stats_hour[start][queue_id]['total'], 9)
+        assert stats_hour[start][queue_id]['total'] == 9
 
     def test_clean_table(self):
         start = dt(2012, 1, 1, 0, 0, 0, tzinfo=UTC)
@@ -222,7 +222,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         total = (self.session.query(func.count(StatCallOnQueue.callid))).first()[0]
 
-        self.assertEqual(total, 0)
+        assert total == 0
 
     def test_remove_after(self):
         stat_call_on_queue_dao.remove_after(self.session, dt(2012, 1, 1, tzinfo=UTC))
@@ -236,8 +236,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         stat_call_on_queue_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=UTC))
 
         callids = self.session.query(StatCallOnQueue.callid)
-        self.assertEqual(callids.count(), 1)
-        self.assertEqual(callids[0].callid, 'callid1')
+        assert callids.count() == 1
+        assert callids[0].callid == 'callid1'
 
     def test_find_all_callid_between_date(self):
         callid1 = 'callid1'
@@ -295,4 +295,4 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         stat_call_on_queue_dao.remove_callids(self.session, [callid1, callid2, callid3])
 
         callids = self.session.query(StatCallOnQueue.callid)
-        self.assertEqual(callids.count(), 0)
+        assert callids.count() == 0

@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.tests.test_dao import (
@@ -28,7 +28,7 @@ class TestLineFeaturesDAO(DAOTestCase):
             EXTEN, self.context.name
         )
 
-        self.assertEqual('PJSIP/abcdef', interface)
+        assert 'PJSIP/abcdef' == interface
 
     def test_get_interface_from_exten_and_context_sccp(self):
         name = '1001'
@@ -41,7 +41,7 @@ class TestLineFeaturesDAO(DAOTestCase):
             EXTEN, self.context.name
         )
 
-        self.assertEqual('SCCP/1001', interface)
+        assert 'SCCP/1001' == interface
 
     def test_get_interface_from_exten_and_context_custom(self):
         name = 'custom/g1/12345'
@@ -54,7 +54,7 @@ class TestLineFeaturesDAO(DAOTestCase):
             EXTEN, self.context.name
         )
 
-        self.assertEqual('custom/g1/12345', interface)
+        assert 'custom/g1/12345' == interface
 
     def test_get_interface_from_exten_and_context_multiple_lines(self):
         main_exten = '1234'
@@ -79,7 +79,7 @@ class TestLineFeaturesDAO(DAOTestCase):
             second_exten, self.context.name
         )
 
-        self.assertEqual('PJSIP/idbehold', interface)
+        assert 'PJSIP/idbehold' == interface
 
     def test_get_interface_from_exten_and_context_multiple_lines_same_exten(self):
         user = self.add_user()
@@ -101,7 +101,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         )
 
         expected = f'PJSIP/{main_line_name}'
-        self.assertEqual(expected, interface)
+        assert expected == interface
 
     def test_get_interface_no_matching_exten(self):
         self.assertRaises(
@@ -119,7 +119,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         interface = line_dao.get_interface_from_line_id(line.id)
 
         expected = f'PJSIP/{line_name}'
-        self.assertEqual(expected, interface)
+        assert expected == interface
 
     def test_get_interface_from_line_id_sccp(self):
         line_name = '1056'
@@ -129,7 +129,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         interface = line_dao.get_interface_from_line_id(line.id)
 
         expected = f'SCCP/{line_name}'
-        self.assertEqual(expected, interface)
+        assert expected == interface
 
     def test_get_interface_from_line_id_not_found(self):
         self.assertRaises(LookupError, line_dao.get_interface_from_line_id, UNKNOWN_ID)
@@ -143,13 +143,13 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
 
-        self.assertEqual(exten, main_exten)
-        self.assertEqual(context, self.context.name)
+        assert exten == main_exten
+        assert context == self.context.name
 
     def test_get_main_extension_context_from_line_id_unknown(self):
         result = line_dao.get_main_extension_context_from_line_id(UNKNOWN_ID)
 
-        self.assertEqual(result, None)
+        assert result is None
 
     def test_get_main_extension_context_from_line_id_without_extension(self):
         sip = self.add_endpoint_sip()
@@ -157,7 +157,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         result = line_dao.get_main_extension_context_from_line_id(line.id)
 
-        self.assertEqual(result, None)
+        assert result is None
 
     def test_get_main_extension_context_from_line_id_with_multiple_extensions(self):
         main_exten = '1234'
@@ -175,8 +175,8 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
 
-        self.assertEqual(exten, main_exten)
-        self.assertEqual(context, self.context.name)
+        assert exten == main_exten
+        assert context == self.context.name
 
     def test_is_line_owned_by_user(self):
         user = self.add_user()
@@ -187,7 +187,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         result = line_dao.is_line_owned_by_user(user.uuid, line.id)
 
-        self.assertEqual(result, True)
+        assert result is True
 
     def test_is_line_owned_by_user_unknown_user(self):
         sip = self.add_endpoint_sip()
@@ -195,7 +195,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         result = line_dao.is_line_owned_by_user(UNKNOWN_UUID, line.id)
 
-        self.assertEqual(result, False)
+        assert result is False
 
     def test_is_line_owned_by_user_unknown_line(self):
         user = self.add_user()
@@ -206,7 +206,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         result = line_dao.is_line_owned_by_user(user.uuid, UNKNOWN_ID)
 
-        self.assertEqual(result, False)
+        assert result is False
 
     def test_is_line_owned_by_user_with_multiple_lines(self):
         user = self.add_user()
@@ -222,8 +222,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         main_result = line_dao.is_line_owned_by_user(user.uuid, main_line.id)
         secondary_result = line_dao.is_line_owned_by_user(user.uuid, secondary_line.id)
 
-        self.assertEqual(main_result, True)
-        self.assertEqual(secondary_result, True)
+        assert main_result is True
+        assert secondary_result is True
 
     def test_is_line_owned_by_user_with_multiple_users(self):
         main_user = self.add_user()
@@ -237,5 +237,5 @@ class TestLineFeaturesDAO(DAOTestCase):
         main_result = line_dao.is_line_owned_by_user(main_user.uuid, line.id)
         secondary_result = line_dao.is_line_owned_by_user(secondary_user.uuid, line.id)
 
-        self.assertEqual(main_result, True)
-        self.assertEqual(secondary_result, True)
+        assert main_result is True
+        assert secondary_result is True

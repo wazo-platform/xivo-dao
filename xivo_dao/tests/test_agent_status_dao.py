@@ -108,8 +108,8 @@ class TestAgentStatusDao(DAOTestCase):
             agent_id
         )
 
-        self.assertEqual(extension, result_extension)
-        self.assertEqual(context, result_context)
+        assert extension == result_extension
+        assert context == result_context
 
     def test_get_extension_from_agent_id_not_found(self):
         agent_id = 13
@@ -147,12 +147,12 @@ class TestAgentStatusDao(DAOTestCase):
 
         result = agent_status_dao.get_agent_id_from_extension(extension, context)
 
-        self.assertEqual(result, agent_id)
+        assert result == agent_id
 
     def test_get_status_with_unlogged_agent_returns_none(self):
         agent_id = 1
         agent_status = agent_status_dao.get_status(agent_id)
-        self.assertEqual(agent_status, None)
+        assert agent_status is None
 
     def test_get_status_with_logged_agent_returns_an_agent(self):
         agent = self.add_agent()
@@ -401,9 +401,9 @@ class TestAgentStatusDao(DAOTestCase):
 
         statuses = agent_status_dao.get_statuses(tenant_uuids=[tenant.uuid])
 
-        self.assertEqual(len(statuses), 1)
-        self.assertEqual(statuses[0].agent_id, agent.id)
-        self.assertEqual(statuses[0].tenant_uuid, tenant.uuid)
+        assert len(statuses) == 1
+        assert statuses[0].agent_id == agent.id
+        assert statuses[0].tenant_uuid == tenant.uuid
         assert_that(
             statuses,
             contains_exactly(has_properties(agent_id=agent.id, tenant_uuid=tenant.uuid)),

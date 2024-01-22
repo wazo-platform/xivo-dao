@@ -65,7 +65,7 @@ class TestAgentDAO(DAOTestCase):
         self.assertRaises(LookupError, agent_dao.agent_with_id, agent.id, tenant_uuids=[self.default_tenant.uuid])
 
         result = agent_dao.agent_with_id(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
-        self.assertEqual(result.id, agent.id)
+        assert result.id == agent.id
 
     def test_agent_with_number(self):
         agent = self.add_agent()

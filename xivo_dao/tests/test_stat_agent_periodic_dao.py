@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -75,7 +75,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
                       .filter(StatAgentPeriodic.time == period_start)
                       .filter(StatAgentPeriodic.stat_agent_id == agent_id_1)[0])
 
-            self.assertEqual(result.login_time, timedelta(minutes=50))
+            assert result.login_time == timedelta(minutes=50)
         except LookupError:
             self.fail('Should have found a row')
 
@@ -94,7 +94,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
 
         total = self.session.query(func.count(StatAgentPeriodic.time))[0][0]
 
-        self.assertEqual(total, 0)
+        assert total == 0
 
     def test_remove_after(self):
         _, agent_id = self._insert_agent_to_stat_agent()
@@ -127,5 +127,5 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
 
         res = self.session.query(StatAgentPeriodic.time)
 
-        self.assertEqual(res.count(), 1)
-        self.assertEqual(res[0].time, dt(2012, 1, 1, tzinfo=UTC))
+        assert res.count() == 1
+        assert res[0].time == dt(2012, 1, 1, tzinfo=UTC)

@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
@@ -21,5 +21,5 @@ class TestGetInfos(DAOTestCase):
 
         infos = infos_dao.get()
 
-        self.assertEqual(infos.uuid, xivo_uuid)
-        self.assertEqual(infos.wazo_version, wazo_version)
+        assert infos.uuid == xivo_uuid
+        assert infos.wazo_version == wazo_version

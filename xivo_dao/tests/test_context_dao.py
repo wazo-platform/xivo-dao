@@ -1,4 +1,4 @@
-# Copyright 2007-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import context_dao
@@ -15,4 +15,4 @@ class TestContextDAO(DAOTestCase):
 
         context = context_dao.get(context_name)
 
-        self.assertEqual(context.name, context_name)
+        assert context.name == context_name

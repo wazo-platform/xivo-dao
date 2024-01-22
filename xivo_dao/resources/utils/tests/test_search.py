@@ -81,14 +81,14 @@ class TestSearchSystem(DAOTestCase):
     def assert_search_raises_exception(self, exception, exception_msg, **parameters):
         with self.assertRaises(exception) as exc:
             self.search.search(self.session, parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
     def assert_search_collated_raises_exception(
         self, exception, exception_msg, **parameters
     ):
         with self.assertRaises(exception) as exc:
             self.search.search_collated(self.session, parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
     def test_given_no_parameters_then_sorts_rows_using_default_sort_and_direction(self):
         last_user_row = self.add_user(lastname='Zintrabi')

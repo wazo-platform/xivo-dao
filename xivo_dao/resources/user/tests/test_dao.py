@@ -375,7 +375,7 @@ class TestSearch(TestUser):
         with self.assertRaises(exception) as exc:
             parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
             user_dao.search(**parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
     def assert_search_collated_raises_exception(
         self, exception, exception_msg, **parameters
@@ -383,7 +383,7 @@ class TestSearch(TestUser):
         with self.assertRaises(exception) as exc:
             parameters.setdefault('tenant_uuids', [self.default_tenant.uuid])
             user_dao.search_collated(**parameters)
-        self.assertEquals(str(exc.exception), exception_msg)
+        assert str(exc.exception) == exception_msg
 
 
 class TestSimpleSearch(TestSearch):

@@ -500,7 +500,7 @@ class TestDelete(TestExtension):
             .first()
         )
 
-        self.assertEqual(row, None)
+        assert row is None
 
 
 class TestRelationship(TestExtension):
