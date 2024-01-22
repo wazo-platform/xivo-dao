@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -6,7 +6,7 @@ from datetime import timedelta
 from pytz import UTC
 
 from hamcrest import assert_that
-from hamcrest import contains
+from hamcrest import contains_exactly
 from sqlalchemy import func
 
 from xivo_dao import stat_call_on_queue_dao
@@ -254,7 +254,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         result = stat_call_on_queue_dao.find_all_callid_between_date(self.session, start, end)
 
-        assert_that(result, contains(callid1, callid2, callid3))
+        assert_that(result, contains_exactly(callid1, callid2, callid3))
 
     def test_that_find_all_callid_between_date_includes_calls_started_before_start(self):
         callid = '234235435'
@@ -278,7 +278,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
             dt(2014, 1, 1, 11, 0, 0, tzinfo=UTC),
             dt(2014, 1, 1, 11, 59, 59, tzinfo=UTC))
 
-        assert_that(result, contains(callid))
+        assert_that(result, contains_exactly(callid))
 
     def test_remove_callid_before(self):
         callid1 = 'callid1'

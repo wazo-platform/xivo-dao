@@ -1,9 +1,9 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     has_properties,
     empty,
@@ -140,7 +140,7 @@ class TestUserHints(TestHints):
 
         assert_that(
             hint_dao.user_hints(self.context.name),
-            contains(
+            contains_exactly(
                 has_properties(
                     user_id=user_row.id,
                     extension='1000',
@@ -155,7 +155,7 @@ class TestUserHints(TestHints):
 
         assert_that(
             hint_dao.user_hints(self.context.name),
-            contains(
+            contains_exactly(
                 has_properties(
                     user_id=user_row.id,
                     extension='1001',
@@ -170,7 +170,7 @@ class TestUserHints(TestHints):
 
         assert_that(
             hint_dao.user_hints(self.context.name),
-            contains(
+            contains_exactly(
                 has_properties(
                     user_id=user_row.id,
                     extension='1002',
@@ -225,7 +225,7 @@ class TestUserHints(TestHints):
 
         assert_that(
             hint_dao.user_hints(self.context.name),
-            contains(
+            contains_exactly(
                 has_properties(
                     user_id=user.id,
                     extension='1001',
@@ -274,7 +274,7 @@ class TestUserHints(TestHints):
 
         assert_that(
             hint_dao.user_hints(self.context.name),
-            contains(
+            contains_exactly(
                 has_properties(
                     user_id=user.id,
                     extension='1001',
@@ -329,7 +329,7 @@ class TestConferenceHints(TestHints):
         hints = hint_dao.conference_hints(context.name)
         assert_that(
             hints,
-            contains(
+            contains_exactly(
                 Hint(
                     user_id=None,
                     conference_id=conference.id,
@@ -359,7 +359,7 @@ class TestServiceHints(TestHints):
 
         assert_that(
             hint_dao.service_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(user_id=user_row.id, extension='*25', argument=None),
             ),
         )
@@ -398,7 +398,7 @@ class TestForwardHints(TestHints):
 
         assert_that(
             hint_dao.forward_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(user_id=user_row.id, extension='*23', argument='1234'),
             ),
         )
@@ -411,7 +411,7 @@ class TestForwardHints(TestHints):
 
         assert_that(
             hint_dao.forward_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(user_id=user_row.id, extension='*23', argument=None),
             ),
         )
@@ -424,7 +424,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints(self.context.name), contains())
+        assert_that(hint_dao.forward_hints(self.context.name), contains_exactly())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
@@ -432,7 +432,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.forward_hints(self.context.name), contains())
+        assert_that(hint_dao.forward_hints(self.context.name), contains_exactly())
 
     def test_given_user_when_query_other_context_then_returns_no_hints(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
@@ -440,7 +440,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints('othercontext'), contains())
+        assert_that(hint_dao.forward_hints('othercontext'), contains_exactly())
 
     def test_forward_extension_with_xxx_pattern_is_cleaned(self):
         destination_row = self.create_forward_func_key('_*23XXXX', 'fwdbusy', '1234')
@@ -450,7 +450,7 @@ class TestForwardHints(TestHints):
 
         assert_that(
             hint_dao.forward_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(user_id=user_row.id, extension='*23', argument='1234'),
             ),
         )
@@ -465,7 +465,7 @@ class TestAgentHints(TestHints):
 
         assert_that(
             hint_dao.agent_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(
                     user_id=user_row.id,
                     extension='*31',
@@ -506,7 +506,7 @@ class TestAgentHints(TestHints):
 
         assert_that(
             hint_dao.agent_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(
                     user_id=user_row.id,
                     extension='*31',
@@ -525,7 +525,7 @@ class TestCustomHints(TestHints):
 
         assert_that(
             hint_dao.custom_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(user_id=None, extension='1234', argument=None),
             ),
         )
@@ -566,7 +566,7 @@ class TestBSFilterHints(TestHints):
 
         assert_that(
             hint_dao.bsfilter_hints(self.context.name),
-            contains(
+            contains_exactly(
                 Hint(user_id=None, extension='*37', argument=str(filtermember_row.id)),
             ),
         )
@@ -595,7 +595,7 @@ class TestGroupHints(TestHints):
             user_id=user_row.id, extension='*51', argument=str(destination_row.group_id)
         )
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains(expected))
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly(expected))
 
     def test_given_commented_extension_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -603,7 +603,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains())
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -611,7 +611,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains())
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly())
 
     def test_given_user_when_querying_other_context_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -619,7 +619,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.groupmember_hints('othercontext'), contains())
+        assert_that(hint_dao.groupmember_hints('othercontext'), contains_exactly())
 
     def test_group_extension_with_xxx_pattern_is_cleaned(self):
         destination_row = self.create_group_member_func_key(
@@ -633,7 +633,7 @@ class TestGroupHints(TestHints):
             user_id=user_row.id, extension='*51', argument=str(destination_row.group_id)
         )
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains(expected))
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly(expected))
 
 
 class TestUserSharedHints(TestHints):

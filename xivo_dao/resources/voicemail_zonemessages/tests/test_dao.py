@@ -1,10 +1,10 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     has_properties,
@@ -44,7 +44,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_zonemessages = voicemail_zonemessages_dao.find_all()
 
-        assert_that(voicemail_zonemessages, contains(row2))
+        assert_that(voicemail_zonemessages, contains_exactly(row2))
 
     def test_find_all_do_not_find_var_val_none(self):
         self.add_voicemail_zonemessages_settings(var_name='setting1',
@@ -54,7 +54,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_zonemessages = voicemail_zonemessages_dao.find_all()
 
-        assert_that(voicemail_zonemessages, contains(row2))
+        assert_that(voicemail_zonemessages, contains_exactly(row2))
 
 
 class TestEditAll(DAOTestCase):

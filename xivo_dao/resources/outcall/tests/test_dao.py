@@ -1,10 +1,10 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     equal_to,
     has_items,
@@ -176,7 +176,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_outcall(self):
         result = outcall_dao.find_all_by(description='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         pass
@@ -481,11 +481,11 @@ class TestAssociateCallPermission(DAOTestCase):
 
         result = self.session.query(Outcall).first()
         assert_that(result, equal_to(outcall))
-        assert_that(result.call_permissions, contains(call_permission))
+        assert_that(result.call_permissions, contains_exactly(call_permission))
 
         result = self.session.query(RightCall).first()
         assert_that(result, equal_to(call_permission))
-        assert_that(result.outcalls, contains(outcall))
+        assert_that(result.outcalls, contains_exactly(outcall))
 
     def test_associate_already_associated(self):
         outcall = self.add_outcall()
@@ -496,7 +496,7 @@ class TestAssociateCallPermission(DAOTestCase):
 
         result = self.session.query(Outcall).first()
         assert_that(result, equal_to(outcall))
-        assert_that(result.call_permissions, contains(call_permission))
+        assert_that(result.call_permissions, contains_exactly(call_permission))
 
 
 class TestDissociateCallPermission(DAOTestCase):

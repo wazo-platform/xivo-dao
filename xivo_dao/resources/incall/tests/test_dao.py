@@ -1,10 +1,10 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     equal_to,
     has_items,
@@ -176,7 +176,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_incall(self):
         result = incall_dao.find_all_by(description='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         incall1 = self.add_incall(preprocess_subroutine='mysub', destination=Dialaction(action='user', actionarg1='2'))
@@ -211,7 +211,7 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, empty())
 
         result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[tenant.uuid])
-        assert_that(result, contains(incall))
+        assert_that(result, contains_exactly(incall))
 
 
 class TestSearch(DAOTestCase):
@@ -491,7 +491,7 @@ class TestRelationship(DAOTestCase):
         incall = incall_dao.get(incall_row.id)
 
         assert_that(incall, equal_to(incall_row))
-        assert_that(incall.extensions, contains(extension_row))
+        assert_that(incall.extensions, contains_exactly(extension_row))
 
     def test_group_relationship(self):
         group_row = self.add_group()

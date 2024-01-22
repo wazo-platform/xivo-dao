@@ -1,4 +1,4 @@
-# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -7,7 +7,7 @@ import uuid
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -177,7 +177,7 @@ class TestGet(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             template=True,
             transport=has_properties(uuid=transport.uuid),
-            templates=contains(
+            templates=contains_exactly(
                 has_properties(uuid=template_1.uuid),
                 has_properties(uuid=template_2.uuid),
             ),
@@ -421,7 +421,7 @@ class TestEdit(DAOTestCase):
             sip_dao.edit(sip)
 
             assert_that(sip, has_properties({
-                field: contains(contains(*options[0])),
+                field: contains_exactly(contains_exactly(*options[0])),
             }), name)
 
         for name, options in self.section_options.items():

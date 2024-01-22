@@ -1,11 +1,11 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     empty,
     none,
@@ -46,7 +46,7 @@ class TestPickupmemberUserTargets(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.pickupmember_user_targets, contains(target))
+        assert_that(pickup.pickupmember_user_targets, contains_exactly(target))
 
     def test_dissociate(self):
         pickup = self.add_pickup()
@@ -76,7 +76,7 @@ class TestPickupmemberUserInterceptors(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.pickupmember_user_interceptors, contains(interceptor))
+        assert_that(pickup.pickupmember_user_interceptors, contains_exactly(interceptor))
 
     def test_dissociate(self):
         pickup = self.add_pickup()
@@ -106,7 +106,7 @@ class TestPickupmemberGroupTargets(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.pickupmember_group_targets, contains(target))
+        assert_that(pickup.pickupmember_group_targets, contains_exactly(target))
 
     def test_dissociate(self):
         pickup = self.add_pickup()
@@ -136,7 +136,7 @@ class TestPickupmemberGroupInterceptors(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.pickupmember_group_interceptors, contains(interceptor))
+        assert_that(pickup.pickupmember_group_interceptors, contains_exactly(interceptor))
 
     def test_dissociate(self):
         pickup = self.add_pickup()
@@ -175,7 +175,7 @@ class TestUserInterceptors(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.user_interceptors, contains(user))
+        assert_that(pickup.user_interceptors, contains_exactly(user))
 
     def test_delete(self):
         pickup = self.add_pickup()
@@ -209,7 +209,7 @@ class TestGroupInterceptors(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.group_interceptors, contains(group))
+        assert_that(pickup.group_interceptors, contains_exactly(group))
 
     def test_delete(self):
         pickup = self.add_pickup()
@@ -243,7 +243,7 @@ class TestUserTargets(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.user_targets, contains(user))
+        assert_that(pickup.user_targets, contains_exactly(user))
 
     def test_delete(self):
         pickup = self.add_pickup()
@@ -277,7 +277,7 @@ class TestGroupTargets(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.group_targets, contains(group))
+        assert_that(pickup.group_targets, contains_exactly(group))
 
     def test_delete(self):
         pickup = self.add_pickup()
@@ -318,7 +318,7 @@ class TestUsersFromGroupTargets(DAOTestCase):
         self.session.expire_all()
         assert_that(
             pickup.users_from_group_targets,
-            contains(contains(user1), contains(user2)),
+            contains_exactly(contains_exactly(user1), contains_exactly(user2)),
         )
 
     def test_getter_when_empty(self):
@@ -331,7 +331,7 @@ class TestUsersFromGroupTargets(DAOTestCase):
         self.session.expire_all()
         assert_that(
             pickup.users_from_group_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
 
 

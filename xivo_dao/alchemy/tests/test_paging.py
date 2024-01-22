@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
 from hamcrest import (assert_that,
-                      contains,
+                      contains_exactly,
                       contains_inanyorder,
                       empty,
                       equal_to,
@@ -29,7 +29,7 @@ class TestUsersMember(DAOTestCase):
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
-        assert_that(row.users_member, contains(user))
+        assert_that(row.users_member, contains_exactly(user))
 
     def test_setter(self):
         paging = self.add_paging()
@@ -72,7 +72,7 @@ class TestUsersCaller(DAOTestCase):
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
-        assert_that(row.users_caller, contains(user))
+        assert_that(row.users_caller, contains_exactly(user))
 
     def test_setter(self):
         paging = self.add_paging()

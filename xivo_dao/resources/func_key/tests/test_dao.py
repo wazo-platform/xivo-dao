@@ -1,9 +1,9 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     has_item,
     has_items,
@@ -42,7 +42,7 @@ class TestFindAllForwards(TestFuncKeyDao):
     def test_given_no_forwards_then_returns_empty_list(self):
         result = dao.find_all_forwards(1, 'unconditional')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_given_unconditional_forward_then_list_contains_unconditional_forward(self):
         number = '1234'
@@ -50,7 +50,7 @@ class TestFindAllForwards(TestFuncKeyDao):
 
         result = dao.find_all_forwards(user_row.id, 'unconditional')
 
-        assert_that(result, contains(
+        assert_that(result, contains_exactly(
             has_properties(
                 number=number,
             )
@@ -62,7 +62,7 @@ class TestFindAllForwards(TestFuncKeyDao):
 
         result = dao.find_all_forwards(user_row.id, 'noanswer')
 
-        assert_that(result, contains(
+        assert_that(result, contains_exactly(
             has_properties(
                 number=number,
             )
@@ -74,7 +74,7 @@ class TestFindAllForwards(TestFuncKeyDao):
 
         result = dao.find_all_forwards(user_row.id, 'busy')
 
-        assert_that(result, contains(
+        assert_that(result, contains_exactly(
             has_properties(
                 number=number,
             )

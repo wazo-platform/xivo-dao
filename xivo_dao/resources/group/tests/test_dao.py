@@ -1,10 +1,10 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     equal_to,
     has_items,
@@ -191,7 +191,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_group(self):
         result = group_dao.find_all_by(name='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         pass
@@ -541,7 +541,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(
+        assert_that(group.user_queue_members, contains_exactly(
             has_properties(
                 queue_name=group.name,
                 interface='PJSIP/sipname',
@@ -580,7 +580,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, members)
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(
+        assert_that(group.user_queue_members, contains_exactly(
             has_properties(user=user2),
             has_properties(user=user3),
             has_properties(user=user1),
@@ -596,7 +596,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(
+        assert_that(group.user_queue_members, contains_exactly(
             has_properties(
                 queue_name=group.name,
                 interface='PJSIP/sipname',
@@ -613,7 +613,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(has_properties(user=user)))
+        assert_that(group.user_queue_members, contains_exactly(has_properties(user=user)))
 
         group_dao.associate_all_member_users(group, [])
 
@@ -636,7 +636,7 @@ class TestAssociateMemberExtensions(DAOTestCase):
         group_dao.associate_all_member_extensions(group, [QueueMember(extension=extension)])
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains(
+        assert_that(group.extension_queue_members, contains_exactly(
             has_properties(
                 queue_name=group.name,
                 interface='Local/123@default',
@@ -662,7 +662,7 @@ class TestAssociateMemberExtensions(DAOTestCase):
         group_dao.associate_all_member_extensions(group, members)
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains(
+        assert_that(group.extension_queue_members, contains_exactly(
             has_properties(interface='Local/456@default'),
             has_properties(interface='Local/789@default'),
             has_properties(interface='Local/123@default'),
@@ -674,7 +674,7 @@ class TestAssociateMemberExtensions(DAOTestCase):
         group_dao.associate_all_member_extensions(group, [QueueMember(extension=extension)])
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains(has_properties(interface='Local/123@default')))
+        assert_that(group.extension_queue_members, contains_exactly(has_properties(interface='Local/123@default')))
 
         group_dao.associate_all_member_extensions(group, [])
 
@@ -695,11 +695,11 @@ class TestAssociateCallPermission(DAOTestCase):
 
         result = self.session.query(Group).first()
         assert_that(result, equal_to(group))
-        assert_that(result.call_permissions, contains(call_permission))
+        assert_that(result.call_permissions, contains_exactly(call_permission))
 
         result = self.session.query(RightCall).first()
         assert_that(result, equal_to(call_permission))
-        assert_that(result.groups, contains(group))
+        assert_that(result.groups, contains_exactly(group))
 
     def test_associate_group_call_permission_already_associated(self):
         group = self.add_group()
@@ -710,11 +710,11 @@ class TestAssociateCallPermission(DAOTestCase):
 
         result = self.session.query(Group).first()
         assert_that(result, equal_to(group))
-        assert_that(result.call_permissions, contains(call_permission))
+        assert_that(result.call_permissions, contains_exactly(call_permission))
 
         result = self.session.query(RightCall).first()
         assert_that(result, equal_to(call_permission))
-        assert_that(result.groups, contains(group))
+        assert_that(result.groups, contains_exactly(group))
 
 
 class TestDissociateCallPermission(DAOTestCase):

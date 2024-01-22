@@ -1,9 +1,9 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     equal_to,
     has_items,
@@ -160,7 +160,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_context(self):
         result = context_dao.find_all_by(description='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         pass
@@ -309,11 +309,11 @@ class TestCreate(DAOTestCase):
             name='myContext',
             label='My Context Label',
             type='outcall',
-            user_ranges=contains(has_properties(start='1000', end='1999')),
-            group_ranges=contains(has_properties(start='2000', end='2999')),
-            queue_ranges=contains(has_properties(start='3000', end='3999')),
-            conference_room_ranges=contains(has_properties(start='4000', end='4999')),
-            incall_ranges=contains(has_properties(start='1000', end='4999', did_length='2')),
+            user_ranges=contains_exactly(has_properties(start='1000', end='1999')),
+            group_ranges=contains_exactly(has_properties(start='2000', end='2999')),
+            queue_ranges=contains_exactly(has_properties(start='3000', end='3999')),
+            conference_room_ranges=contains_exactly(has_properties(start='4000', end='4999')),
+            incall_ranges=contains_exactly(has_properties(start='1000', end='4999', did_length='2')),
             description='context description',
             enabled=False)
         )
@@ -355,11 +355,11 @@ class TestEdit(DAOTestCase):
             tenant_uuid=tenant.uuid,
             label='Other Context Label',
             type='incall',
-            user_ranges=contains(has_properties(start='4000', end='4999')),
-            group_ranges=contains(has_properties(start='3000', end='3999')),
-            queue_ranges=contains(has_properties(start='2000', end='2999')),
-            conference_room_ranges=contains(has_properties(start='1000', end='1999')),
-            incall_ranges=contains(has_properties(start='4000', end='6999', did_length='4')),
+            user_ranges=contains_exactly(has_properties(start='4000', end='4999')),
+            group_ranges=contains_exactly(has_properties(start='3000', end='3999')),
+            queue_ranges=contains_exactly(has_properties(start='2000', end='2999')),
+            conference_room_ranges=contains_exactly(has_properties(start='1000', end='1999')),
+            incall_ranges=contains_exactly(has_properties(start='4000', end='6999', did_length='4')),
             description='other context description',
             enabled=True)
         )
@@ -442,7 +442,7 @@ class TestAssociateContexts(DAOTestCase):
         context_dao.associate_contexts(context, [included_context])
 
         self.session.expire_all()
-        assert_that(context.contexts, contains(included_context))
+        assert_that(context.contexts, contains_exactly(included_context))
 
     def test_associate_multiple(self):
         context = self.add_context()
@@ -452,7 +452,7 @@ class TestAssociateContexts(DAOTestCase):
         context_dao.associate_contexts(context, [included_context1, included_context2])
 
         self.session.expire_all()
-        assert_that(context.contexts, contains(included_context1, included_context2))
+        assert_that(context.contexts, contains_exactly(included_context1, included_context2))
 
     def test_dissociate(self):
         context = self.add_context()

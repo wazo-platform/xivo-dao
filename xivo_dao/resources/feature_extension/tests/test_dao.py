@@ -1,11 +1,11 @@
-# Copyright 2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 from uuid import uuid4
 
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     equal_to,
     has_items,
@@ -161,7 +161,7 @@ class TestFindAllBy(TestExtension):
     def test_find_all_by_no_extensions(self):
         result = feature_extension_dao.find_all_by(exten='invalid')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_native_column(self):
         extension1 = self.add_feature_extension(exten='1000')
@@ -330,7 +330,7 @@ class TestFindAllServiceExtensions(DAOTestCase):
     def test_given_no_extension_then_return_empty_list(self):
         extensions = feature_extension_dao.find_all_service_extensions()
 
-        assert_that(extensions, contains())
+        assert_that(extensions, contains_exactly())
 
     def test_given_all_service_extensions_then_returns_models(self):
         expected = self.add_feature_extensions()
@@ -352,7 +352,7 @@ class TestFindAllServiceExtensions(DAOTestCase):
 
         result = feature_extension_dao.find_all_service_extensions()
 
-        assert_that(result, contains(expected))
+        assert_that(result, contains_exactly(expected))
 
 
 class TestFindAllForwardExtensions(DAOTestCase):
@@ -378,7 +378,7 @@ class TestFindAllForwardExtensions(DAOTestCase):
     def test_given_no_extension_then_return_empty_list(self):
         extensions = feature_extension_dao.find_all_forward_extensions()
 
-        assert_that(extensions, contains())
+        assert_that(extensions, contains_exactly())
 
     def test_given_all_forward_extensions_then_returns_models(self):
         expected = self.add_feature_extensions()
@@ -398,7 +398,7 @@ class TestFindAllForwardExtensions(DAOTestCase):
 
         result = feature_extension_dao.find_all_forward_extensions()
 
-        assert_that(result, contains(expected))
+        assert_that(result, contains_exactly(expected))
 
 
 class TestFindAllAgentActionExtensions(DAOTestCase):
@@ -422,7 +422,7 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
     def test_given_no_extension_then_return_empty_list(self):
         extensions = feature_extension_dao.find_all_agent_action_extensions()
 
-        assert_that(extensions, contains())
+        assert_that(extensions, contains_exactly())
 
     def test_given_all_agent_action_extensions_then_returns_models(self):
         expected = self.add_feature_extensions()
@@ -442,4 +442,4 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
 
         result = feature_extension_dao.find_all_agent_action_extensions()
 
-        assert_that(result, contains(expected))
+        assert_that(result, contains_exactly(expected))

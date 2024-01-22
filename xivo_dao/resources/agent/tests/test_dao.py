@@ -1,9 +1,9 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     empty,
     equal_to,
     has_items,
@@ -187,7 +187,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_agent(self):
         result = agent_dao.find_all_by(firstname='toto')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
         pass
@@ -423,7 +423,7 @@ class TestAssociateAgentSkill(DAOTestCase):
         agent_dao.associate_agent_skill(agent, AgentQueueSkill(skill=skill))
 
         self.session.expire_all()
-        assert_that(agent.agent_queue_skills, contains(
+        assert_that(agent.agent_queue_skills, contains_exactly(
             has_properties(
                 agentid=agent.id,
                 skillid=skill.id,
@@ -441,7 +441,7 @@ class TestAssociateAgentSkill(DAOTestCase):
         agent_dao.associate_agent_skill(agent, agent_skill)
 
         self.session.expire_all()
-        assert_that(agent.agent_queue_skills, contains(agent_skill))
+        assert_that(agent.agent_queue_skills, contains_exactly(agent_skill))
 
 
 class TestDissociateAgentSkill(DAOTestCase):

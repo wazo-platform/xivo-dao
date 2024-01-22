@@ -1,7 +1,7 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that, contains, empty, has_properties, none
+from hamcrest import assert_that, contains_exactly, empty, has_properties, none
 from xivo_dao import agent_status_dao
 from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
@@ -42,7 +42,7 @@ class TestAgentStatusDao(DAOTestCase):
                 paused=paused,
                 paused_reason=paused_reason,
                 state_interface=state_interface,
-                user_ids=contains(user.id),
+                user_ids=contains_exactly(user.id),
             ),
         )
 
@@ -169,7 +169,7 @@ class TestAgentStatusDao(DAOTestCase):
                 extension=agent_login_status.extension,
                 interface=agent_login_status.interface,
                 state_interface=agent_login_status.state_interface,
-                queues=contains(
+                queues=contains_exactly(
                     has_properties(
                         id=agent_membership.queue_id,
                         name=agent_membership.queue_name,
@@ -190,7 +190,7 @@ class TestAgentStatusDao(DAOTestCase):
             result,
             has_properties(
                 agent_id=agent.id,
-                queues=contains(has_properties(id=agent_membership.queue_id)),
+                queues=contains_exactly(has_properties(id=agent_membership.queue_id)),
             ),
         )
 
@@ -221,12 +221,12 @@ class TestAgentStatusDao(DAOTestCase):
                 context=agent_login_status.context,
                 interface=agent_login_status.interface,
                 state_interface=agent_login_status.state_interface,
-                queues=contains(
+                queues=contains_exactly(
                     has_properties(
                         id=agent_membership.queue_id, name=agent_membership.queue_name
                     )
                 ),
-                user_ids=contains(user.id),
+                user_ids=contains_exactly(user.id),
             ),
         )
 
@@ -246,7 +246,7 @@ class TestAgentStatusDao(DAOTestCase):
                 context=agent_login_status.context,
                 interface=agent_login_status.interface,
                 state_interface=agent_login_status.state_interface,
-                queues=contains(
+                queues=contains_exactly(
                     has_properties(
                         id=agent_membership.queue_id, name=agent_membership.queue_name
                     )
@@ -269,7 +269,7 @@ class TestAgentStatusDao(DAOTestCase):
             result,
             has_properties(
                 agent_id=agent.id,
-                queues=contains(has_properties(id=agent_membership.queue_id)),
+                queues=contains_exactly(has_properties(id=agent_membership.queue_id)),
             ),
         )
 
@@ -315,12 +315,12 @@ class TestAgentStatusDao(DAOTestCase):
                 context=agent_login_status.context,
                 interface=agent_login_status.interface,
                 state_interface=agent_login_status.state_interface,
-                queues=contains(
+                queues=contains_exactly(
                     has_properties(
                         id=agent_membership.queue_id, name=agent_membership.queue_name
                     )
                 ),
-                user_ids=contains(user.id),
+                user_ids=contains_exactly(user.id),
             ),
         )
 
@@ -339,7 +339,7 @@ class TestAgentStatusDao(DAOTestCase):
             result,
             has_properties(
                 agent_id=agent.id,
-                queues=contains(has_properties(id=agent_membership.queue_id)),
+                queues=contains_exactly(has_properties(id=agent_membership.queue_id)),
             ),
         )
 
@@ -362,7 +362,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains(
+            contains_exactly(
                 has_properties(
                     agent_id=agent.id,
                     agent_number=agent.number,
@@ -382,7 +382,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains(
+            contains_exactly(
                 has_properties(
                     agent_id=agent.id,
                     agent_number=agent.number,
@@ -406,7 +406,7 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(statuses[0].tenant_uuid, tenant.uuid)
         assert_that(
             statuses,
-            contains(has_properties(agent_id=agent.id, tenant_uuid=tenant.uuid)),
+            contains_exactly(has_properties(agent_id=agent.id, tenant_uuid=tenant.uuid)),
         )
 
         statuses = agent_status_dao.get_statuses(
@@ -424,7 +424,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains(
+            contains_exactly(
                 has_properties(
                     agent_id=agent.id,
                     agent_number=agent.number,
@@ -453,7 +453,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains(has_properties(agent_id=agent1.id, agent_number=agent1.number)),
+            contains_exactly(has_properties(agent_id=agent1.id, agent_number=agent1.number)),
         )
 
     def test_get_statuses_to_remove_from_queue(self):
@@ -473,7 +473,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains(has_properties(agent_id=agent1.id, agent_number=agent1.number)),
+            contains_exactly(has_properties(agent_id=agent1.id, agent_number=agent1.number)),
         )
 
     def test_get_logged_agent_ids(self):
@@ -483,7 +483,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         agent_ids = agent_status_dao.get_logged_agent_ids()
 
-        assert_that(agent_ids, contains(agent_id))
+        assert_that(agent_ids, contains_exactly(agent_id))
 
     def test_get_logged_agent_ids_multi_tenant(self):
         tenant = self.add_tenant()
@@ -491,12 +491,12 @@ class TestAgentStatusDao(DAOTestCase):
         self._insert_agent_login_status(agent.id, agent.number)
 
         agent_ids = agent_status_dao.get_logged_agent_ids(tenant_uuids=[tenant.uuid])
-        assert_that(agent_ids, contains(agent.id))
+        assert_that(agent_ids, contains_exactly(agent.id))
 
         agent_ids = agent_status_dao.get_logged_agent_ids(
             tenant_uuids=[self.default_tenant.uuid, tenant.uuid],
         )
-        assert_that(agent_ids, contains(agent.id))
+        assert_that(agent_ids, contains_exactly(agent.id))
 
         agent_ids = agent_status_dao.get_logged_agent_ids(
             tenant_uuids=[self.default_tenant.uuid]
@@ -534,7 +534,7 @@ class TestAgentStatusDao(DAOTestCase):
         memberships = self.session.query(AgentMembershipStatus).all()
         assert_that(
             memberships,
-            contains(
+            contains_exactly(
                 has_properties(
                     queue_id=queue1.id, queue_name=queue1.name, penalty=queue1.penalty
                 ),
@@ -571,7 +571,7 @@ class TestAgentStatusDao(DAOTestCase):
         assert_that(
             agent1_status,
             has_properties(
-                queues=contains(
+                queues=contains_exactly(
                     has_properties(id=1, name='queue1'),
                     has_properties(id=2, name='queue2'),
                 )
@@ -581,7 +581,7 @@ class TestAgentStatusDao(DAOTestCase):
         assert_that(
             agent2_status,
             has_properties(
-                queues=contains(
+                queues=contains_exactly(
                     has_properties(id=1, name='queue1'),
                     has_properties(id=2, name='queue2'),
                 )
@@ -610,7 +610,7 @@ class TestAgentStatusDao(DAOTestCase):
         memberships = self.session.query(AgentMembershipStatus).all()
         assert_that(
             memberships,
-            contains(
+            contains_exactly(
                 has_properties(queue_id=2, queue_name='queue2', agent_id=agent.id),
             ),
         )
@@ -639,7 +639,7 @@ class TestAgentStatusDao(DAOTestCase):
         memberships = self.session.query(AgentMembershipStatus).all()
         assert_that(
             memberships,
-            contains(
+            contains_exactly(
                 has_properties(queue_id=queue2_id, queue_name=queue2_name),
             ),
         )
@@ -662,7 +662,7 @@ class TestAgentStatusDao(DAOTestCase):
                 AgentMembershipStatus.agent_id == agent_id,
             )
         )
-        assert_that(memberships, contains(has_properties(penalty=queue_penalty_after)))
+        assert_that(memberships, contains_exactly(has_properties(penalty=queue_penalty_after)))
 
     def test_update_pause_status(self):
         agent_number = '1000'

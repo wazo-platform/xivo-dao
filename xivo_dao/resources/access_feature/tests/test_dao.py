@@ -1,9 +1,9 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     has_items,
     has_properties,
@@ -90,7 +90,7 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_by_no_access_features(self):
         result = access_feature_dao.find_all_by(feature='noresult')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by(self):
         access_feature1 = self.add_accessfeatures(host='1.2.3.0/24', enabled=False)

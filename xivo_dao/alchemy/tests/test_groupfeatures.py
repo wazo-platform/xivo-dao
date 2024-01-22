@@ -1,9 +1,9 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -157,7 +157,7 @@ class TestSchedules(DAOTestCase):
 
         row = self.session.query(Group).filter_by(id=group.id).first()
         assert_that(row, equal_to(group))
-        assert_that(row.schedules, contains(schedule))
+        assert_that(row.schedules, contains_exactly(schedule))
 
     def test_setter(self):
         group = self.add_group()
@@ -199,7 +199,7 @@ class TestUserQueueMembers(DAOTestCase):
         queue_member2 = self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=2)
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(queue_member1, queue_member2))
+        assert_that(group.user_queue_members, contains_exactly(queue_member1, queue_member2))
 
     def test_getter_when_extension_member(self):
         group = self.add_group()
@@ -212,7 +212,7 @@ class TestUserQueueMembers(DAOTestCase):
         )
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(queue_member))
+        assert_that(group.user_queue_members, contains_exactly(queue_member))
 
     def test_setter(self):
         group = self.add_group()
@@ -221,7 +221,7 @@ class TestUserQueueMembers(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains(queue_member))
+        assert_that(group.user_queue_members, contains_exactly(queue_member))
         assert_that(queue_member.queue_name, equal_to(group.name))
 
     def test_deleter(self):
@@ -267,7 +267,7 @@ class TestExtensionQueueMembers(DAOTestCase):
         )
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains(queue_member1, queue_member2))
+        assert_that(group.extension_queue_members, contains_exactly(queue_member1, queue_member2))
 
     def test_getter_when_user_member(self):
         group = self.add_group()
@@ -280,7 +280,7 @@ class TestExtensionQueueMembers(DAOTestCase):
         self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=1)
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains(queue_member))
+        assert_that(group.extension_queue_members, contains_exactly(queue_member))
 
     def test_setter(self):
         group = self.add_group()
@@ -289,7 +289,7 @@ class TestExtensionQueueMembers(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains(queue_member))
+        assert_that(group.extension_queue_members, contains_exactly(queue_member))
         assert_that(queue_member.queue_name, equal_to(group.name))
 
     def test_deleter(self):
@@ -527,7 +527,7 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         )
 
         assert_that(
-            group_interceptor.call_pickup_interceptor_pickups, contains(call_pickup)
+            group_interceptor.call_pickup_interceptor_pickups, contains_exactly(call_pickup)
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -547,20 +547,20 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             group_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup1, call_pickup2),
+            contains_exactly(call_pickup1, call_pickup2),
         )
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(
-                contains(user_target1),
-                contains(user_target2),
+            contains_exactly(
+                contains_exactly(user_target1),
+                contains_exactly(user_target2),
             ),
         )
 
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
 
     # Groups
@@ -591,17 +591,17 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             group_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup),
+            contains_exactly(call_pickup),
         )
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
 
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(contains(contains(user_target1), contains(user_target2))),
+            contains_exactly(contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2))),
         )
 
     def test_two_pickups_two_group_targets(self):
@@ -634,17 +634,17 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         self.session.expire_all()
         assert_that(
             group_interceptor.call_pickup_interceptor_pickups,
-            contains(call_pickup1, call_pickup2),
+            contains_exactly(call_pickup1, call_pickup2),
         )
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
 
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(contains(contains(user_target1)), contains(contains(user_target2))),
+            contains_exactly(contains_exactly(contains_exactly(user_target1)), contains_exactly(contains_exactly(user_target2))),
         )
 
 
@@ -675,11 +675,11 @@ class TestUsersFromCallPickupUserTargets(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(contains(user_target1, user_target2)),
+            contains_exactly(contains_exactly(user_target1, user_target2)),
         )
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -715,11 +715,11 @@ class TestUsersFromCallPickupUserTargets(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(contains(user_target1), contains(user_target2)),
+            contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2)),
         )
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
 
 
@@ -764,11 +764,11 @@ class TestUsersFromCallPickupGroupTargets(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(empty()),
+            contains_exactly(empty()),
         )
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(contains(contains(user_target1), contains(user_target2))),
+            contains_exactly(contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2))),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -818,12 +818,12 @@ class TestUsersFromCallPickupGroupTargets(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains(empty(), empty()),
+            contains_exactly(empty(), empty()),
         )
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains(
-                contains(contains(user_target1)),
-                contains(contains(user_target2)),
+            contains_exactly(
+                contains_exactly(contains_exactly(user_target1)),
+                contains_exactly(contains_exactly(user_target2)),
             ),
         )

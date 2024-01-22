@@ -1,9 +1,9 @@
-# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     contains_inanyorder,
     empty,
     equal_to,
@@ -55,7 +55,7 @@ class TestEndpointSIP(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             template=True,
             transport=has_properties(uuid=transport.uuid),
-            templates=contains(
+            templates=contains_exactly(
                 has_properties(uuid=template_1.uuid),
                 has_properties(uuid=template_2.uuid),
             ),
@@ -97,7 +97,7 @@ class TestEndpointSIP(DAOTestCase):
             outbound_auth_section_options=[],
             template=False,
             transport_uuid=None,
-            templates=contains(
+            templates=contains_exactly(
                 has_properties(uuid=template.uuid),
             )
         ))
@@ -197,7 +197,7 @@ class TestTemplates(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(sip.templates, contains(
+        assert_that(sip.templates, contains_exactly(
             template_2,
             template_3,
             template_1,
@@ -253,7 +253,7 @@ class TestInheritedOptions(DAOTestCase):
 
         assert_that(
             sip.inherited_aor_section_options,
-            contains(
+            contains_exactly(
                 # template_1 options
                 ['max_contacts', '1'],
                 ['remove_existing', 'yes'],
@@ -279,7 +279,7 @@ class TestInheritedOptions(DAOTestCase):
 
         assert_that(
             sip.inherited_endpoint_section_options,
-            contains(
+            contains_exactly(
                 # template_1 options
                 ['webrtc', 'yes'],
                 ['allow', '!all,ulaw'],
@@ -310,7 +310,7 @@ class TestCombinedOptions(DAOTestCase):
 
         assert_that(
             sip.combined_aor_section_options,
-            contains(
+            contains_exactly(
                 # template_1 options
                 ['max_contacts', '1'],
                 ['remove_existing', 'yes'],
@@ -342,7 +342,7 @@ class TestCombinedOptions(DAOTestCase):
 
         assert_that(
             sip.combined_endpoint_section_options,
-            contains(
+            contains_exactly(
                 # template_1 options
                 ['webrtc', 'yes'],
                 ['allow', '!all,ulaw'],

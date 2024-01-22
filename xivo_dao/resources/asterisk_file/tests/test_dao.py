@@ -1,9 +1,9 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     has_items,
     has_properties,
@@ -57,5 +57,5 @@ class TestEditSectionVariables(DAOTestCase):
         asterisk_file_dao.edit_section_variables(section, [variable])
 
         results = self.session.query(AsteriskFileVariable).all()
-        assert_that(results, contains(variable))
+        assert_that(results, contains_exactly(variable))
         assert_that(results, not_(has_items(old_variable)))

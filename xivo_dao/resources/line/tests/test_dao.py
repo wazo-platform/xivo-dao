@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -10,7 +10,7 @@ from hamcrest import (
     is_not,
     none,
     has_length,
-    contains,
+    contains_exactly,
     has_properties,
     has_property,
     has_items,
@@ -459,7 +459,7 @@ class TestSearch(DAOTestCase):
             search_result,
             has_properties(
                 total=1,
-                items=contains(has_properties(id=line1.id)),
+                items=contains_exactly(has_properties(id=line1.id)),
             )
         )
 
@@ -550,7 +550,7 @@ class TestRelationship(DAOTestCase):
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
-        assert_that(line.extensions, contains(extension2_row, extension1_row))
+        assert_that(line.extensions, contains_exactly(extension2_row, extension1_row))
 
     def test_users_relationship(self):
         user1_row = self.add_user()
@@ -561,7 +561,7 @@ class TestRelationship(DAOTestCase):
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
-        assert_that(line.users, contains(user2_row, user1_row))
+        assert_that(line.users, contains_exactly(user2_row, user1_row))
 
 
 class TestAssociateSchedule(DAOTestCase):
@@ -574,7 +574,7 @@ class TestAssociateSchedule(DAOTestCase):
 
         self.session.expire_all()
         assert_that(line.application, equal_to(application))
-        assert_that(application.lines, contains(line))
+        assert_that(application.lines, contains_exactly(line))
 
     def test_associate_already_associated(self):
         line = self.add_line()

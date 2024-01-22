@@ -1,9 +1,9 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     empty,
 )
@@ -16,7 +16,7 @@ class TestRules(DAOTestCase):
 
     def test_getter(self):
         skill_rule = QueueSkillRule(rule='abcd;1234')
-        assert_that(skill_rule.rules, contains('abcd', '1234'))
+        assert_that(skill_rule.rules, contains_exactly('abcd', '1234'))
 
     def test_getter_empty(self):
         skill_rule = QueueSkillRule(rule=None)

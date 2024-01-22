@@ -1,10 +1,10 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_exactly,
     equal_to,
     has_items,
     has_properties,
@@ -100,7 +100,7 @@ class TestFindAllBy(DAOTestCase):
         user = self.add_user()
         result = user_external_app_dao.find_all_by(user.uuid, name='123')
 
-        assert_that(result, contains())
+        assert_that(result, contains_exactly())
 
     def test_find_all_by_native_column(self):
         user = self.add_user()

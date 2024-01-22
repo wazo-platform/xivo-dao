@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -7,7 +7,7 @@ import pytz
 from datetime import datetime as t
 import pathlib
 
-from hamcrest import assert_that, contains, contains_inanyorder, equal_to, has_properties
+from hamcrest import assert_that, contains_exactly, contains_inanyorder, equal_to, has_properties
 
 from sqlalchemy import func
 
@@ -248,7 +248,7 @@ class TestFillSimpleCall(DAOTestCase):
         stat_dao.fill_simple_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(status='full')))
+        assert_that(result, contains_exactly(has_properties(status='full')))
 
     def test_with_specific_timezone(self):
         # Asia/Shanghai is +08
@@ -258,7 +258,7 @@ class TestFillSimpleCall(DAOTestCase):
         stat_dao.fill_simple_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(status='full')))
+        assert_that(result, contains_exactly(has_properties(status='full')))
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
@@ -322,7 +322,7 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         stat_dao.fill_leaveempty_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(callid=self.callid_found)))
+        assert_that(result, contains_exactly(has_properties(callid=self.callid_found)))
 
     def test_with_specific_timezone(self):
         # Asia/Shanghai is +08
@@ -332,7 +332,7 @@ class TestFillLeaveEmptyCall(DAOTestCase):
         stat_dao.fill_leaveempty_calls(self.session, start, end)
 
         result = self.session.query(StatCallOnQueue).all()
-        assert_that(result, contains(has_properties(callid=self.callid_found)))
+        assert_that(result, contains_exactly(has_properties(callid=self.callid_found)))
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
