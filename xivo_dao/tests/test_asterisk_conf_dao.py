@@ -434,7 +434,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
     def test_find_features_settings(self):
         self.add_features(var_name='atxfernoanswertimeout', var_val='15')
-        self.add_features(var_name='parkext', var_val='700')
         self.add_features(category='featuremap', var_name='atxfer', var_val='*2')
         self.add_features(category='featuremap', var_name='automixmon', var_val='*3')
 
@@ -469,29 +468,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             settings['featuremap_options'],
             contains_inanyorder(
                 ('disconnect', '*0'),
-            ),
-        )
-
-    def test_find_parking_settings(self):
-        self.add_features(var_name='parkeddynamic', var_val='no')
-        self.add_features(var_name='atxferdropcall', var_val='no')
-        self.add_features(var_name='parkext', var_val='700')
-
-        settings = asterisk_conf_dao.find_parking_settings()
-
-        assert_that(
-            settings['general_options'],
-            contains_inanyorder(
-                ('parkeddynamic', 'no'),
-            ),
-        )
-        assert_that(
-            settings['parking_lots'],
-            contains_inanyorder(
-                has_entries(
-                    name='default',
-                    options=[('parkext', '700')],
-                ),
             ),
         )
 
@@ -1778,7 +1754,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', f'XIVO_USERUUID={user.uuid}'],   # Deprecated in 24.01
+                        ['set_var', f'XIVO_USERUUID={user.uuid}'],  # Deprecatd in 24.01
                         ['set_var', f'WAZO_USERUUID={user.uuid}'],
                     ),
                 )

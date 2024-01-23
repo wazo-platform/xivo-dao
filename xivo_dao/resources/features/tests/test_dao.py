@@ -9,7 +9,6 @@ from hamcrest import (
     empty,
     equal_to,
     has_properties,
-    none,
 )
 
 from xivo_dao.alchemy.features import Features
@@ -63,15 +62,6 @@ class TestFindAll(DAOTestCase):
 
         assert_that(features, contains_inanyorder(row2))
 
-    def test_find_all_do_not_find_parking_options(self):
-        self.add_features(category='general', var_name='parkext', var_val='value1')
-        self.add_features(category='general', var_name='parkeddynamic', var_val='value2')
-        self.add_features(category='general', var_name='context', var_val='value3')
-
-        features = features_dao.find_all('general')
-
-        assert_that(features, empty())
-
 
 class TestEditAll(DAOTestCase):
 
@@ -121,51 +111,15 @@ class TestEditAll(DAOTestCase):
                            var_val=row3.var_val),
         ))
 
-    def test_does_not_delete_parking_options(self):
-        feature1 = self.add_features(category='general', var_name='parkext', var_val='value1')
-        feature2 = self.add_features(category='general', var_name='parkeddynamic', var_val='value2')
-        feature3 = self.add_features(category='general', var_name='context', var_val='value3')
-
-        row = Features(var_name='setting', var_val='value')
-
-        features_dao.edit_all('general', [row])
-
-        result = self.session.query(Features).filter(Features.category == 'general').all()
-        assert_that(result, contains_inanyorder(feature1, feature2, feature3, row))
-
-
-class TestFindParkPositionRange(DAOTestCase):
-
-    def test_given_parking_is_disabled_then_returns_nothing(self):
-        self.add_features(var_name='parkpos',
-                          var_val='701-750',
-                          commented=1)
-
-        result = features_dao.find_park_position_range()
-
-        assert_that(result, none())
-
-    def test_given_parking_is_enabled_then_returns_range(self):
-        self.add_features(var_name='parkpos',
-                          var_val='701-750')
-
-        expected = (701, 750)
-
-        result = features_dao.find_park_position_range()
-
-        assert_that(result, equal_to(expected))
-
 
 class TestGetValue(DAOTestCase):
 
     def test_when_getting_feature_by_id_then_returns_value(self):
-        self.add_features(id=12,
-                          var_name='parkext',
-                          var_val='700')
+        self.add_features(id=12, var_name='pickupexten', var_val='*8')
 
         result = features_dao.get_value(12)
 
-        assert_that(result, equal_to('700'))
+        assert_that(result, equal_to('*8'))
 
     def test_given_no_features_then_raises_error(self):
         self.assertRaises(NotFoundError, features_dao.get_value, 12)

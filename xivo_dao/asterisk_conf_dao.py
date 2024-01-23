@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -52,7 +52,6 @@ from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.resources.features.search import PARKING_OPTIONS
 
 
 class Member(NamedTuple):
@@ -232,10 +231,7 @@ def find_features_settings(session):
     ).filter(and_(
         Features.commented == 0,
         or_(
-            and_(
-                Features.category == 'general',
-                ~Features.var_name.in_(PARKING_OPTIONS)
-            ),
+            Features.category == 'general',
             Features.category == 'featuremap',
             Features.category == 'applicationmap',
         )
@@ -260,34 +256,6 @@ def find_features_settings(session):
         'general_options': general_options,
         'featuremap_options': featuremap_options,
         'applicationmap_options': applicationmap_options,
-    }
-
-
-@daosession
-def find_parking_settings(session):
-    rows = session.query(
-        Features.var_name, Features.var_val,
-    ).filter(and_(
-        Features.commented == 0,
-        Features.category == 'general',
-        Features.var_name.in_(PARKING_OPTIONS),
-    )).all()
-
-    general_options = []
-    default_parking_lot_options = []
-    for row in rows:
-        option = (row.var_name, row.var_val)
-        if row.var_name == 'parkeddynamic':
-            general_options.append(option)
-        else:
-            default_parking_lot_options.append(option)
-
-    return {
-        'general_options': general_options,
-        'parking_lots': [{
-            'name': 'default',
-            'options': default_parking_lot_options,
-        }],
     }
 
 
