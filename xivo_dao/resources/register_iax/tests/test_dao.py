@@ -1,4 +1,4 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -19,7 +19,6 @@ from .. import dao as register_iax_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_register_iax(self):
         result = register_iax_dao.find(42)
 
@@ -34,7 +33,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_register_iax(self):
         self.assertRaises(NotFoundError, register_iax_dao.get, 42)
 
@@ -47,14 +45,12 @@ class TestGet(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = register_iax_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_register_iax_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -75,7 +71,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleRegisterIAX(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.register_iax1 = self.add_register_iax(id=1)
@@ -84,18 +79,30 @@ class TestSearchGivenMultipleRegisterIAX(TestSearch):
         self.register_iax4 = self.add_register_iax(id=4)
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.register_iax1,
-                                    self.register_iax2,
-                                    self.register_iax3,
-                                    self.register_iax4])
+        expected = SearchResult(
+            4,
+            [
+                self.register_iax1,
+                self.register_iax2,
+                self.register_iax3,
+                self.register_iax4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='id')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.register_iax4,
-                                    self.register_iax3,
-                                    self.register_iax2,
-                                    self.register_iax1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.register_iax4,
+                self.register_iax3,
+                self.register_iax2,
+                self.register_iax1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='id', direction='desc')
 
@@ -105,26 +112,25 @@ class TestSearchGivenMultipleRegisterIAX(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.register_iax2, self.register_iax3, self.register_iax4])
+        expected = SearchResult(
+            4, [self.register_iax2, self.register_iax3, self.register_iax4]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(4, [self.register_iax3])
 
-        self.assert_search_returns_result(expected,
-                                          order='id',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, order='id', direction='desc', offset=1, limit=1
+        )
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        register_iax = RegisterIAX(filename='iax.conf',
-                                   category='general',
-                                   var_name='register')
+        register_iax = RegisterIAX(
+            filename='iax.conf', category='general', var_name='register'
+        )
         created_register_iax = register_iax_dao.create(register_iax)
 
         row = self.session.query(RegisterIAX).first()
@@ -133,26 +139,33 @@ class TestCreate(DAOTestCase):
         assert_that(created_register_iax, has_properties(var_val=none()))
 
     def test_create_with_all_fields(self):
-        register_iax = RegisterIAX(filename='iax.conf',
-                                   category='general',
-                                   var_name='register',
-                                   var_val='valid-chaniax-register')
+        register_iax = RegisterIAX(
+            filename='iax.conf',
+            category='general',
+            var_name='register',
+            var_val='valid-chaniax-register',
+        )
 
         created_register_iax = register_iax_dao.create(register_iax)
 
         row = self.session.query(RegisterIAX).first()
 
         assert_that(created_register_iax, equal_to(row))
-        assert_that(created_register_iax, has_properties(var_val='valid-chaniax-register'))
+        assert_that(
+            created_register_iax, has_properties(var_val='valid-chaniax-register')
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
-        register_iax = register_iax_dao.create(RegisterIAX(filename='iax.conf',
-                                                           category='general',
-                                                           var_name='register',
-                                                           var_val='valid-chaniax-register'))
+        register_iax = register_iax_dao.create(
+            RegisterIAX(
+                filename='iax.conf',
+                category='general',
+                var_name='register',
+                var_val='valid-chaniax-register',
+            )
+        )
 
         register_iax = register_iax_dao.get(register_iax.id)
         register_iax.var_val = 'other-chaniax-register'
@@ -166,7 +179,6 @@ class TestEdit(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         register_iax = self.add_register_iax()
 

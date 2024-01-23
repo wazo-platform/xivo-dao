@@ -18,7 +18,6 @@ from ..contextinclude import ContextInclude
 
 
 class TestContexts(DAOTestCase):
-
     def test_create(self):
         tenant = self.add_tenant()
         context = self.add_context()
@@ -28,7 +27,9 @@ class TestContexts(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(context.contexts, contains_exactly(has_properties(name='included_context')))
+        assert_that(
+            context.contexts, contains_exactly(has_properties(name='included_context'))
+        )
 
     def test_associate_order_by(self):
         context = self.add_context()
@@ -40,17 +41,25 @@ class TestContexts(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(context.contexts, contains_exactly(
-            included_context2,
-            included_context3,
-            included_context1,
-        ))
-        context_includes = self.session.query(ContextInclude).filter_by(context=context.name).all()
-        assert_that(context_includes, contains_inanyorder(
-            has_properties(include=included_context2.name, priority=0),
-            has_properties(include=included_context3.name, priority=1),
-            has_properties(include=included_context1.name, priority=2),
-        ))
+        assert_that(
+            context.contexts,
+            contains_exactly(
+                included_context2,
+                included_context3,
+                included_context1,
+            ),
+        )
+        context_includes = (
+            self.session.query(ContextInclude).filter_by(context=context.name).all()
+        )
+        assert_that(
+            context_includes,
+            contains_inanyorder(
+                has_properties(include=included_context2.name, priority=0),
+                has_properties(include=included_context3.name, priority=1),
+                has_properties(include=included_context1.name, priority=2),
+            ),
+        )
 
     def test_dissociate(self):
         context = self.add_context()
@@ -71,7 +80,6 @@ class TestContexts(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_context_include_parents(self):
         context = self.add_context()
         included_context = self.add_context()

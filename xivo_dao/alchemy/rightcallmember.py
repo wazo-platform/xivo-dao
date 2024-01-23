@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -16,7 +16,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class RightCallMember(Base):
-
     __tablename__ = 'rightcallmember'
 
     id = Column(Integer, nullable=False)
@@ -24,34 +23,43 @@ class RightCallMember(Base):
     type = Column(String(64), nullable=False)
     typeval = Column(String(128), nullable=False, server_default='0')
 
-    group = relationship('GroupFeatures',
-                         primaryjoin="""and_(RightCallMember.type == 'group',
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(RightCallMember.type == 'group',
                                              RightCallMember.typeval == cast(GroupFeatures.id, String))""",
-                         foreign_keys='RightCallMember.typeval',
-                         viewonly=True)
+        foreign_keys='RightCallMember.typeval',
+        viewonly=True,
+    )
 
-    outcall = relationship('Outcall',
-                           primaryjoin="""and_(RightCallMember.type == 'outcall',
+    outcall = relationship(
+        'Outcall',
+        primaryjoin="""and_(RightCallMember.type == 'outcall',
                                                RightCallMember.typeval == cast(Outcall.id, String))""",
-                           foreign_keys='RightCallMember.typeval',
-                           viewonly=True)
+        foreign_keys='RightCallMember.typeval',
+        viewonly=True,
+    )
 
-    user = relationship('UserFeatures',
-                        primaryjoin="""and_(RightCallMember.type == 'user',
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(RightCallMember.type == 'user',
                                             RightCallMember.typeval == cast(UserFeatures.id, String))""",
-                        foreign_keys='RightCallMember.typeval',
-                        viewonly=True)
+        foreign_keys='RightCallMember.typeval',
+        viewonly=True,
+    )
 
-    rightcall = relationship('RightCall',
-                             primaryjoin='RightCall.id == RightCallMember.rightcallid',
-                             foreign_keys='RightCallMember.rightcallid',
-                             back_populates='rightcall_members')
+    rightcall = relationship(
+        'RightCall',
+        primaryjoin='RightCall.id == RightCallMember.rightcallid',
+        foreign_keys='RightCallMember.rightcallid',
+        back_populates='rightcall_members',
+    )
 
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('rightcallid', 'type', 'typeval'),
-        CheckConstraint(type.in_(['group', 'outcall', 'user']),
-                        name='rightcallmember_type_check'),
+        CheckConstraint(
+            type.in_(['group', 'outcall', 'user']), name='rightcallmember_type_check'
+        ),
     )
 
     @hybrid_property

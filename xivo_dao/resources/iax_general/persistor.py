@@ -1,19 +1,20 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.staticiax import StaticIAX
 
 
 class IAXGeneralPersistor:
-
     def __init__(self, session):
         self.session = session
 
     def find_all(self):
-        query = (self.session.query(StaticIAX)
-                 .filter(StaticIAX.var_name != 'register')
-                 .filter(StaticIAX.var_val != None)  # noqa
-                 .order_by(StaticIAX.var_metric.asc()))
+        query = (
+            self.session.query(StaticIAX)
+            .filter(StaticIAX.var_name != 'register')
+            .filter(StaticIAX.var_val != None)  # noqa
+            .order_by(StaticIAX.var_metric.asc())
+        )
         return query.all()
 
     def edit_all(self, iax_general):

@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -20,7 +20,6 @@ from .paginguser import PagingUser
 
 
 class Paging(Base):
-
     __tablename__ = 'paging'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -57,7 +56,8 @@ class Paging(Base):
     )
 
     users_member = association_proxy(
-        'paging_members', 'user',
+        'paging_members',
+        'user',
         creator=lambda _user: PagingUser(user=_user, caller=0),
     )
 
@@ -67,10 +67,12 @@ class Paging(Base):
             PagingUser.pagingid == Paging.id,
             PagingUser.caller == 1
         )""",
-        cascade='all, delete-orphan')
+        cascade='all, delete-orphan',
+    )
 
     users_caller = association_proxy(
-        'paging_callers', 'user',
+        'paging_callers',
+        'user',
         creator=lambda _user: PagingUser(user=_user, caller=1),
     )
 

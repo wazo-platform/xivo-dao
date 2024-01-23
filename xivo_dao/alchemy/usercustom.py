@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -19,7 +19,6 @@ from . import enum
 
 
 class UserCustom(Base):
-
     __tablename__ = 'usercustom'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -44,7 +43,7 @@ class UserCustom(Base):
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='custom')
     category = Column(
         Enum('user', 'trunk', name='usercustom_category', metadata=Base.metadata),
-        nullable=False
+        nullable=False,
     )
 
     line = relationship('LineFeatures', uselist=False, viewonly=True)

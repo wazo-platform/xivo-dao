@@ -16,7 +16,6 @@ from .. import dao as voicemail_general_dao
 
 
 class TestFindAll(DAOTestCase):
-
     def test_find_all_no_voicemail_general(self):
         result = voicemail_general_dao.find_all()
 
@@ -41,12 +40,12 @@ class TestFindAll(DAOTestCase):
         assert_that(voicemail_general, contains_exactly(row2))
 
     def test_find_all_do_not_find_var_val_none(self):
-        self.add_voicemail_general_settings(var_metric=1,
-                                            var_name='setting1',
-                                            var_val=None)
-        row2 = self.add_voicemail_general_settings(var_metric=2,
-                                                   var_name='setting1',
-                                                   var_val='value1')
+        self.add_voicemail_general_settings(
+            var_metric=1, var_name='setting1', var_val=None
+        )
+        row2 = self.add_voicemail_general_settings(
+            var_metric=2, var_name='setting1', var_val='value1'
+        )
 
         voicemail_general = voicemail_general_dao.find_all()
 
@@ -54,7 +53,6 @@ class TestFindAll(DAOTestCase):
 
 
 class TestEditAll(DAOTestCase):
-
     def test_edit_all(self):
         row1 = StaticVoicemail(var_name='setting1', var_val='value1')
         row2 = StaticVoicemail(var_name='setting2', var_val='value1')
@@ -72,9 +70,12 @@ class TestEditAll(DAOTestCase):
 
         voicemail_general_dao.edit_all([row2])
 
-        assert_that(self.session.query(StaticVoicemail)
-                    .filter(StaticVoicemail.category == 'zonemessages')
-                    .first(), equal_to(row1))
+        assert_that(
+            self.session.query(StaticVoicemail)
+            .filter(StaticVoicemail.category == 'zonemessages')
+            .first(),
+            equal_to(row1),
+        )
 
     def test_delete_old_entries(self):
         self.add_voicemail_general_settings()

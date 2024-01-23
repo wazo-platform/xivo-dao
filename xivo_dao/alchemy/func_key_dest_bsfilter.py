@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -19,7 +19,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestBSFilter(Base):
-
     DESTINATION_TYPE_ID = 12
 
     __tablename__ = 'func_key_dest_bsfilter'

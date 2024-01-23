@@ -1,4 +1,4 @@
-# Copyright 2019-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2019-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -7,7 +7,6 @@ from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
 class AccessFeaturesPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = AccessFeatures
 
     def __init__(self, session, access_feature_search):

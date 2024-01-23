@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -39,7 +39,6 @@ from .user_line import UserLine
 
 
 class EmailComparator(ColumnProperty.Comparator):
-
     def __eq__(self, other):
         return func.lower(self.__clause_element__()) == func.lower(other)
 
@@ -56,7 +55,7 @@ caller_id_regex = re.compile(
     >                      #number end
     )?                     #number is optional
     ''',
-    re.VERBOSE
+    re.VERBOSE,
 )
 
 
@@ -65,7 +64,6 @@ def ordering_main_line(index, collection):
 
 
 class UserFeatures(Base):
-
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -90,7 +88,10 @@ class UserFeatures(Base):
         Index('userfeatures__idx__tenant_uuid', 'tenant_uuid'),
         Index('userfeatures__idx__voicemailid', 'voicemailid'),
         Index('userfeatures__idx__func_key_template_id', 'func_key_template_id'),
-        Index('userfeatures__idx__func_key_private_template_id', 'func_key_private_template_id'),
+        Index(
+            'userfeatures__idx__func_key_private_template_id',
+            'func_key_private_template_id',
+        ),
     )
 
     id = Column(Integer, nullable=False)
@@ -112,10 +113,18 @@ class UserFeatures(Base):
     enablexfer = Column(Integer, nullable=False, server_default='0')
     dtmf_hangup = Column(Integer, nullable=False, server_default='0')
     enableonlinerec = Column(Integer, nullable=False, server_default='0')
-    call_record_outgoing_external_enabled = Column(Boolean, nullable=False, server_default='false')
-    call_record_outgoing_internal_enabled = Column(Boolean, nullable=False, server_default='false')
-    call_record_incoming_external_enabled = Column(Boolean, nullable=False, server_default='false')
-    call_record_incoming_internal_enabled = Column(Boolean, nullable=False, server_default='false')
+    call_record_outgoing_external_enabled = Column(
+        Boolean, nullable=False, server_default='false'
+    )
+    call_record_outgoing_internal_enabled = Column(
+        Boolean, nullable=False, server_default='false'
+    )
+    call_record_incoming_external_enabled = Column(
+        Boolean, nullable=False, server_default='false'
+    )
+    call_record_incoming_internal_enabled = Column(
+        Boolean, nullable=False, server_default='false'
+    )
     incallfilter = Column(Integer, nullable=False, server_default='0')
     enablednd = Column(Integer, nullable=False, server_default='0')
     enableunc = Column(Integer, nullable=False, server_default='0')
@@ -137,17 +146,27 @@ class UserFeatures(Base):
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
     commented = Column(Integer, nullable=False, server_default='0')
-    func_key_template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete="SET NULL"))
-    func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
+    func_key_template_id = Column(
+        Integer, ForeignKey('func_key_template.id', ondelete="SET NULL")
+    )
+    func_key_private_template_id = Column(
+        Integer, ForeignKey('func_key_template.id'), nullable=False
+    )
     subscription_type = Column(Integer, nullable=False, server_default='0')
-    created_at = Column(DateTime, default=datetime.datetime.utcnow, server_default=text("(now() at time zone 'utc')"))
+    created_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow,
+        server_default=text("(now() at time zone 'utc')"),
+    )
 
     webi_lastname = Column('lastname', String(128), nullable=False, server_default='')
     webi_userfield = Column('userfield', String(128), nullable=False, server_default='')
     webi_description = Column('description', Text, nullable=False, default='')
 
     func_key_template = relationship(FuncKeyTemplate, foreign_keys=func_key_template_id)
-    func_key_template_private = relationship(FuncKeyTemplate, foreign_keys=func_key_private_template_id)
+    func_key_template_private = relationship(
+        FuncKeyTemplate, foreign_keys=func_key_private_template_id
+    )
 
     main_line_rel = relationship(
         "UserLine",
@@ -173,7 +192,8 @@ class UserFeatures(Base):
         back_populates='user',
     )
     lines = association_proxy(
-        'user_lines', 'line',
+        'user_lines',
+        'line',
         creator=lambda _line: UserLine(line=_line, main_user=False),
     )
 
@@ -211,8 +231,11 @@ class UserFeatures(Base):
         cascade='all, delete-orphan',
     )
     groups = association_proxy(
-        'group_members', 'group',
-        creator=lambda _group: QueueMember(category='group', usertype='user', group=_group),
+        'group_members',
+        'group',
+        creator=lambda _group: QueueMember(
+            category='group', usertype='user', group=_group
+        ),
     )
 
     queue_members = relationship(
@@ -229,7 +252,9 @@ class UserFeatures(Base):
 
     paging_users = relationship('PagingUser', cascade='all, delete-orphan')
 
-    switchboard_member_users = relationship('SwitchboardMemberUser', cascade='all, delete-orphan')
+    switchboard_member_users = relationship(
+        'SwitchboardMemberUser', cascade='all, delete-orphan'
+    )
     switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
     _dialaction_actions = relationship(
@@ -252,8 +277,11 @@ class UserFeatures(Base):
         cascade='all, delete-orphan',
     )
     schedules = association_proxy(
-        'schedule_paths', 'schedule',
-        creator=lambda _schedule: SchedulePath(path='user', schedule_id=_schedule.id, schedule=_schedule),
+        'schedule_paths',
+        'schedule',
+        creator=lambda _schedule: SchedulePath(
+            path='user', schedule_id=_schedule.id, schedule=_schedule
+        ),
     )
 
     call_filter_recipients = relationship(

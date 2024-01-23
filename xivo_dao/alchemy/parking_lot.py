@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -15,7 +15,6 @@ from .extension import Extension
 
 
 class ParkingLot(Base):
-
     __tablename__ = 'parking_lot'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

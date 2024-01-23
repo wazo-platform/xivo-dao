@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -11,7 +11,6 @@ NUMBER_LEN = 6
 
 
 class Persistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Meeting
 
     def __init__(self, session, search_system, tenant_uuids=None):
@@ -38,9 +37,9 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
         if not owner:
             return query
 
-        owner_meeting = self.session.query(
-            MeetingOwner.meeting_uuid
-        ).filter(MeetingOwner.user_uuid == owner)
+        owner_meeting = self.session.query(MeetingOwner.meeting_uuid).filter(
+            MeetingOwner.user_uuid == owner
+        )
         query = query.filter(Meeting.uuid.in_(owner_meeting))
 
         return query

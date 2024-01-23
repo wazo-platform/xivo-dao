@@ -8,7 +8,6 @@ from .. import queue_member_dao
 
 
 class TestQueueMemberDAO(DAOTestCase):
-
     def test_add_agent_to_queue(self):
         agent_id = 123
         agent_number = '123'
@@ -28,7 +27,9 @@ class TestQueueMemberDAO(DAOTestCase):
     def test_remove_agent_from_queue(self):
         agent_id = 123
         queue_name = 'queue1'
-        self._insert_queue_member(queue_name, 'Agent/123', usertype='agent', userid=agent_id)
+        self._insert_queue_member(
+            queue_name, 'Agent/123', usertype='agent', userid=agent_id
+        )
 
         queue_member_dao.remove_agent_from_queue(agent_id, queue_name)
 
@@ -40,11 +41,15 @@ class TestQueueMemberDAO(DAOTestCase):
         member_name = 'Agent/123'
         self._insert_queue_member(queue_name, member_name)
 
-        position = queue_member_dao._get_next_position_for_queue(self.session, queue_name)
+        position = queue_member_dao._get_next_position_for_queue(
+            self.session, queue_name
+        )
 
         assert position == 1
 
-    def _insert_queue_member(self, queue_name, member_name, usertype='user', userid=1, is_queue=True):
+    def _insert_queue_member(
+        self, queue_name, member_name, usertype='user', userid=1, is_queue=True
+    ):
         queue_member = QueueMember()
         queue_member.queue_name = queue_name
         queue_member.interface = member_name

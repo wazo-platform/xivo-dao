@@ -31,7 +31,6 @@ from .. import dao as queue_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_queue(self):
         result = queue_dao.find(42)
 
@@ -57,7 +56,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_queue(self):
         self.assertRaises(NotFoundError, queue_dao.get, 42)
 
@@ -76,11 +74,12 @@ class TestGet(DAOTestCase):
         assert_that(queue, equal_to(queue_row))
 
         queue_row = self.add_queuefeatures()
-        self.assertRaises(NotFoundError, queue_dao.get, queue_row.id, tenant_uuids=[tenant.uuid])
+        self.assertRaises(
+            NotFoundError, queue_dao.get, queue_row.id, tenant_uuids=[tenant.uuid]
+        )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, queue_dao.find_by, invalid=42)
 
@@ -118,7 +117,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, queue_dao.get_by, invalid=42)
 
@@ -147,7 +145,9 @@ class TestGetBy(DAOTestCase):
         queue_row = self.add_queuefeatures()
         self.assertRaises(
             NotFoundError,
-            queue_dao.get_by, id=queue_row.id, tenant_uuids=[tenant.uuid],
+            queue_dao.get_by,
+            id=queue_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         queue_row = self.add_queuefeatures(tenant_uuid=tenant.uuid)
@@ -156,7 +156,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_queue(self):
         result = queue_dao.find_all_by(name='toto')
 
@@ -171,33 +170,39 @@ class TestFindAllBy(DAOTestCase):
 
         queues = queue_dao.find_all_by(preprocess_subroutine='subroutine')
 
-        assert_that(queues, has_items(has_property('id', queue1.id),
-                                      has_property('id', queue2.id)))
+        assert_that(
+            queues,
+            has_items(has_property('id', queue1.id), has_property('id', queue2.id)),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        queue1 = self.add_queuefeatures(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        queue1 = self.add_queuefeatures(
+            preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid
+        )
         queue2 = self.add_queuefeatures(preprocess_subroutine='subroutine')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        queues = queue_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        queues = queue_dao.find_all_by(
+            preprocess_subroutine='subroutine', tenant_uuids=tenants
+        )
         assert_that(queues, has_items(queue1, queue2))
 
         tenants = [tenant.uuid]
-        queues = queue_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        queues = queue_dao.find_all_by(
+            preprocess_subroutine='subroutine', tenant_uuids=tenants
+        )
         assert_that(queues, all_of(has_items(queue1), not_(has_items(queue2))))
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = queue_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_queue_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -225,13 +230,18 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleQueue(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.queue1 = self.add_queuefeatures(name='Ashton', preprocess_subroutine='resto')
-        self.queue2 = self.add_queuefeatures(name='Beaugarton', preprocess_subroutine='bar')
+        self.queue1 = self.add_queuefeatures(
+            name='Ashton', preprocess_subroutine='resto'
+        )
+        self.queue2 = self.add_queuefeatures(
+            name='Beaugarton', preprocess_subroutine='bar'
+        )
         self.queue3 = self.add_queuefeatures(name='Casa', preprocess_subroutine='resto')
-        self.queue4 = self.add_queuefeatures(name='Dunkin', preprocess_subroutine='resto')
+        self.queue4 = self.add_queuefeatures(
+            name='Dunkin', preprocess_subroutine='resto'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.queue2])
@@ -240,28 +250,29 @@ class TestSearchGivenMultipleQueue(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.queue1])
-        self.assert_search_returns_result(expected_resto, search='ton', preprocess_subroutine='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', preprocess_subroutine='resto'
+        )
 
         expected_bar = SearchResult(1, [self.queue2])
-        self.assert_search_returns_result(expected_bar, search='ton', preprocess_subroutine='bar')
+        self.assert_search_returns_result(
+            expected_bar, search='ton', preprocess_subroutine='bar'
+        )
 
         expected_all_resto = SearchResult(3, [self.queue1, self.queue3, self.queue4])
-        self.assert_search_returns_result(expected_all_resto, preprocess_subroutine='resto', order='name')
+        self.assert_search_returns_result(
+            expected_all_resto, preprocess_subroutine='resto', order='name'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.queue1,
-                                 self.queue2,
-                                 self.queue3,
-                                 self.queue4])
+        expected = SearchResult(4, [self.queue1, self.queue2, self.queue3, self.queue4])
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.queue4,
-                                    self.queue3,
-                                    self.queue2,
-                                    self.queue1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(4, [self.queue4, self.queue3, self.queue2, self.queue1])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -278,45 +289,46 @@ class TestSearchGivenMultipleQueue(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.queue2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, search='a', order='name', direction='desc', offset=1, limit=1
+        )
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        queue = QueueFeatures(tenant_uuid=self.default_tenant.uuid, name='myqueue', label=None)
+        queue = QueueFeatures(
+            tenant_uuid=self.default_tenant.uuid, name='myqueue', label=None
+        )
         created_queue = queue_dao.create(queue)
 
         row = self.session.query(QueueFeatures).first()
 
         assert_that(created_queue, equal_to(row))
-        assert_that(created_queue, has_properties(
-            id=not_none(),
-            name='myqueue',
-            caller_id_mode=None,
-            caller_id_name=None,
-            data_quality_bool=False,
-            dtmf_hangup_callee_enabled=False,
-            dtmf_hangup_caller_enabled=False,
-            dtmf_transfer_callee_enabled=False,
-            dtmf_transfer_caller_enabled=False,
-            dtmf_record_callee_enabled=False,
-            dtmf_record_caller_enabled=False,
-            retry_on_timeout=True,
-            ring_on_hold=False,
-            announce_hold_time_on_entry=False,
-            ignore_forward_bool=True,
-            wait_time_threshold=None,
-            wait_ratio_threshold=None,
-            timeout=None,
-            preprocess_subroutine=None,
-            enabled=True,
-        ))
+        assert_that(
+            created_queue,
+            has_properties(
+                id=not_none(),
+                name='myqueue',
+                caller_id_mode=None,
+                caller_id_name=None,
+                data_quality_bool=False,
+                dtmf_hangup_callee_enabled=False,
+                dtmf_hangup_caller_enabled=False,
+                dtmf_transfer_callee_enabled=False,
+                dtmf_transfer_caller_enabled=False,
+                dtmf_record_callee_enabled=False,
+                dtmf_record_caller_enabled=False,
+                retry_on_timeout=True,
+                ring_on_hold=False,
+                announce_hold_time_on_entry=False,
+                ignore_forward_bool=True,
+                wait_time_threshold=None,
+                wait_ratio_threshold=None,
+                timeout=None,
+                preprocess_subroutine=None,
+                enabled=True,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         queue = QueueFeatures(
@@ -348,56 +360,60 @@ class TestCreate(DAOTestCase):
         row = self.session.query(QueueFeatures).first()
 
         assert_that(created_queue, equal_to(row))
-        assert_that(created_queue, has_properties(
-            id=not_none(),
-            name='MyQueue',
-            caller_id_mode='prepend',
-            caller_id_name='toto',
-            data_quality_bool=True,
-            dtmf_hangup_callee_enabled=True,
-            dtmf_hangup_caller_enabled=True,
-            dtmf_transfer_callee_enabled=True,
-            dtmf_transfer_caller_enabled=True,
-            dtmf_record_callee_enabled=True,
-            dtmf_record_caller_enabled=True,
-            retry_on_timeout=False,
-            ring_on_hold=True,
-            announce_hold_time_on_entry=True,
-            ignore_forward_bool=False,
-            wait_time_threshold=1,
-            wait_ratio_threshold=1.4,
-            timeout=42,
-            preprocess_subroutine='routine',
-            enabled=False,
-        ))
+        assert_that(
+            created_queue,
+            has_properties(
+                id=not_none(),
+                name='MyQueue',
+                caller_id_mode='prepend',
+                caller_id_name='toto',
+                data_quality_bool=True,
+                dtmf_hangup_callee_enabled=True,
+                dtmf_hangup_caller_enabled=True,
+                dtmf_transfer_callee_enabled=True,
+                dtmf_transfer_caller_enabled=True,
+                dtmf_record_callee_enabled=True,
+                dtmf_record_caller_enabled=True,
+                retry_on_timeout=False,
+                ring_on_hold=True,
+                announce_hold_time_on_entry=True,
+                ignore_forward_bool=False,
+                wait_time_threshold=1,
+                wait_ratio_threshold=1.4,
+                timeout=42,
+                preprocess_subroutine='routine',
+                enabled=False,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
-        queue = queue_dao.create(QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyQueue',
-            label=None,
-            caller_id_mode='prepend',
-            caller_id_name='toto',
-            data_quality_bool=False,
-            dtmf_hangup_callee_enabled=False,
-            dtmf_hangup_caller_enabled=False,
-            dtmf_transfer_callee_enabled=False,
-            dtmf_transfer_caller_enabled=False,
-            dtmf_record_callee_enabled=False,
-            dtmf_record_caller_enabled=False,
-            retry_on_timeout=True,
-            ring_on_hold=False,
-            announce_hold_time_on_entry=False,
-            ignore_forward_bool=True,
-            wait_time_threshold=None,
-            wait_ratio_threshold=None,
-            timeout=None,
-            preprocess_subroutine=None,
-            enabled=True,
-        ))
+        queue = queue_dao.create(
+            QueueFeatures(
+                tenant_uuid=self.default_tenant.uuid,
+                name='MyQueue',
+                label=None,
+                caller_id_mode='prepend',
+                caller_id_name='toto',
+                data_quality_bool=False,
+                dtmf_hangup_callee_enabled=False,
+                dtmf_hangup_caller_enabled=False,
+                dtmf_transfer_callee_enabled=False,
+                dtmf_transfer_caller_enabled=False,
+                dtmf_record_callee_enabled=False,
+                dtmf_record_caller_enabled=False,
+                retry_on_timeout=True,
+                ring_on_hold=False,
+                announce_hold_time_on_entry=False,
+                ignore_forward_bool=True,
+                wait_time_threshold=None,
+                wait_ratio_threshold=None,
+                timeout=None,
+                preprocess_subroutine=None,
+                enabled=True,
+            )
+        )
 
         queue = queue_dao.get(queue.id)
         queue.name = 'other_name'
@@ -425,42 +441,47 @@ class TestEdit(DAOTestCase):
         row = self.session.query(QueueFeatures).first()
 
         assert_that(queue, equal_to(row))
-        assert_that(queue, has_properties(
-            id=not_none(),
-            name='other_name',
-            label='other_label',
-            caller_id_mode='overwrite',
-            caller_id_name='bob',
-            data_quality_bool=True,
-            dtmf_hangup_callee_enabled=True,
-            dtmf_hangup_caller_enabled=True,
-            dtmf_transfer_callee_enabled=True,
-            dtmf_transfer_caller_enabled=True,
-            dtmf_record_callee_enabled=True,
-            dtmf_record_caller_enabled=True,
-            retry_on_timeout=False,
-            ring_on_hold=True,
-            announce_hold_time_on_entry=True,
-            ignore_forward_bool=False,
-            wait_time_threshold=1,
-            wait_ratio_threshold=1.4,
-            timeout=42,
-            preprocess_subroutine='routine',
-            enabled=False,
-        ))
+        assert_that(
+            queue,
+            has_properties(
+                id=not_none(),
+                name='other_name',
+                label='other_label',
+                caller_id_mode='overwrite',
+                caller_id_name='bob',
+                data_quality_bool=True,
+                dtmf_hangup_callee_enabled=True,
+                dtmf_hangup_caller_enabled=True,
+                dtmf_transfer_callee_enabled=True,
+                dtmf_transfer_caller_enabled=True,
+                dtmf_record_callee_enabled=True,
+                dtmf_record_caller_enabled=True,
+                retry_on_timeout=False,
+                ring_on_hold=True,
+                announce_hold_time_on_entry=True,
+                ignore_forward_bool=False,
+                wait_time_threshold=1,
+                wait_ratio_threshold=1.4,
+                timeout=42,
+                preprocess_subroutine='routine',
+                enabled=False,
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
-        queue = queue_dao.create(QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyQueue',
-            label=None,
-            caller_id_mode='prepend',
-            caller_id_name='toto',
-            wait_time_threshold=2,
-            wait_ratio_threshold=42,
-            timeout=3,
-            preprocess_subroutine='t',
-        ))
+        queue = queue_dao.create(
+            QueueFeatures(
+                tenant_uuid=self.default_tenant.uuid,
+                name='MyQueue',
+                label=None,
+                caller_id_mode='prepend',
+                caller_id_name='toto',
+                wait_time_threshold=2,
+                wait_ratio_threshold=42,
+                timeout=3,
+                preprocess_subroutine='t',
+            )
+        )
 
         queue = queue_dao.get(queue.id)
         queue.caller_id_mode = None
@@ -473,20 +494,26 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(QueueFeatures).first()
         assert_that(queue, equal_to(row))
-        assert_that(row, has_properties(
-            preprocess_subroutine=none(),
-            caller_id_mode=none(),
-            caller_id_name=none(),
-            wait_time_threshold=none(),
-            wait_ratio_threshold=none(),
-            timeout=none(),
-        ))
+        assert_that(
+            row,
+            has_properties(
+                preprocess_subroutine=none(),
+                caller_id_mode=none(),
+                caller_id_name=none(),
+                wait_time_threshold=none(),
+                wait_ratio_threshold=none(),
+                timeout=none(),
+            ),
+        )
 
     def test_edit_queue_name(self):
-        queue_dao.create(QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyQueue', label=None,
-        ))
+        queue_dao.create(
+            QueueFeatures(
+                tenant_uuid=self.default_tenant.uuid,
+                name='MyQueue',
+                label=None,
+            )
+        )
         self.session.expunge_all()
 
         meta_queue = self.session.query(Queue).first()
@@ -501,7 +528,6 @@ class TestEdit(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         queue = self.add_queuefeatures()
 
@@ -530,7 +556,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestAssociateSchedule(DAOTestCase):
-
     def test_associate_schedule(self):
         queue = self.add_queuefeatures()
         schedule = self.add_schedule()
@@ -553,7 +578,6 @@ class TestAssociateSchedule(DAOTestCase):
 
 
 class TestDissociateSchedule(DAOTestCase):
-
     def test_dissociate_queue_schedule(self):
         queue = self.add_queuefeatures()
         schedule = self.add_schedule()
@@ -575,7 +599,6 @@ class TestDissociateSchedule(DAOTestCase):
 
 
 class TestAssociateMemberUser(DAOTestCase):
-
     def test_associate(self):
         user = self.add_user()
         sip = self.add_endpoint_sip()
@@ -586,14 +609,17 @@ class TestAssociateMemberUser(DAOTestCase):
         queue_dao.associate_member_user(queue, QueueMember(user=user))
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains_exactly(
-            has_properties(
-                queue_name=queue.name,
-                category='queue',
-                usertype='user',
-                userid=user.id,
-            )
-        ))
+        assert_that(
+            queue.user_queue_members,
+            contains_exactly(
+                has_properties(
+                    queue_name=queue.name,
+                    category='queue',
+                    usertype='user',
+                    userid=user.id,
+                )
+            ),
+        )
 
     def test_associate_fix(self):
         user = self.add_user()
@@ -605,12 +631,15 @@ class TestAssociateMemberUser(DAOTestCase):
         queue_dao.associate_member_user(queue, QueueMember(user=user))
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains_exactly(
-            has_properties(
-                interface='PJSIP/sipname',
-                channel='SIP',
-            )
-        ))
+        assert_that(
+            queue.user_queue_members,
+            contains_exactly(
+                has_properties(
+                    interface='PJSIP/sipname',
+                    channel='SIP',
+                )
+            ),
+        )
 
     def test_association_already_associated(self):
         user = self.add_user()
@@ -630,7 +659,6 @@ class TestAssociateMemberUser(DAOTestCase):
 
 
 class TestDissociateMemberUser(DAOTestCase):
-
     def test_dissociation(self):
         user = self.add_user()
         sip = self.add_endpoint_sip(name='sipname')
@@ -654,7 +682,6 @@ class TestDissociateMemberUser(DAOTestCase):
 
 
 class TestAssociateMemberAgent(DAOTestCase):
-
     def test_associate(self):
         agent = self.add_agent()
         queue = self.add_queuefeatures()
@@ -662,14 +689,17 @@ class TestAssociateMemberAgent(DAOTestCase):
         queue_dao.associate_member_agent(queue, QueueMember(agent=agent))
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains_exactly(
-            has_properties(
-                queue_name=queue.name,
-                category='queue',
-                usertype='agent',
-                userid=agent.id,
-            )
-        ))
+        assert_that(
+            queue.agent_queue_members,
+            contains_exactly(
+                has_properties(
+                    queue_name=queue.name,
+                    category='queue',
+                    usertype='agent',
+                    userid=agent.id,
+                )
+            ),
+        )
 
     def test_associate_fix(self):
         agent = self.add_agent(number='1234')
@@ -678,12 +708,15 @@ class TestAssociateMemberAgent(DAOTestCase):
         queue_dao.associate_member_agent(queue, QueueMember(agent=agent))
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains_exactly(
-            has_properties(
-                interface='Agent/1234',
-                channel='Agent',
-            )
-        ))
+        assert_that(
+            queue.agent_queue_members,
+            contains_exactly(
+                has_properties(
+                    interface='Agent/1234',
+                    channel='Agent',
+                )
+            ),
+        )
 
     def test_association_already_associated(self):
         agent = self.add_agent()
@@ -700,7 +733,6 @@ class TestAssociateMemberAgent(DAOTestCase):
 
 
 class TestDissociateMemberAgent(DAOTestCase):
-
     def test_dissociation(self):
         agent = self.add_agent()
         queue = self.add_queuefeatures()

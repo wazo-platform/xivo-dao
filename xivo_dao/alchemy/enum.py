@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.types import Enum
@@ -30,7 +30,7 @@ dialaction_action = Enum(
     'switchboard',
     'application:custom',
     name='dialaction_action',
-    metadata=Base.metadata
+    metadata=Base.metadata,
 )
 
 dialaction_category = Enum(
@@ -43,7 +43,7 @@ dialaction_category = Enum(
     'ivr_choice',
     'switchboard',
     name='dialaction_category',
-    metadata=Base.metadata
+    metadata=Base.metadata,
 )
 
 extenumbers_type = Enum(
@@ -59,14 +59,10 @@ extenumbers_type = Enum(
     'conference',
     'parking',
     name='extenumbers_type',
-    metadata=Base.metadata
+    metadata=Base.metadata,
 )
 
-callfilter_type = Enum(
-    'bosssecretary',
-    name='callfilter_type',
-    metadata=Base.metadata
-)
+callfilter_type = Enum('bosssecretary', name='callfilter_type', metadata=Base.metadata)
 
 callfilter_bosssecretary = Enum(
     'bossfirst-serial',
@@ -75,30 +71,18 @@ callfilter_bosssecretary = Enum(
     'secretary-simult',
     'all',
     name='callfilter_bosssecretary',
-    metadata=Base.metadata
+    metadata=Base.metadata,
 )
 
 callfilter_callfrom = Enum(
-    'internal',
-    'external',
-    'all',
-    name='callfilter_callfrom',
-    metadata=Base.metadata
+    'internal', 'external', 'all', name='callfilter_callfrom', metadata=Base.metadata
 )
 
 generic_bsfilter = Enum(
-    'no',
-    'boss',
-    'secretary',
-    name='generic_bsfilter',
-    metadata=Base.metadata
+    'no', 'boss', 'secretary', name='generic_bsfilter', metadata=Base.metadata
 )
 
-netiface_type = Enum(
-    'iface',
-    name='netiface_type',
-    metadata=Base.metadata
-)
+netiface_type = Enum('iface', name='netiface_type', metadata=Base.metadata)
 
 schedule_path_type = Enum(
     'user',
@@ -108,7 +92,7 @@ schedule_path_type = Enum(
     'outcall',
     'voicemenu',
     name='schedule_path_type',
-    metadata=Base.metadata
+    metadata=Base.metadata,
 )
 
 stat_switchboard_endtype = Enum(
@@ -117,7 +101,7 @@ stat_switchboard_endtype = Enum(
     'forwarded',
     'transferred',
     name='stat_switchboard_endtype',
-    metadata=Base.metadata
+    metadata=Base.metadata,
 )
 
 valid_trunk_protocols = [
@@ -127,7 +111,5 @@ valid_trunk_protocols = [
     'custom',
 ]
 trunk_protocol = Enum(
-    *valid_trunk_protocols,
-    name='trunk_protocol',
-    metadata=Base.metadata
+    *valid_trunk_protocols, name='trunk_protocol', metadata=Base.metadata
 )

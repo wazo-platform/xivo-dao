@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -14,7 +14,6 @@ from xivo_dao.helpers.uuid import new_uuid
 
 
 class Switchboard(Base):
-
     __tablename__ = 'switchboard'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
@@ -48,7 +47,7 @@ class Switchboard(Base):
             Dialaction.actionarg1 == Switchboard.uuid
         )""",
         foreign_keys='Dialaction.actionarg1',
-        viewonly=True
+        viewonly=True,
     )
 
     incalls = association_proxy('incall_dialactions', 'incall')
@@ -79,11 +78,14 @@ class Switchboard(Base):
     )
 
     user_members = association_proxy(
-        'switchboard_member_users', 'user',
+        'switchboard_member_users',
+        'user',
         creator=lambda _user: SwitchboardMemberUser(user=_user),
     )
 
-    _queue_moh = relationship('MOH', primaryjoin='Switchboard.queue_moh_uuid == MOH.uuid')
+    _queue_moh = relationship(
+        'MOH', primaryjoin='Switchboard.queue_moh_uuid == MOH.uuid'
+    )
     _hold_moh = relationship('MOH', primaryjoin='Switchboard.hold_moh_uuid == MOH.uuid')
 
     @property

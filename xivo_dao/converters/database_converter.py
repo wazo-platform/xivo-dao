@@ -1,9 +1,8 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 class DatabaseConverter:
-
     def __init__(self, mapping, schema, model):
         self.schema = schema
         self.model = model
@@ -37,7 +36,9 @@ class DatabaseConverter:
         extracted_values = {}
         for column_name in columns:
             if not hasattr(source_object, column_name):
-                raise ValueError(f'column {column_name} does not exist in object {type(source_object)}')
+                raise ValueError(
+                    f'column {column_name} does not exist in object {type(source_object)}'
+                )
             extracted_values[column_name] = getattr(source_object, column_name)
         return extracted_values
 

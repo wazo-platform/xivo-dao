@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.schema import PrimaryKeyConstraint, Column
@@ -9,11 +9,8 @@ from xivo_dao.helpers.uuid import new_uuid
 
 
 class Infos(Base):
-
     __tablename__ = 'infos'
-    __table_args__ = (
-        PrimaryKeyConstraint('uuid'),
-    )
+    __table_args__ = (PrimaryKeyConstraint('uuid'),)
 
     uuid = Column(String(38), nullable=False, default=new_uuid)
     wazo_version = Column(String(64), nullable=False)

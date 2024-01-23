@@ -1,4 +1,4 @@
-# Copyright 2019-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2019-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -14,7 +14,9 @@ def search(session, **parameters):
 
 @daosession
 def get(session, access_feature_id):
-    return AccessFeaturesPersistor(session, access_feature_search).get_by({'id': access_feature_id})
+    return AccessFeaturesPersistor(session, access_feature_search).get_by(
+        {'id': access_feature_id}
+    )
 
 
 @daosession
@@ -24,7 +26,9 @@ def get_by(session, **criteria):
 
 @daosession
 def find(session, access_feature_id):
-    return AccessFeaturesPersistor(session, access_feature_search).find_by({'id': access_feature_id})
+    return AccessFeaturesPersistor(session, access_feature_search).find_by(
+        {'id': access_feature_id}
+    )
 
 
 @daosession
@@ -39,7 +43,9 @@ def find_all_by(session, **criteria):
 
 @daosession
 def create(session, access_feature):
-    return AccessFeaturesPersistor(session, access_feature_search).create(access_feature)
+    return AccessFeaturesPersistor(session, access_feature_search).create(
+        access_feature
+    )
 
 
 @daosession

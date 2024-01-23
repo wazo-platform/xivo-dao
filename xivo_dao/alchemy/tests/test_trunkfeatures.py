@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -15,31 +15,41 @@ from ..trunkfeatures import TrunkFeatures as Trunk
 
 
 class TestConstraint(DAOTestCase):
-
     def test_many_endpoints(self):
         sip = self.add_endpoint_sip()
         iax = self.add_useriax()
-        assert_that(calling(self.add_trunk).with_args(
-            endpoint_sip_uuid=sip.uuid, endpoint_iax_id=iax.id,
-        ), raises(IntegrityError))
+        assert_that(
+            calling(self.add_trunk).with_args(
+                endpoint_sip_uuid=sip.uuid,
+                endpoint_iax_id=iax.id,
+            ),
+            raises(IntegrityError),
+        )
 
     def test_register_iax_endpoint_sip_raise_integrity(self):
         sip = self.add_endpoint_sip()
         register_iax = self.add_register_iax()
-        assert_that(calling(self.add_trunk).with_args(
-            endpoint_sip_uuid=sip.uuid, register_iax_id=register_iax.id,
-        ), raises(IntegrityError))
+        assert_that(
+            calling(self.add_trunk).with_args(
+                endpoint_sip_uuid=sip.uuid,
+                register_iax_id=register_iax.id,
+            ),
+            raises(IntegrityError),
+        )
 
     def test_register_iax_endpoint_custom_raise_integrity(self):
         custom = self.add_usercustom()
         register_iax = self.add_register_iax()
-        assert_that(calling(self.add_trunk).with_args(
-            endpoint_custom_id=custom.id, register_iax_id=register_iax.id,
-        ), raises(IntegrityError))
+        assert_that(
+            calling(self.add_trunk).with_args(
+                endpoint_custom_id=custom.id,
+                register_iax_id=register_iax.id,
+            ),
+            raises(IntegrityError),
+        )
 
 
 class TestName(DAOTestCase):
-
     def test_getter_endpoint_sip(self):
         name = 'my-custom-name'
         sip = self.add_endpoint_sip(name=name)
@@ -71,11 +81,7 @@ class TestName(DAOTestCase):
         sip = self.add_endpoint_sip(name=name)
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
 
-        result = (
-            self.session.query(Trunk)
-            .filter(Trunk.name == name)
-            .first()
-        )
+        result = self.session.query(Trunk).filter(Trunk.name == name).first()
 
         assert_that(result, equal_to(trunk))
         assert_that(result.name, equal_to(name))
@@ -85,11 +91,7 @@ class TestName(DAOTestCase):
         iax = self.add_useriax(name=name)
         trunk = self.add_trunk(endpoint_iax_id=iax.id)
 
-        result = (
-            self.session.query(Trunk)
-            .filter(Trunk.name == name)
-            .first()
-        )
+        result = self.session.query(Trunk).filter(Trunk.name == name).first()
 
         assert_that(result, equal_to(trunk))
         assert_that(result.name, equal_to(name))
@@ -99,11 +101,7 @@ class TestName(DAOTestCase):
         custom = self.add_usercustom(interface=name)
         trunk = self.add_trunk(endpoint_custom_id=custom.id)
 
-        result = (
-            self.session.query(Trunk)
-            .filter(Trunk.name == name)
-            .first()
-        )
+        result = self.session.query(Trunk).filter(Trunk.name == name).first()
 
         assert_that(result, equal_to(trunk))
         assert_that(result.name, equal_to(name))
@@ -111,18 +109,13 @@ class TestName(DAOTestCase):
     def test_expression_other(self):
         trunk = self.add_trunk()
 
-        result = (
-            self.session.query(Trunk)
-            .filter(Trunk.name.is_(None))
-            .first()
-        )
+        result = self.session.query(Trunk).filter(Trunk.name.is_(None)).first()
 
         assert_that(result, equal_to(trunk))
         assert_that(result.name, equal_to(None))
 
 
 class TestLabel(DAOTestCase):
-
     def test_getter_endpoint_sip(self):
         label = 'my-custom-label'
         sip = self.add_endpoint_sip(label=label)
@@ -140,11 +133,7 @@ class TestLabel(DAOTestCase):
         sip = self.add_endpoint_sip(label=label)
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
 
-        result = (
-            self.session.query(Trunk)
-            .filter(Trunk.label == label)
-            .first()
-        )
+        result = self.session.query(Trunk).filter(Trunk.label == label).first()
 
         assert_that(result, equal_to(trunk))
         assert_that(result.label, equal_to(label))
@@ -152,11 +141,7 @@ class TestLabel(DAOTestCase):
     def test_expression_other(self):
         trunk = self.add_trunk()
 
-        result = (
-            self.session.query(Trunk)
-            .filter(Trunk.label.is_(None))
-            .first()
-        )
+        result = self.session.query(Trunk).filter(Trunk.label.is_(None)).first()
 
         assert_that(result, equal_to(trunk))
         assert_that(result.label, equal_to(None))

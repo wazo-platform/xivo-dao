@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
@@ -19,7 +19,6 @@ from ..meeting_authorization import MeetingAuthorization
 
 
 class TestMeeting(DAOTestCase):
-
     def test_create(self):
         meeting = self.add_meeting()
         guest_uuid = uuid.uuid4()
@@ -35,13 +34,20 @@ class TestMeeting(DAOTestCase):
         self.session.flush()
         self.session.expunge_all()
 
-        row = self.session.query(MeetingAuthorization).filter_by(uuid=meeting_authorization.uuid).first()
-        assert_that(row, has_properties(
-            uuid=meeting_authorization.uuid,
-            guest_name='Jane Doe',
-            guest_uuid=guest_uuid,
-            status='pending',
-        ))
+        row = (
+            self.session.query(MeetingAuthorization)
+            .filter_by(uuid=meeting_authorization.uuid)
+            .first()
+        )
+        assert_that(
+            row,
+            has_properties(
+                uuid=meeting_authorization.uuid,
+                guest_name='Jane Doe',
+                guest_uuid=guest_uuid,
+                status='pending',
+            ),
+        )
 
     def test_meeting(self):
         meeting = self.add_meeting()
@@ -115,5 +121,9 @@ class TestMeeting(DAOTestCase):
 
         row = self.session.query(Meeting).filter_by(uuid=meeting.uuid).first()
         assert_that(row, is_(none()))
-        row = self.session.query(MeetingAuthorization).filter_by(uuid=meeting_authorization.uuid).first()
+        row = (
+            self.session.query(MeetingAuthorization)
+            .filter_by(uuid=meeting_authorization.uuid)
+            .first()
+        )
         assert_that(row, is_(none()))

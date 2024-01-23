@@ -1,4 +1,4 @@
-# Copyright 2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.feature_extension import FeatureExtension
@@ -56,32 +56,26 @@ def delete(extension):
 
 def find_all_service_extensions():
     features = service_converter.features()
-    query = (Session.query(FeatureExtension.uuid,
-                           FeatureExtension.exten,
-                           FeatureExtension.feature)
-             .filter(FeatureExtension.feature.in_(features))
-             )
+    query = Session.query(
+        FeatureExtension.uuid, FeatureExtension.exten, FeatureExtension.feature
+    ).filter(FeatureExtension.feature.in_(features))
 
     return [service_converter.to_model(row) for row in query]
 
 
 def find_all_forward_extensions():
     features = fwd_converter.features()
-    query = (Session.query(FeatureExtension.uuid,
-                           FeatureExtension.exten,
-                           FeatureExtension.feature)
-             .filter(FeatureExtension.feature.in_(features))
-             )
+    query = Session.query(
+        FeatureExtension.uuid, FeatureExtension.exten, FeatureExtension.feature
+    ).filter(FeatureExtension.feature.in_(features))
 
     return [fwd_converter.to_model(row) for row in query]
 
 
 def find_all_agent_action_extensions():
     features = agent_action_converter.features()
-    query = (Session.query(FeatureExtension.uuid,
-                           FeatureExtension.exten,
-                           FeatureExtension.feature)
-             .filter(FeatureExtension.feature.in_(features))
-             )
+    query = Session.query(
+        FeatureExtension.uuid, FeatureExtension.exten, FeatureExtension.feature
+    ).filter(FeatureExtension.feature.in_(features))
 
     return [agent_action_converter.to_model(row) for row in query]

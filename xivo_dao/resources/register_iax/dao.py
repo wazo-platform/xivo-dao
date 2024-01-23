@@ -1,4 +1,4 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -14,12 +14,16 @@ def search(session, **parameters):
 
 @daosession
 def get(session, register_iax_id):
-    return RegisterIAXPersistor(session, register_iax_search).get_by({'id': register_iax_id})
+    return RegisterIAXPersistor(session, register_iax_search).get_by(
+        {'id': register_iax_id}
+    )
 
 
 @daosession
 def find(session, register_iax_id):
-    return RegisterIAXPersistor(session, register_iax_search).find_by({'id': register_iax_id})
+    return RegisterIAXPersistor(session, register_iax_search).find_by(
+        {'id': register_iax_id}
+    )
 
 
 @daosession

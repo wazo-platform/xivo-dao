@@ -25,7 +25,6 @@ from .. import dao as paging_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_paging(self):
         result = paging_dao.find(42)
 
@@ -50,7 +49,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_paging(self):
         self.assertRaises(NotFoundError, paging_dao.get, 42)
 
@@ -71,12 +69,13 @@ class TestGet(DAOTestCase):
         paging_row = self.add_paging()
         self.assertRaises(
             NotFoundError,
-            paging_dao.get, paging_row.id, tenant_uuids=[tenant.uuid],
+            paging_dao.get,
+            paging_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, paging_dao.find_by, invalid=42)
 
@@ -106,7 +105,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, paging_dao.get_by, invalid=42)
 
@@ -127,7 +125,9 @@ class TestGetBy(DAOTestCase):
         paging_row = self.add_paging()
         self.assertRaises(
             NotFoundError,
-            paging_dao.get_by, id=paging_row.id, tenant_uuids=[tenant.uuid],
+            paging_dao.get_by,
+            id=paging_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         paging_row = self.add_paging(tenant_uuid=tenant.uuid)
@@ -136,7 +136,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_pagings(self):
         result = paging_dao.find_all_by(number='123')
 
@@ -148,10 +147,13 @@ class TestFindAllBy(DAOTestCase):
 
         pagings = paging_dao.find_all_by(announce_sound='sound')
 
-        assert_that(pagings, has_items(
-            has_property('id', paging1.id),
-            has_property('id', paging2.id),
-        ))
+        assert_that(
+            pagings,
+            has_items(
+                has_property('id', paging1.id),
+                has_property('id', paging2.id),
+            ),
+        )
 
     def test_find_all_by_native_column(self):
         paging1 = self.add_paging(name='paging')
@@ -159,10 +161,13 @@ class TestFindAllBy(DAOTestCase):
 
         pagings = paging_dao.find_all_by(name='paging')
 
-        assert_that(pagings, has_items(
-            has_property('id', paging1.id),
-            has_property('id', paging2.id),
-        ))
+        assert_that(
+            pagings,
+            has_items(
+                has_property('id', paging1.id),
+                has_property('id', paging2.id),
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -171,23 +176,25 @@ class TestFindAllBy(DAOTestCase):
         paging2 = self.add_paging(description='description')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        pagings = paging_dao.find_all_by(description='description', tenant_uuids=tenants)
+        pagings = paging_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
         assert_that(pagings, has_items(paging1, paging2))
 
         tenants = [tenant.uuid]
-        pagings = paging_dao.find_all_by(description='description', tenant_uuids=tenants)
+        pagings = paging_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
         assert_that(pagings, all_of(has_items(paging1), not_(has_items(paging2))))
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = paging_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_pagings_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -215,7 +222,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultiplePagings(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.paging1 = self.add_paging(name='Ashton', announce_sound='resto')
@@ -230,13 +236,19 @@ class TestSearchGivenMultiplePagings(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.paging1])
-        self.assert_search_returns_result(expected_resto, search='ton', announce_sound='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', announce_sound='resto'
+        )
 
         expected_bar = SearchResult(1, [self.paging2])
-        self.assert_search_returns_result(expected_bar, search='ton', announce_sound='bar')
+        self.assert_search_returns_result(
+            expected_bar, search='ton', announce_sound='bar'
+        )
 
         expected_all_resto = SearchResult(3, [self.paging1, self.paging3, self.paging4])
-        self.assert_search_returns_result(expected_all_resto, announce_sound='resto', order='announce_sound')
+        self.assert_search_returns_result(
+            expected_all_resto, announce_sound='resto', order='announce_sound'
+        )
 
     def test_when_searching_with_a_custom_extra_argument(self):
         expected_allow = SearchResult(1, [self.paging2])
@@ -246,22 +258,30 @@ class TestSearchGivenMultiplePagings(TestSearch):
         self.assert_search_returns_result(expected_all_deny, announce_sound='resto')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.paging1,
-            self.paging2,
-            self.paging3,
-            self.paging4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.paging1,
+                self.paging2,
+                self.paging3,
+                self.paging4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.paging4,
-            self.paging3,
-            self.paging2,
-            self.paging1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.paging4,
+                self.paging3,
+                self.paging2,
+                self.paging1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -289,27 +309,29 @@ class TestSearchGivenMultiplePagings(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         paging_model = Paging(tenant_uuid=self.default_tenant.uuid)
         paging = paging_dao.create(paging_model)
 
         self.session.expire_all()
         assert_that(inspect(paging).persistent)
-        assert_that(paging, has_properties(
-            id=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-            name=None,
-            number=None,
-            duplex_bool=False,
-            ignore_forward=False,
-            record_bool=False,
-            caller_notification=True,
-            timeout=30,
-            announce_sound=None,
-            announce_caller=True,
-            enabled=True,
-        ))
+        assert_that(
+            paging,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name=None,
+                number=None,
+                duplex_bool=False,
+                ignore_forward=False,
+                record_bool=False,
+                caller_notification=True,
+                timeout=30,
+                announce_sound=None,
+                announce_caller=True,
+                enabled=True,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         paging_model = Paging(
@@ -329,23 +351,25 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(paging).persistent)
-        assert_that(paging, has_properties(
-            tenant_uuid=self.default_tenant.uuid,
-            name='paging',
-            number='123',
-            duplex_bool=True,
-            ignore_forward=True,
-            record_bool=True,
-            caller_notification=False,
-            timeout=40,
-            announce_sound='sound',
-            announce_caller=False,
-            enabled=False,
-        ))
+        assert_that(
+            paging,
+            has_properties(
+                tenant_uuid=self.default_tenant.uuid,
+                name='paging',
+                number='123',
+                duplex_bool=True,
+                ignore_forward=True,
+                record_bool=True,
+                caller_notification=False,
+                timeout=40,
+                announce_sound='sound',
+                announce_caller=False,
+                enabled=False,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         paging = self.add_paging(
             name='paging',
@@ -375,18 +399,21 @@ class TestEdit(DAOTestCase):
         paging_dao.edit(paging)
 
         self.session.expire_all()
-        assert_that(paging, has_properties(
-            name='other_paging',
-            number='456',
-            duplex_bool=False,
-            ignore_forward=False,
-            record_bool=False,
-            caller_notification=True,
-            timeout=50,
-            announce_sound='other_sound',
-            announce_caller=True,
-            enabled=True,
-        ))
+        assert_that(
+            paging,
+            has_properties(
+                name='other_paging',
+                number='456',
+                duplex_bool=False,
+                ignore_forward=False,
+                record_bool=False,
+                caller_notification=True,
+                timeout=50,
+                announce_sound='other_sound',
+                announce_caller=True,
+                enabled=True,
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
         paging = self.add_paging(
@@ -403,15 +430,17 @@ class TestEdit(DAOTestCase):
         paging_dao.edit(paging)
 
         self.session.expire_all()
-        assert_that(paging, has_properties(
-            name=none(),
-            number=none(),
-            announce_sound=none(),
-        ))
+        assert_that(
+            paging,
+            has_properties(
+                name=none(),
+                number=none(),
+                announce_sound=none(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         paging = self.add_paging()
 

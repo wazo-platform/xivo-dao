@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column
@@ -10,11 +10,8 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyTemplate(Base):
-
     __tablename__ = 'func_key_template'
-    __table_args__ = (
-        Index('func_key_template__idx__tenant_uuid', 'tenant_uuid'),
-    )
+    __table_args__ = (Index('func_key_template__idx__tenant_uuid', 'tenant_uuid'),)
 
     id = Column(Integer, primary_key=True)
     tenant_uuid = Column(

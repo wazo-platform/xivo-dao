@@ -21,7 +21,6 @@ from .. import dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_transport(self):
         result = dao.find(UNKNOWN_UUID)
         assert_that(result, none())
@@ -35,7 +34,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_transport(self):
         self.assertRaises(NotFoundError, dao.get, UNKNOWN_UUID)
 
@@ -48,7 +46,6 @@ class TestGet(DAOTestCase):
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, dao.find_by, invalid=42)
 
@@ -69,7 +66,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, dao.get_by, invalid=42)
 
@@ -88,7 +84,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_transports(self):
         result = dao.find_all_by(name='not-here')
 
@@ -99,20 +94,21 @@ class TestFindAllBy(DAOTestCase):
 
         transports = dao.find_all_by(name='the-transport')
 
-        assert_that(transports, has_items(
-            has_properties(uuid=transport.uuid),
-        ))
+        assert_that(
+            transports,
+            has_items(
+                has_properties(uuid=transport.uuid),
+            ),
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_transports_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -126,7 +122,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleTransports(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.transport1 = self.add_transport(name='Ashton')
@@ -141,28 +136,40 @@ class TestSearchGivenMultipleTransports(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.transport1])
-        self.assert_search_returns_result(expected_resto, search='ton', uuid=self.transport1.uuid)
+        self.assert_search_returns_result(
+            expected_resto, search='ton', uuid=self.transport1.uuid
+        )
 
         expected_bar = SearchResult(1, [self.transport2])
-        self.assert_search_returns_result(expected_bar, search='ton', uuid=self.transport2.uuid)
+        self.assert_search_returns_result(
+            expected_bar, search='ton', uuid=self.transport2.uuid
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.transport1,
-            self.transport2,
-            self.transport3,
-            self.transport4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.transport1,
+                self.transport2,
+                self.transport3,
+                self.transport4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.transport4,
-            self.transport3,
-            self.transport2,
-            self.transport1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.transport4,
+                self.transport3,
+                self.transport2,
+                self.transport1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -190,18 +197,20 @@ class TestSearchGivenMultipleTransports(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         transport_model = PJSIPTransport(name='transport')
         transport = dao.create(transport_model)
 
         self.session.expire_all()
         assert_that(inspect(transport).persistent)
-        assert_that(transport, has_properties(
-            uuid=not_none(),
-            name='transport',
-            options=[],
-        ))
+        assert_that(
+            transport,
+            has_properties(
+                uuid=not_none(),
+                name='transport',
+                options=[],
+            ),
+        )
 
     def test_create_with_all_fields(self):
         transport_model = PJSIPTransport(
@@ -215,17 +224,19 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(transport).persistent)
-        assert_that(transport, has_properties(
-            name='transport',
-            options=contains_inanyorder(
-                contains_exactly('bind', '0.0.0.0'),
-                contains_exactly('protocol', 'wss'),
+        assert_that(
+            transport,
+            has_properties(
+                name='transport',
+                options=contains_inanyorder(
+                    contains_exactly('bind', '0.0.0.0'),
+                    contains_exactly('protocol', 'wss'),
+                ),
             ),
-        ))
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         transport = self.add_transport(
             name='transport',
@@ -250,16 +261,19 @@ class TestEdit(DAOTestCase):
         dao.edit(transport)
 
         self.session.expire_all()
-        assert_that(transport, has_properties(
-            name='other_transport',
-            options=contains_inanyorder(
-                contains_exactly('bind', '0.0.0.0'),
-                contains_exactly('protocol', 'udp'),
-                contains_exactly('cos', '1'),
-                contains_exactly('local_net', '192.168.0.0/16'),
-                contains_exactly('local_net', '10.1.42.0/24'),
+        assert_that(
+            transport,
+            has_properties(
+                name='other_transport',
+                options=contains_inanyorder(
+                    contains_exactly('bind', '0.0.0.0'),
+                    contains_exactly('protocol', 'udp'),
+                    contains_exactly('cos', '1'),
+                    contains_exactly('local_net', '192.168.0.0/16'),
+                    contains_exactly('local_net', '10.1.42.0/24'),
+                ),
             ),
-        ))
+        )
 
     def test_edit_set_fields_to_empty(self):
         transport = self.add_transport(
@@ -277,13 +291,15 @@ class TestEdit(DAOTestCase):
         dao.edit(transport)
 
         self.session.expire_all()
-        assert_that(transport, has_properties(
-            options=empty(),
-        ))
+        assert_that(
+            transport,
+            has_properties(
+                options=empty(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         transport = self.add_transport()
 

@@ -1,8 +1,13 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKeyConstraint,
+    CheckConstraint,
+    PrimaryKeyConstraint,
+)
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.alchemy.func_key import FuncKey
@@ -10,7 +15,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestCustom(Base):
-
     DESTINATION_TYPE_ID = 10
 
     __tablename__ = 'func_key_dest_custom'

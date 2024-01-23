@@ -21,22 +21,29 @@ from ..dialaction import Dialaction
 
 
 class TestStrategy(unittest.TestCase):
-
     def test_getter_all_recipients_then_linear_surrogates(self):
         call_filter = CallFilter(bosssecretary='bossfirst-serial')
-        assert_that(call_filter.strategy, equal_to('all-recipients-then-linear-surrogates'))
+        assert_that(
+            call_filter.strategy, equal_to('all-recipients-then-linear-surrogates')
+        )
 
     def test_getter_all_recipients_then_all_surrogates(self):
         call_filter = CallFilter(bosssecretary='bossfirst-simult')
-        assert_that(call_filter.strategy, equal_to('all-recipients-then-all-surrogates'))
+        assert_that(
+            call_filter.strategy, equal_to('all-recipients-then-all-surrogates')
+        )
 
     def test_getter_linear_surrogates_then_all_recipients(self):
         call_filter = CallFilter(bosssecretary='secretary-serial')
-        assert_that(call_filter.strategy, equal_to('linear-surrogates-then-all-recipients'))
+        assert_that(
+            call_filter.strategy, equal_to('linear-surrogates-then-all-recipients')
+        )
 
     def test_getter_all_surrogates_then_all_recipients(self):
         call_filter = CallFilter(bosssecretary='secretary-simult')
-        assert_that(call_filter.strategy, equal_to('all-surrogates-then-all-recipients'))
+        assert_that(
+            call_filter.strategy, equal_to('all-surrogates-then-all-recipients')
+        )
 
     def test_getter_all(self):
         call_filter = CallFilter(bosssecretary='all')
@@ -64,7 +71,6 @@ class TestStrategy(unittest.TestCase):
 
 
 class TestEnabled(unittest.TestCase):
-
     def test_getter_true(self):
         call_filter = CallFilter(commented=0)
         assert_that(call_filter.enabled, equal_to(True))
@@ -83,7 +89,6 @@ class TestEnabled(unittest.TestCase):
 
 
 class TestSurrogateTimeout(unittest.TestCase):
-
     def test_getter(self):
         call_filter = CallFilter(ringseconds=10)
         assert_that(call_filter.surrogates_timeout, equal_to(10))
@@ -102,7 +107,6 @@ class TestSurrogateTimeout(unittest.TestCase):
 
 
 class TestCallerIdMode(DAOTestCase):
-
     def test_getter(self):
         call_filter = self.add_call_filter(caller_id_mode='prepend')
         assert_that(call_filter.caller_id_mode, equal_to('prepend'))
@@ -114,16 +118,18 @@ class TestCallerIdMode(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.caller_id, has_properties(
-            type='callfilter',
-            typeval=call_filter.id,
-            mode='prepend',
-            name=None,
-        ))
+        assert_that(
+            call_filter.caller_id,
+            has_properties(
+                type='callfilter',
+                typeval=call_filter.id,
+                mode='prepend',
+                name=None,
+            ),
+        )
 
 
 class TestCallerIdName(DAOTestCase):
-
     def test_getter(self):
         call_filter = self.add_call_filter(caller_id_name='toto')
         assert_that(call_filter.caller_id_name, equal_to('toto'))
@@ -135,16 +141,18 @@ class TestCallerIdName(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.caller_id, has_properties(
-            type='callfilter',
-            typeval=call_filter.id,
-            mode=None,
-            name='toto',
-        ))
+        assert_that(
+            call_filter.caller_id,
+            has_properties(
+                type='callfilter',
+                typeval=call_filter.id,
+                mode=None,
+                name='toto',
+            ),
+        )
 
 
 class TestRecipients(DAOTestCase):
-
     def test_create(self):
         recipient = CallFilterMember(bstype='boss', type='user')
         call_filter = self.add_call_filter()
@@ -165,7 +173,9 @@ class TestRecipients(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.recipients, contains_exactly(recipient2, recipient3, recipient1))
+        assert_that(
+            call_filter.recipients, contains_exactly(recipient2, recipient3, recipient1)
+        )
 
     def test_dissociate(self):
         call_filter = self.add_call_filter()
@@ -186,7 +196,6 @@ class TestRecipients(DAOTestCase):
 
 
 class TestSurrogates(DAOTestCase):
-
     def test_create(self):
         surrogate = CallFilterMember(bstype='secretary', type='user')
         call_filter = self.add_call_filter()
@@ -207,7 +216,9 @@ class TestSurrogates(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.surrogates, contains_exactly(surrogate2, surrogate3, surrogate1))
+        assert_that(
+            call_filter.surrogates, contains_exactly(surrogate2, surrogate3, surrogate1)
+        )
 
     def test_dissociate(self):
         call_filter = self.add_call_filter()
@@ -228,19 +239,21 @@ class TestSurrogates(DAOTestCase):
 
 
 class TestFallbacks(DAOTestCase):
-
     def test_getter(self):
         call_filter = self.add_call_filter()
-        dialaction = self.add_dialaction(event='key', category='callfilter', categoryval=str(call_filter.id))
+        dialaction = self.add_dialaction(
+            event='key', category='callfilter', categoryval=str(call_filter.id)
+        )
 
         assert_that(call_filter.fallbacks['key'], equal_to(dialaction))
 
 
 class TestCallFilterDialactions(DAOTestCase):
-
     def test_getter(self):
         call_filter = self.add_call_filter()
-        dialaction = self.add_dialaction(event='key', category='callfilter', categoryval=str(call_filter.id))
+        dialaction = self.add_dialaction(
+            event='key', category='callfilter', categoryval=str(call_filter.id)
+        )
 
         assert_that(call_filter.callfilter_dialactions['key'], equal_to(dialaction))
 
@@ -252,11 +265,12 @@ class TestCallFilterDialactions(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(call_filter.callfilter_dialactions['key'], has_properties(action='none'))
+        assert_that(
+            call_filter.callfilter_dialactions['key'], has_properties(action='none')
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_caller_id_is_deleted(self):
         call_filter = self.add_call_filter()
         self.add_callerid(type='callfilter', typeval=call_filter.id)
@@ -291,7 +305,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestExten(DAOTestCase):
-
     def test_get_exten(self):
         call_filter = self.add_call_filter()
         self.add_feature_extension(feature='bsfilter', exten='_*37')

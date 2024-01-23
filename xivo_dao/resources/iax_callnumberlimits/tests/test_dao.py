@@ -15,7 +15,6 @@ from .. import dao as iax_callnumberlimits_dao
 
 
 class TestFindAll(DAOTestCase):
-
     def test_find_all_no_iax_callnumberlimits(self):
         result = iax_callnumberlimits_dao.find_all()
 
@@ -33,7 +32,6 @@ class TestFindAll(DAOTestCase):
 
 
 class TestEditAll(DAOTestCase):
-
     def test_edit_all(self):
         row1 = IAXCallNumberLimits(destination='127.0.0.1', netmask='255.255.255.0')
         row2 = IAXCallNumberLimits(destination='127.0.1.1', netmask='255.255.255.0')

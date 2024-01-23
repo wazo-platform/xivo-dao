@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
@@ -8,11 +8,10 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class StaticQueue(Base):
-
     __tablename__ = 'staticqueue'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        Index('staticqueue__idx__category', 'category')
+        Index('staticqueue__idx__category', 'category'),
     )
 
     id = Column(Integer, nullable=False)

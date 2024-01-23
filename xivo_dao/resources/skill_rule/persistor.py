@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
@@ -8,7 +8,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class SkillRulePersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = QueueSkillRule
 
     def __init__(self, session, skill_rule_search, tenant_uuids=None):

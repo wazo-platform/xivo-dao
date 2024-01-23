@@ -26,7 +26,6 @@ from .. import dao as skill_rule_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_skill_rule(self):
         result = skill_rule_dao.find(42)
 
@@ -47,12 +46,13 @@ class TestFind(DAOTestCase):
         result = skill_rule_dao.find(skill_rule.id, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(skill_rule))
 
-        result = skill_rule_dao.find(skill_rule.id, tenant_uuids=[self.default_tenant.uuid])
+        result = skill_rule_dao.find(
+            skill_rule.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_skill_rule(self):
         self.assertRaises(NotFoundError, skill_rule_dao.get, 42)
 
@@ -75,12 +75,11 @@ class TestGet(DAOTestCase):
             NotFoundError,
             skill_rule_dao.get,
             skill_rule_row.id,
-            tenant_uuids=[tenant.uuid]
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, skill_rule_dao.find_by, invalid=42)
 
@@ -101,16 +100,19 @@ class TestFindBy(DAOTestCase):
         tenant = self.add_tenant()
 
         skill_rule_row = self.add_queue_skill_rule()
-        skill_rule = skill_rule_dao.find_by(name=skill_rule_row.name, tenant_uuids=[tenant.uuid])
+        skill_rule = skill_rule_dao.find_by(
+            name=skill_rule_row.name, tenant_uuids=[tenant.uuid]
+        )
         assert_that(skill_rule, none())
 
         skill_rule_row = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
-        skill_rule = skill_rule_dao.find_by(name=skill_rule_row.name, tenant_uuids=[tenant.uuid])
+        skill_rule = skill_rule_dao.find_by(
+            name=skill_rule_row.name, tenant_uuids=[tenant.uuid]
+        )
         assert_that(skill_rule, equal_to(skill_rule_row))
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, skill_rule_dao.get_by, invalid=42)
 
@@ -131,16 +133,19 @@ class TestGetBy(DAOTestCase):
         skill_rule_row = self.add_queue_skill_rule()
         self.assertRaises(
             NotFoundError,
-            skill_rule_dao.get_by, id=skill_rule_row.id, tenant_uuids=[tenant.uuid],
+            skill_rule_dao.get_by,
+            id=skill_rule_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         skill_rule_row = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
-        skill_rule = skill_rule_dao.get_by(id=skill_rule_row.id, tenant_uuids=[tenant.uuid])
+        skill_rule = skill_rule_dao.get_by(
+            id=skill_rule_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(skill_rule, equal_to(skill_rule_row))
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_skill_rules(self):
         result = skill_rule_dao.find_all_by(name='123')
 
@@ -151,9 +156,12 @@ class TestFindAllBy(DAOTestCase):
 
         skill_rules = skill_rule_dao.find_all_by(name='description')
 
-        assert_that(skill_rules, has_items(
-            has_property('id', skill_rule.id),
-        ))
+        assert_that(
+            skill_rules,
+            has_items(
+                has_property('id', skill_rule.id),
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -167,18 +175,18 @@ class TestFindAllBy(DAOTestCase):
 
         tenants = [tenant.uuid]
         skill_rules = skill_rule_dao.find_all_by(tenant_uuids=tenants)
-        assert_that(skill_rules, all_of(has_items(skill_rule1), not_(has_items(skill_rule2))))
+        assert_that(
+            skill_rules, all_of(has_items(skill_rule1), not_(has_items(skill_rule2)))
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = skill_rule_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_skill_rules_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -192,7 +200,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleSkillRules(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.skill_rule1 = self.add_queue_skill_rule(name='Ashton')
@@ -206,22 +213,30 @@ class TestSearchGivenMultipleSkillRules(TestSearch):
         self.assert_search_returns_result(expected, search='arton')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.skill_rule1,
-            self.skill_rule2,
-            self.skill_rule3,
-            self.skill_rule4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.skill_rule1,
+                self.skill_rule2,
+                self.skill_rule3,
+                self.skill_rule4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.skill_rule4,
-            self.skill_rule3,
-            self.skill_rule2,
-            self.skill_rule1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.skill_rule4,
+                self.skill_rule3,
+                self.skill_rule2,
+                self.skill_rule1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -231,11 +246,9 @@ class TestSearchGivenMultipleSkillRules(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_name_of_items(self):
-        expected = SearchResult(4, [
-            self.skill_rule2,
-            self.skill_rule3,
-            self.skill_rule4
-        ])
+        expected = SearchResult(
+            4, [self.skill_rule2, self.skill_rule3, self.skill_rule4]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -253,7 +266,6 @@ class TestSearchGivenMultipleSkillRules(TestSearch):
 
 
 class TestSearchGivenMultipleTenants(TestSearch):
-
     def test_multiple_tenants(self):
         tenant_1 = self.add_tenant()
         tenant_2 = self.add_tenant()
@@ -264,7 +276,9 @@ class TestSearchGivenMultipleTenants(TestSearch):
         skill_rule_3 = self.add_queue_skill_rule(name='c', tenant_uuid=tenant_3.uuid)
 
         expected = SearchResult(2, [skill_rule_1, skill_rule_2])
-        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+        self.assert_search_returns_result(
+            expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid]
+        )
 
         expected = SearchResult(0, [])
         self.assert_search_returns_result(expected, tenant_uuids=[])
@@ -274,18 +288,22 @@ class TestSearchGivenMultipleTenants(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        skill_rule = QueueSkillRule(tenant_uuid=self.default_tenant.uuid, name='SkillRule')
+        skill_rule = QueueSkillRule(
+            tenant_uuid=self.default_tenant.uuid, name='SkillRule'
+        )
         skill_rule = skill_rule_dao.create(skill_rule)
 
         self.session.expire_all()
         assert_that(inspect(skill_rule).persistent)
-        assert_that(skill_rule, has_properties(
-            id=not_none(),
-            name='SkillRule',
-            rules=[],
-        ))
+        assert_that(
+            skill_rule,
+            has_properties(
+                id=not_none(),
+                name='SkillRule',
+                rules=[],
+            ),
+        )
 
     def test_create_with_all_fields(self):
         skill_rule = QueueSkillRule(
@@ -297,14 +315,16 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(skill_rule).persistent)
-        assert_that(skill_rule, has_properties(
-            name='MyName',
-            rules=['rule1', 'rule2'],
-        ))
+        assert_that(
+            skill_rule,
+            has_properties(
+                name='MyName',
+                rules=['rule1', 'rule2'],
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         skill_rule = self.add_queue_skill_rule(
             name='MyName',
@@ -318,10 +338,13 @@ class TestEdit(DAOTestCase):
         skill_rule_dao.edit(skill_rule)
 
         self.session.expire_all()
-        assert_that(skill_rule, has_properties(
-            name='OtherName',
-            rules=['rule3'],
-        ))
+        assert_that(
+            skill_rule,
+            has_properties(
+                name='OtherName',
+                rules=['rule3'],
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
         skill_rule = self.add_queue_skill_rule(
@@ -336,14 +359,16 @@ class TestEdit(DAOTestCase):
         skill_rule_dao.edit(skill_rule)
 
         self.session.expire_all()
-        assert_that(skill_rule, has_properties(
-            name='OtherName',
-            rules=empty(),
-        ))
+        assert_that(
+            skill_rule,
+            has_properties(
+                name='OtherName',
+                rules=empty(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         skill_rule = self.add_queue_skill_rule()
 

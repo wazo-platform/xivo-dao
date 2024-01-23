@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -14,7 +14,6 @@ from xivo_dao.converters.database_converter import DatabaseConverter
 
 
 class TestDatabaseConverterToModel(unittest.TestCase):
-
     def setUp(self):
         self.Schema = Mock()
         self.Model = Mock()
@@ -63,7 +62,6 @@ class TestDatabaseConverterToModel(unittest.TestCase):
 
 
 class TestDatabaseConverterToSource(unittest.TestCase):
-
     def setUp(self):
         self.Schema = Mock()
         self.Model = Mock()
@@ -95,10 +93,7 @@ class TestDatabaseConverterToSource(unittest.TestCase):
 
     def test_to_source_with_nonexistent_column(self):
         value = 'value'
-        mapping = {
-            'db_field': 'model_field',
-            'does_not_exist': 'does_not_exist'
-        }
+        mapping = {'db_field': 'model_field', 'does_not_exist': 'does_not_exist'}
 
         model = Mock()
         model.model_field = value
@@ -110,7 +105,6 @@ class TestDatabaseConverterToSource(unittest.TestCase):
 
 
 class TestDatabaseConverterUpdateModel(unittest.TestCase):
-
     def setUp(self):
         self.Schema = Mock()
         self.Model = Mock()
@@ -118,9 +112,7 @@ class TestDatabaseConverterUpdateModel(unittest.TestCase):
     def test_update_model(self):
         value = 'value'
 
-        mapping = {
-            'db_field': 'model_field'
-        }
+        mapping = {'db_field': 'model_field'}
 
         db_row = Mock()
         db_row.db_field = value
@@ -134,7 +126,6 @@ class TestDatabaseConverterUpdateModel(unittest.TestCase):
 
 
 class TestDatabaseConverterUpdateSource(unittest.TestCase):
-
     def setUp(self):
         self.Schema = Mock()
         self.Model = Mock()
@@ -142,9 +133,7 @@ class TestDatabaseConverterUpdateSource(unittest.TestCase):
     def test_update_source(self):
         value = 'value'
 
-        mapping = {
-            'db_field': 'model_field'
-        }
+        mapping = {'db_field': 'model_field'}
 
         db_row = Mock()
 
@@ -159,9 +148,7 @@ class TestDatabaseConverterUpdateSource(unittest.TestCase):
     def test_update_source_nothing_to_update(self):
         value = 'value'
 
-        mapping = {
-            'db_field': 'model_field'
-        }
+        mapping = {'db_field': 'model_field'}
 
         db_row = Mock()
         db_row.db_field = value

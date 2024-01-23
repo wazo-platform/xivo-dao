@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -11,7 +11,6 @@ from xivo_dao.alchemy import enum
 
 
 class ScheduleTime(Base):
-
     __tablename__ = 'schedule_time'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -20,10 +19,11 @@ class ScheduleTime(Base):
 
     id = Column(Integer)
     schedule_id = Column(Integer)
-    mode = Column(Enum('opened', 'closed',
-                       name='schedule_time_mode',
-                       metadata=Base.metadata),
-                  nullable=False, server_default='opened')
+    mode = Column(
+        Enum('opened', 'closed', name='schedule_time_mode', metadata=Base.metadata),
+        nullable=False,
+        server_default='opened',
+    )
     hours = Column(String(512))
     weekdays = Column(String(512))
     monthdays = Column(String(512))
@@ -75,10 +75,39 @@ class ScheduleTime(Base):
     @property
     def month_days(self):
         if not self.monthdays:
-            return [1, 2, 3, 4, 5, 6, 7, 8, 9,
-                    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                    20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-                    30, 31]
+            return [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+            ]
         return self._expand_range(self.monthdays)
 
     @month_days.setter

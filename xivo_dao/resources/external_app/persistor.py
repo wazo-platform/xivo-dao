@@ -1,4 +1,4 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.external_app import ExternalApp
@@ -7,7 +7,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class ExternalAppPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = ExternalApp
 
     def __init__(self, session, external_app_search, tenant_uuids=None):

@@ -1,7 +1,13 @@
 # Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that, equal_to, has_properties, contains_exactly, contains_inanyorder
+from hamcrest import (
+    assert_that,
+    equal_to,
+    has_properties,
+    contains_exactly,
+    contains_inanyorder,
+)
 from sqlalchemy import func
 from xivo_dao.tests.test_dao import DAOTestCase
 from ..pjsip_transport import PJSIPTransport
@@ -9,7 +15,6 @@ from ..pjsip_transport_option import PJSIPTransportOption
 
 
 class TestPJSIPTransport(DAOTestCase):
-
     def test_creation(self):
         public_ip = '10.37.0.42'
         network = '192.168.0.0/32'
@@ -25,14 +30,17 @@ class TestPJSIPTransport(DAOTestCase):
         self.add_me(transport)
 
         row = self.session.query(PJSIPTransport).filter_by(uuid=transport.uuid).first()
-        assert_that(row, has_properties(
-            name='my-transport',
-            options=contains_inanyorder(
-                contains_exactly('local_net', network),
-                contains_exactly('external_media_address', public_ip),
-                contains_exactly('external_signaling_address', public_ip),
-            )
-        ))
+        assert_that(
+            row,
+            has_properties(
+                name='my-transport',
+                options=contains_inanyorder(
+                    contains_exactly('local_net', network),
+                    contains_exactly('external_media_address', public_ip),
+                    contains_exactly('external_signaling_address', public_ip),
+                ),
+            ),
+        )
 
     def test_adding_options(self):
         local_net = '192.168.0.0/32'
@@ -54,9 +62,7 @@ class TestPJSIPTransport(DAOTestCase):
         transport.options = new_options
 
         row = self.session.query(PJSIPTransport).filter_by(uuid=transport.uuid).first()
-        assert_that(row, has_properties(
-            options=contains_inanyorder(*new_options)
-        ))
+        assert_that(row, has_properties(options=contains_inanyorder(*new_options)))
 
     def test_removing_and_adding_options(self):
         local_net = '192.168.0.0/32'
@@ -77,9 +83,7 @@ class TestPJSIPTransport(DAOTestCase):
         transport.options = new_options
 
         row = self.session.query(PJSIPTransport).filter_by(uuid=transport.uuid).first()
-        assert_that(row, has_properties(
-            options=contains_inanyorder(*new_options)
-        ))
+        assert_that(row, has_properties(options=contains_inanyorder(*new_options)))
 
     def test_option_removal(self):
         options = [

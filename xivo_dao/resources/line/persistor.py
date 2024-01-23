@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -17,7 +17,6 @@ from xivo_dao.resources.line.search import line_search
 
 
 class LinePersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Line
 
     def __init__(self, session, tenant_uuids=None):
@@ -31,20 +30,17 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
         return self.build_criteria(query, criteria)
 
     def _search_query(self):
-        return (self.session
-                .query(Line)
-                .options(joinedload('context_rel'))
-                .options(joinedload('endpoint_sccp'))
-                .options(joinedload('endpoint_sip'))
-                .options(joinedload('endpoint_sip')
-                         .joinedload('_auth_section'))
-                .options(joinedload('endpoint_sip')
-                         .joinedload('_endpoint_section'))
-                .options(joinedload('endpoint_custom'))
-                .options(joinedload('line_extensions')
-                         .joinedload('extension'))
-                .options(joinedload('user_lines')
-                         .joinedload('user')))
+        return (
+            self.session.query(Line)
+            .options(joinedload('context_rel'))
+            .options(joinedload('endpoint_sccp'))
+            .options(joinedload('endpoint_sip'))
+            .options(joinedload('endpoint_sip').joinedload('_auth_section'))
+            .options(joinedload('endpoint_sip').joinedload('_endpoint_section'))
+            .options(joinedload('endpoint_custom'))
+            .options(joinedload('line_extensions').joinedload('extension'))
+            .options(joinedload('user_lines').joinedload('user'))
+        )
 
     def get(self, line_id):
         line = self.find(line_id)
@@ -78,20 +74,23 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
 
     def delete(self, line):
         if line.endpoint_sip_uuid:
-            (self.session
-             .query(EndpointSIP)
-             .filter(EndpointSIP.uuid == line.endpoint_sip_uuid)
-             .delete())
+            (
+                self.session.query(EndpointSIP)
+                .filter(EndpointSIP.uuid == line.endpoint_sip_uuid)
+                .delete()
+            )
         elif line.endpoint_sccp_id:
-            (self.session
-             .query(SCCPLine)
-             .filter(SCCPLine.id == line.endpoint_sccp_id)
-             .delete())
+            (
+                self.session.query(SCCPLine)
+                .filter(SCCPLine.id == line.endpoint_sccp_id)
+                .delete()
+            )
         elif line.endpoint_custom_id:
-            (self.session
-             .query(UserCustom)
-             .filter(UserCustom.id == line.endpoint_custom_id)
-             .delete())
+            (
+                self.session.query(UserCustom)
+                .filter(UserCustom.id == line.endpoint_custom_id)
+                .delete()
+            )
         self.session.delete(line)
         self.session.flush()
 
@@ -99,10 +98,11 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
         exists = True
         while exists:
             code = self.random_code()
-            exists = (self.session
-                      .query(Line.provisioningid)
-                      .filter(Line.provisioningid == int(code))
-                      .count()) > 0
+            exists = (
+                self.session.query(Line.provisioningid)
+                .filter(Line.provisioningid == int(code))
+                .count()
+            ) > 0
         return code
 
     def random_code(self):

@@ -1,11 +1,10 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 
 
 class SCCPGeneralPersistor:
-
     def __init__(self, session):
         self.session = session
 

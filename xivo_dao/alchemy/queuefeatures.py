@@ -1,4 +1,4 @@
-# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
@@ -57,7 +57,6 @@ DEFAULT_QUEUE_OPTIONS = {
 
 
 class QueueFeatures(Base):
-
     __tablename__ = 'queuefeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -115,16 +114,14 @@ class QueueFeatures(Base):
                             Callerid.typeval == QueueFeatures.id)""",
         foreign_keys='Callerid.typeval',
         cascade='all, delete-orphan',
-        uselist=False
+        uselist=False,
     )
 
     caller_id_mode = association_proxy(
-        'caller_id', 'mode',
-        creator=lambda _mode: Callerid(type='queue', mode=_mode)
+        'caller_id', 'mode', creator=lambda _mode: Callerid(type='queue', mode=_mode)
     )
     caller_id_name = association_proxy(
-        'caller_id', 'name',
-        creator=lambda _name: Callerid(type='queue', name=_name)
+        'caller_id', 'name', creator=lambda _name: Callerid(type='queue', name=_name)
     )
 
     extensions = relationship(
@@ -135,10 +132,7 @@ class QueueFeatures(Base):
         viewonly=True,
     )
 
-    func_keys = relationship(
-        'FuncKeyDestQueue',
-        cascade='all, delete-orphan'
-    )
+    func_keys = relationship('FuncKeyDestQueue', cascade='all, delete-orphan')
 
     queue_dialactions = relationship(
         'Dialaction',
@@ -185,8 +179,9 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan',
     )
     schedules = association_proxy(
-        'schedule_paths', 'schedule',
-        creator=lambda _schedule: SchedulePath(path='queue', schedule=_schedule)
+        'schedule_paths',
+        'schedule',
+        creator=lambda _schedule: SchedulePath(path='queue', schedule=_schedule),
     )
 
     def __init__(self, **kwargs):

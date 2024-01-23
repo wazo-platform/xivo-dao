@@ -13,7 +13,6 @@ from ..queueskillrule import QueueSkillRule
 
 
 class TestRules(DAOTestCase):
-
     def test_getter(self):
         skill_rule = QueueSkillRule(rule='abcd;1234')
         assert_that(skill_rule.rules, contains_exactly('abcd', '1234'))
@@ -32,7 +31,9 @@ class TestRules(DAOTestCase):
 
     def test_expression(self):
         skill_rule = self.add_queue_skill_rule(rules=['abcd', '1234'])
-        result = self.session.query(QueueSkillRule).filter_by(rules=['abcd', '1234']).first()
+        result = (
+            self.session.query(QueueSkillRule).filter_by(rules=['abcd', '1234']).first()
+        )
         assert_that(result, equal_to(skill_rule))
 
     def test_expression_empty_rule(self):

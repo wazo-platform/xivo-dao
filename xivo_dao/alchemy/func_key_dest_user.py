@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import CheckConstraint, Column, ForeignKey, ForeignKeyConstraint
@@ -11,21 +11,22 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestUser(Base):
-
     DESTINATION_TYPE_ID = 1
 
     __tablename__ = 'func_key_dest_user'
     __table_args__ = (
         ForeignKeyConstraint(
             ('func_key_id', 'destination_type_id'),
-            ('func_key.id', 'func_key.destination_type_id')
+            ('func_key.id', 'func_key.destination_type_id'),
         ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
     )
 
     func_key_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('userfeatures.id'), primary_key=True)
-    destination_type_id = Column(Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}")
+    destination_type_id = Column(
+        Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}"
+    )
 
     type = 'user'
 

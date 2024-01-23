@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -12,7 +12,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class Queue(Base, AsteriskOptionsMixin):
-
     EXCLUDE_OPTIONS = {
         'name',
         'category',
@@ -32,13 +31,15 @@ class Queue(Base, AsteriskOptionsMixin):
         'random-periodic-announce',
     }
 
-    _options = []  # This should eventually be a column to set arbitrary asterisk options
+    _options = (
+        []
+    )  # This should eventually be a column to set arbitrary asterisk options
 
     __tablename__ = 'queue'
     __table_args__ = (
         PrimaryKeyConstraint('name'),
         Index('queue__idx__category', 'category'),
-        CheckConstraint("autopause in ('no', 'yes', 'all')")
+        CheckConstraint("autopause in ('no', 'yes', 'all')"),
     )
 
     name = Column(String(128))
@@ -46,7 +47,10 @@ class Queue(Base, AsteriskOptionsMixin):
     announce = Column(String(128))
     context = Column(String(79))
     timeout = Column(Integer, server_default='0')
-    monitor_type = Column('monitor-type', Enum('no', 'mixmonitor', name='queue_monitor_type', metadata=Base.metadata))
+    monitor_type = Column(
+        'monitor-type',
+        Enum('no', 'mixmonitor', name='queue_monitor_type', metadata=Base.metadata),
+    )
     monitor_format = Column('monitor-format', String(128))
     queue_youarenext = Column('queue-youarenext', String(128))
     queue_thereare = Column('queue-thereare', String(128))
@@ -74,7 +78,10 @@ class Queue(Base, AsteriskOptionsMixin):
     weight = Column(Integer)
     timeoutrestart = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
-    category = Column(Enum('group', 'queue', name='queue_category', metadata=Base.metadata), nullable=False)
+    category = Column(
+        Enum('group', 'queue', name='queue_category', metadata=Base.metadata),
+        nullable=False,
+    )
     timeoutpriority = Column(String(10), nullable=False, server_default='app')
     autofill = Column(Integer, nullable=False, server_default='1')
     autopause = Column(String(3), nullable=False, server_default='no')
@@ -82,10 +89,18 @@ class Queue(Base, AsteriskOptionsMixin):
     setqueueentryvar = Column(Integer, nullable=False, server_default='0')
     setqueuevar = Column(Integer, nullable=False, server_default='0')
     membermacro = Column(String(1024))
-    min_announce_frequency = Column('min-announce-frequency', Integer, nullable=False, server_default='60')
-    random_periodic_announce = Column('random-periodic-announce', Integer, nullable=False, server_default='0')
-    announce_position = Column('announce-position', String(1024), nullable=False, server_default='yes')
-    announce_position_limit = Column('announce-position-limit', Integer, nullable=False, server_default='5')
+    min_announce_frequency = Column(
+        'min-announce-frequency', Integer, nullable=False, server_default='60'
+    )
+    random_periodic_announce = Column(
+        'random-periodic-announce', Integer, nullable=False, server_default='0'
+    )
+    announce_position = Column(
+        'announce-position', String(1024), nullable=False, server_default='yes'
+    )
+    announce_position_limit = Column(
+        'announce-position-limit', Integer, nullable=False, server_default='5'
+    )
     defaultrule = Column(String(1024))
 
     groupfeatures = relationship(

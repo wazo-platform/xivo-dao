@@ -15,7 +15,6 @@ from .. import dao as sccp_general_dao
 
 
 class TestFindAll(DAOTestCase):
-
     def test_find_all_no_sccp_general(self):
         result = sccp_general_dao.find_all()
 
@@ -31,7 +30,6 @@ class TestFindAll(DAOTestCase):
 
 
 class TestEditAll(DAOTestCase):
-
     def test_edit_all(self):
         row1 = SCCPGeneralSettings(option_name='setting1', option_value='value1')
         row2 = SCCPGeneralSettings(option_name='setting2', option_value='value1')

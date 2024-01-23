@@ -35,12 +35,13 @@ AND
     formatted_start = before_start.strftime('%Y-%m-%d %H:%M:%S%z')
     formatted_end = end.strftime('%Y-%m-%d %H:%M:%S%z')
 
-    rows = session.query(
-        literal_column('start'),
-        literal_column('end'),
-        literal_column('agent_id')
-    ).from_statement(text(wrapup_times_query)).params(start=formatted_start,
-                                                      end=formatted_end)
+    rows = (
+        session.query(
+            literal_column('start'), literal_column('end'), literal_column('agent_id')
+        )
+        .from_statement(text(wrapup_times_query))
+        .params(start=formatted_start, end=formatted_end)
+    )
 
     results = {}
     for row in rows.all():
@@ -69,9 +70,7 @@ AND
 
         time_in_period = wend - ending_period
         if agent_id not in results[ending_period]:
-            results[ending_period][agent_id] = {
-                'wrapup_time': timedelta(seconds=0)
-            }
+            results[ending_period][agent_id] = {'wrapup_time': timedelta(seconds=0)}
         results[ending_period][agent_id]['wrapup_time'] += time_in_period
 
     return results
@@ -99,17 +98,23 @@ def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
     higher_boundary = end + timedelta(days=1)
     end_str = higher_boundary.strftime(_STR_TIME_FMT)
 
-    queue_logs = (session
-                  .query(QueueLog.event,
-                         QueueLog.callid,
-                         QueueLog.queuename,
-                         QueueLog.data3,
-                         QueueLog.time)
-                  .filter(and_(QueueLog.time >= start_str,
-                               QueueLog.time < end_str,
-                               or_(QueueLog.event == 'ENTERQUEUE',
-                                   QueueLog.event == queue_log_event)))
-                  .order_by(QueueLog.callid, QueueLog.time))
+    queue_logs = (
+        session.query(
+            QueueLog.event,
+            QueueLog.callid,
+            QueueLog.queuename,
+            QueueLog.data3,
+            QueueLog.time,
+        )
+        .filter(
+            and_(
+                QueueLog.time >= start_str,
+                QueueLog.time < end_str,
+                or_(QueueLog.event == 'ENTERQUEUE', QueueLog.event == queue_log_event),
+            )
+        )
+        .order_by(QueueLog.callid, QueueLog.time)
+    )
 
     to_skip = None
     for queue_log in queue_logs.all():
@@ -172,26 +177,38 @@ def get_queue_names_in_range(session, start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    return [r[0] for r in (session.query(distinct(QueueLog.queuename))
-                           .filter(between(QueueLog.time, start, end)))]
+    return [
+        r[0]
+        for r in (
+            session.query(distinct(QueueLog.queuename)).filter(
+                between(QueueLog.time, start, end)
+            )
+        )
+    ]
 
 
 @daosession
 def delete_event_by_queue_between(session, event, qname, start, end):
     session.query(QueueLog).filter(
-        and_(QueueLog.event == event,
-             QueueLog.queuename == qname,
-             between(QueueLog.time, start, end))).delete(synchronize_session='fetch')
+        and_(
+            QueueLog.event == event,
+            QueueLog.queuename == qname,
+            between(QueueLog.time, start, end),
+        )
+    ).delete(synchronize_session='fetch')
 
 
 @daosession
 def delete_event_between(session, start, end):
-    session.query(QueueLog).filter(
-        and_(between(QueueLog.time, start, end))).delete(synchronize_session='fetch')
+    session.query(QueueLog).filter(and_(between(QueueLog.time, start, end))).delete(
+        synchronize_session='fetch'
+    )
 
 
 @daosession
-def insert_entry(session, time, callid, queue, agent, event, d1='', d2='', d3='', d4='', d5=''):
+def insert_entry(
+    session, time, callid, queue, agent, event, d1='', d2='', d3='', d4='', d5=''
+):
     entry = QueueLog(
         time=time,
         callid=callid,
@@ -202,7 +219,8 @@ def insert_entry(session, time, callid, queue, agent, event, d1='', d2='', d3=''
         data2=d2,
         data3=d3,
         data4=d4,
-        data5=d5)
+        data5=d5,
+    )
     session.add(entry)
 
 
@@ -210,9 +228,9 @@ def hours_with_calls(session, start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    hours = (session
-             .query(distinct(func.date_trunc('hour', QueueLog.time)).label('time'))
-             .filter(between(QueueLog.time, start, end)))
+    hours = session.query(
+        distinct(func.date_trunc('hour', QueueLog.time)).label('time')
+    ).filter(between(QueueLog.time, start, end))
 
     for hour in hours.all():
         yield hour.time
@@ -220,8 +238,11 @@ def hours_with_calls(session, start, end):
 
 @daosession
 def get_last_callid_with_event_for_agent(session, event, agent):
-    row = session.query(QueueLog.callid).filter(
-        and_(QueueLog.agent == agent,
-             QueueLog.event == event)).order_by(QueueLog.time.desc()).first()
+    row = (
+        session.query(QueueLog.callid)
+        .filter(and_(QueueLog.agent == agent, QueueLog.event == event))
+        .order_by(QueueLog.time.desc())
+        .first()
+    )
 
     return row.callid

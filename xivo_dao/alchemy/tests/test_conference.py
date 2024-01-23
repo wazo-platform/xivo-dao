@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -17,19 +17,19 @@ from ..func_key_dest_conference import FuncKeyDestConference
 
 
 class TestIncalls(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
-        incall1 = self.add_incall(destination=Dialaction(action='group',
-                                                         actionarg1=str(group.id)))
-        incall2 = self.add_incall(destination=Dialaction(action='group',
-                                                         actionarg1=str(group.id)))
+        incall1 = self.add_incall(
+            destination=Dialaction(action='group', actionarg1=str(group.id))
+        )
+        incall2 = self.add_incall(
+            destination=Dialaction(action='group', actionarg1=str(group.id))
+        )
 
         assert_that(group.incalls, contains_inanyorder(incall1, incall2))
 
 
 class TestExten(DAOTestCase):
-
     def test_getter(self):
         conference = self.add_conference()
         extension = self.add_extension(type='conference', typeval=conference.id)
@@ -51,17 +51,24 @@ class TestExten(DAOTestCase):
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()
 
     def test_dialaction_actions_are_deleted(self):
         conference = self.add_conference()
-        self.add_dialaction(category='ivr_choice', action='conference', actionarg1=conference.id)
-        self.add_dialaction(category='ivr', action='conference', actionarg1=conference.id)
-        self.add_dialaction(category='user', action='conference', actionarg1=conference.id)
-        self.add_dialaction(category='incall', action='conference', actionarg1=conference.id)
+        self.add_dialaction(
+            category='ivr_choice', action='conference', actionarg1=conference.id
+        )
+        self.add_dialaction(
+            category='ivr', action='conference', actionarg1=conference.id
+        )
+        self.add_dialaction(
+            category='user', action='conference', actionarg1=conference.id
+        )
+        self.add_dialaction(
+            category='incall', action='conference', actionarg1=conference.id
+        )
 
         self.session.delete(conference)
         self.session.flush()

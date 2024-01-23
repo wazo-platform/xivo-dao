@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import func
@@ -12,7 +12,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class StatAgent(Base):
-
     __tablename__ = 'stat_agent'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

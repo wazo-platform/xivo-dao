@@ -1,4 +1,4 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.queueskill import QueueSkill
@@ -13,7 +13,7 @@ config = SearchConfig(
         'name': QueueSkill.name,
         'description': QueueSkill.description,
     },
-    default_sort='name'
+    default_sort='name',
 )
 
 skill_search = SearchSystem(config)

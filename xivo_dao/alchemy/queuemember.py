@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -19,11 +19,18 @@ interface_regex = re.compile(r'Local/(?P<exten>.*)@(?P<context>.*)')
 
 
 class QueueMember(Base):
-
     __tablename__ = 'queuemember'
     __table_args__ = (
         PrimaryKeyConstraint('queue_name', 'interface'),
-        UniqueConstraint('queue_name', 'channel', 'interface', 'usertype', 'userid', 'category', 'position'),
+        UniqueConstraint(
+            'queue_name',
+            'channel',
+            'interface',
+            'usertype',
+            'userid',
+            'category',
+            'position',
+        ),
         Index('queuemember__idx__category', 'category'),
         Index('queuemember__idx__channel', 'channel'),
         Index('queuemember__idx__userid', 'userid'),
@@ -34,10 +41,16 @@ class QueueMember(Base):
     interface = Column(String(128))
     penalty = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
-    usertype = Column(Enum('agent', 'user', name='queuemember_usertype', metadata=Base.metadata), nullable=False)
+    usertype = Column(
+        Enum('agent', 'user', name='queuemember_usertype', metadata=Base.metadata),
+        nullable=False,
+    )
     userid = Column(Integer, nullable=False)
     channel = Column(String(25), nullable=False)
-    category = Column(Enum('queue', 'group', name='queue_category', metadata=Base.metadata), nullable=False)
+    category = Column(
+        Enum('queue', 'group', name='queue_category', metadata=Base.metadata),
+        nullable=False,
+    )
     position = Column(Integer, nullable=False, server_default='0')
 
     agent = relationship(

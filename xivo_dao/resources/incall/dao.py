@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from contextlib import contextmanager
@@ -16,7 +16,9 @@ def search(session, tenant_uuids=None, **parameters):
 
 @daosession
 def get(session, incall_id, tenant_uuids=None):
-    return IncallPersistor(session, incall_search, tenant_uuids).get_by({'id': incall_id})
+    return IncallPersistor(session, incall_search, tenant_uuids).get_by(
+        {'id': incall_id}
+    )
 
 
 @daosession
@@ -26,7 +28,9 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 @daosession
 def find(session, incall_id, tenant_uuids=None):
-    return IncallPersistor(session, incall_search, tenant_uuids).find_by({'id': incall_id})
+    return IncallPersistor(session, incall_search, tenant_uuids).find_by(
+        {'id': incall_id}
+    )
 
 
 @daosession

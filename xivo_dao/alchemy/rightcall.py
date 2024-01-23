@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -21,7 +21,6 @@ from .rightcallexten import RightCallExten
 
 
 class RightCall(Base):
-
     __tablename__ = 'rightcall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -118,7 +117,9 @@ class RightCall(Base):
         elif value == 'deny':
             self.authorization = 0
         else:
-            raise InputError(f"cannot set mode to {value}. Only 'allow' or 'deny' are authorized")
+            raise InputError(
+                f"cannot set mode to {value}. Only 'allow' or 'deny' are authorized"
+            )
 
     @hybrid_property
     def enabled(self):
@@ -138,10 +139,15 @@ class RightCall(Base):
 
     @extensions.setter
     def extensions(self, values):
-        old_rightcallextens = {rightcallexten.exten: rightcallexten for rightcallexten in self.rightcallextens}
+        old_rightcallextens = {
+            rightcallexten.exten: rightcallexten
+            for rightcallexten in self.rightcallextens
+        }
         self.rightcallextens = []
         for value in set(values):
             if value in old_rightcallextens:
                 self.rightcallextens.append(old_rightcallextens[value])
             else:
-                self.rightcallextens.append(RightCallExten(rightcallid=self.id, exten=value))
+                self.rightcallextens.append(
+                    RightCallExten(rightcallid=self.id, exten=value)
+                )

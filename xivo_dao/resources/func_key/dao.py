@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import or_
@@ -17,12 +17,17 @@ def find_all_forwards(session, user_id, fwd_type):
 
     query = (
         session.query(FuncKeyDestForward.number.label('number'))
-        .join(FeatureExtension,
-              FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid)
-        .join(FuncKeyMapping,
-              FuncKeyMapping.func_key_id == FuncKeyDestForward.func_key_id)
-        .join(UserFeatures,
-              UserFeatures.func_key_private_template_id == FuncKeyMapping.template_id)
+        .join(
+            FeatureExtension,
+            FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid,
+        )
+        .join(
+            FuncKeyMapping, FuncKeyMapping.func_key_id == FuncKeyDestForward.func_key_id
+        )
+        .join(
+            UserFeatures,
+            UserFeatures.func_key_private_template_id == FuncKeyMapping.template_id,
+        )
         .filter(UserFeatures.id == user_id)
         .filter(FeatureExtension.feature == type_converter.model_to_db(fwd_type))
     )
@@ -33,17 +38,22 @@ def find_all_forwards(session, user_id, fwd_type):
 def find_users_having_user_destination(session, destination_user):
     query = (
         session.query(UserFeatures)
-        .join(FuncKeyMapping,
-              or_(FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-                  FuncKeyMapping.template_id == UserFeatures.func_key_template_id))
-        .join(FuncKeyDestUser, FuncKeyMapping.func_key_id == FuncKeyDestUser.func_key_id)
+        .join(
+            FuncKeyMapping,
+            or_(
+                FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+                FuncKeyMapping.template_id == UserFeatures.func_key_template_id,
+            ),
+        )
+        .join(
+            FuncKeyDestUser, FuncKeyMapping.func_key_id == FuncKeyDestUser.func_key_id
+        )
         .filter(FuncKeyDestUser.user_id == str(destination_user.id))
     )
     return query.all()
 
 
 class _ForwardTypeConverter:
-
     fwd_types = {
         'unconditional': 'fwdunc',
         'noanswer': 'fwdrna',

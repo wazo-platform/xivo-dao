@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.expression import and_
@@ -8,9 +8,11 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get_authorized_subnets(session):
-    rows = (session
-            .query(AccessFeatures.host)
-            .filter(and_(AccessFeatures.feature == 'phonebook',
-                         AccessFeatures.commented == 0))
-            .all())
+    rows = (
+        session.query(AccessFeatures.host)
+        .filter(
+            and_(AccessFeatures.feature == 'phonebook', AccessFeatures.commented == 0)
+        )
+        .all()
+    )
     return [row.host for row in rows]

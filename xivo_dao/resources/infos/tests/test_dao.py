@@ -9,7 +9,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestGetInfos(DAOTestCase):
-
     def test_get_with_one_infos(self):
         xivo_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, __name__))
         wazo_version = '42.42'

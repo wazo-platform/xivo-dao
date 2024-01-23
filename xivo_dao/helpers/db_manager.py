@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -28,6 +28,7 @@ class IntAsString(TypeDecorator):
     on the child during a flush.
 
     """
+
     impl = String
 
     def process_bind_param(self, value, dialect):
@@ -65,6 +66,7 @@ def daosession(func):
     def wrapped(*args, **kwargs):
         session = Session()
         return func(session, *args, **kwargs)
+
     return wrapped
 
 

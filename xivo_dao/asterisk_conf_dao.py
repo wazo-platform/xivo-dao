@@ -65,22 +65,33 @@ class Member(NamedTuple):
 def find_sccp_general_settings(session):
     rows = session.query(SCCPGeneralSettings).all()
 
-    voicemail_consult_exten = session.query(
-        literal('vmexten').label('option_name'),
-        FeatureExtension.exten.label('option_value'),
-    ).filter(and_(
-        FeatureExtension.feature == 'vmusermsg',
-    )).first()
+    voicemail_consult_exten = (
+        session.query(
+            literal('vmexten').label('option_name'),
+            FeatureExtension.exten.label('option_value'),
+        )
+        .filter(
+            and_(
+                FeatureExtension.feature == 'vmusermsg',
+            )
+        )
+        .first()
+    )
 
-    res = [{
-        'option_name': row.option_name,
-        'option_value': row.option_value,
-    } for row in rows]
+    res = [
+        {
+            'option_name': row.option_name,
+            'option_value': row.option_value,
+        }
+        for row in rows
+    ]
 
-    res.append({
-        'option_name': voicemail_consult_exten.option_name,
-        'option_value': voicemail_consult_exten.option_value
-    })
+    res.append(
+        {
+            'option_name': voicemail_consult_exten.option_name,
+            'option_value': voicemail_consult_exten.option_value,
+        }
+    )
 
     return res
 
@@ -129,32 +140,53 @@ def find_sccp_line_settings(session):
 
         return line
 
-    rows = session.query(
-        SCCPLine.id,
-        SCCPLine.tenant_uuid,
-        SCCPLine.name,
-        SCCPLine.cid_name,
-        SCCPLine.cid_num,
-        SCCPLine.allow,
-        SCCPLine.disallow,
-        UserFeatures.language,
-        UserLine.user_id,
-        LineFeatures.context,
-        Extension.exten,
-        UserFeatures.uuid,
-        UserFeatures.enableonlinerec,
-    ).join(LineFeatures, and_(
-        LineFeatures.endpoint_sccp_id == SCCPLine.id,
-    )).join(
-        UserLine, UserLine.line_id == LineFeatures.id,
-    ).join(UserFeatures, and_(
-        UserFeatures.id == UserLine.user_id, UserLine.main_user.is_(True),
-    )).join(LineExtension, and_(
-        LineFeatures.id == LineExtension.line_id,
-        LineExtension.main_extension.is_(True),
-    )).join(
-        Extension, LineExtension.extension_id == Extension.id,
-    ).filter(LineFeatures.commented == 0).all()
+    rows = (
+        session.query(
+            SCCPLine.id,
+            SCCPLine.tenant_uuid,
+            SCCPLine.name,
+            SCCPLine.cid_name,
+            SCCPLine.cid_num,
+            SCCPLine.allow,
+            SCCPLine.disallow,
+            UserFeatures.language,
+            UserLine.user_id,
+            LineFeatures.context,
+            Extension.exten,
+            UserFeatures.uuid,
+            UserFeatures.enableonlinerec,
+        )
+        .join(
+            LineFeatures,
+            and_(
+                LineFeatures.endpoint_sccp_id == SCCPLine.id,
+            ),
+        )
+        .join(
+            UserLine,
+            UserLine.line_id == LineFeatures.id,
+        )
+        .join(
+            UserFeatures,
+            and_(
+                UserFeatures.id == UserLine.user_id,
+                UserLine.main_user.is_(True),
+            ),
+        )
+        .join(
+            LineExtension,
+            and_(
+                LineFeatures.id == LineExtension.line_id,
+                LineExtension.main_extension.is_(True),
+            ),
+        )
+        .join(
+            Extension,
+            LineExtension.extension_id == Extension.id,
+        )
+        .filter(LineFeatures.commented == 0)
+        .all()
+    )
 
     for row in rows:
         yield line_config(*row)
@@ -162,20 +194,36 @@ def find_sccp_line_settings(session):
 
 @daosession
 def find_sccp_device_settings(session):
-    query = session.query(
-        SCCPDevice,
-        Voicemail.mailbox,
-    ).outerjoin(
-        SCCPLine, SCCPLine.name == SCCPDevice.line,
-    ).outerjoin(LineFeatures, and_(
-        LineFeatures.endpoint_sccp_id == SCCPLine.id,
-    )).outerjoin(UserLine, and_(
-        UserLine.line_id == LineFeatures.id,
-        UserLine.main_user.is_(True),
-    )).outerjoin(
-        UserFeatures, UserFeatures.id == UserLine.user_id,
-    ).outerjoin(
-        Voicemail, Voicemail.uniqueid == UserFeatures.voicemailid,
+    query = (
+        session.query(
+            SCCPDevice,
+            Voicemail.mailbox,
+        )
+        .outerjoin(
+            SCCPLine,
+            SCCPLine.name == SCCPDevice.line,
+        )
+        .outerjoin(
+            LineFeatures,
+            and_(
+                LineFeatures.endpoint_sccp_id == SCCPLine.id,
+            ),
+        )
+        .outerjoin(
+            UserLine,
+            and_(
+                UserLine.line_id == LineFeatures.id,
+                UserLine.main_user.is_(True),
+            ),
+        )
+        .outerjoin(
+            UserFeatures,
+            UserFeatures.id == UserLine.user_id,
+        )
+        .outerjoin(
+            Voicemail,
+            Voicemail.uniqueid == UserFeatures.voicemailid,
+        )
     )
 
     devices = []
@@ -190,52 +238,80 @@ def find_sccp_device_settings(session):
 @daosession
 def find_sccp_speeddial_settings(session):
     invalid_chars = '\n\r\t;'
-    query = session.query(
-        FuncKeyMapping.position.label('fknum'),
-        func.translate(FuncKeyMapping.label, invalid_chars, '').label('label'),
-        cast(FuncKeyMapping.blf, Integer).label('supervision'),
-        func.translate(FuncKeyDestCustom.exten, invalid_chars, '').label('exten'),
-        UserFeatures.id.label('user_id'),
-        SCCPDevice.device.label('device'),
-    ).join(
-        UserFeatures,
-        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-    ).join(
-        FuncKeyDestCustom,
-        FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
-    ).join(UserLine, and_(
-        UserLine.user_id == UserFeatures.id,
-        UserLine.main_user.is_(True),
-    )).join(
-        LineFeatures, UserLine.line_id == LineFeatures.id,
-    ).join(SCCPLine, and_(
-        LineFeatures.endpoint_sccp_id == SCCPLine.id,
-    )).join(
-        SCCPDevice, SCCPLine.name == SCCPDevice.line,
-    ).filter(LineFeatures.commented == 0)
+    query = (
+        session.query(
+            FuncKeyMapping.position.label('fknum'),
+            func.translate(FuncKeyMapping.label, invalid_chars, '').label('label'),
+            cast(FuncKeyMapping.blf, Integer).label('supervision'),
+            func.translate(FuncKeyDestCustom.exten, invalid_chars, '').label('exten'),
+            UserFeatures.id.label('user_id'),
+            SCCPDevice.device.label('device'),
+        )
+        .join(
+            UserFeatures,
+            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+        )
+        .join(
+            FuncKeyDestCustom,
+            FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
+        )
+        .join(
+            UserLine,
+            and_(
+                UserLine.user_id == UserFeatures.id,
+                UserLine.main_user.is_(True),
+            ),
+        )
+        .join(
+            LineFeatures,
+            UserLine.line_id == LineFeatures.id,
+        )
+        .join(
+            SCCPLine,
+            and_(
+                LineFeatures.endpoint_sccp_id == SCCPLine.id,
+            ),
+        )
+        .join(
+            SCCPDevice,
+            SCCPLine.name == SCCPDevice.line,
+        )
+        .filter(LineFeatures.commented == 0)
+    )
 
-    return [{
-        'exten': row.exten,
-        'fknum': row.fknum,
-        'label': row.label,
-        'supervision': row.supervision,
-        'user_id': row.user_id,
-        'device': row.device,
-    } for row in query]
+    return [
+        {
+            'exten': row.exten,
+            'fknum': row.fknum,
+            'label': row.label,
+            'supervision': row.supervision,
+            'user_id': row.user_id,
+            'device': row.device,
+        }
+        for row in query
+    ]
 
 
 @daosession
 def find_features_settings(session):
-    rows = session.query(
-        Features.category, Features.var_name, Features.var_val,
-    ).filter(and_(
-        Features.commented == 0,
-        or_(
-            Features.category == 'general',
-            Features.category == 'featuremap',
-            Features.category == 'applicationmap',
+    rows = (
+        session.query(
+            Features.category,
+            Features.var_name,
+            Features.var_val,
         )
-    )).all()
+        .filter(
+            and_(
+                Features.commented == 0,
+                or_(
+                    Features.category == 'general',
+                    Features.category == 'featuremap',
+                    Features.category == 'applicationmap',
+                ),
+            )
+        )
+        .all()
+    )
 
     general_options = []
     featuremap_options = []
@@ -278,40 +354,64 @@ def find_exten_conferences_settings(session, context_name):
 
 @daosession
 def find_exten_xivofeatures_setting(session):
-    rows = session.query(FeatureExtension).filter(
-        FeatureExtension.enabled == true(),
-    ).order_by('exten').all()
+    rows = (
+        session.query(FeatureExtension)
+        .filter(
+            FeatureExtension.enabled == true(),
+        )
+        .order_by('exten')
+        .all()
+    )
 
     return [row.todict() for row in rows]
 
 
 @daosession
 def find_extenfeatures_settings(session, features):
-    query = session.query(FeatureExtension).filter(and_(
-        FeatureExtension.feature.in_(features),
-    )).order_by('exten')
+    query = (
+        session.query(FeatureExtension)
+        .filter(
+            and_(
+                FeatureExtension.feature.in_(features),
+            )
+        )
+        .order_by('exten')
+    )
 
     return query.all()
 
 
 @daosession
 def find_exten_settings(session, context_name):
-    rows = session.query(Extension).outerjoin(
-        LineExtension, Extension.id == LineExtension.extension_id,
-    ).outerjoin(
-        LineFeatures, LineFeatures.id == LineExtension.line_id,
-    ).filter(and_(
-        Extension.context == context_name,
-        Extension.commented == 0,
-        Extension.typeval != '0',
-        Extension.type != 'parking',
-        or_(
-            LineExtension.line_id.is_(None),
-            LineFeatures.commented == 0,
-        ),
-    )).order_by('exten').all()
+    rows = (
+        session.query(Extension)
+        .outerjoin(
+            LineExtension,
+            Extension.id == LineExtension.extension_id,
+        )
+        .outerjoin(
+            LineFeatures,
+            LineFeatures.id == LineExtension.line_id,
+        )
+        .filter(
+            and_(
+                Extension.context == context_name,
+                Extension.commented == 0,
+                Extension.typeval != '0',
+                Extension.type != 'parking',
+                or_(
+                    LineExtension.line_id.is_(None),
+                    LineFeatures.commented == 0,
+                ),
+            )
+        )
+        .order_by('exten')
+        .all()
+    )
 
-    return [dict(tenant_uuid=row.context_rel.tenant_uuid, **row.todict()) for row in rows]
+    return [
+        dict(tenant_uuid=row.context_rel.tenant_uuid, **row.todict()) for row in rows
+    ]
 
 
 @daosession
@@ -323,9 +423,12 @@ def find_context_settings(session):
 
 @daosession
 def find_contextincludes_settings(session, context_name):
-    rows = session.query(ContextInclude).filter(
-        ContextInclude.context == context_name
-    ).order_by('priority').all()
+    rows = (
+        session.query(ContextInclude)
+        .filter(ContextInclude.context == context_name)
+        .order_by('priority')
+        .all()
+    )
 
     return [row.todict() for row in rows]
 
@@ -343,17 +446,18 @@ def find_voicemail_general_settings(session):
 
     res = []
     for row in rows:
-        res.append({
-            'category': row.category,
-            'var_name': row.var_name,
-            'var_val': row.var_val,
-        })
+        res.append(
+            {
+                'category': row.category,
+                'var_name': row.var_name,
+                'var_val': row.var_val,
+            }
+        )
 
     return res
 
 
 class _SIPEndpointResolver:
-
     def __init__(self, endpoint_config, parents):
         self._endpoint_config = endpoint_config
         self._base_config = self._endpoint_to_dict(self._endpoint_config)
@@ -402,20 +506,22 @@ class _SIPEndpointResolver:
 
     def resolve(self):
         if self._body is None:
-            self._body = self._canonicalize_config({
-                'uuid': self._endpoint_config.uuid,
-                'name': self._endpoint_config.name,
-                'label': self._endpoint_config.label,
-                'template': self._endpoint_config.template,
-                'asterisk_id': self._endpoint_config.asterisk_id,
-                'aor_section_options': self.get_aor_section(),
-                'auth_section_options': self.get_auth_section(),
-                'endpoint_section_options': self.get_endpoint_section(),
-                'identify_section_options': self.get_identify_section(),
-                'outbound_auth_section_options': self.get_outbound_auth_section(),
-                'registration_section_options': self.get_registration_section(),
-                'registration_outbound_auth_section_options': self.get_registration_outbound_auth_section(),
-            })
+            self._body = self._canonicalize_config(
+                {
+                    'uuid': self._endpoint_config.uuid,
+                    'name': self._endpoint_config.name,
+                    'label': self._endpoint_config.label,
+                    'template': self._endpoint_config.template,
+                    'asterisk_id': self._endpoint_config.asterisk_id,
+                    'aor_section_options': self.get_aor_section(),
+                    'auth_section_options': self.get_auth_section(),
+                    'endpoint_section_options': self.get_endpoint_section(),
+                    'identify_section_options': self.get_identify_section(),
+                    'outbound_auth_section_options': self.get_outbound_auth_section(),
+                    'registration_section_options': self.get_registration_section(),
+                    'registration_outbound_auth_section_options': self.get_registration_outbound_auth_section(),
+                }
+            )
 
         return self._body
 
@@ -471,7 +577,9 @@ class _SIPEndpointResolver:
             options.append(('type', 'endpoint'))
 
             if self.get_outbound_auth_section():
-                options.append(('outbound_auth', f'outbound_auth_{self._endpoint_config.name}'))
+                options.append(
+                    ('outbound_auth', f'outbound_auth_{self._endpoint_config.name}')
+                )
 
         return options
 
@@ -494,7 +602,9 @@ class _SIPEndpointResolver:
             options.append(('type', 'registration'))
             options.append(('endpoint', self._endpoint_config.name))
             if self.get_registration_outbound_auth_section():
-                options.append(('outbound_auth', f'auth_reg_{self._endpoint_config.name}'))
+                options.append(
+                    ('outbound_auth', f'auth_reg_{self._endpoint_config.name}')
+                )
         return options
 
     def _build_registration_outbound_auth_section(self):
@@ -551,9 +661,13 @@ class _SIPEndpointResolver:
             'auth_section_options': list(endpoint.auth_section_options),
             'endpoint_section_options': list(endpoint.endpoint_section_options),
             'registration_section_options': list(endpoint.registration_section_options),
-            'registration_outbound_auth_section_options': list(endpoint.registration_outbound_auth_section_options),
+            'registration_outbound_auth_section_options': list(
+                endpoint.registration_outbound_auth_section_options
+            ),
             'identify_section_options': list(endpoint.identify_section_options),
-            'outbound_auth_section_options': list(endpoint.outbound_auth_section_options),
+            'outbound_auth_section_options': list(
+                endpoint.outbound_auth_section_options
+            ),
             'template': endpoint.template,
             'asterisk_id': endpoint.asterisk_id,
         }
@@ -632,22 +746,30 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
         for user in self._line.users:
             options.append(('set_var', f'XIVO_USERID={user.id}'))  # Deprecated in 24.01
             options.append(('set_var', f'WAZO_USERID={user.id}'))
-            options.append(('set_var', f'XIVO_USERUUID={user.uuid}'))  # Deprecated in 24.01
+            options.append(
+                ('set_var', f'XIVO_USERUUID={user.uuid}')
+            )  # Deprecated in 24.01
             options.append(('set_var', f'WAZO_USERUUID={user.uuid}'))
             if user.enableonlinerec:
                 options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
 
         if self._line.extensions:
             for extension in self._line.extensions:
-                options.append(('set_var', f'PICKUPMARK={extension.exten}%{extension.context}'))
+                options.append(
+                    ('set_var', f'PICKUPMARK={extension.exten}%{extension.context}')
+                )
                 break
 
         pickup_groups = self._pickup_members.get(self._endpoint_config.uuid, {})
-        named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
+        named_pickup_groups = ','.join(
+            str(id) for id in pickup_groups.get('pickupgroup', [])
+        )
         if named_pickup_groups:
             options.append(('named_pickup_group', named_pickup_groups))
 
-        named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
+        named_call_groups = ','.join(
+            str(id) for id in pickup_groups.get('callgroup', [])
+        )
         if named_call_groups:
             options.append(('named_call_group', named_call_groups))
 
@@ -675,98 +797,156 @@ def merge_endpoints_and_template(items, Klass, endpoint_field, *args):
     for item in items:
         add_endpoint_configuration(getattr(item, endpoint_field), item)
 
-    endpoint_configs = (config for config in resolved_configs.values() if not config.template)
+    endpoint_configs = (
+        config for config in resolved_configs.values() if not config.template
+    )
     return [config.resolve() for config in endpoint_configs]
 
 
 @daosession
 def find_sip_meeting_guests_settings(session):
-    query = session.query(
-        Meeting,
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('template_relations').joinedload('parent'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_aor_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_auth_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_endpoint_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_registration_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_registration_outbound_auth_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_identify_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('_outbound_auth_section'),
-    ).options(
-        joinedload('guest_endpoint_sip').joinedload('transport'),
-    ).filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
+    query = (
+        session.query(
+            Meeting,
+        )
+        .options(
+            joinedload('guest_endpoint_sip')
+            .joinedload('template_relations')
+            .joinedload('parent'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('_aor_section'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('_auth_section'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('_endpoint_section'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('_registration_section'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload(
+                '_registration_outbound_auth_section'
+            ),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('_identify_section'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('_outbound_auth_section'),
+        )
+        .options(
+            joinedload('guest_endpoint_sip').joinedload('transport'),
+        )
+        .filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
+    )
 
-    return merge_endpoints_and_template(query.all(), _EndpointSIPMeetingResolver, 'guest_endpoint_sip')
+    return merge_endpoints_and_template(
+        query.all(), _EndpointSIPMeetingResolver, 'guest_endpoint_sip'
+    )
 
 
 @daosession
 def find_sip_user_settings(session):
     pickup_members = find_pickup_members('sip')
-    query = session.query(
-        LineFeatures,
-    ).options(
-        joinedload('endpoint_sip').joinedload('template_relations').joinedload('parent'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_aor_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_auth_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_endpoint_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_registration_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_registration_outbound_auth_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_identify_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('transport'),
-    ).options(
-        joinedload('user_lines').joinedload('user').joinedload('voicemail'),
-    ).options(
-        joinedload('line_extensions').joinedload('extension'),
-    ).filter(
-        LineFeatures.endpoint_sip_uuid.isnot(None),
+    query = (
+        session.query(
+            LineFeatures,
+        )
+        .options(
+            joinedload('endpoint_sip')
+            .joinedload('template_relations')
+            .joinedload('parent'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_aor_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_auth_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_endpoint_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_registration_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload(
+                '_registration_outbound_auth_section'
+            ),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_identify_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('transport'),
+        )
+        .options(
+            joinedload('user_lines').joinedload('user').joinedload('voicemail'),
+        )
+        .options(
+            joinedload('line_extensions').joinedload('extension'),
+        )
+        .filter(
+            LineFeatures.endpoint_sip_uuid.isnot(None),
+        )
     )
 
-    return merge_endpoints_and_template(query.all(), _EndpointSIPLineResolver, 'endpoint_sip', pickup_members)
+    return merge_endpoints_and_template(
+        query.all(), _EndpointSIPLineResolver, 'endpoint_sip', pickup_members
+    )
 
 
 @daosession
 def find_sip_trunk_settings(session):
-    query = session.query(
-        TrunkFeatures,
-    ).options(
-        joinedload('endpoint_sip').joinedload('template_relations').joinedload('parent'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_aor_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_auth_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_endpoint_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_registration_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_registration_outbound_auth_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_identify_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
-    ).options(
-        joinedload('endpoint_sip').joinedload('transport'),
-    ).filter(
-        TrunkFeatures.endpoint_sip_uuid.isnot(None),
+    query = (
+        session.query(
+            TrunkFeatures,
+        )
+        .options(
+            joinedload('endpoint_sip')
+            .joinedload('template_relations')
+            .joinedload('parent'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_aor_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_auth_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_endpoint_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_registration_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload(
+                '_registration_outbound_auth_section'
+            ),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_identify_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
+        )
+        .options(
+            joinedload('endpoint_sip').joinedload('transport'),
+        )
+        .filter(
+            TrunkFeatures.endpoint_sip_uuid.isnot(None),
+        )
     )
 
-    return merge_endpoints_and_template(query.all(), _EndpointSIPTrunkResolver, 'endpoint_sip')
+    return merge_endpoints_and_template(
+        query.all(), _EndpointSIPTrunkResolver, 'endpoint_sip'
+    )
 
 
 @daosession
@@ -796,15 +976,20 @@ def find_pickup_members(session, protocol):
 
     add_member = _add_member
 
-    base_query = session.query(
-        PickupMember.category,
-        Pickup.id,
-        LineFeatures.endpoint_sip_uuid,
-        LineFeatures.endpoint_sccp_id,
-        LineFeatures.endpoint_custom_id,
-    ).join(
-        Pickup, Pickup.id == PickupMember.pickupid,
-    ).filter(Pickup.commented == 0)
+    base_query = (
+        session.query(
+            PickupMember.category,
+            Pickup.id,
+            LineFeatures.endpoint_sip_uuid,
+            LineFeatures.endpoint_sccp_id,
+            LineFeatures.endpoint_custom_id,
+        )
+        .join(
+            Pickup,
+            Pickup.id == PickupMember.pickupid,
+        )
+        .filter(Pickup.commented == 0)
+    )
 
     if protocol == 'sip':
         base_query = base_query.filter(LineFeatures.endpoint_sip_uuid.isnot(None))
@@ -813,45 +998,71 @@ def find_pickup_members(session, protocol):
     elif protocol == 'custom':
         base_query = base_query.filter(LineFeatures.endpoint_custom_id.isnot(None))
 
-    users = base_query.join(
-        UserLine, UserLine.user_id == PickupMember.memberid,
-    ).join(
-        LineFeatures, LineFeatures.id == UserLine.line_id,
-    ).filter(
-        PickupMember.membertype == 'user',
-    )
-
-    groups = base_query.join(
-        GroupFeatures, GroupFeatures.id == PickupMember.memberid,
-    ).join(
-        QueueMember, QueueMember.queue_name == GroupFeatures.name,
-    ).join(
-        UserLine, UserLine.user_id == QueueMember.userid,
-    ).join(
-        LineFeatures, LineFeatures.id == UserLine.line_id,
-    ).filter(
-        and_(
-            PickupMember.membertype == 'group',
-            QueueMember.usertype == 'user',
-            UserLine.main_user == True,  # noqa
-            UserLine.main_line == True,  # noqa
+    users = (
+        base_query.join(
+            UserLine,
+            UserLine.user_id == PickupMember.memberid,
+        )
+        .join(
+            LineFeatures,
+            LineFeatures.id == UserLine.line_id,
+        )
+        .filter(
+            PickupMember.membertype == 'user',
         )
     )
 
-    queues = base_query.join(
-        QueueFeatures, QueueFeatures.id == PickupMember.memberid,
-    ).join(
-        QueueMember, QueueMember.queue_name == QueueFeatures.name,
-    ).join(
-        UserLine, UserLine.user_id == QueueMember.userid,
-    ).join(
-        LineFeatures, LineFeatures.id == UserLine.line_id,
-    ).filter(
-        and_(
-            PickupMember.membertype == 'queue',
-            QueueMember.usertype == 'user',
-            UserLine.main_user == True,  # noqa
-            UserLine.main_line == True,  # noqa
+    groups = (
+        base_query.join(
+            GroupFeatures,
+            GroupFeatures.id == PickupMember.memberid,
+        )
+        .join(
+            QueueMember,
+            QueueMember.queue_name == GroupFeatures.name,
+        )
+        .join(
+            UserLine,
+            UserLine.user_id == QueueMember.userid,
+        )
+        .join(
+            LineFeatures,
+            LineFeatures.id == UserLine.line_id,
+        )
+        .filter(
+            and_(
+                PickupMember.membertype == 'group',
+                QueueMember.usertype == 'user',
+                UserLine.main_user == True,  # noqa
+                UserLine.main_line == True,  # noqa
+            )
+        )
+    )
+
+    queues = (
+        base_query.join(
+            QueueFeatures,
+            QueueFeatures.id == PickupMember.memberid,
+        )
+        .join(
+            QueueMember,
+            QueueMember.queue_name == QueueFeatures.name,
+        )
+        .join(
+            UserLine,
+            UserLine.user_id == QueueMember.userid,
+        )
+        .join(
+            LineFeatures,
+            LineFeatures.id == UserLine.line_id,
+        )
+        .filter(
+            and_(
+                PickupMember.membertype == 'queue',
+                QueueMember.usertype == 'user',
+                UserLine.main_user == True,  # noqa
+                UserLine.main_line == True,  # noqa
+            )
         )
     )
 
@@ -867,20 +1078,28 @@ def find_iax_general_settings(session):
 
     res = []
     for row in rows:
-        res.append({
-            'var_name': row.var_name,
-            'var_val': row.var_val,
-        })
+        res.append(
+            {
+                'var_name': row.var_name,
+                'var_val': row.var_val,
+            }
+        )
 
     return res
 
 
 @daosession
 def find_iax_trunk_settings(session):
-    rows = session.query(UserIAX).filter(and_(
-        UserIAX.commented == 0,
-        UserIAX.category == 'trunk',
-    )).all()
+    rows = (
+        session.query(UserIAX)
+        .filter(
+            and_(
+                UserIAX.commented == 0,
+                UserIAX.category == 'trunk',
+            )
+        )
+        .all()
+    )
 
     return rows
 
@@ -894,23 +1113,29 @@ def find_iax_calllimits_settings(session):
 
 @daosession
 def find_queue_general_settings(session):
-    rows = session.query(StaticQueue).filter(and_(
-        StaticQueue.commented == 0,
-        StaticQueue.category == 'general',
-    )).all()
+    rows = (
+        session.query(StaticQueue)
+        .filter(
+            and_(
+                StaticQueue.commented == 0,
+                StaticQueue.category == 'general',
+            )
+        )
+        .all()
+    )
 
     return [row.todict() for row in rows]
 
 
 @daosession
 def find_queue_settings(session):
-    rows = session.query(
-        Queue
-    ).options(
-        joinedload('groupfeatures')
-    ).options(
-        joinedload('queuefeatures')
-    ).filter(Queue.commented == 0).all()
+    rows = (
+        session.query(Queue)
+        .options(joinedload('groupfeatures'))
+        .options(joinedload('queuefeatures'))
+        .filter(Queue.commented == 0)
+        .all()
+    )
 
     result = []
     for row in rows:
@@ -936,19 +1161,25 @@ def find_queue_penalty_settings(session):
 
 @daosession
 def find_queue_members_settings(session, queue_name):
-    user_members = session.query(
-        QueueMember.category,
-        QueueMember.penalty,
-        QueueMember.position,
-        QueueMember.interface,
-        UserFeatures.uuid,
-    ).outerjoin(
-        UserFeatures, QueueMember.userid == UserFeatures.id
-    ).filter(and_(
-        QueueMember.commented == 0,
-        QueueMember.queue_name == queue_name,
-        QueueMember.usertype == 'user',
-    )).order_by(QueueMember.position).all()
+    user_members = (
+        session.query(
+            QueueMember.category,
+            QueueMember.penalty,
+            QueueMember.position,
+            QueueMember.interface,
+            UserFeatures.uuid,
+        )
+        .outerjoin(UserFeatures, QueueMember.userid == UserFeatures.id)
+        .filter(
+            and_(
+                QueueMember.commented == 0,
+                QueueMember.queue_name == queue_name,
+                QueueMember.usertype == 'user',
+            )
+        )
+        .order_by(QueueMember.position)
+        .all()
+    )
 
     def is_user_in_group(row):
         return row.category == 'group' and row.uuid is not None
@@ -975,45 +1206,60 @@ def find_queue_members_settings(session, queue_name):
 
 @daosession
 def find_agent_queue_skills_settings(session):
-    rows = session.query(
-        AgentFeatures.id,
-        QueueSkill.name,
-        AgentQueueSkill.weight,
-    ).filter(and_(
-        AgentQueueSkill.agentid == AgentFeatures.id,
-        AgentQueueSkill.skillid == QueueSkill.id,
-    )).order_by(AgentFeatures.id).all()
+    rows = (
+        session.query(
+            AgentFeatures.id,
+            QueueSkill.name,
+            AgentQueueSkill.weight,
+        )
+        .filter(
+            and_(
+                AgentQueueSkill.agentid == AgentFeatures.id,
+                AgentQueueSkill.skillid == QueueSkill.id,
+            )
+        )
+        .order_by(AgentFeatures.id)
+        .all()
+    )
 
     res = []
     for id_, name, weight in rows:
-        res.append({
-            'id': id_,
-            'name': name,
-            'weight': weight,
-        })
+        res.append(
+            {
+                'id': id_,
+                'name': name,
+                'weight': weight,
+            }
+        )
 
     return res
 
 
 @daosession
 def find_queue_penalties_settings(session):
-    rows = session.query(
-        QueuePenalty.name,
-        QueuePenaltyChange
-    ).filter(and_(
-        QueuePenalty.id == QueuePenaltyChange.queuepenalty_id,
-        QueuePenalty.commented == 0,
-    )).order_by(QueuePenalty.name).all()
+    rows = (
+        session.query(QueuePenalty.name, QueuePenaltyChange)
+        .filter(
+            and_(
+                QueuePenalty.id == QueuePenaltyChange.queuepenalty_id,
+                QueuePenalty.commented == 0,
+            )
+        )
+        .order_by(QueuePenalty.name)
+        .all()
+    )
 
     res = []
     for name, penalty_change in rows:
-        res.append({
-            'name': name,
-            'seconds': penalty_change.seconds,
-            'maxp_sign': penalty_change.maxp_sign,
-            'maxp_value': penalty_change.maxp_value,
-            'minp_sign': penalty_change.minp_sign,
-            'minp_value': penalty_change.minp_value,
-        })
+        res.append(
+            {
+                'name': name,
+                'seconds': penalty_change.seconds,
+                'maxp_sign': penalty_change.maxp_sign,
+                'maxp_value': penalty_change.maxp_value,
+                'minp_sign': penalty_change.minp_sign,
+                'minp_value': penalty_change.minp_value,
+            }
+        )
 
     return res

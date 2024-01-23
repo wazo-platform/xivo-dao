@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -10,7 +10,6 @@ from xivo_dao.resources.user.fixes import UserFixes
 
 
 class TestUserFixes(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.fixes = UserFixes(self.session)
@@ -27,17 +26,27 @@ class TestUserFixes(DAOTestCase):
         line1 = self.add_line(endpoint_sip_uuid=sip1.uuid)
         line2 = self.add_line(endpoint_sip_uuid=sip2.uuid)
 
-        self.add_user_line(user_id=user.id, line_id=line1.id,
-                           main_user=True, main_line=False)
-        self.add_user_line(user_id=user.id, line_id=line2.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line1.id, main_user=True, main_line=False
+        )
+        self.add_user_line(
+            user_id=user.id, line_id=line2.id, main_user=True, main_line=True
+        )
 
         self.fixes.fix(user.id)
 
-        sip = self.session.query(EndpointSIP).filter(EndpointSIP.uuid == sip1.uuid).first()
+        sip = (
+            self.session.query(EndpointSIP)
+            .filter(EndpointSIP.uuid == sip1.uuid)
+            .first()
+        )
         assert_that(sip.caller_id, equal_to(user.callerid))
 
-        sip = self.session.query(EndpointSIP).filter(EndpointSIP.uuid == sip2.uuid).first()
+        sip = (
+            self.session.query(EndpointSIP)
+            .filter(EndpointSIP.uuid == sip2.uuid)
+            .first()
+        )
         assert_that(sip.caller_id, equal_to(user.callerid))
 
     def test_given_user_has_multiple_lines_then_all_sccp_lines_updated(self):
@@ -48,10 +57,12 @@ class TestUserFixes(DAOTestCase):
         line1 = self.add_line(endpoint_sccp_id=sccp1.id)
         line2 = self.add_line(endpoint_sccp_id=sccp2.id)
 
-        self.add_user_line(user_id=user.id, line_id=line1.id,
-                           main_user=True, main_line=False)
-        self.add_user_line(user_id=user.id, line_id=line2.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line1.id, main_user=True, main_line=False
+        )
+        self.add_user_line(
+            user_id=user.id, line_id=line2.id, main_user=True, main_line=True
+        )
 
         self.fixes.fix(user.id)
 
@@ -66,10 +77,12 @@ class TestUserFixes(DAOTestCase):
         other_user = self.add_user(callerid='"George Green" <1001>')
         sip = self.add_endpoint_sip(caller_id='"Roger Rabbit" <2000>')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
-        self.add_user_line(user_id=main_user.id, line_id=line.id,
-                           main_user=True, main_line=True)
-        self.add_user_line(user_id=other_user.id, line_id=line.id,
-                           main_user=False, main_line=True)
+        self.add_user_line(
+            user_id=main_user.id, line_id=line.id, main_user=True, main_line=True
+        )
+        self.add_user_line(
+            user_id=other_user.id, line_id=line.id, main_user=False, main_line=True
+        )
 
         self.fixes.fix(main_user.id)
         self.fixes.fix(other_user.id)
@@ -82,10 +95,12 @@ class TestUserFixes(DAOTestCase):
         other_user = self.add_user(callerid='"George Green" <1000>')
         sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
         line = self.add_line(endpoint_sccp_id=sccp.id)
-        self.add_user_line(user_id=main_user.id, line_id=line.id,
-                           main_user=True, main_line=True)
-        self.add_user_line(user_id=other_user.id, line_id=line.id,
-                           main_user=False, main_line=True)
+        self.add_user_line(
+            user_id=main_user.id, line_id=line.id, main_user=True, main_line=True
+        )
+        self.add_user_line(
+            user_id=other_user.id, line_id=line.id, main_user=False, main_line=True
+        )
 
         self.fixes.fix(main_user.id)
         self.fixes.fix(other_user.id)

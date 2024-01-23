@@ -1,4 +1,4 @@
-# Copyright 2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -11,7 +11,6 @@ from xivo_dao.alchemy.feature_extension import FeatureExtension
 
 
 class TestIsPattern(unittest.TestCase):
-
     def test_is_not_pattern(self):
         extension = FeatureExtension(exten='1000')
         assert_that(extension.is_pattern(), equal_to(False))

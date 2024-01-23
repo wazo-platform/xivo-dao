@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -13,11 +13,8 @@ from .func_key_type import FuncKeyType
 
 
 class FuncKey(Base):
-
     __tablename__ = 'func_key'
-    __table_args__ = (
-        Index('func_key__idx__type_id', 'type_id'),
-    )
+    __table_args__ = (Index('func_key__idx__type_id', 'type_id'),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     type_id = Column(Integer, ForeignKey('func_key_type.id'), nullable=False)
@@ -28,7 +25,9 @@ class FuncKey(Base):
     )
 
     func_key_type = relationship(FuncKeyType, foreign_keys=type_id)
-    destination_type = relationship(FuncKeyDestinationType, foreign_keys=destination_type_id, viewonly=True)
+    destination_type = relationship(
+        FuncKeyDestinationType, foreign_keys=destination_type_id, viewonly=True
+    )
     destination_type_name = association_proxy('destination_type', 'name')
 
     func_key_mapping = relationship('FuncKeyMapping', cascade='all,delete-orphan')

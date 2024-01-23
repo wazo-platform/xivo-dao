@@ -35,7 +35,6 @@ UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_group(self):
         result = group_dao.find(42)
         assert_that(result, none())
@@ -71,7 +70,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_group(self):
         self.assertRaises(NotFoundError, group_dao.get, 42)
         self.assertRaises(NotFoundError, group_dao.get, UNKNOWN_UUID)
@@ -96,12 +94,15 @@ class TestGet(DAOTestCase):
         assert_that(group, equal_to(group_row))
 
         group_row = self.add_group()
-        self.assertRaises(NotFoundError, group_dao.get, group_row.id, tenant_uuids=[tenant.uuid])
-        self.assertRaises(NotFoundError, group_dao.get, group_row.uuid, tenant_uuids=[tenant.uuid])
+        self.assertRaises(
+            NotFoundError, group_dao.get, group_row.id, tenant_uuids=[tenant.uuid]
+        )
+        self.assertRaises(
+            NotFoundError, group_dao.get, group_row.uuid, tenant_uuids=[tenant.uuid]
+        )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, group_dao.find_by, invalid=42)
 
@@ -141,7 +142,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, group_dao.get_by, invalid=42)
 
@@ -171,11 +171,15 @@ class TestGetBy(DAOTestCase):
         group_row = self.add_group()
         self.assertRaises(
             NotFoundError,
-            group_dao.get_by, id=group_row.id, tenant_uuids=[tenant.uuid],
+            group_dao.get_by,
+            id=group_row.id,
+            tenant_uuids=[tenant.uuid],
         )
         self.assertRaises(
             NotFoundError,
-            group_dao.get_by, uuid=group_row.uuid, tenant_uuids=[tenant.uuid],
+            group_dao.get_by,
+            uuid=group_row.uuid,
+            tenant_uuids=[tenant.uuid],
         )
 
         group_row = self.add_group(tenant_uuid=tenant.uuid)
@@ -187,7 +191,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_group(self):
         result = group_dao.find_all_by(name='toto')
 
@@ -202,33 +205,39 @@ class TestFindAllBy(DAOTestCase):
 
         groups = group_dao.find_all_by(preprocess_subroutine='subroutine')
 
-        assert_that(groups, has_items(has_property('id', group1.id),
-                                      has_property('id', group2.id)))
+        assert_that(
+            groups,
+            has_items(has_property('id', group1.id), has_property('id', group2.id)),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        group1 = self.add_group(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        group1 = self.add_group(
+            preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid
+        )
         group2 = self.add_group(preprocess_subroutine='subroutine')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        groups = group_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        groups = group_dao.find_all_by(
+            preprocess_subroutine='subroutine', tenant_uuids=tenants
+        )
         assert_that(groups, has_items(group1, group2))
 
         tenants = [tenant.uuid]
-        groups = group_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        groups = group_dao.find_all_by(
+            preprocess_subroutine='subroutine', tenant_uuids=tenants
+        )
         assert_that(groups, all_of(has_items(group1), not_(has_items(group2))))
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = group_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_group_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -256,13 +265,20 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleGroup(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.group1 = self.add_group(label='Ashton', name='aaa', preprocess_subroutine='resto')
-        self.group2 = self.add_group(label='Beaugarton', name='bbb', preprocess_subroutine='bar')
-        self.group3 = self.add_group(label='Casa', name='ccc', preprocess_subroutine='resto')
-        self.group4 = self.add_group(label='Dunkin', name='ddd', preprocess_subroutine='resto')
+        self.group1 = self.add_group(
+            label='Ashton', name='aaa', preprocess_subroutine='resto'
+        )
+        self.group2 = self.add_group(
+            label='Beaugarton', name='bbb', preprocess_subroutine='bar'
+        )
+        self.group3 = self.add_group(
+            label='Casa', name='ccc', preprocess_subroutine='resto'
+        )
+        self.group4 = self.add_group(
+            label='Dunkin', name='ddd', preprocess_subroutine='resto'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.group2])
@@ -271,31 +287,45 @@ class TestSearchGivenMultipleGroup(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.group1])
-        self.assert_search_returns_result(expected_resto, search='ton', preprocess_subroutine='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', preprocess_subroutine='resto'
+        )
 
         expected_bar = SearchResult(1, [self.group2])
-        self.assert_search_returns_result(expected_bar, search='ton', preprocess_subroutine='bar')
+        self.assert_search_returns_result(
+            expected_bar, search='ton', preprocess_subroutine='bar'
+        )
 
         expected_all_resto = SearchResult(3, [self.group1, self.group3, self.group4])
-        self.assert_search_returns_result(expected_all_resto, preprocess_subroutine='resto', order='label')
+        self.assert_search_returns_result(
+            expected_all_resto, preprocess_subroutine='resto', order='label'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.group1,
-            self.group2,
-            self.group3,
-            self.group4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.group1,
+                self.group2,
+                self.group3,
+                self.group4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='label')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.group4,
-            self.group3,
-            self.group2,
-            self.group1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.group4,
+                self.group3,
+                self.group2,
+                self.group1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='label', direction='desc')
 
@@ -323,31 +353,35 @@ class TestSearchGivenMultipleGroup(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        group = Group(name='mygroup', label='mygroup label', tenant_uuid=self.default_tenant.uuid)
+        group = Group(
+            name='mygroup', label='mygroup label', tenant_uuid=self.default_tenant.uuid
+        )
         created_group = group_dao.create(group)
 
         row = self.session.query(Group).first()
 
         assert_that(created_group, equal_to(row))
-        assert_that(created_group, has_properties(
-            id=is_not(none()),
-            uuid=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-            name='mygroup',
-            label='mygroup label',
-            caller_id_mode=none(),
-            caller_id_name=none(),
-            timeout=none(),
-            music_on_hold=none(),
-            preprocess_subroutine=none(),
-            ring_in_use=True,
-            ring_strategy='ringall',
-            user_timeout=15,
-            retry_delay=5,
-            enabled=True
-        ))
+        assert_that(
+            created_group,
+            has_properties(
+                id=is_not(none()),
+                uuid=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name='mygroup',
+                label='mygroup label',
+                caller_id_mode=none(),
+                caller_id_name=none(),
+                timeout=none(),
+                music_on_hold=none(),
+                preprocess_subroutine=none(),
+                ring_in_use=True,
+                ring_strategy='ringall',
+                user_timeout=15,
+                retry_delay=5,
+                enabled=True,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         group = Group(
@@ -371,43 +405,47 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Group).first()
 
         assert_that(created_group, equal_to(row))
-        assert_that(created_group, has_properties(
-            id=is_not(none()),
-            uuid=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyGroup',
-            label='my group label',
-            caller_id_mode='prepend',
-            caller_id_name='toto',
-            timeout=60,
-            music_on_hold='default',
-            preprocess_subroutine='tata',
-            ring_in_use=False,
-            ring_strategy='random',
-            user_timeout=0,
-            retry_delay=0,
-            enabled=False,
-        ))
+        assert_that(
+            created_group,
+            has_properties(
+                id=is_not(none()),
+                uuid=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name='MyGroup',
+                label='my group label',
+                caller_id_mode='prepend',
+                caller_id_name='toto',
+                timeout=60,
+                music_on_hold='default',
+                preprocess_subroutine='tata',
+                ring_in_use=False,
+                ring_strategy='random',
+                user_timeout=0,
+                retry_delay=0,
+                enabled=False,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
-        group = group_dao.create(Group(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyGroup',
-            label='my group label',
-            caller_id_mode='prepend',
-            caller_id_name='toto',
-            timeout=60,
-            music_on_hold='default',
-            preprocess_subroutine='tata',
-            ring_in_use=True,
-            ring_strategy='ringall',
-            user_timeout=0,
-            retry_delay=0,
-            enabled=True,
-        ))
+        group = group_dao.create(
+            Group(
+                tenant_uuid=self.default_tenant.uuid,
+                name='MyGroup',
+                label='my group label',
+                caller_id_mode='prepend',
+                caller_id_name='toto',
+                timeout=60,
+                music_on_hold='default',
+                preprocess_subroutine='tata',
+                ring_in_use=True,
+                ring_strategy='ringall',
+                user_timeout=0,
+                retry_delay=0,
+                enabled=True,
+            )
+        )
 
         group = group_dao.get(group.id)
         group.name = 'other_name'
@@ -427,36 +465,41 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Group).first()
 
         assert_that(group, equal_to(row))
-        assert_that(group, has_properties(
-            id=is_not(none()),
-            uuid=is_not(none()),
-            name='other_name',
-            label='other label',
-            caller_id_mode='overwrite',
-            caller_id_name='bob',
-            timeout=5,
-            music_on_hold='not_default',
-            preprocess_subroutine='other_routine',
-            ring_in_use=False,
-            ring_strategy='random',
-            user_timeout=180,
-            retry_delay=1,
-            enabled=False,
-        ))
+        assert_that(
+            group,
+            has_properties(
+                id=is_not(none()),
+                uuid=is_not(none()),
+                name='other_name',
+                label='other label',
+                caller_id_mode='overwrite',
+                caller_id_name='bob',
+                timeout=5,
+                music_on_hold='not_default',
+                preprocess_subroutine='other_routine',
+                ring_in_use=False,
+                ring_strategy='random',
+                user_timeout=180,
+                retry_delay=1,
+                enabled=False,
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
-        group = group_dao.create(Group(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyGroup',
-            label='label',
-            caller_id_mode='prepend',
-            caller_id_name='toto',
-            timeout=0,
-            music_on_hold='default',
-            preprocess_subroutine='t',
-            user_timeout=0,
-            retry_delay=0,
-        ))
+        group = group_dao.create(
+            Group(
+                tenant_uuid=self.default_tenant.uuid,
+                name='MyGroup',
+                label='label',
+                caller_id_mode='prepend',
+                caller_id_name='toto',
+                timeout=0,
+                music_on_hold='default',
+                preprocess_subroutine='t',
+                user_timeout=0,
+                retry_delay=0,
+            )
+        )
 
         group = group_dao.get(group.id)
         group.caller_id_mode = None
@@ -471,19 +514,21 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Group).first()
         assert_that(group, equal_to(row))
-        assert_that(row, has_properties(
-            timeout=none(),
-            music_on_hold=none(),
-            caller_id_mode=none(),
-            caller_id_name=none(),
-            preprocess_subroutine=none(),
-            user_timeout=none(),
-            retry_delay=none(),
-        ))
+        assert_that(
+            row,
+            has_properties(
+                timeout=none(),
+                music_on_hold=none(),
+                caller_id_mode=none(),
+                caller_id_name=none(),
+                preprocess_subroutine=none(),
+                user_timeout=none(),
+                retry_delay=none(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         group = self.add_group()
 
@@ -530,7 +575,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestAssociateMemberUsers(DAOTestCase):
-
     def test_associate_user_sip(self):
         user = self.add_user()
         sip = self.add_endpoint_sip(name='sipname')
@@ -541,18 +585,19 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains_exactly(
-            has_properties(
-                queue_name=group.name,
-                interface='PJSIP/sipname',
-                channel='SIP',
-                user=has_properties(
-                    id=user.id,
-                    firstname=user.firstname,
-                    lastname=user.lastname
+        assert_that(
+            group.user_queue_members,
+            contains_exactly(
+                has_properties(
+                    queue_name=group.name,
+                    interface='PJSIP/sipname',
+                    channel='SIP',
+                    user=has_properties(
+                        id=user.id, firstname=user.firstname, lastname=user.lastname
+                    ),
                 )
-            )
-        ))
+            ),
+        )
 
     def test_associate_multiple_users(self):
         group = self.add_group()
@@ -580,11 +625,14 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, members)
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains_exactly(
-            has_properties(user=user2),
-            has_properties(user=user3),
-            has_properties(user=user1),
-        ))
+        assert_that(
+            group.user_queue_members,
+            contains_exactly(
+                has_properties(user=user2),
+                has_properties(user=user3),
+                has_properties(user=user1),
+            ),
+        )
 
     def test_associate_fix(self):
         user = self.add_user()
@@ -596,13 +644,16 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains_exactly(
-            has_properties(
-                queue_name=group.name,
-                interface='PJSIP/sipname',
-                channel='SIP',
-            )
-        ))
+        assert_that(
+            group.user_queue_members,
+            contains_exactly(
+                has_properties(
+                    queue_name=group.name,
+                    interface='PJSIP/sipname',
+                    channel='SIP',
+                )
+            ),
+        )
 
     def test_users_dissociation(self):
         user = self.add_user()
@@ -613,7 +664,9 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains_exactly(has_properties(user=user)))
+        assert_that(
+            group.user_queue_members, contains_exactly(has_properties(user=user))
+        )
 
         group_dao.associate_all_member_users(group, [])
 
@@ -628,23 +681,27 @@ class TestAssociateMemberUsers(DAOTestCase):
 
 
 class TestAssociateMemberExtensions(DAOTestCase):
-
     def test_associate_extension_sip(self):
         group = self.add_group()
         extension = Mock(exten='123', context='default')
 
-        group_dao.associate_all_member_extensions(group, [QueueMember(extension=extension)])
+        group_dao.associate_all_member_extensions(
+            group, [QueueMember(extension=extension)]
+        )
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains_exactly(
-            has_properties(
-                queue_name=group.name,
-                interface='Local/123@default',
-                channel='Local',
-                usertype='user',
-                userid=0,
-            )
-        ))
+        assert_that(
+            group.extension_queue_members,
+            contains_exactly(
+                has_properties(
+                    queue_name=group.name,
+                    interface='Local/123@default',
+                    channel='Local',
+                    usertype='user',
+                    userid=0,
+                )
+            ),
+        )
 
     def test_associate_multiple_extensions(self):
         group = self.add_group()
@@ -662,19 +719,27 @@ class TestAssociateMemberExtensions(DAOTestCase):
         group_dao.associate_all_member_extensions(group, members)
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains_exactly(
-            has_properties(interface='Local/456@default'),
-            has_properties(interface='Local/789@default'),
-            has_properties(interface='Local/123@default'),
-        ))
+        assert_that(
+            group.extension_queue_members,
+            contains_exactly(
+                has_properties(interface='Local/456@default'),
+                has_properties(interface='Local/789@default'),
+                has_properties(interface='Local/123@default'),
+            ),
+        )
 
     def test_extensions_dissociation(self):
         group = self.add_group()
         extension = Mock(exten='123', context='default')
-        group_dao.associate_all_member_extensions(group, [QueueMember(extension=extension)])
+        group_dao.associate_all_member_extensions(
+            group, [QueueMember(extension=extension)]
+        )
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains_exactly(has_properties(interface='Local/123@default')))
+        assert_that(
+            group.extension_queue_members,
+            contains_exactly(has_properties(interface='Local/123@default')),
+        )
 
         group_dao.associate_all_member_extensions(group, [])
 
@@ -686,7 +751,6 @@ class TestAssociateMemberExtensions(DAOTestCase):
 
 
 class TestAssociateCallPermission(DAOTestCase):
-
     def test_associate_call_permission(self):
         group = self.add_group()
         call_permission = self.add_call_permission()
@@ -718,7 +782,6 @@ class TestAssociateCallPermission(DAOTestCase):
 
 
 class TestDissociateCallPermission(DAOTestCase):
-
     def test_dissociate_group_call_permission(self):
         group = self.add_group()
         call_permission = self.add_call_permission()

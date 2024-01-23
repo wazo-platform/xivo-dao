@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -43,8 +43,9 @@ def list_model_names():
                 continue
 
             # Exclude polymorphic classes that are not real tables
-            if ('polymorphic_identity' in getattr(element, '__mapper_args__', {})
-                    and 'polymorphic_on' not in getattr(element, '__mapper_args__', {})):
+            if 'polymorphic_identity' in getattr(
+                element, '__mapper_args__', {}
+            ) and 'polymorphic_on' not in getattr(element, '__mapper_args__', {}):
                 continue
 
             yield element_name

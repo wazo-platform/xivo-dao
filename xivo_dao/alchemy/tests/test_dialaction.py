@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -12,11 +12,10 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestGoSubArgs(unittest.TestCase):
-
     def test_getter(self):
-        dialaction = Dialaction(action='extension',
-                                actionarg1='21',
-                                actionarg2='foobar')
+        dialaction = Dialaction(
+            action='extension', actionarg1='21', actionarg2='foobar'
+        )
 
         assert_that(dialaction.gosub_args, equal_to('extension,21,foobar'))
 
@@ -27,7 +26,6 @@ class TestGoSubArgs(unittest.TestCase):
 
 
 class TestType(unittest.TestCase):
-
     def test_getter_when_subtype(self):
         dialaction = Dialaction(action='application:disa')
 
@@ -66,7 +64,6 @@ class TestType(unittest.TestCase):
 
 
 class TestSubtype(unittest.TestCase):
-
     def test_getter(self):
         dialaction = Dialaction(action='application:disa')
         assert_that(dialaction.subtype, equal_to('disa'))
@@ -91,7 +88,6 @@ class TestSubtype(unittest.TestCase):
 
 
 class TestIncall(DAOTestCase):
-
     def test_getter(self):
         dialaction = self.add_dialaction()
         incall = self.add_incall(destination=dialaction)
@@ -100,7 +96,6 @@ class TestIncall(DAOTestCase):
 
 
 class TestVoicemail(DAOTestCase):
-
     def test_getter(self):
         voicemail = self.add_voicemail()
         dialaction = self.add_dialaction(action='voicemail', actionarg1=voicemail.id)
@@ -109,7 +104,6 @@ class TestVoicemail(DAOTestCase):
 
 
 class TestIvr(DAOTestCase):
-
     def test_getter(self):
         ivr = self.add_ivr()
         dialaction = self.add_dialaction(action='ivr', actionarg1=ivr.id)
@@ -118,7 +112,6 @@ class TestIvr(DAOTestCase):
 
 
 class TestGroup(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
         dialaction = self.add_dialaction(action='group', actionarg1=group.id)
@@ -127,7 +120,6 @@ class TestGroup(DAOTestCase):
 
 
 class TestUser(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         dialaction = self.add_dialaction(action='user', actionarg1=user.id)
@@ -136,7 +128,6 @@ class TestUser(DAOTestCase):
 
 
 class TestConference(DAOTestCase):
-
     def test_getter(self):
         conference = self.add_conference()
         dialaction = self.add_dialaction(action='conference', actionarg1=conference.id)
@@ -145,26 +136,27 @@ class TestConference(DAOTestCase):
 
 
 class TestIVRChoice(DAOTestCase):
-
     def test_getter(self):
         ivr = self.add_ivr()
         ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
-        dialaction = self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id)
+        dialaction = self.add_dialaction(
+            category='ivr_choice', categoryval=ivr_choice.id
+        )
 
         assert_that(dialaction.ivr_choice, equal_to(ivr_choice))
 
 
 class TestApplication(DAOTestCase):
-
     def test_getter(self):
         application = self.add_application()
-        dialaction = self.add_dialaction(action='application:custom', actionarg1=application.uuid)
+        dialaction = self.add_dialaction(
+            action='application:custom', actionarg1=application.uuid
+        )
 
         assert_that(dialaction.application, equal_to(application))
 
 
 class TestQueue(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         dialaction = self.add_dialaction(action='queue', actionarg1=queue.id)
@@ -173,11 +165,12 @@ class TestQueue(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_ivr_choice_are_deleted(self):
         ivr = self.add_ivr()
         ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
-        dialaction = self.add_dialaction(category='ivr_choice', categoryval=str(ivr_choice.id))
+        dialaction = self.add_dialaction(
+            category='ivr_choice', categoryval=str(ivr_choice.id)
+        )
 
         self.session.delete(dialaction)
         self.session.flush()

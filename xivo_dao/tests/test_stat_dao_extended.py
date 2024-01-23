@@ -16,18 +16,19 @@ from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from hamcrest import (
-    assert_that,
-    equal_to
-)
+from hamcrest import assert_that, equal_to
 
 
 def parse_fields(line):
-    return [cleaned_field for field in line.split('|') if (cleaned_field := field.strip())]
+    return [
+        cleaned_field for field in line.split('|') if (cleaned_field := field.strip())
+    ]
 
 
 def parse_table(data: str) -> Iterator[dict[str, Any]]:
-    lines = [cleaned_line for line in data.split('\n') if (cleaned_line := line.strip())]
+    lines = [
+        cleaned_line for line in data.split('\n') if (cleaned_line := line.strip())
+    ]
     header = parse_fields(lines.pop(0))
     for line in lines:
         fields = parse_fields(line)
@@ -38,7 +39,9 @@ def parse_table(data: str) -> Iterator[dict[str, Any]]:
 def group_by(iterable, group_key):
     return (
         (key, list(group))
-        for key, group in itertools.groupby(sorted(iterable, key=group_key), key=group_key)
+        for key, group in itertools.groupby(
+            sorted(iterable, key=group_key), key=group_key
+        )
     )
 
 
@@ -74,18 +77,28 @@ class TestStatDAO(DAOTestCase):
 
         stat_dao.fill_leaveempty_calls(self.session, start, end)
 
-        result = self.session.query(StatCallOnQueue).filter(
-            StatCallOnQueue.time >= start,
-            StatCallOnQueue.time <= end
-        ).all()
-        stat_coq_by_queue = group_by(result, group_key=lambda call: call.stat_queue.name)
+        result = (
+            self.session.query(StatCallOnQueue)
+            .filter(StatCallOnQueue.time >= start, StatCallOnQueue.time <= end)
+            .all()
+        )
+        stat_coq_by_queue = group_by(
+            result, group_key=lambda call: call.stat_queue.name
+        )
         logs_by_queue = dict(group_by(queue_logs, group_key=lambda log: log.queuename))
         for queuename, stat_calls in stat_coq_by_queue:
             with self.subTest(queue=queuename):
                 logs = logs_by_queue[queuename]
-                leaveempty_queuelogs_count = sum(1 for log in logs if log.event == 'LEAVEEMPTY')
-                calls_on_queue_leaveempty_count = sum(1 for call in stat_calls if call.status == 'leaveempty')
-                assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
+                leaveempty_queuelogs_count = sum(
+                    1 for log in logs if log.event == 'LEAVEEMPTY'
+                )
+                calls_on_queue_leaveempty_count = sum(
+                    1 for call in stat_calls if call.status == 'leaveempty'
+                )
+                assert_that(
+                    calls_on_queue_leaveempty_count,
+                    equal_to(leaveempty_queuelogs_count),
+                )
 
     def test_fill_leaveempty_calls_reenter_same_queue(self):
         queue_log_data = '''
@@ -118,18 +131,28 @@ class TestStatDAO(DAOTestCase):
 
         stat_dao.fill_leaveempty_calls(self.session, start, end)
 
-        result = self.session.query(StatCallOnQueue).filter(
-            StatCallOnQueue.time >= start,
-            StatCallOnQueue.time <= end
-        ).all()
-        stat_coq_by_queue = group_by(result, group_key=lambda call: call.stat_queue.name)
+        result = (
+            self.session.query(StatCallOnQueue)
+            .filter(StatCallOnQueue.time >= start, StatCallOnQueue.time <= end)
+            .all()
+        )
+        stat_coq_by_queue = group_by(
+            result, group_key=lambda call: call.stat_queue.name
+        )
         logs_by_queue = dict(group_by(queue_logs, group_key=lambda log: log.queuename))
         for queuename, stat_calls in stat_coq_by_queue:
             with self.subTest(queue=queuename):
                 logs = logs_by_queue[queuename]
-                leaveempty_queuelogs_count = sum(1 for log in logs if log.event == 'LEAVEEMPTY')
-                calls_on_queue_leaveempty_count = sum(1 for call in stat_calls if call.status == 'leaveempty')
-                assert_that(calls_on_queue_leaveempty_count, equal_to(leaveempty_queuelogs_count))
+                leaveempty_queuelogs_count = sum(
+                    1 for log in logs if log.event == 'LEAVEEMPTY'
+                )
+                calls_on_queue_leaveempty_count = sum(
+                    1 for call in stat_calls if call.status == 'leaveempty'
+                )
+                assert_that(
+                    calls_on_queue_leaveempty_count,
+                    equal_to(leaveempty_queuelogs_count),
+                )
 
     def test_get_completed_logins(self):
         self.add_context(name='default')
@@ -162,7 +185,10 @@ class TestStatDAO(DAOTestCase):
                 (dt(2012, 6, 1, 6, 40, tzinfo=UTC), dt(2012, 6, 1, 6, 45, tzinfo=UTC)),
             ],
             agent_id_2: [
-                (dt(2012, 6, 1, 0, 0, 0, 1, tzinfo=UTC), dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=UTC)),
+                (
+                    dt(2012, 6, 1, 0, 0, 0, 1, tzinfo=UTC),
+                    dt(2012, 6, 1, 6, 30, 0, 1, tzinfo=UTC),
+                ),
             ],
         }
 
@@ -302,7 +328,7 @@ class TestStatDAO(DAOTestCase):
                 (
                     dt(2012, 7, 21, 23, 59, 19, 999999, tzinfo=UTC),
                     dt(2012, 7, 22, 2, 2, 19, 999999, tzinfo=UTC),
-                )
+                ),
             ]
         }
 
@@ -337,7 +363,7 @@ class TestStatDAO(DAOTestCase):
                 (
                     dt(2012, 7, 21, 23, 59, 19, 999999, tzinfo=UTC),
                     dt(2012, 7, 22, 2, 2, 19, 999999, tzinfo=UTC),
-                )
+                ),
             ]
         }
 
@@ -346,12 +372,7 @@ class TestStatDAO(DAOTestCase):
     def _insert_queue_log_data(self, queue_log_data):
         with flush_session(self.session):
             logs = parse_table(queue_log_data)
-            queue_logs = [
-                QueueLog(
-                    **data
-                )
-                for data in logs
-            ]
+            queue_logs = [QueueLog(**data) for data in logs]
             self.session.add_all(queue_logs)
         self.session.expire_all()
         return queue_logs
@@ -375,8 +396,16 @@ class TestStatDAO(DAOTestCase):
     @classmethod
     def _create_functions(cls, con):
         # ## WARNING: These functions should always be the same as the one in baseconfig
-        fill_simple_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_simple_calls.sql').read_text()
+        fill_simple_calls_fn = (
+            pathlib.Path(__file__)
+            .parent.joinpath('helpers/fill_simple_calls.sql')
+            .read_text()
+        )
         con.execute(fill_simple_calls_fn)
 
-        fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
+        fill_leaveempty_calls_fn = (
+            pathlib.Path(__file__)
+            .parent.joinpath('helpers/fill_leaveempty_calls.sql')
+            .read_text()
+        )
         con.execute(fill_leaveempty_calls_fn)

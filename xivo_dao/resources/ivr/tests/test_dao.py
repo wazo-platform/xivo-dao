@@ -29,7 +29,6 @@ from .. import dao as ivr_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_ivr(self):
         result = ivr_dao.find(42)
 
@@ -54,7 +53,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_ivr(self):
         self.assertRaises(NotFoundError, ivr_dao.get, 42)
 
@@ -76,12 +74,13 @@ class TestGet(DAOTestCase):
         ivr_row = self.add_ivr()
         self.assertRaises(
             NotFoundError,
-            ivr_dao.get, ivr_row.id, tenant_uuids=[tenant.uuid],
+            ivr_dao.get,
+            ivr_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, ivr_dao.find_by, invalid=42)
 
@@ -119,7 +118,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, ivr_dao.get_by, invalid=42)
 
@@ -148,7 +146,9 @@ class TestGetBy(DAOTestCase):
         ivr_row = self.add_ivr()
         self.assertRaises(
             NotFoundError,
-            ivr_dao.get_by, id=ivr_row.id, tenant_uuids=[tenant.uuid],
+            ivr_dao.get_by,
+            id=ivr_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         ivr_row = self.add_ivr(tenant_uuid=tenant.uuid)
@@ -157,7 +157,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_ivr(self):
         result = ivr_dao.find_all_by(description='toto')
 
@@ -169,10 +168,13 @@ class TestFindAllBy(DAOTestCase):
 
         ivrs = ivr_dao.find_all_by(description='MyIVR')
 
-        assert_that(ivrs, has_items(
-            has_property('id', ivr1.id),
-            has_property('id', ivr2.id),
-        ))
+        assert_that(
+            ivrs,
+            has_items(
+                has_property('id', ivr1.id),
+                has_property('id', ivr2.id),
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -190,14 +192,12 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = ivr_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_ivr_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -231,7 +231,7 @@ class TestSimpleSearch(TestSearch):
             action="ivr",
             actionarg1=str(ivr.id),
             category="incall",
-            categoryval=str(incall.id)
+            categoryval=str(incall.id),
         )
 
         expected = SearchResult(1, [ivr])
@@ -246,7 +246,7 @@ class TestSimpleSearch(TestSearch):
             action="ivr",
             actionarg1=str(ivr.id),
             category="incall",
-            categoryval=str(incall1.id)
+            categoryval=str(incall1.id),
         )
         incall2 = self.add_incall()
         self.add_extension(exten="1002", type="incall", typeval=str(incall2.id))
@@ -254,7 +254,7 @@ class TestSimpleSearch(TestSearch):
             action="ivr",
             actionarg1=str(ivr.id),
             category="incall",
-            categoryval=str(incall2.id)
+            categoryval=str(incall2.id),
         )
 
         expected = SearchResult(1, [ivr])
@@ -262,7 +262,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleIncall(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.ivr1 = self.add_ivr(name='Ashton', description='resto')
@@ -277,31 +276,43 @@ class TestSearchGivenMultipleIncall(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.ivr1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.ivr2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
         expected_all_resto = SearchResult(3, [self.ivr1, self.ivr3, self.ivr4])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='name'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.ivr1,
-            self.ivr2,
-            self.ivr3,
-            self.ivr4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.ivr1,
+                self.ivr2,
+                self.ivr3,
+                self.ivr4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.ivr4,
-            self.ivr3,
-            self.ivr2,
-            self.ivr1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.ivr4,
+                self.ivr3,
+                self.ivr2,
+                self.ivr1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -332,35 +343,49 @@ class TestSearchGivenMultipleIncall(TestSearch):
         incall2 = self.add_incall()
         self.add_extension(exten="1001", type="incall", typeval=str(incall1.id))
         self.add_extension(exten="1002", type="incall", typeval=str(incall2.id))
-        self.add_dialaction(action="ivr", actionarg1=str(self.ivr1.id), category="incall", categoryval=str(incall1.id))
-        self.add_dialaction(action="ivr", actionarg1=str(self.ivr2.id), category="incall", categoryval=str(incall2.id))
+        self.add_dialaction(
+            action="ivr",
+            actionarg1=str(self.ivr1.id),
+            category="incall",
+            categoryval=str(incall1.id),
+        )
+        self.add_dialaction(
+            action="ivr",
+            actionarg1=str(self.ivr2.id),
+            category="incall",
+            categoryval=str(incall2.id),
+        )
 
         expected = SearchResult(1, [self.ivr2])
         self.assert_search_returns_result(expected, search="1002")
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        ivr_model = IVR(name='myivr', menu_sound='menu', tenant_uuid=self.default_tenant.uuid)
+        ivr_model = IVR(
+            name='myivr', menu_sound='menu', tenant_uuid=self.default_tenant.uuid
+        )
 
         ivr = ivr_dao.create(ivr_model)
 
         self.session.expire_all()
         assert_that(inspect(ivr).persistent)
-        assert_that(ivr, has_properties(
-            id=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-            name='myivr',
-            greeting_sound=none(),
-            menu_sound='menu',
-            invalid_sound=none(),
-            abort_sound=none(),
-            description=none(),
-            invalid_destination=none(),
-            timeout_destination=none(),
-            abort_destination=none(),
-        ))
+        assert_that(
+            ivr,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name='myivr',
+                greeting_sound=none(),
+                menu_sound='menu',
+                invalid_sound=none(),
+                abort_sound=none(),
+                description=none(),
+                invalid_destination=none(),
+                timeout_destination=none(),
+                abort_destination=none(),
+            ),
+        )
 
     def test_create_with_all_fields(self):
         ivr_model = IVR(
@@ -376,35 +401,46 @@ class TestCreate(DAOTestCase):
             invalid_destination=Dialaction(action='user', actionarg1='1'),
             timeout_destination=Dialaction(action='user', actionarg1='2'),
             abort_destination=Dialaction(action='user', actionarg1='3'),
-            choices=[IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='4'))],
+            choices=[
+                IVRChoice(
+                    exten='1', destination=Dialaction(action='user', actionarg1='4')
+                )
+            ],
         )
 
         ivr = ivr_dao.create(ivr_model)
 
         self.session.expire_all()
         assert_that(inspect(ivr).persistent)
-        assert_that(ivr, has_properties(
-            id=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-            name='myivr',
-            greeting_sound='greeting',
-            menu_sound='menu',
-            invalid_sound='invalid',
-            abort_sound='abort',
-            timeout=10,
-            max_tries=2,
-            description='description',
-            invalid_destination=has_properties(action='user', actionarg1='1'),
-            timeout_destination=has_properties(action='user', actionarg1='2'),
-            abort_destination=has_properties(action='user', actionarg1='3'),
-        ))
-        assert_that(ivr.choices, contains_exactly(
-            has_properties(exten='1', destination=has_properties(action='user', actionarg1='4')),
-        ))
+        assert_that(
+            ivr,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name='myivr',
+                greeting_sound='greeting',
+                menu_sound='menu',
+                invalid_sound='invalid',
+                abort_sound='abort',
+                timeout=10,
+                max_tries=2,
+                description='description',
+                invalid_destination=has_properties(action='user', actionarg1='1'),
+                timeout_destination=has_properties(action='user', actionarg1='2'),
+                abort_destination=has_properties(action='user', actionarg1='3'),
+            ),
+        )
+        assert_that(
+            ivr.choices,
+            contains_exactly(
+                has_properties(
+                    exten='1', destination=has_properties(action='user', actionarg1='4')
+                ),
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         ivr = self.add_ivr(
             name='myivr',
@@ -418,7 +454,9 @@ class TestEdit(DAOTestCase):
             invalid_destination=Dialaction(action='user', actionarg1='1'),
             timeout_destination=Dialaction(action='user', actionarg1='2'),
             choices=[
-                IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='4'))
+                IVRChoice(
+                    exten='1', destination=Dialaction(action='user', actionarg1='4')
+                )
             ],
         )
 
@@ -438,21 +476,27 @@ class TestEdit(DAOTestCase):
         ivr_dao.edit(ivr)
 
         self.session.expire_all()
-        assert_that(ivr, has_properties(
-            name='zmyivr',
-            greeting_sound='zgreeting',
-            menu_sound='zmenu',
-            invalid_sound='zinvalid',
-            abort_sound='zabort',
-            timeout=42,
-            max_tries=1337,
-            description='lol',
-            invalid_destination=has_properties(action='user', actionarg1='3'),
-            timeout_destination=has_properties(action='user', actionarg1='4'),
-        ))
-        assert_that(ivr.choices, contains_exactly(
-            has_properties(exten='2', destination=has_properties(action='none')),
-        ))
+        assert_that(
+            ivr,
+            has_properties(
+                name='zmyivr',
+                greeting_sound='zgreeting',
+                menu_sound='zmenu',
+                invalid_sound='zinvalid',
+                abort_sound='zabort',
+                timeout=42,
+                max_tries=1337,
+                description='lol',
+                invalid_destination=has_properties(action='user', actionarg1='3'),
+                timeout_destination=has_properties(action='user', actionarg1='4'),
+            ),
+        )
+        assert_that(
+            ivr.choices,
+            contains_exactly(
+                has_properties(exten='2', destination=has_properties(action='none')),
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
         ivr = self.add_ivr(
@@ -467,7 +511,9 @@ class TestEdit(DAOTestCase):
             invalid_destination=Dialaction(action='user', actionarg1='1'),
             timeout_destination=Dialaction(action='user', actionarg1='2'),
             choices=[
-                IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='3'))
+                IVRChoice(
+                    exten='1', destination=Dialaction(action='user', actionarg1='3')
+                )
             ],
         )
 
@@ -483,17 +529,20 @@ class TestEdit(DAOTestCase):
         ivr_dao.edit(ivr)
 
         self.session.expire_all()
-        assert_that(ivr, has_properties(
-            id=is_not(none()),
-            name='myivr',
-            greeting_sound=none(),
-            menu_sound='menu',
-            invalid_sound=none(),
-            abort_sound=none(),
-            description=none(),
-            invalid_destination=none(),
-            timeout_destination=none(),
-        ))
+        assert_that(
+            ivr,
+            has_properties(
+                id=is_not(none()),
+                name='myivr',
+                greeting_sound=none(),
+                menu_sound='menu',
+                invalid_sound=none(),
+                abort_sound=none(),
+                description=none(),
+                invalid_destination=none(),
+                timeout_destination=none(),
+            ),
+        )
         assert_that(ivr.choices, empty())
 
     def test_when_removing_choices_then_choices_are_deleted(self):
@@ -513,7 +562,6 @@ class TestEdit(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         ivr = self.add_ivr()
 
@@ -523,7 +571,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestRelationship(DAOTestCase):
-
     def test_dialactions_relationship(self):
         ivr = self.add_ivr()
         dialaction = self.add_dialaction(
@@ -549,8 +596,12 @@ class TestRelationship(DAOTestCase):
 
     def test_incalls_relationship(self):
         ivr = self.add_ivr()
-        incall1 = self.add_incall(destination=Dialaction(action='ivr', actionarg1=str(ivr.id)))
-        incall2 = self.add_incall(destination=Dialaction(action='ivr', actionarg1=str(ivr.id)))
+        incall1 = self.add_incall(
+            destination=Dialaction(action='ivr', actionarg1=str(ivr.id))
+        )
+        incall2 = self.add_incall(
+            destination=Dialaction(action='ivr', actionarg1=str(ivr.id))
+        )
 
         self.session.expire_all()
         assert_that(ivr.incalls, contains_inanyorder(incall1, incall2))

@@ -148,7 +148,7 @@ class TestSearchGivenMultipleSwitchboards(TestSearch):
                 self.switchboard2,
                 self.switchboard3,
                 self.switchboard4,
-            ]
+            ],
         )
 
         self.assert_search_returns_result(expected, offset=1)

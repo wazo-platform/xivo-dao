@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
@@ -13,7 +13,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class TrunkPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Trunk
 
     def __init__(self, session, trunk_search, tenant_uuids=None):
@@ -37,26 +36,30 @@ class TrunkPersistor(CriteriaBuilderMixin, BasePersistor):
 
     def delete(self, trunk):
         if trunk.endpoint_sip_uuid:
-            (self.session
-             .query(EndpointSIP)
-             .filter(EndpointSIP.uuid == trunk.endpoint_sip_uuid)
-             .delete())
+            (
+                self.session.query(EndpointSIP)
+                .filter(EndpointSIP.uuid == trunk.endpoint_sip_uuid)
+                .delete()
+            )
         elif trunk.endpoint_iax_id:
-            (self.session
-             .query(UserIAX)
-             .filter(UserIAX.id == trunk.endpoint_iax_id)
-             .delete())
+            (
+                self.session.query(UserIAX)
+                .filter(UserIAX.id == trunk.endpoint_iax_id)
+                .delete()
+            )
         elif trunk.endpoint_custom_id:
-            (self.session
-             .query(UserCustom)
-             .filter(UserCustom.id == trunk.endpoint_custom_id)
-             .delete())
+            (
+                self.session.query(UserCustom)
+                .filter(UserCustom.id == trunk.endpoint_custom_id)
+                .delete()
+            )
 
         if trunk.register_iax_id:
-            (self.session
-             .query(StaticIAX)
-             .filter(StaticIAX.id == trunk.register_iax_id)
-             .delete())
+            (
+                self.session.query(StaticIAX)
+                .filter(StaticIAX.id == trunk.register_iax_id)
+                .delete()
+            )
 
         self.session.delete(trunk)
         self.session.flush()

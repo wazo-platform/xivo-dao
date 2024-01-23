@@ -19,7 +19,9 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.pickupmember import PickupMember as CallPickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
+from xivo_dao.alchemy.rightcallmember import (
+    RightCallMember as CallPermissionAssociation,
+)
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine
@@ -28,7 +30,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestAgent(DAOTestCase):
-
     def test_getter(self):
         agent = self.add_agent()
         user = self.add_user(agent_id=agent.id)
@@ -37,7 +38,6 @@ class TestAgent(DAOTestCase):
 
 
 class TestFullname(DAOTestCase):
-
     def test_getter(self):
         user = UserFeatures()
         user.firstname = 'firstname'
@@ -47,7 +47,6 @@ class TestFullname(DAOTestCase):
 
 
 class TestLines(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         line1 = self.add_line()
@@ -64,46 +63,54 @@ class TestLines(DAOTestCase):
         user.lines = [line2, line1]
         self.session.flush()
 
-        assert_that(user.user_lines, contains_exactly(
-            has_properties(line_id=line2.id,
-                           main_line=True),
-            has_properties(line_id=line1.id,
-                           main_line=False)
-        ))
+        assert_that(
+            user.user_lines,
+            contains_exactly(
+                has_properties(line_id=line2.id, main_line=True),
+                has_properties(line_id=line1.id, main_line=False),
+            ),
+        )
         assert_that(user.lines, contains_exactly(line2, line1))
 
 
 class TestIncalls(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
-        incall1 = self.add_incall(destination=Dialaction(action='user', actionarg1=str(user.id)))
-        incall2 = self.add_incall(destination=Dialaction(action='user', actionarg1=str(user.id)))
+        incall1 = self.add_incall(
+            destination=Dialaction(action='user', actionarg1=str(user.id))
+        )
+        incall2 = self.add_incall(
+            destination=Dialaction(action='user', actionarg1=str(user.id))
+        )
 
         assert_that(user.incalls, contains_inanyorder(incall1, incall2))
 
 
 class TestGroups(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         group1 = self.add_group()
         group2 = self.add_group()
-        self.add_queue_member(queue_name=group1.name, category='group', usertype='user', userid=user.id)
-        self.add_queue_member(queue_name=group2.name, category='group', usertype='user', userid=user.id)
+        self.add_queue_member(
+            queue_name=group1.name, category='group', usertype='user', userid=user.id
+        )
+        self.add_queue_member(
+            queue_name=group2.name, category='group', usertype='user', userid=user.id
+        )
 
         assert_that(user.groups, contains_inanyorder(group1, group2))
 
     def test_getter_when_queuemember_has_queue(self):
         user = self.add_user()
         queue = self.add_queuefeatures()
-        self.add_queue_member(queue_name=queue.name, category='queue', usertype='user', userid=user.id)
+        self.add_queue_member(
+            queue_name=queue.name, category='queue', usertype='user', userid=user.id
+        )
 
         assert_that(user.groups, empty())
 
 
 class TestQueueMembers(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         qm1 = self.add_queue_member(category='queue', usertype='user', userid=user.id)
@@ -113,7 +120,6 @@ class TestQueueMembers(DAOTestCase):
 
 
 class TestVoicemail(DAOTestCase):
-
     def test_getter(self):
         voicemail = self.add_voicemail()
         user = self.add_user(voicemail_id=voicemail.id)
@@ -122,7 +128,6 @@ class TestVoicemail(DAOTestCase):
 
 
 class TestCallFilterRecipients(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         call_filter1 = self.add_call_filter()
@@ -131,20 +136,21 @@ class TestCallFilterRecipients(DAOTestCase):
             callfilterid=call_filter1.id,
             bstype='boss',
             type='user',
-            typeval=str(user.id)
+            typeval=str(user.id),
         )
         recipient2 = self.add_call_filter_member(
             callfilterid=call_filter2.id,
             bstype='boss',
             type='user',
-            typeval=str(user.id)
+            typeval=str(user.id),
         )
 
-        assert_that(user.call_filter_recipients, contains_inanyorder(recipient1, recipient2))
+        assert_that(
+            user.call_filter_recipients, contains_inanyorder(recipient1, recipient2)
+        )
 
 
 class TestCallFilterSurrogates(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         call_filter1 = self.add_call_filter()
@@ -153,16 +159,18 @@ class TestCallFilterSurrogates(DAOTestCase):
             callfilterid=call_filter1.id,
             bstype='secretary',
             type='user',
-            typeval=str(user.id)
+            typeval=str(user.id),
         )
         surrogate2 = self.add_call_filter_member(
             callfilterid=call_filter2.id,
             bstype='secretary',
             type='user',
-            typeval=str(user.id)
+            typeval=str(user.id),
         )
 
-        assert_that(user.call_filter_surrogates, contains_inanyorder(surrogate1, surrogate2))
+        assert_that(
+            user.call_filter_surrogates, contains_inanyorder(surrogate1, surrogate2)
+        )
 
 
 class TestCallPickupInterceptorPickups(DAOTestCase):
@@ -184,7 +192,8 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         )
 
         assert_that(
-            user_interceptor.call_pickup_interceptor_pickups, contains_exactly(call_pickup)
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains_exactly(call_pickup),
         )
 
     def test_one_pickup_two_user_targets(self):
@@ -233,7 +242,9 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_user_targets,
-            contains_inanyorder(contains_exactly(user_target1), contains_exactly(user_target2)),
+            contains_inanyorder(
+                contains_exactly(user_target1), contains_exactly(user_target2)
+            ),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_targets,
@@ -396,7 +407,9 @@ class TestUsersFromCallPickupGroupInterceptorsUserTargets(DAOTestCase):
 
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_user_targets,
-            contains_exactly(contains_exactly(contains_inanyorder(user_target1, user_target2))),
+            contains_exactly(
+                contains_exactly(contains_inanyorder(user_target1, user_target2))
+            ),
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
@@ -576,20 +589,21 @@ class TestUsersFromCallPickupGroupInterceptorsGroupTargets(DAOTestCase):
         )
         assert_that(
             user_interceptor.users_from_call_pickup_group_interceptors_group_targets,
-            contains_exactly(contains_exactly(
-                contains_exactly(contains_exactly(user_target1)),
-                contains_exactly(contains_exactly(user_target2)),
-            )),
+            contains_exactly(
+                contains_exactly(
+                    contains_exactly(contains_exactly(user_target1)),
+                    contains_exactly(contains_exactly(user_target2)),
+                )
+            ),
         )
 
 
 class TestFallbacks(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
-        dialaction = self.add_dialaction(event='key',
-                                         category='user',
-                                         categoryval=str(user.id))
+        dialaction = self.add_dialaction(
+            event='key', category='user', categoryval=str(user.id)
+        )
 
         assert_that(user.fallbacks['key'], equal_to(dialaction))
 
@@ -622,8 +636,9 @@ class TestFallbacks(DAOTestCase):
         user.fallbacks = {'key': dialaction2}
         self.session.flush()
 
-        assert_that(user.fallbacks['key'], has_properties(action='user',
-                                                          actionarg1='1'))
+        assert_that(
+            user.fallbacks['key'], has_properties(action='user', actionarg1='1')
+        )
 
     def test_setter_delete_undefined_key(self):
         user = self.add_user()
@@ -641,7 +656,6 @@ class TestFallbacks(DAOTestCase):
 
 
 class TestSchedules(DAOTestCase):
-
     def test_getter(self):
         user = self.add_user()
         schedule = self.add_schedule()
@@ -684,7 +698,6 @@ class TestSchedules(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_call_permission_recipients_are_deleted(self):
         user = self.add_user()
         self.add_user_call_permission(user_id=user.id)
@@ -707,7 +720,9 @@ class TestDelete(DAOTestCase):
 
     def test_call_filter_surrogates_are_deleted(self):
         user = self.add_user()
-        self.add_call_filter_member(bstype='secretary', type='user', typeval=str(user.id))
+        self.add_call_filter_member(
+            bstype='secretary', type='user', typeval=str(user.id)
+        )
 
         self.session.delete(user)
         self.session.flush()

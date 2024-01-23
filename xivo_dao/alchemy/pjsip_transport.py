@@ -1,4 +1,4 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -13,7 +13,6 @@ from .pjsip_transport_option import PJSIPTransportOption
 
 
 class PJSIPTransport(Base):
-
     __tablename__ = 'pjsip_transport'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),

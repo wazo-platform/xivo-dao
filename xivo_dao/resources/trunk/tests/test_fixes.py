@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -11,7 +11,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestTrunkFixes(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.fixes = TrunkFixes(self.session)

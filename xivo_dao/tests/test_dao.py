@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -72,7 +72,9 @@ from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
-from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
+from xivo_dao.alchemy.rightcallmember import (
+    RightCallMember as CallPermissionAssociation,
+)
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine
@@ -100,7 +102,9 @@ logger = logging.getLogger(__name__)
 
 _create_tables = True
 
-TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
+TEST_DB_URL = os.getenv(
+    'XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest'
+)
 DB_ECHO = os.getenv('DB_ECHO', '').lower() in ('true', '1')
 DEFAULT_TENANT = '4dc2a55e-e83a-42ca-b3ca-87d3ff04ddaf'
 UNKNOWN_ID = 999999999
@@ -131,7 +135,6 @@ engine = None
 
 
 class ItemInserter:
-
     def __init__(self, session, tenant_uuid=None):
         self.session = session
 
@@ -144,7 +147,9 @@ class ItemInserter:
         kwargs.setdefault('email', None)
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
         kwargs.setdefault('exten', f'{random.randint(1000, 1999)}')
-        kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault(
+            'name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6))
+        )
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
         kwargs.setdefault('voicemail_id', None)
@@ -161,31 +166,33 @@ class ItemInserter:
             context = self.add_context()
             kwargs['context'] = context.name
 
-        user = self.add_user(firstname=kwargs['firstname'],
-                             lastname=kwargs['lastname'],
-                             email=kwargs['email'],
-                             callerid=kwargs['callerid'],
-                             voicemailid=kwargs['voicemail_id'],
-                             musiconhold=kwargs['musiconhold'],
-                             agentid=kwargs['agentid'],
-                             mobilephonenumber=kwargs['mobilephonenumber'],
-                             userfield=kwargs['userfield'],
-                             description=kwargs['description'],
-                             tenant_uuid=kwargs['tenant_uuid'])
-        line = self.add_line(context=kwargs['context'],
-                             name=kwargs['name_line'],
-                             device=kwargs['device'],
-                             commented=kwargs['commented_line'],
-                             endpoint_sip_uuid=kwargs['endpoint_sip_uuid'],
-                             endpoint_sccp_id=kwargs['endpoint_sccp_id'],
-                             endpoint_custom_id=kwargs['endpoint_custom_id'])
-        extension = self.add_extension(exten=kwargs['exten'],
-                                       context=kwargs['context'],
-                                       typeval=user.id)
-        user_line = self.add_user_line(line_id=line.id,
-                                       user_id=user.id)
-        self.add_line_extension(line_id=line.id,
-                                extension_id=extension.id)
+        user = self.add_user(
+            firstname=kwargs['firstname'],
+            lastname=kwargs['lastname'],
+            email=kwargs['email'],
+            callerid=kwargs['callerid'],
+            voicemailid=kwargs['voicemail_id'],
+            musiconhold=kwargs['musiconhold'],
+            agentid=kwargs['agentid'],
+            mobilephonenumber=kwargs['mobilephonenumber'],
+            userfield=kwargs['userfield'],
+            description=kwargs['description'],
+            tenant_uuid=kwargs['tenant_uuid'],
+        )
+        line = self.add_line(
+            context=kwargs['context'],
+            name=kwargs['name_line'],
+            device=kwargs['device'],
+            commented=kwargs['commented_line'],
+            endpoint_sip_uuid=kwargs['endpoint_sip_uuid'],
+            endpoint_sccp_id=kwargs['endpoint_sccp_id'],
+            endpoint_custom_id=kwargs['endpoint_custom_id'],
+        )
+        extension = self.add_extension(
+            exten=kwargs['exten'], context=kwargs['context'], typeval=user.id
+        )
+        user_line = self.add_user_line(line_id=line.id, user_id=user.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         user_line.user = user
         user_line.line = line
@@ -197,7 +204,9 @@ class ItemInserter:
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
-        kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault(
+            'name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6))
+        )
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
         kwargs.setdefault('voicemail_id', None)
@@ -211,25 +220,28 @@ class ItemInserter:
             context = self.add_context()
             kwargs['context'] = context.name
 
-        user = self.add_user(firstname=kwargs['firstname'],
-                             lastname=kwargs['lastname'],
-                             callerid=kwargs['callerid'],
-                             voicemailid=kwargs['voicemail_id'],
-                             musiconhold=kwargs['musiconhold'],
-                             agentid=kwargs['agentid'],
-                             mobilephonenumber=kwargs['mobilephonenumber'],
-                             userfield=kwargs['userfield'],
-                             description=kwargs['description'])
-        line = self.add_line(context=kwargs['context'],
-                             name=kwargs['name_line'],
-                             device=kwargs['device'],
-                             commented=kwargs['commented_line'],
-                             endpoint_sip_uuid=kwargs['endpoint_sip_uuid'])
-        self.add_queue_member(userid=user.id,
-                              usertype='user',
-                              interface=f'PJSIP/{line.name}')
-        user_line = self.add_user_line(line_id=line.id,
-                                       user_id=user.id)
+        user = self.add_user(
+            firstname=kwargs['firstname'],
+            lastname=kwargs['lastname'],
+            callerid=kwargs['callerid'],
+            voicemailid=kwargs['voicemail_id'],
+            musiconhold=kwargs['musiconhold'],
+            agentid=kwargs['agentid'],
+            mobilephonenumber=kwargs['mobilephonenumber'],
+            userfield=kwargs['userfield'],
+            description=kwargs['description'],
+        )
+        line = self.add_line(
+            context=kwargs['context'],
+            name=kwargs['name_line'],
+            device=kwargs['device'],
+            commented=kwargs['commented_line'],
+            endpoint_sip_uuid=kwargs['endpoint_sip_uuid'],
+        )
+        self.add_queue_member(
+            userid=user.id, usertype='user', interface=f'PJSIP/{line.name}'
+        )
+        user_line = self.add_user_line(line_id=line.id, user_id=user.id)
 
         user_line.user = user
         user_line.line = line
@@ -240,7 +252,9 @@ class ItemInserter:
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
-        kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault(
+            'name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6))
+        )
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
         kwargs.setdefault('voicemail_id', None)
@@ -250,18 +264,21 @@ class ItemInserter:
             context = self.add_context()
             kwargs['context'] = context.name
 
-        user = self.add_user(firstname=kwargs['firstname'],
-                             lastname=kwargs['lastname'],
-                             callerid=kwargs['callerid'],
-                             voicemailid=kwargs['voicemail_id'],
-                             mobilephonenumber=kwargs['mobilephonenumber'],
-                             agentid=kwargs['agentid'])
-        line = self.add_line(context=kwargs['context'],
-                             name=kwargs['name_line'],
-                             device=kwargs['device'],
-                             commented=kwargs['commented_line'])
-        user_line = self.add_user_line(line_id=line.id,
-                                       user_id=user.id)
+        user = self.add_user(
+            firstname=kwargs['firstname'],
+            lastname=kwargs['lastname'],
+            callerid=kwargs['callerid'],
+            voicemailid=kwargs['voicemail_id'],
+            mobilephonenumber=kwargs['mobilephonenumber'],
+            agentid=kwargs['agentid'],
+        )
+        line = self.add_line(
+            context=kwargs['context'],
+            name=kwargs['name_line'],
+            device=kwargs['device'],
+            commented=kwargs['commented_line'],
+        )
+        user_line = self.add_user_line(line_id=line.id, user_id=user.id)
 
         user_line.user = user
         user_line.line = line
@@ -269,23 +286,30 @@ class ItemInserter:
         return user_line
 
     def add_user_line_without_user(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault(
+            'name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6))
+        )
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
+        kwargs.setdefault(
+            'provisioningid', int(''.join(random.choice('123456789') for _ in range(6)))
+        )
         kwargs.setdefault('device', 1)
 
         kwargs.setdefault('exten', None)
         kwargs.setdefault('type', 'user')
 
-        line = self.add_line(name=kwargs['name'],
-                             context=kwargs['context'],
-                             provisioningid=kwargs['provisioningid'],
-                             device=kwargs['device'])
-        extension = self.add_extension(exten=kwargs['exten'],
-                                       context=kwargs['context'],
-                                       type=kwargs['type'])
-        line_extension = self.add_line_extension(line_id=line.id,
-                                                 extension_id=extension.id)
+        line = self.add_line(
+            name=kwargs['name'],
+            context=kwargs['context'],
+            provisioningid=kwargs['provisioningid'],
+            device=kwargs['device'],
+        )
+        extension = self.add_extension(
+            exten=kwargs['exten'], context=kwargs['context'], type=kwargs['type']
+        )
+        line_extension = self.add_line_extension(
+            line_id=line.id, extension_id=extension.id
+        )
 
         line_extension.extension = extension
         line_extension.line = line
@@ -301,7 +325,9 @@ class ItemInserter:
 
     def add_line(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
+        kwargs.setdefault(
+            'provisioningid', int(''.join(random.choice('123456789') for _ in range(6)))
+        )
         if not kwargs.get('context'):
             context = self.add_context()
             kwargs['context'] = context.name
@@ -322,7 +348,9 @@ class ItemInserter:
     def add_user_call_permission_with_user_and_call_permission(self):
         user = self.add_user()
         call_permission = self.add_call_permission()
-        user_call_permission = self.add_user_call_permission(user_id=user.id, call_permission_id=call_permission.id)
+        user_call_permission = self.add_user_call_permission(
+            user_id=user.id, call_permission_id=call_permission.id
+        )
         user_call_permission.user = user
         user_call_permission.call_permission = call_permission
         return user_call_permission
@@ -454,7 +482,9 @@ class ItemInserter:
         return incall
 
     def add_outcall(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice(string.ascii_lowercase) for _ in range(6)))
+        kwargs.setdefault(
+            'name', ''.join(random.choice(string.ascii_lowercase) for _ in range(6))
+        )
         kwargs.setdefault('context', 'to-extern')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
@@ -494,7 +524,9 @@ class ItemInserter:
 
     def add_agent(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('number', ''.join(random.choice('123456789') for _ in range(6)))
+        kwargs.setdefault(
+            'number', ''.join(random.choice('123456789') for _ in range(6))
+        )
         kwargs.setdefault('passwd', '')
         kwargs.setdefault('language', random.choice(['fr_FR', 'en_US']))
         kwargs.setdefault('description', 'description')
@@ -506,7 +538,9 @@ class ItemInserter:
     def add_agent_login_status(self, **kwargs):
         kwargs.setdefault('agent_id', self._generate_int())
         kwargs.setdefault('agent_number', '1234')
-        kwargs.setdefault('extension', ''.join(random.choice('123456789') for _ in range(6)))
+        kwargs.setdefault(
+            'extension', ''.join(random.choice('123456789') for _ in range(6))
+        )
         kwargs.setdefault('context', self._random_name())
         kwargs.setdefault('interface', self._random_name())
         kwargs.setdefault('state_interface', '')
@@ -627,7 +661,10 @@ class ItemInserter:
     def add_pickup(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault(
+            'name',
+            ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)),
+        )
 
         pickup = Pickup(**kwargs)
         self.add_me(pickup)
@@ -647,7 +684,9 @@ class ItemInserter:
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('type', 'outcall')
         kwargs.setdefault('typeid', self._generate_int())
-        kwargs.setdefault('exten', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
+        kwargs.setdefault(
+            'exten', ''.join(random.choice('0123456789_*X.') for _ in range(6))
+        )
         dialpattern = DialPattern(**kwargs)
         self.add_me(dialpattern)
         return dialpattern
@@ -679,7 +718,9 @@ class ItemInserter:
         return trunk
 
     def add_useriax(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault(
+            'name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6))
+        )
         kwargs.setdefault('type', 'friend')
         kwargs.setdefault('category', 'user')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
@@ -708,7 +749,9 @@ class ItemInserter:
         return sccpdevice
 
     def add_sccpline(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault(
+            'name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6))
+        )
         kwargs.setdefault('cid_name', 'Tester One')
         kwargs.setdefault('cid_num', '1234')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
@@ -766,7 +809,9 @@ class ItemInserter:
 
     def add_voicemail(self, **kwargs):
         if not kwargs.get('number'):
-            kwargs.setdefault('mailbox', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
+            kwargs.setdefault(
+                'mailbox', ''.join(random.choice('0123456789_*X.') for _ in range(6))
+            )
         if not kwargs.get('context'):
             context = self.add_context()
             kwargs['context'] = context.name
@@ -921,10 +966,9 @@ class ItemInserter:
         return callfilter
 
     def add_filter_member(self, filterid, userid, role='boss'):
-        member = Callfiltermember(type='user',
-                                  typeval=str(userid),
-                                  callfilterid=filterid,
-                                  bstype=role)
+        member = Callfiltermember(
+            type='user', typeval=str(userid), callfilterid=filterid, bstype=role
+        )
         self.add_me(member)
         return member
 
@@ -1051,7 +1095,6 @@ class ItemInserter:
 
 
 class DAOTestCase(unittest.TestCase, ItemInserter):
-
     @classmethod
     def setUpClass(cls):
         global engine

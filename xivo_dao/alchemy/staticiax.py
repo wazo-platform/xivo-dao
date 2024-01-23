@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -11,11 +11,10 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class StaticIAX(Base):
-
     __tablename__ = 'staticiax'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        Index('staticiax__idx__category', 'category')
+        Index('staticiax__idx__category', 'category'),
     )
 
     id = Column(Integer, nullable=False)

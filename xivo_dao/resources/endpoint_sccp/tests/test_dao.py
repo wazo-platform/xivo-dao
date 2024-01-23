@@ -1,4 +1,4 @@
-# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -31,7 +31,6 @@ ALL_OPTIONS = [
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_sccp(self):
         result = sccp_dao.find(42)
 
@@ -56,7 +55,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_sccp(self):
         self.assertRaises(NotFoundError, sccp_dao.get, 42)
 
@@ -77,19 +75,19 @@ class TestGet(DAOTestCase):
         sccp_row = self.add_sccpline()
         self.assertRaises(
             NotFoundError,
-            sccp_dao.get, sccp_row.id, tenant_uuids=[tenant.uuid],
+            sccp_dao.get,
+            sccp_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = sccp_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_search(self):
         sccp = self.add_sccpline()
         expected = SearchResult(1, [sccp])
@@ -112,21 +110,23 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_parameters(self):
         sccp = sccp_dao.create(SCCP(tenant_uuid=self.default_tenant.uuid))
 
         assert_that(inspect(sccp).persistent)
-        assert_that(sccp, has_properties(
-            id=not_none(),
-            options=empty(),
-            name=not_(empty()),
-            context='',
-            cid_name='',
-            cid_num='',
-            allow=none(),
-            disallow=none(),
-        ))
+        assert_that(
+            sccp,
+            has_properties(
+                id=not_none(),
+                options=empty(),
+                name=not_(empty()),
+                context='',
+                cid_name='',
+                cid_num='',
+                allow=none(),
+                disallow=none(),
+            ),
+        )
 
     def test_create_all_parameters(self):
         options = [
@@ -141,22 +141,24 @@ class TestCreate(DAOTestCase):
         sccp = sccp_dao.create(sccp)
 
         assert_that(inspect(sccp).persistent)
-        assert_that(sccp, has_properties(
-            id=not_none(),
-            tenant_uuid=self.default_tenant.uuid,
-            options=has_items(*options),
-            cid_name='Jôhn Smith',
-            cid_num='5551234567',
-            allow='gsm,ulaw',
-            disallow='all',
-        ))
+        assert_that(
+            sccp,
+            has_properties(
+                id=not_none(),
+                tenant_uuid=self.default_tenant.uuid,
+                options=has_items(*options),
+                cid_name='Jôhn Smith',
+                cid_num='5551234567',
+                allow='gsm,ulaw',
+                disallow='all',
+            ),
+        )
 
     def test_given_option_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, SCCP, options=[["invalid", "invalid"]])
 
 
 class TestEdit(DAOTestCase):
-
     def test_given_allow_and_disallow_are_set_when_removed_then_database_updated(self):
         sccp = self.add_sccpline(
             context='',
@@ -172,10 +174,13 @@ class TestEdit(DAOTestCase):
         sccp_dao.edit(sccp)
 
         self.session.expire_all()
-        assert_that(sccp, has_properties(
-            allow=none(),
-            disallow=none(),
-        ))
+        assert_that(
+            sccp,
+            has_properties(
+                allow=none(),
+                disallow=none(),
+            ),
+        )
 
     def test_given_allow_and_disallow_are_when_altered_then_database_updated(self):
         sccp = self.add_sccpline(
@@ -188,19 +193,21 @@ class TestEdit(DAOTestCase):
         )
 
         self.session.expire_all()
-        sccp.options = [
-            ["allow", "speex"],
-            ["disallow", "opus"]
-        ]
+        sccp.options = [["allow", "speex"], ["disallow", "opus"]]
         sccp_dao.edit(sccp)
 
         self.session.expire_all()
-        assert_that(sccp, has_properties(
-            allow='speex',
-            disallow='opus',
-        ))
+        assert_that(
+            sccp,
+            has_properties(
+                allow='speex',
+                disallow='opus',
+            ),
+        )
 
-    def test_given_cid_name_and_num_set_when_removed_then_cid_name_and_num_not_deleted(self):
+    def test_given_cid_name_and_num_set_when_removed_then_cid_name_and_num_not_deleted(
+        self,
+    ):
         sccp = self.add_sccpline(
             context='',
             name='',
@@ -213,12 +220,17 @@ class TestEdit(DAOTestCase):
         sccp_dao.edit(sccp)
 
         self.session.expire_all()
-        assert_that(sccp, has_properties(
-            cid_name="Jôhn Smith",
-            cid_num="5551234567",
-        ))
+        assert_that(
+            sccp,
+            has_properties(
+                cid_name="Jôhn Smith",
+                cid_num="5551234567",
+            ),
+        )
 
-    def test_given_cid_name_and_num_set_when_altered_then_cid_name_and_num_updated(self):
+    def test_given_cid_name_and_num_set_when_altered_then_cid_name_and_num_updated(
+        self,
+    ):
         sccp = self.add_sccpline(
             context='',
             name='',
@@ -227,21 +239,20 @@ class TestEdit(DAOTestCase):
         )
 
         self.session.expire_all()
-        sccp.options = [
-            ["cid_name", "Roger Wilkins"],
-            ["cid_num", "4181234567"]
-        ]
+        sccp.options = [["cid_name", "Roger Wilkins"], ["cid_num", "4181234567"]]
         sccp_dao.edit(sccp)
 
         self.session.expire_all()
-        assert_that(sccp, has_properties(
-            cid_name="Roger Wilkins",
-            cid_num="4181234567",
-        ))
+        assert_that(
+            sccp,
+            has_properties(
+                cid_name="Roger Wilkins",
+                cid_num="4181234567",
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         sccp = self.add_sccpline(context='', name='')
 
@@ -265,7 +276,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestRelations(DAOTestCase):
-
     # TODO this test should be in linefeatures
     def test_line_relationship(self):
         sccp = self.add_sccpline()

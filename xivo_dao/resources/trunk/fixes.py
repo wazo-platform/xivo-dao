@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -9,7 +9,6 @@ from xivo_dao.alchemy.usercustom import UserCustom
 
 
 class TrunkFixes:
-
     def __init__(self, session):
         self.session = session
 
@@ -19,18 +18,18 @@ class TrunkFixes:
         self.session.flush()
 
     def get_row(self, trunk_id):
-        query = (self.session.query(TrunkFeatures,
-                                    UserIAX,
-                                    UserCustom)
-                 .outerjoin(TrunkFeatures.endpoint_sip)
-                 .outerjoin(TrunkFeatures.endpoint_iax)
-                 .outerjoin(TrunkFeatures.endpoint_custom)
-                 .options(
-                     Load(TrunkFeatures).load_only("id", "context"),
-                     Load(UserIAX).load_only("id", "category", "context"),
-                     Load(UserCustom).load_only("id", "category", "context"))
-                 .filter(TrunkFeatures.id == trunk_id)
-                 )
+        query = (
+            self.session.query(TrunkFeatures, UserIAX, UserCustom)
+            .outerjoin(TrunkFeatures.endpoint_sip)
+            .outerjoin(TrunkFeatures.endpoint_iax)
+            .outerjoin(TrunkFeatures.endpoint_custom)
+            .options(
+                Load(TrunkFeatures).load_only("id", "context"),
+                Load(UserIAX).load_only("id", "category", "context"),
+                Load(UserCustom).load_only("id", "category", "context"),
+            )
+            .filter(TrunkFeatures.id == trunk_id)
+        )
 
         return query.first()
 

@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -9,19 +9,29 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class Callerid(Base):
-
     __tablename__ = 'callerid'
-    __table_args__ = (
-        PrimaryKeyConstraint('type', 'typeval'),
-    )
+    __table_args__ = (PrimaryKeyConstraint('type', 'typeval'),)
 
-    mode = Column(Enum('prepend', 'overwrite', 'append',
-                       name='callerid_mode',
-                       metadata=Base.metadata))
+    mode = Column(
+        Enum(
+            'prepend',
+            'overwrite',
+            'append',
+            name='callerid_mode',
+            metadata=Base.metadata,
+        )
+    )
     callerdisplay = Column(String(80), nullable=False, server_default='')
-    type = Column(Enum('callfilter', 'incall', 'group', 'queue',
-                       name='callerid_type',
-                       metadata=Base.metadata))
+    type = Column(
+        Enum(
+            'callfilter',
+            'incall',
+            'group',
+            'queue',
+            name='callerid_type',
+            metadata=Base.metadata,
+        )
+    )
     typeval = Column(Integer, nullable=False, autoincrement=False)
 
     @hybrid_property

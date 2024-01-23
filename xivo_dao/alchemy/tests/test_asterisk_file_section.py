@@ -15,24 +15,38 @@ from ..asterisk_file_variable import AsteriskFileVariable
 
 
 class TestVariables(DAOTestCase):
-
     def test_getter(self):
         file_ = self.add_asterisk_file()
         file_section = self.add_asterisk_file_section(asterisk_file_id=file_.id)
-        file_variable1 = self.add_asterisk_file_variable(priority=2, asterisk_file_section_id=file_section.id)
-        file_variable2 = self.add_asterisk_file_variable(priority=1, asterisk_file_section_id=file_section.id)
-        file_variable3 = self.add_asterisk_file_variable(priority=None, asterisk_file_section_id=file_section.id)
-        file_variable4 = self.add_asterisk_file_variable(priority=None, asterisk_file_section_id=file_section.id)
+        file_variable1 = self.add_asterisk_file_variable(
+            priority=2, asterisk_file_section_id=file_section.id
+        )
+        file_variable2 = self.add_asterisk_file_variable(
+            priority=1, asterisk_file_section_id=file_section.id
+        )
+        file_variable3 = self.add_asterisk_file_variable(
+            priority=None, asterisk_file_section_id=file_section.id
+        )
+        file_variable4 = self.add_asterisk_file_variable(
+            priority=None, asterisk_file_section_id=file_section.id
+        )
 
-        result = self.session.query(AsteriskFileSection).filter_by(id=file_section.id).first()
+        result = (
+            self.session.query(AsteriskFileSection)
+            .filter_by(id=file_section.id)
+            .first()
+        )
 
         assert_that(result, equal_to(file_section))
-        assert_that(result.variables, contains_exactly(
-            file_variable2,
-            file_variable1,
-            file_variable3,
-            file_variable4,
-        ))
+        assert_that(
+            result.variables,
+            contains_exactly(
+                file_variable2,
+                file_variable1,
+                file_variable3,
+                file_variable4,
+            ),
+        )
 
     def test_setter(self):
         file_ = self.add_asterisk_file()
@@ -56,7 +70,6 @@ class TestVariables(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_variables_are_deleted(self):
         file_ = self.add_asterisk_file()
         file_section = self.add_asterisk_file_section(asterisk_file_id=file_.id)

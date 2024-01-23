@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -20,7 +20,6 @@ from .pickupmember import PickupMember
 
 
 class Pickup(Base):
-
     __tablename__ = 'pickup'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -51,7 +50,9 @@ class Pickup(Base):
     user_targets = association_proxy(
         'pickupmember_user_targets',
         'user',
-        creator=lambda _user: PickupMember(user=_user, category='pickup', membertype='user'),
+        creator=lambda _user: PickupMember(
+            user=_user, category='pickup', membertype='user'
+        ),
     )
 
     pickupmember_group_targets = relationship(
@@ -67,9 +68,13 @@ class Pickup(Base):
     group_targets = association_proxy(
         'pickupmember_group_targets',
         'group',
-        creator=lambda _group: PickupMember(group=_group, category='pickup', membertype='group'),
+        creator=lambda _group: PickupMember(
+            group=_group, category='pickup', membertype='group'
+        ),
     )
-    users_from_group_targets = association_proxy('pickupmember_group_targets', 'users_from_group')
+    users_from_group_targets = association_proxy(
+        'pickupmember_group_targets', 'users_from_group'
+    )
 
     pickupmember_user_interceptors = relationship(
         'PickupMember',
@@ -84,7 +89,9 @@ class Pickup(Base):
     user_interceptors = association_proxy(
         'pickupmember_user_interceptors',
         'user',
-        creator=lambda _user: PickupMember(user=_user, category='member', membertype='user'),
+        creator=lambda _user: PickupMember(
+            user=_user, category='member', membertype='user'
+        ),
     )
 
     pickupmember_group_interceptors = relationship(
@@ -100,7 +107,9 @@ class Pickup(Base):
     group_interceptors = association_proxy(
         'pickupmember_group_interceptors',
         'group',
-        creator=lambda _group: PickupMember(group=_group, category='member', membertype='group'),
+        creator=lambda _group: PickupMember(
+            group=_group, category='member', membertype='group'
+        ),
     )
 
     pickupmember_queue_targets = relationship(

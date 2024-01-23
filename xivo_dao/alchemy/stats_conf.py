@@ -1,16 +1,14 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index, \
-    UniqueConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text, Time, SmallInteger
 
 from xivo_dao.helpers.db_manager import Base
 
 
 class StatsConf(Base):
-
     __tablename__ = 'stats_conf'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

@@ -26,7 +26,6 @@ from .. import dao as agent_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_agent(self):
         result = agent_dao.find(42)
 
@@ -52,7 +51,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_agent(self):
         self.assertRaises(NotFoundError, agent_dao.get, 42)
 
@@ -71,11 +69,12 @@ class TestGet(DAOTestCase):
         assert_that(agent, equal_to(agent_row))
 
         agent_row = self.add_agent()
-        self.assertRaises(NotFoundError, agent_dao.get, agent_row.id, tenant_uuids=[tenant.uuid])
+        self.assertRaises(
+            NotFoundError, agent_dao.get, agent_row.id, tenant_uuids=[tenant.uuid]
+        )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, agent_dao.find_by, invalid=42)
 
@@ -120,16 +119,19 @@ class TestFindBy(DAOTestCase):
         tenant = self.add_tenant()
 
         agent_row = self.add_agent()
-        agent = agent_dao.find_by(firstname=agent_row.firstname, tenant_uuids=[tenant.uuid])
+        agent = agent_dao.find_by(
+            firstname=agent_row.firstname, tenant_uuids=[tenant.uuid]
+        )
         assert_that(agent, none())
 
         agent_row = self.add_agent(tenant_uuid=tenant.uuid)
-        agent = agent_dao.find_by(firstname=agent_row.firstname, tenant_uuids=[tenant.uuid])
+        agent = agent_dao.find_by(
+            firstname=agent_row.firstname, tenant_uuids=[tenant.uuid]
+        )
         assert_that(agent, equal_to(agent_row))
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, agent_dao.get_by, invalid=42)
 
@@ -174,7 +176,9 @@ class TestGetBy(DAOTestCase):
         agent_row = self.add_agent()
         self.assertRaises(
             NotFoundError,
-            agent_dao.get_by, id=agent_row.id, tenant_uuids=[tenant.uuid],
+            agent_dao.get_by,
+            id=agent_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         agent_row = self.add_agent(tenant_uuid=tenant.uuid)
@@ -183,7 +187,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_agent(self):
         result = agent_dao.find_all_by(firstname='toto')
 
@@ -198,33 +201,39 @@ class TestFindAllBy(DAOTestCase):
 
         agents = agent_dao.find_all_by(preprocess_subroutine='subroutine')
 
-        assert_that(agents, has_items(has_property('id', agent1.id),
-                                      has_property('id', agent2.id)))
+        assert_that(
+            agents,
+            has_items(has_property('id', agent1.id), has_property('id', agent2.id)),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        agent1 = self.add_agent(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        agent1 = self.add_agent(
+            preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid
+        )
         agent2 = self.add_agent(preprocess_subroutine='subroutine')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        agents = agent_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        agents = agent_dao.find_all_by(
+            preprocess_subroutine='subroutine', tenant_uuids=tenants
+        )
         assert_that(agents, has_items(agent1, agent2))
 
         tenants = [tenant.uuid]
-        agents = agent_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        agents = agent_dao.find_all_by(
+            preprocess_subroutine='subroutine', tenant_uuids=tenants
+        )
         assert_that(agents, all_of(has_items(agent1), not_(has_items(agent2))))
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = agent_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_agent_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -252,11 +261,12 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleAgent(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.agent1 = self.add_agent(firstname='Ashton', preprocess_subroutine='resto')
-        self.agent2 = self.add_agent(firstname='Beaugarton', preprocess_subroutine='bar')
+        self.agent2 = self.add_agent(
+            firstname='Beaugarton', preprocess_subroutine='bar'
+        )
         self.agent3 = self.add_agent(firstname='Casa', preprocess_subroutine='resto')
         self.agent4 = self.add_agent(firstname='Dunkin', preprocess_subroutine='resto')
 
@@ -267,28 +277,29 @@ class TestSearchGivenMultipleAgent(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.agent1])
-        self.assert_search_returns_result(expected_resto, search='ton', preprocess_subroutine='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', preprocess_subroutine='resto'
+        )
 
         expected_bar = SearchResult(1, [self.agent2])
-        self.assert_search_returns_result(expected_bar, search='ton', preprocess_subroutine='bar')
+        self.assert_search_returns_result(
+            expected_bar, search='ton', preprocess_subroutine='bar'
+        )
 
         expected_all_resto = SearchResult(3, [self.agent1, self.agent3, self.agent4])
-        self.assert_search_returns_result(expected_all_resto, preprocess_subroutine='resto', order='firstname')
+        self.assert_search_returns_result(
+            expected_all_resto, preprocess_subroutine='resto', order='firstname'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.agent1,
-                                 self.agent2,
-                                 self.agent3,
-                                 self.agent4])
+        expected = SearchResult(4, [self.agent1, self.agent2, self.agent3, self.agent4])
 
         self.assert_search_returns_result(expected, order='firstname')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.agent4,
-                                    self.agent3,
-                                    self.agent2,
-                                    self.agent1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(4, [self.agent4, self.agent3, self.agent2, self.agent1])
 
         self.assert_search_returns_result(expected, order='firstname', direction='desc')
 
@@ -305,16 +316,12 @@ class TestSearchGivenMultipleAgent(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.agent2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='firstname',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, search='a', order='firstname', direction='desc', offset=1, limit=1
+        )
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         agent = Agent(number='1234', tenant_uuid=self.default_tenant.uuid)
         created_agent = agent_dao.create(agent)
@@ -322,17 +329,20 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Agent).first()
 
         assert_that(created_agent, equal_to(row))
-        assert_that(created_agent, has_properties(
-            id=instance_of(int),
-            tenant_uuid=self.default_tenant.uuid,
-            number='1234',
-            firstname=None,
-            lastname=None,
-            passwd=None,
-            language=None,
-            description=None,
-            preprocess_subroutine=None,
-        ))
+        assert_that(
+            created_agent,
+            has_properties(
+                id=instance_of(int),
+                tenant_uuid=self.default_tenant.uuid,
+                number='1234',
+                firstname=None,
+                lastname=None,
+                passwd=None,
+                language=None,
+                description=None,
+                preprocess_subroutine=None,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         agent = Agent(
@@ -351,32 +361,36 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Agent).first()
 
         assert_that(created_agent, equal_to(row))
-        assert_that(created_agent, has_properties(
-            id=instance_of(int),
-            tenant_uuid=self.default_tenant.uuid,
-            number='1234',
-            firstname='first',
-            lastname='last',
-            passwd='pwd',
-            language='en',
-            description='description',
-            preprocess_subroutine='Subroutine',
-        ))
+        assert_that(
+            created_agent,
+            has_properties(
+                id=instance_of(int),
+                tenant_uuid=self.default_tenant.uuid,
+                number='1234',
+                firstname='first',
+                lastname='last',
+                passwd='pwd',
+                language='en',
+                description='description',
+                preprocess_subroutine='Subroutine',
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
-        agent = agent_dao.create(Agent(
-            tenant_uuid=self.default_tenant.uuid,
-            number='1234',
-            firstname=None,
-            lastname=None,
-            passwd=None,
-            language=None,
-            description=None,
-            preprocess_subroutine=None,
-        ))
+        agent = agent_dao.create(
+            Agent(
+                tenant_uuid=self.default_tenant.uuid,
+                number='1234',
+                firstname=None,
+                lastname=None,
+                passwd=None,
+                language=None,
+                description=None,
+                preprocess_subroutine=None,
+            )
+        )
 
         agent = agent_dao.get(agent.id)
         agent.number = '1234'
@@ -391,20 +405,22 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Agent).first()
 
         assert_that(agent, equal_to(row))
-        assert_that(agent, has_properties(
-            id=instance_of(int),
-            number='1234',
-            firstname='firstname',
-            lastname='lastname',
-            passwd='passwd',
-            language='en',
-            description='desc',
-            preprocess_subroutine='routine',
-        ))
+        assert_that(
+            agent,
+            has_properties(
+                id=instance_of(int),
+                number='1234',
+                firstname='firstname',
+                lastname='lastname',
+                passwd='passwd',
+                language='en',
+                description='desc',
+                preprocess_subroutine='routine',
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         agent = self.add_agent()
 
@@ -415,7 +431,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestAssociateAgentSkill(DAOTestCase):
-
     def test_associate(self):
         skill = self.add_queue_skill()
         agent = self.add_agent()
@@ -423,12 +438,15 @@ class TestAssociateAgentSkill(DAOTestCase):
         agent_dao.associate_agent_skill(agent, AgentQueueSkill(skill=skill))
 
         self.session.expire_all()
-        assert_that(agent.agent_queue_skills, contains_exactly(
-            has_properties(
-                agentid=agent.id,
-                skillid=skill.id,
-            )
-        ))
+        assert_that(
+            agent.agent_queue_skills,
+            contains_exactly(
+                has_properties(
+                    agentid=agent.id,
+                    skillid=skill.id,
+                )
+            ),
+        )
 
     def test_association_already_associated(self):
         skill = self.add_queue_skill()
@@ -445,7 +463,6 @@ class TestAssociateAgentSkill(DAOTestCase):
 
 
 class TestDissociateAgentSkill(DAOTestCase):
-
     def test_dissociation(self):
         skill = self.add_queue_skill()
         agent = self.add_agent()

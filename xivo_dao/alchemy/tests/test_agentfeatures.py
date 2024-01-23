@@ -1,4 +1,4 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -18,14 +18,15 @@ from ..queuemember import QueueMember
 
 
 class TestAgentQueueSkills(DAOTestCase):
-
     def test_getter(self):
         agent = self.add_agent()
         agent_skill1 = self.add_agent_queue_skill(agentid=agent.id)
         agent_skill2 = self.add_agent_queue_skill(agentid=agent.id)
 
         self.session.expire_all()
-        assert_that(agent.agent_queue_skills, contains_inanyorder(agent_skill1, agent_skill2))
+        assert_that(
+            agent.agent_queue_skills, contains_inanyorder(agent_skill1, agent_skill2)
+        )
 
     def test_setter(self):
         agent = self.add_agent()
@@ -54,7 +55,6 @@ class TestAgentQueueSkills(DAOTestCase):
 
 
 class TestUsers(DAOTestCase):
-
     def test_getter(self):
         agent = self.add_agent()
         user_1 = self.add_user(agent_id=agent.id)
@@ -65,7 +65,6 @@ class TestUsers(DAOTestCase):
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()

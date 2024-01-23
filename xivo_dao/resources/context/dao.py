@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -14,7 +14,9 @@ def search(session, tenant_uuids=None, **parameters):
 
 @daosession
 def get(session, context_id, tenant_uuids=None):
-    return ContextPersistor(session, context_search, tenant_uuids).get_by({'id': context_id})
+    return ContextPersistor(session, context_search, tenant_uuids).get_by(
+        {'id': context_id}
+    )
 
 
 @daosession
@@ -24,7 +26,9 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 @daosession
 def get_by_name(session, context_name, tenant_uuids=None):
-    return ContextPersistor(session, context_search, tenant_uuids).get_by({'name': context_name})
+    return ContextPersistor(session, context_search, tenant_uuids).get_by(
+        {'name': context_name}
+    )
 
 
 @daosession

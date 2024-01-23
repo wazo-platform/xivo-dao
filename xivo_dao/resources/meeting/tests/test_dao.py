@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
@@ -68,7 +68,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
@@ -85,7 +84,6 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_given_no_rows_then_raises_error(self):
         self.assertRaises(NotFoundError, dao.get, UNKNOWN_UUID)
         self.assertRaises(NotFoundError, dao.get, str(UNKNOWN_UUID))
@@ -95,16 +93,22 @@ class TestGet(DAOTestCase):
 
         model = dao.get(row.uuid)
         assert_that(isinstance(row.uuid, uuid.UUID), equal_to(True))
-        assert_that(model, has_properties(
-            name=row.name,
-            uuid=row.uuid,
-        ))
+        assert_that(
+            model,
+            has_properties(
+                name=row.name,
+                uuid=row.uuid,
+            ),
+        )
 
         model = dao.get(str(row.uuid))
-        assert_that(model, has_properties(
-            name=row.name,
-            uuid=row.uuid,
-        ))
+        assert_that(
+            model,
+            has_properties(
+                name=row.name,
+                uuid=row.uuid,
+            ),
+        )
 
     def test_given_row_with_all_parameters_then_returns_model(self):
         guest_endpoint_sip = self.add_endpoint_sip(template=False)
@@ -119,14 +123,17 @@ class TestGet(DAOTestCase):
         )
 
         model = dao.get(row.uuid)
-        assert_that(model, has_properties(
-            name='the meeting',
-            guest_endpoint_sip=guest_endpoint_sip,
-            guest_endpoint_sip_uuid=guest_endpoint_sip.uuid,
-            owners=contains_inanyorder(owner_1, owner_2),
-            owner_uuids=contains_inanyorder(owner_1.uuid, owner_2.uuid),
-            tenant_uuid=self.default_tenant.uuid,
-        ))
+        assert_that(
+            model,
+            has_properties(
+                name='the meeting',
+                guest_endpoint_sip=guest_endpoint_sip,
+                guest_endpoint_sip_uuid=guest_endpoint_sip.uuid,
+                owners=contains_inanyorder(owner_1, owner_2),
+                owner_uuids=contains_inanyorder(owner_1.uuid, owner_2.uuid),
+                tenant_uuid=self.default_tenant.uuid,
+            ),
+        )
 
     def test_get_multi_tenant(self):
         tenant = self.add_tenant()
@@ -138,19 +145,19 @@ class TestGet(DAOTestCase):
         row = self.add_meeting()
         self.assertRaises(
             NotFoundError,
-            dao.get, row.uuid, tenant_uuids=[tenant.uuid],
+            dao.get,
+            row.uuid,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_sip_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -178,7 +185,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleMeetings(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         # Order got changed for such that the creation_time does not match the name order
@@ -193,31 +199,47 @@ class TestSearchGivenMultipleMeetings(TestSearch):
         self.assert_search_returns_result(expected, search='eau')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.meeting1,
-            self.meeting2,
-            self.meeting3,
-            self.meeting4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.meeting1,
+                self.meeting2,
+                self.meeting3,
+                self.meeting4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.meeting4,
-            self.meeting3,
-            self.meeting2,
-            self.meeting1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.meeting4,
+                self.meeting3,
+                self.meeting2,
+                self.meeting1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
     def test_when_sorting_by_creation_time(self):
-        expected = SearchResult(4, [
-            self.meeting3, self.meeting4, self.meeting1, self.meeting2,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.meeting3,
+                self.meeting4,
+                self.meeting1,
+                self.meeting2,
+            ],
+        )
 
-        self.assert_search_returns_result(expected, order='creation_time', direction='asc')
+        self.assert_search_returns_result(
+            expected, order='creation_time', direction='asc'
+        )
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.meeting1])
@@ -243,20 +265,22 @@ class TestSearchGivenMultipleMeetings(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_parameters(self):
         model = Meeting(tenant_uuid=self.default_tenant.uuid)
 
         result = dao.create(model)
 
         assert_that(inspect(result).persistent)
-        assert_that(result, has_properties(
-            uuid=not_none(),
-            name=None,
-            tenant_uuid=self.default_tenant.uuid,
-            number=not_none(),
-            require_authorization=False,
-        ))
+        assert_that(
+            result,
+            has_properties(
+                uuid=not_none(),
+                name=None,
+                tenant_uuid=self.default_tenant.uuid,
+                number=not_none(),
+                require_authorization=False,
+            ),
+        )
 
     def test_create_all_parameters(self):
         endpoint_sip = self.add_endpoint_sip(template=False)
@@ -276,20 +300,22 @@ class TestCreate(DAOTestCase):
         result = dao.create(model)
 
         assert_that(inspect(result).persistent)
-        assert_that(result, has_properties(
-            uuid=not_none(),
-            name='name',
-            tenant_uuid=self.default_tenant.uuid,
-            owners=owners,
-            guest_endpoint_sip_uuid=endpoint_sip.uuid,
-            created_at=is_not(none()),
-            number=not_none(),
-            require_authorization=True,
-        ))
+        assert_that(
+            result,
+            has_properties(
+                uuid=not_none(),
+                name='name',
+                tenant_uuid=self.default_tenant.uuid,
+                owners=owners,
+                guest_endpoint_sip_uuid=endpoint_sip.uuid,
+                created_at=is_not(none()),
+                number=not_none(),
+                require_authorization=True,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_parameters(self):
         row = self.add_meeting()
 
@@ -311,7 +337,7 @@ class TestEdit(DAOTestCase):
                 name='new',
                 guest_endpoint_sip_uuid=endpoint.uuid,
                 owner_uuids=[owner.uuid for owner in owners],
-            )
+            ),
         )
 
     def test_edit_set_null(self):
@@ -319,9 +345,7 @@ class TestEdit(DAOTestCase):
         owners = [self.add_user(), self.add_user()]
 
         row = self.add_meeting(
-            name='meeting',
-            guest_endpoint_sip=endpoint,
-            owners=owners
+            name='meeting', guest_endpoint_sip=endpoint, owners=owners
         )
 
         model = dao.get(row.uuid)
@@ -338,12 +362,11 @@ class TestEdit(DAOTestCase):
                 name=None,
                 guest_endpoint_sip_uuid=None,
                 owner_uuids=[],
-            )
+            ),
         )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         model = self.add_meeting()
 

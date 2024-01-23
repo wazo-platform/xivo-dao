@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -9,11 +9,8 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AgentQueueSkill(Base):
-
     __tablename__ = 'agentqueueskill'
-    __table_args__ = (
-        PrimaryKeyConstraint('agentid', 'skillid'),
-    )
+    __table_args__ = (PrimaryKeyConstraint('agentid', 'skillid'),)
 
     agentid = Column(Integer, nullable=False, autoincrement=False)
     skillid = Column(Integer, nullable=False, autoincrement=False)

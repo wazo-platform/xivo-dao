@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -19,7 +19,6 @@ from . import enum
 
 
 class UserIAX(Base, AsteriskOptionsMixin):
-
     EXCLUDE_OPTIONS = {
         'id',
         'commented',
@@ -62,13 +61,7 @@ class UserIAX(Base, AsteriskOptionsMixin):
     )
     name = Column(String(40), nullable=False)
     type = Column(
-        Enum(
-            'friend',
-            'peer',
-            'user',
-            name='useriax_type',
-            metadata=Base.metadata
-        ),
+        Enum('friend', 'peer', 'user', name='useriax_type', metadata=Base.metadata),
         nullable=False,
     )
     username = Column(String(80))
@@ -78,7 +71,14 @@ class UserIAX(Base, AsteriskOptionsMixin):
     language = Column(String(20))
     accountcode = Column(String(20))
     amaflags = Column(
-        Enum('default', 'omit', 'billing', 'documentation', name='useriax_amaflags', metadata=Base.metadata),
+        Enum(
+            'default',
+            'omit',
+            'billing',
+            'documentation',
+            name='useriax_amaflags',
+            metadata=Base.metadata,
+        ),
         server_default='default',
     )
     mailbox = Column(String(80))
@@ -88,22 +88,41 @@ class UserIAX(Base, AsteriskOptionsMixin):
     trunk = Column(Integer, nullable=False, server_default='0')
     auth = Column(
         Enum(
-            'plaintext', 'md5', 'rsa', 'plaintext,md5', 'plaintext,rsa', 'md5,rsa', 'plaintext,md5,rsa',
+            'plaintext',
+            'md5',
+            'rsa',
+            'plaintext,md5',
+            'plaintext,rsa',
+            'md5,rsa',
+            'plaintext,md5,rsa',
             name='useriax_auth',
-            metadata=Base.metadata
+            metadata=Base.metadata,
         ),
         nullable=False,
-        server_default='plaintext,md5'
+        server_default='plaintext,md5',
     )
-    encryption = Column(Enum('no', 'yes', 'aes128', name='useriax_encryption', metadata=Base.metadata))
-    forceencryption = Column(Enum('no', 'yes', 'aes128', name='useriax_encryption', metadata=Base.metadata))
+    encryption = Column(
+        Enum('no', 'yes', 'aes128', name='useriax_encryption', metadata=Base.metadata)
+    )
+    forceencryption = Column(
+        Enum('no', 'yes', 'aes128', name='useriax_encryption', metadata=Base.metadata)
+    )
     maxauthreq = Column(Integer)
     inkeys = Column(String(80))
     outkey = Column(String(80))
     adsi = Column(Integer)
-    transfer = Column(Enum('no', 'yes', 'mediaonly', name='useriax_transfer', metadata=Base.metadata))
+    transfer = Column(
+        Enum('no', 'yes', 'mediaonly', name='useriax_transfer', metadata=Base.metadata)
+    )
     codecpriority = Column(
-        Enum('disabled', 'host', 'caller', 'reqonly', name='useriax_codecpriority', metadata=Base.metadata)
+        Enum(
+            'disabled',
+            'host',
+            'caller',
+            'reqonly',
+            name='useriax_codecpriority',
+            metadata=Base.metadata,
+        )
     )
     jitterbuffer = Column(Integer)
     forcejitterbuffer = Column(Integer)
@@ -131,10 +150,19 @@ class UserIAX(Base, AsteriskOptionsMixin):
     keyrotate = Column(Integer)
     parkinglot = Column(Integer)
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='iax')
-    category = Column(Enum('user', 'trunk', name='useriax_category', metadata=Base.metadata), nullable=False)
+    category = Column(
+        Enum('user', 'trunk', name='useriax_category', metadata=Base.metadata),
+        nullable=False,
+    )
     commented = Column(Integer, nullable=False, server_default='0')
     requirecalltoken = Column(String(4), nullable=False, server_default='no')
-    _options = Column("options", ARRAY(String, dimensions=2), nullable=False, default=list, server_default='{}')
+    _options = Column(
+        "options",
+        ARRAY(String, dimensions=2),
+        nullable=False,
+        default=list,
+        server_default='{}',
+    )
 
     trunk_rel = relationship('TrunkFeatures', uselist=False, viewonly=True)
 

@@ -28,7 +28,6 @@ from .. import dao as call_pickup_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_call_pickup(self):
         result = call_pickup_dao.find(42)
 
@@ -48,12 +47,13 @@ class TestFind(DAOTestCase):
         result = call_pickup_dao.find(call_pickup.id, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(call_pickup))
 
-        result = call_pickup_dao.find(call_pickup.id, tenant_uuids=[self.default_tenant.uuid])
+        result = call_pickup_dao.find(
+            call_pickup.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_call_pickup(self):
         self.assertRaises(NotFoundError, call_pickup_dao.get, 42)
 
@@ -68,18 +68,21 @@ class TestGet(DAOTestCase):
         tenant = self.add_tenant()
 
         call_pickup_row = self.add_pickup(tenant_uuid=tenant.uuid)
-        call_pickup = call_pickup_dao.get(call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        call_pickup = call_pickup_dao.get(
+            call_pickup_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_pickup, equal_to(call_pickup_row))
 
         call_pickup_row = self.add_pickup()
         self.assertRaises(
             NotFoundError,
-            call_pickup_dao.get, call_pickup_row.id, tenant_uuids=[tenant.uuid],
+            call_pickup_dao.get,
+            call_pickup_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, call_pickup_dao.find_by, invalid=42)
 
@@ -116,16 +119,19 @@ class TestFindBy(DAOTestCase):
         tenant = self.add_tenant()
 
         call_pickup_row = self.add_pickup()
-        call_pickup = call_pickup_dao.find_by(id=call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        call_pickup = call_pickup_dao.find_by(
+            id=call_pickup_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_pickup, none())
 
         call_pickup_row = self.add_pickup(tenant_uuid=tenant.uuid)
-        call_pickup = call_pickup_dao.find_by(id=call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        call_pickup = call_pickup_dao.find_by(
+            id=call_pickup_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_pickup, equal_to(call_pickup_row))
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, call_pickup_dao.get_by, invalid=42)
 
@@ -162,16 +168,19 @@ class TestGetBy(DAOTestCase):
         call_pickup_row = self.add_pickup()
         self.assertRaises(
             NotFoundError,
-            call_pickup_dao.get_by, id=call_pickup_row.id, tenant_uuids=[tenant.uuid],
+            call_pickup_dao.get_by,
+            id=call_pickup_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         call_pickup_row = self.add_pickup(tenant_uuid=tenant.uuid)
-        call_pickup = call_pickup_dao.get_by(id=call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        call_pickup = call_pickup_dao.get_by(
+            id=call_pickup_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_pickup, equal_to(call_pickup_row))
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_call_pickups(self):
         result = call_pickup_dao.find_all_by(name='toto')
 
@@ -183,10 +192,13 @@ class TestFindAllBy(DAOTestCase):
 
         call_pickups = call_pickup_dao.find_all_by(enabled=True)
 
-        assert_that(call_pickups, has_items(
-            has_property('id', call_pickup1.id),
-            has_property('id', call_pickup2.id),
-        ))
+        assert_that(
+            call_pickups,
+            has_items(
+                has_property('id', call_pickup1.id),
+                has_property('id', call_pickup2.id),
+            ),
+        )
 
     def test_find_all_by_native_column(self):
         call_pickup1 = self.add_pickup(name='bob', description='description')
@@ -194,35 +206,44 @@ class TestFindAllBy(DAOTestCase):
 
         call_pickups = call_pickup_dao.find_all_by(description='description')
 
-        assert_that(call_pickups, has_items(
-            has_property('id', call_pickup1.id),
-            has_property('id', call_pickup2.id),
-        ))
+        assert_that(
+            call_pickups,
+            has_items(
+                has_property('id', call_pickup1.id),
+                has_property('id', call_pickup2.id),
+            ),
+        )
 
     def test_find_all_by_multi_tenant(self):
         tenant = self.add_tenant()
 
-        call_pickup1 = self.add_pickup(description='description', tenant_uuid=tenant.uuid)
+        call_pickup1 = self.add_pickup(
+            description='description', tenant_uuid=tenant.uuid
+        )
         call_pickup2 = self.add_pickup(description='description')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        call_pickups = call_pickup_dao.find_all_by(description='description', tenant_uuids=tenants)
+        call_pickups = call_pickup_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
         assert_that(call_pickups, has_items(call_pickup1, call_pickup2))
 
         tenants = [tenant.uuid]
-        call_pickups = call_pickup_dao.find_all_by(description='description', tenant_uuids=tenants)
-        assert_that(call_pickups, all_of(has_items(call_pickup1), not_(has_items(call_pickup2))))
+        call_pickups = call_pickup_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
+        assert_that(
+            call_pickups, all_of(has_items(call_pickup1), not_(has_items(call_pickup2)))
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = call_pickup_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_call_pickups_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -250,7 +271,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleCallPickups(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.call_pickup1 = self.add_pickup(
@@ -268,31 +288,45 @@ class TestSearchGivenMultipleCallPickups(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.call_pickup1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.call_pickup2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.call_pickup1, self.call_pickup3, self.call_pickup4])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
+        expected_all_resto = SearchResult(
+            3, [self.call_pickup1, self.call_pickup3, self.call_pickup4]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='name'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.call_pickup1,
-            self.call_pickup2,
-            self.call_pickup3,
-            self.call_pickup4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.call_pickup1,
+                self.call_pickup2,
+                self.call_pickup3,
+                self.call_pickup4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.call_pickup4,
-            self.call_pickup3,
-            self.call_pickup2,
-            self.call_pickup1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.call_pickup4,
+                self.call_pickup3,
+                self.call_pickup2,
+                self.call_pickup1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -302,7 +336,9 @@ class TestSearchGivenMultipleCallPickups(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.call_pickup2, self.call_pickup3, self.call_pickup4])
+        expected = SearchResult(
+            4, [self.call_pickup2, self.call_pickup3, self.call_pickup4]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -320,20 +356,24 @@ class TestSearchGivenMultipleCallPickups(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        call_pickup_model = CallPickup(name='name', tenant_uuid=self.default_tenant.uuid)
+        call_pickup_model = CallPickup(
+            name='name', tenant_uuid=self.default_tenant.uuid
+        )
 
         call_pickup = call_pickup_dao.create(call_pickup_model)
 
         self.session.expire_all()
         assert_that(inspect(call_pickup).persistent)
-        assert_that(call_pickup, has_properties(
-            name='name',
-            tenant_uuid=self.default_tenant.uuid,
-            description=none(),
-            enabled=True,
-        ))
+        assert_that(
+            call_pickup,
+            has_properties(
+                name='name',
+                tenant_uuid=self.default_tenant.uuid,
+                description=none(),
+                enabled=True,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         call_pickup_model = CallPickup(
@@ -347,30 +387,42 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(call_pickup).persistent)
-        assert_that(call_pickup, has_properties(
-            name='name',
-            tenant_uuid=self.default_tenant.uuid,
-            description='description',
-            enabled=False,
-        ))
+        assert_that(
+            call_pickup,
+            has_properties(
+                name='name',
+                tenant_uuid=self.default_tenant.uuid,
+                description='description',
+                enabled=False,
+            ),
+        )
 
     def test_create_fill_default_values(self):
-        call_pickup_model_1 = CallPickup(name='name1', tenant_uuid=self.default_tenant.uuid)
-        call_pickup_model_2 = CallPickup(name='name2', tenant_uuid=self.default_tenant.uuid)
+        call_pickup_model_1 = CallPickup(
+            name='name1', tenant_uuid=self.default_tenant.uuid
+        )
+        call_pickup_model_2 = CallPickup(
+            name='name2', tenant_uuid=self.default_tenant.uuid
+        )
 
         call_pickup_1 = call_pickup_dao.create(call_pickup_model_1)
         call_pickup_2 = call_pickup_dao.create(call_pickup_model_2)
 
-        assert_that(call_pickup_1, has_properties(
-            id=1,
-        ))
-        assert_that(call_pickup_2, has_properties(
-            id=2,
-        ))
+        assert_that(
+            call_pickup_1,
+            has_properties(
+                id=1,
+            ),
+        )
+        assert_that(
+            call_pickup_2,
+            has_properties(
+                id=2,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         call_pickup = self.add_pickup(
             name='name',
@@ -386,15 +438,17 @@ class TestEdit(DAOTestCase):
         call_pickup_dao.edit(call_pickup)
 
         self.session.expire_all()
-        assert_that(call_pickup, has_properties(
-            name='other_name',
-            description='other_description',
-            enabled=False,
-        ))
+        assert_that(
+            call_pickup,
+            has_properties(
+                name='other_name',
+                description='other_description',
+                enabled=False,
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         call_pickup = self.add_pickup()
 
@@ -404,7 +458,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestAssociateUserTargets(DAOTestCase):
-
     def test_associate(self):
         call_pickup = self.add_pickup()
         user = self.add_user()
@@ -439,7 +492,6 @@ class TestAssociateUserTargets(DAOTestCase):
 
 
 class TestAssociateUserInterceptors(DAOTestCase):
-
     def test_associate(self):
         call_pickup = self.add_pickup()
         user = self.add_user()
@@ -474,7 +526,6 @@ class TestAssociateUserInterceptors(DAOTestCase):
 
 
 class TestAssociateGroupTargets(DAOTestCase):
-
     def test_associate(self):
         call_pickup = self.add_pickup()
         group = self.add_group()
@@ -509,7 +560,6 @@ class TestAssociateGroupTargets(DAOTestCase):
 
 
 class TestAssociateGroupInterceptors(DAOTestCase):
-
     def test_associate(self):
         call_pickup = self.add_pickup()
         group = self.add_group()

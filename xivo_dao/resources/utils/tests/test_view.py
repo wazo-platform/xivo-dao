@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -10,7 +10,6 @@ from xivo_dao.helpers.exception import InputError
 
 
 class TestViewSelector(unittest.TestCase):
-
     def test_given_no_view_name_then_selects_default_view(self):
         view = Mock(View)
         selector = ViewSelector(default=view)
@@ -36,11 +35,8 @@ class TestViewSelector(unittest.TestCase):
 
 
 class TestView(unittest.TestCase):
-
     def test_given_list_of_rows_then_converts_each_row(self):
-
         class ConcreteView(View):
-
             def __init__(self):
                 self.count = 0
 
@@ -57,7 +53,6 @@ class TestView(unittest.TestCase):
 
 
 class TestModelView(unittest.TestCase):
-
     def test_given_session_when_queried_then_returns_query_with_table(self):
         mock_table = Mock()
         session = Mock()

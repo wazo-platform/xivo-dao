@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -29,7 +29,6 @@ from .useriax import UserIAX
 
 
 class TrunkFeatures(Base):
-
     __tablename__ = 'trunkfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -63,13 +62,17 @@ class TrunkFeatures(Base):
     )
 
     id = Column(Integer, nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
+    )
     endpoint_sip_uuid = Column(
         UUID(as_uuid=True),
         ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'),
     )
     endpoint_iax_id = Column(Integer, ForeignKey('useriax.id', ondelete='SET NULL'))
-    endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id', ondelete='SET NULL'))
+    endpoint_custom_id = Column(
+        Integer, ForeignKey('usercustom.id', ondelete='SET NULL')
+    )
     register_iax_id = Column(Integer, ForeignKey('staticiax.id', ondelete='SET NULL'))
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
@@ -94,7 +97,8 @@ class TrunkFeatures(Base):
     )
 
     outcalls = association_proxy(
-        'outcall_trunks', 'outcall',
+        'outcall_trunks',
+        'outcall',
         creator=lambda _outcall: OutcallTrunk(outcall=_outcall),
     )
 
@@ -130,9 +134,7 @@ class TrunkFeatures(Base):
             .as_scalar()
         )
         endpoint_iax_query = (
-            select([UserIAX.name])
-            .where(UserIAX.id == cls.endpoint_iax_id)
-            .as_scalar()
+            select([UserIAX.name]).where(UserIAX.id == cls.endpoint_iax_id).as_scalar()
         )
         endpoint_custom_query = (
             select([UserCustom.interface])
@@ -145,7 +147,7 @@ class TrunkFeatures(Base):
                 (cls.endpoint_iax_id.isnot(None), endpoint_iax_query),
                 (cls.endpoint_custom_id.isnot(None), endpoint_custom_query),
             ],
-            else_=None
+            else_=None,
         )
 
     @hybrid_property
@@ -165,5 +167,5 @@ class TrunkFeatures(Base):
             [
                 (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
             ],
-            else_=None
+            else_=None,
         )

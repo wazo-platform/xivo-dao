@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -9,7 +9,6 @@ from xivo_dao.alchemy import enum
 
 
 class Netiface(Base):
-
     __tablename__ = 'netiface'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -19,22 +18,18 @@ class Netiface(Base):
     id = Column(Integer, nullable=False)
     ifname = Column(String(64), nullable=False, server_default='')
     hwtypeid = Column(Integer, nullable=False, server_default='65534')
-    networktype = Column(Enum('data',
-                              'voip',
-                              name='netiface_networktype',
-                              metadata=Base.metadata),
-                         nullable=False)
+    networktype = Column(
+        Enum('data', 'voip', name='netiface_networktype', metadata=Base.metadata),
+        nullable=False,
+    )
     type = Column(enum.netiface_type, nullable=False)
-    family = Column(Enum('inet',
-                         'inet6',
-                         name='netiface_family',
-                         metadata=Base.metadata),
-                    nullable=False)
-    method = Column(Enum('static',
-                         'dhcp',
-                         'manual',
-                         name='netiface_method',
-                         metadata=Base.metadata))
+    family = Column(
+        Enum('inet', 'inet6', name='netiface_family', metadata=Base.metadata),
+        nullable=False,
+    )
+    method = Column(
+        Enum('static', 'dhcp', 'manual', name='netiface_method', metadata=Base.metadata)
+    )
     address = Column(String(39))
     netmask = Column(String(39))
     broadcast = Column(String(15))

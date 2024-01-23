@@ -595,7 +595,9 @@ class TestGroupHints(TestHints):
             user_id=user_row.id, extension='*51', argument=str(destination_row.group_id)
         )
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly(expected))
+        assert_that(
+            hint_dao.groupmember_hints(self.context.name), contains_exactly(expected)
+        )
 
     def test_given_commented_extension_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -633,7 +635,9 @@ class TestGroupHints(TestHints):
             user_id=user_row.id, extension='*51', argument=str(destination_row.group_id)
         )
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly(expected))
+        assert_that(
+            hint_dao.groupmember_hints(self.context.name), contains_exactly(expected)
+        )
 
 
 class TestUserSharedHints(TestHints):

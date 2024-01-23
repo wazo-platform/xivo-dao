@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
@@ -7,7 +7,6 @@ from xivo_dao.helpers import errors
 
 
 class ViewSelector:
-
     def __init__(self, default, **views):
         self.default = default
         self.views = views
@@ -21,7 +20,6 @@ class ViewSelector:
 
 
 class View(metaclass=abc.ABCMeta):
-
     @abc.abstractmethod
     def query(self, session):
         return
@@ -35,7 +33,6 @@ class View(metaclass=abc.ABCMeta):
 
 
 class ModelView(View):
-
     @abc.abstractproperty
     def table(self):
         return

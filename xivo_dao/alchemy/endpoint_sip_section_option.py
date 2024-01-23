@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -18,7 +18,9 @@ class EndpointSIPSectionOption(Base):
         ),
     )
 
-    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
+    uuid = Column(
+        UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True
+    )
     key = Column(Text, nullable=False)
     value = Column(Text, nullable=False)
     endpoint_sip_section_uuid = Column(

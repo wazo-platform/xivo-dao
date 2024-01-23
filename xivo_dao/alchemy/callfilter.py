@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -6,7 +6,13 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import cast, not_, and_, select
 from sqlalchemy.sql.expression import true
 from sqlalchemy.types import Boolean, Integer, String, Text
@@ -19,7 +25,6 @@ from .callerid import Callerid
 
 
 class Callfilter(Base):
-
     __tablename__ = 'callfilter'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -43,7 +48,12 @@ class Callfilter(Base):
 
     exten = column_property(
         select([FeatureExtension.exten])
-        .where(and_(FeatureExtension.feature == 'bsfilter', FeatureExtension.enabled == true()))
+        .where(
+            and_(
+                FeatureExtension.feature == 'bsfilter',
+                FeatureExtension.enabled == true(),
+            )
+        )
         .correlate_except(FeatureExtension)
         .as_scalar()
     )
@@ -71,11 +81,13 @@ class Callfilter(Base):
     )
 
     caller_id_mode = association_proxy(
-        'caller_id', 'mode',
+        'caller_id',
+        'mode',
         creator=lambda _mode: Callerid(type='callfilter', mode=_mode),
     )
     caller_id_name = association_proxy(
-        'caller_id', 'name',
+        'caller_id',
+        'name',
         creator=lambda _name: Callerid(type='callfilter', name=_name),
     )
 

@@ -1,4 +1,4 @@
-# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -16,7 +16,6 @@ from . import enum
 
 
 class Schedule(Base):
-
     __tablename__ = 'schedule'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -31,7 +30,9 @@ class Schedule(Base):
     )
     name = Column(String(255))
     timezone = Column(String(128))
-    fallback_action = Column(enum.dialaction_action, nullable=False, server_default='none')
+    fallback_action = Column(
+        enum.dialaction_action, nullable=False, server_default='none'
+    )
     fallback_actionid = Column(IntAsString(255))
     fallback_actionargs = Column(String(255))
     description = Column(Text)

@@ -19,7 +19,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestSchedules(DAOTestCase):
-
     def test_getter(self):
         incall = self.add_incall()
         schedule = self.add_schedule()
@@ -70,7 +69,6 @@ class TestDestination(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_schedule_paths_are_deleted(self):
         incall = self.add_incall()
         schedule = self.add_schedule()

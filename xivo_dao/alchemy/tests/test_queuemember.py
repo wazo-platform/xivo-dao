@@ -21,7 +21,6 @@ from ..userfeatures import UserFeatures
 
 
 class TestAgent(DAOTestCase):
-
     def test_getter(self):
         agent = self.add_agent()
         queue_member = self.add_queue_member(usertype='agent', userid=agent.id)
@@ -41,7 +40,6 @@ class TestAgent(DAOTestCase):
 
 
 class TestQueue(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         queue_member = self.add_queue_member(queue_name=queue.name)
@@ -51,7 +49,6 @@ class TestQueue(DAOTestCase):
 
 
 class TestPriority(DAOTestCase):
-
     def test_getter(self):
         member = QueueMember(position=42)
         assert_that(member.priority, equal_to(42))
@@ -62,21 +59,16 @@ class TestPriority(DAOTestCase):
 
 
 class TestExtension(DAOTestCase):
-
     def test_getter(self):
         member = QueueMember()
         assert_that(member.extension, equal_to(member))
 
     def test_setter(self):
         member = QueueMember(extension=Mock(exten='1234', context='default'))
-        assert_that(member, has_properties(
-            exten='1234',
-            context='default'
-        ))
+        assert_that(member, has_properties(exten='1234', context='default'))
 
 
 class TestExten(DAOTestCase):
-
     def test_setter(self):
         member = QueueMember()
         member.exten = '123'
@@ -96,7 +88,6 @@ class TestExten(DAOTestCase):
 
 
 class TestContext(DAOTestCase):
-
     def test_setter(self):
         member = QueueMember()
         member.context = 'default'
@@ -116,83 +107,106 @@ class TestContext(DAOTestCase):
 
 
 class TestFix(DAOTestCase):
-
     def test_user_sip(self):
         user = self.add_user()
         sip = self.add_endpoint_sip(name='sipname')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
+        member = self.add_queue_member(
+            usertype='user', userid=user.id, interface='wrong', channel='wrong'
+        )
 
         member.fix()
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(member, has_properties(
-            interface='PJSIP/sipname',
-            channel='SIP',
-        ))
+        assert_that(
+            member,
+            has_properties(
+                interface='PJSIP/sipname',
+                channel='SIP',
+            ),
+        )
 
     def test_user_sccp(self):
         user = self.add_user()
         sccp = self.add_sccpline(name='sccpname')
         line = self.add_line(endpoint_sccp_id=sccp.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
+        member = self.add_queue_member(
+            usertype='user', userid=user.id, interface='wrong', channel='wrong'
+        )
 
         member.fix()
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(member, has_properties(
-            interface='SCCP/sccpname',
-            channel='SCCP',
-        ))
+        assert_that(
+            member,
+            has_properties(
+                interface='SCCP/sccpname',
+                channel='SCCP',
+            ),
+        )
 
     def test_user_custom(self):
         user = self.add_user()
         custom = self.add_usercustom(interface='custom/interface')
         line = self.add_line(endpoint_custom_id=custom.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
+        member = self.add_queue_member(
+            usertype='user', userid=user.id, interface='wrong', channel='wrong'
+        )
 
         member.fix()
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(member, has_properties(
-            interface='custom/interface',
-            channel='**Unknown**',
-        ))
+        assert_that(
+            member,
+            has_properties(
+                interface='custom/interface',
+                channel='**Unknown**',
+            ),
+        )
 
     def test_agent(self):
         agent = self.add_agent(number='1234')
-        member = self.add_queue_member(usertype='agent', userid=agent.id, interface='wrong', channel='wrong')
+        member = self.add_queue_member(
+            usertype='agent', userid=agent.id, interface='wrong', channel='wrong'
+        )
 
         member.fix()
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(member, has_properties(
-            interface='Agent/1234',
-            channel='Agent',
-        ))
+        assert_that(
+            member,
+            has_properties(
+                interface='Agent/1234',
+                channel='Agent',
+            ),
+        )
 
     def test_local(self):
-        member = self.add_queue_member(exten='1234', context='default', interface='wrong', channel='wrong')
+        member = self.add_queue_member(
+            exten='1234', context='default', interface='wrong', channel='wrong'
+        )
 
         member.fix()
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(member, has_properties(
-            interface='Local/1234@default',
-            channel='Local',
-        ))
+        assert_that(
+            member,
+            has_properties(
+                interface='Local/1234@default',
+                channel='Local',
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_group_is_not_deleted(self):
         group = self.add_group()
         queue_member = self.add_queue_member(queue_name=group.name, category='group')
@@ -305,7 +319,9 @@ class TestUsersFromCallPickupGroupInterceptorUserTargets(DAOTestCase):
 
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_user_targets,
-            contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2)),
+            contains_exactly(
+                contains_exactly(user_target1), contains_exactly(user_target2)
+            ),
         )
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_group_targets,
@@ -365,7 +381,11 @@ class TestUsersFromCallPickupGroupInterceptorGroupTargets(DAOTestCase):
         )
         assert_that(
             queue_member.users_from_call_pickup_group_interceptor_group_targets,
-            contains_exactly(contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2))),
+            contains_exactly(
+                contains_exactly(
+                    contains_exactly(user_target1), contains_exactly(user_target2)
+                )
+            ),
         )
 
     def test_two_pickups_two_user_targets(self):

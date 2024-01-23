@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -11,7 +11,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class GroupPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Group
 
     def __init__(self, session, group_search, tenant_uuids=None):
@@ -33,19 +32,17 @@ class GroupPersistor(CriteriaBuilderMixin, BasePersistor):
         return model
 
     def _search_query(self):
-        return (self.session.query(Group)
-                .options(joinedload('caller_id'))
-                .options(joinedload('extensions'))
-                .options(joinedload('incall_dialactions')
-                         .joinedload('incall'))
-                .options(joinedload('group_dialactions'))
-                .options(joinedload('user_queue_members')
-                         .joinedload('user'))
-                .options(joinedload('queue'))
-                .options(joinedload('schedule_paths')
-                         .joinedload('schedule'))
-                .options(joinedload('rightcall_members')
-                         .joinedload('rightcall')))
+        return (
+            self.session.query(Group)
+            .options(joinedload('caller_id'))
+            .options(joinedload('extensions'))
+            .options(joinedload('incall_dialactions').joinedload('incall'))
+            .options(joinedload('group_dialactions'))
+            .options(joinedload('user_queue_members').joinedload('user'))
+            .options(joinedload('queue'))
+            .options(joinedload('schedule_paths').joinedload('schedule'))
+            .options(joinedload('rightcall_members').joinedload('rightcall'))
+        )
 
     def delete(self, group):
         self._delete_associations(group)

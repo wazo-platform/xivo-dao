@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -8,11 +8,8 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class Monitoring(Base):
-
     __tablename__ = 'monitoring'
-    __table_args__ = (
-        PrimaryKeyConstraint('id'),
-    )
+    __table_args__ = (PrimaryKeyConstraint('id'),)
 
     id = Column(Integer, nullable=False)
     maintenance = Column(Integer, nullable=False, server_default='0')

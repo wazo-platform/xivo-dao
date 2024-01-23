@@ -73,7 +73,6 @@ OPTION_SAMPLE = {
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, sip_dao.find_by, column=1)
 
@@ -113,7 +112,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
@@ -130,7 +128,6 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_given_no_rows_then_raises_error(self):
         self.assertRaises(NotFoundError, sip_dao.get, UNKNOWN_UUID, template=False)
         self.assertRaises(NotFoundError, sip_dao.get, str(UNKNOWN_UUID), template=False)
@@ -166,22 +163,25 @@ class TestGet(DAOTestCase):
         )
 
         sip = sip_dao.get(row.uuid, template=True)
-        assert_that(sip, has_properties(
-            label='general_config',
-            aor_section_options=[['type', 'aor']],
-            auth_section_options=[['type', 'auth']],
-            endpoint_section_options=[['type', 'endpoint']],
-            registration_section_options=[['type', 'registration']],
-            registration_outbound_auth_section_options=[['type', 'auth']],
-            identify_section_options=[['type', 'identify']],
-            outbound_auth_section_options=[['type', 'auth']],
-            template=True,
-            transport=has_properties(uuid=transport.uuid),
-            templates=contains_exactly(
-                has_properties(uuid=template_1.uuid),
-                has_properties(uuid=template_2.uuid),
+        assert_that(
+            sip,
+            has_properties(
+                label='general_config',
+                aor_section_options=[['type', 'aor']],
+                auth_section_options=[['type', 'auth']],
+                endpoint_section_options=[['type', 'endpoint']],
+                registration_section_options=[['type', 'registration']],
+                registration_outbound_auth_section_options=[['type', 'auth']],
+                identify_section_options=[['type', 'identify']],
+                outbound_auth_section_options=[['type', 'auth']],
+                template=True,
+                transport=has_properties(uuid=transport.uuid),
+                templates=contains_exactly(
+                    has_properties(uuid=template_1.uuid),
+                    has_properties(uuid=template_2.uuid),
+                ),
             ),
-        ))
+        )
 
     def test_get_multi_tenant(self):
         tenant = self.add_tenant()
@@ -193,7 +193,10 @@ class TestGet(DAOTestCase):
         sip_row = self.add_endpoint_sip()
         self.assertRaises(
             NotFoundError,
-            sip_dao.get, sip_row.uuid, template=False, tenant_uuids=[tenant.uuid],
+            sip_dao.get,
+            sip_row.uuid,
+            template=False,
+            tenant_uuids=[tenant.uuid],
         )
 
     def test_get_template(self):
@@ -202,31 +205,39 @@ class TestGet(DAOTestCase):
         endpoint_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid, template=False)
         template_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid, template=True)
 
-        template = sip_dao.get(template_row.uuid, template=True, tenant_uuids=[tenant.uuid])
+        template = sip_dao.get(
+            template_row.uuid, template=True, tenant_uuids=[tenant.uuid]
+        )
         assert_that(template, equal_to(template_row))
 
-        endpoint = sip_dao.get(endpoint_row.uuid, template=False, tenant_uuids=[tenant.uuid])
+        endpoint = sip_dao.get(
+            endpoint_row.uuid, template=False, tenant_uuids=[tenant.uuid]
+        )
         assert_that(endpoint, equal_to(endpoint_row))
 
         self.assertRaises(
             NotFoundError,
-            sip_dao.get, endpoint_row.uuid, template=True, tenant_uuids=[tenant.uuid],
+            sip_dao.get,
+            endpoint_row.uuid,
+            template=True,
+            tenant_uuids=[tenant.uuid],
         )
         self.assertRaises(
             NotFoundError,
-            sip_dao.get, template_row.uuid, template=False, tenant_uuids=[tenant.uuid],
+            sip_dao.get,
+            template_row.uuid,
+            template=False,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = sip_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_sip_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -259,14 +270,17 @@ class TestSimpleSearch(TestSearch):
         template = self.add_endpoint_sip(label='template', template=True)
 
         expected = SearchResult(1, [template])
-        self.assert_search_returns_result(expected, tenant_uuids=tenant_uuids, template=True)
+        self.assert_search_returns_result(
+            expected, tenant_uuids=tenant_uuids, template=True
+        )
 
         expected = SearchResult(1, [endpoint])
-        self.assert_search_returns_result(expected, tenant_uuids=tenant_uuids, template=False)
+        self.assert_search_returns_result(
+            expected, tenant_uuids=tenant_uuids, template=False
+        )
 
 
 class TestSearchMultiple(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.sip1 = self.add_endpoint_sip(label='Ashton', asterisk_id='y')
@@ -287,19 +301,19 @@ class TestSearchMultiple(TestSearch):
         self.assert_search_returns_result(expected_x, search='ton', asterisk_id='x')
 
         expected_all_y = SearchResult(3, [self.sip1, self.sip3, self.sip4])
-        self.assert_search_returns_result(expected_all_y, asterisk_id='y', order='label')
+        self.assert_search_returns_result(
+            expected_all_y, asterisk_id='y', order='label'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(
-            4, [self.sip1, self.sip2, self.sip3, self.sip4]
-        )
+        expected = SearchResult(4, [self.sip1, self.sip2, self.sip3, self.sip4])
 
         self.assert_search_returns_result(expected, order='label')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(
-            4, [self.sip4, self.sip3, self.sip2, self.sip1]
-        )
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(4, [self.sip4, self.sip3, self.sip2, self.sip1])
 
         self.assert_search_returns_result(expected, order='label', direction='desc')
 
@@ -327,29 +341,31 @@ class TestSearchMultiple(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_parameters(self):
         model = EndpointSIP(tenant_uuid=self.default_tenant.uuid)
 
         result = sip_dao.create(model)
 
         assert_that(inspect(result).persistent)
-        assert_that(result, has_properties(
-            uuid=not_none(),
-            name=has_length(8),
-            label=none(),
-            asterisk_id=none(),
-            tenant_uuid=self.default_tenant.uuid,
-            aor_section_options=empty(),
-            auth_section_options=empty(),
-            endpoint_section_options=empty(),
-            identify_section_options=empty(),
-            registration_section_options=empty(),
-            registration_outbound_auth_section_options=empty(),
-            outbound_auth_section_options=empty(),
-            transport_uuid=none(),
-            template=False,
-        ))
+        assert_that(
+            result,
+            has_properties(
+                uuid=not_none(),
+                name=has_length(8),
+                label=none(),
+                asterisk_id=none(),
+                tenant_uuid=self.default_tenant.uuid,
+                aor_section_options=empty(),
+                auth_section_options=empty(),
+                endpoint_section_options=empty(),
+                identify_section_options=empty(),
+                registration_section_options=empty(),
+                registration_outbound_auth_section_options=empty(),
+                outbound_auth_section_options=empty(),
+                transport_uuid=none(),
+                template=False,
+            ),
+        )
 
     def test_create_all_parameters(self):
         transport = self.add_transport()
@@ -370,23 +386,26 @@ class TestCreate(DAOTestCase):
             transport=transport,
             template=True,
             templates=templates,
-            **almost_all_options
+            **almost_all_options,
         )
 
         result = sip_dao.create(model)
 
         assert_that(inspect(result).persistent)
-        assert_that(result, has_properties(
-            uuid=not_none(),
-            name='name',
-            label='label',
-            asterisk_id='asterisk-id',
-            tenant_uuid=self.default_tenant.uuid,
-            transport_uuid=transport.uuid,
-            template=True,
-            templates=templates,
-            **almost_all_options
-        ))
+        assert_that(
+            result,
+            has_properties(
+                uuid=not_none(),
+                name='name',
+                label='label',
+                asterisk_id='asterisk-id',
+                tenant_uuid=self.default_tenant.uuid,
+                transport_uuid=transport.uuid,
+                template=True,
+                templates=templates,
+                **almost_all_options,
+            ),
+        )
 
     def test_create_refreshes_endpoint_option_view(self):
         model = EndpointSIP(
@@ -404,7 +423,6 @@ class TestCreate(DAOTestCase):
 
 
 class TestEdit(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.section_options = OPTION_SAMPLE
@@ -420,9 +438,15 @@ class TestEdit(DAOTestCase):
 
             sip_dao.edit(sip)
 
-            assert_that(sip, has_properties({
-                field: contains_exactly(contains_exactly(*options[0])),
-            }), name)
+            assert_that(
+                sip,
+                has_properties(
+                    {
+                        field: contains_exactly(contains_exactly(*options[0])),
+                    }
+                ),
+                name,
+            )
 
         for name, options in self.section_options.items():
             _test(name, options)
@@ -439,7 +463,9 @@ class TestEdit(DAOTestCase):
             assert_that(sip, has_properties({field: empty()}), name)
 
             option_count = self.session.query(EndpointSIPSectionOption).count()
-            assert_that(option_count, equal_to(0), 'An unassociated option has been leaked')
+            assert_that(
+                option_count, equal_to(0), 'An unassociated option has been leaked'
+            )
 
             section_count = self.session.query(EndpointSIPSection).count()
             assert_that(section_count, equal_to(0), 'An empty section has been leaked')
@@ -458,7 +484,9 @@ class TestEdit(DAOTestCase):
 
             sip_dao.edit(sip)
 
-            assert_that(sip, has_properties({field: contains_inanyorder(*new_value)}), name)
+            assert_that(
+                sip, has_properties({field: contains_inanyorder(*new_value)}), name
+            )
 
         for name, options in self.section_options.items():
             _test(name, options)
@@ -484,7 +512,6 @@ class TestEdit(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         sip = self.add_endpoint_sip()
 
@@ -519,7 +546,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestRelations(DAOTestCase):
-
     def test_trunk_relationship(self):
         sip = self.add_endpoint_sip()
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)

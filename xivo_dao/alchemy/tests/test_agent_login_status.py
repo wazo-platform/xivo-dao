@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to, none
@@ -7,7 +7,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestAgentStatus(DAOTestCase):
-
     def test_agent_relationsip(self):
         agent = self.add_agent()
         agent_status = self.add_agent_login_status(agent_id=agent.id)
