@@ -1,6 +1,6 @@
 Source: xivo-dao
 Section: python
-Priority: extra
+Priority: optional
 Maintainer: Wazo Maintainers <dev@wazo.community>
 Build-Depends: debhelper (>= 9),
                dh-python,
@@ -11,9 +11,6 @@ X-Python3-Version: >= 3.9
 
 Package: xivo-libdao-python3
 Architecture: all
-Provides: xivo-libdao
-Conflicts: xivo-libdao
-Replaces: xivo-libdao
 Depends: ${python3:Depends},
          ${misc:Depends},
          xivo-lib-python-python3,
