@@ -31,9 +31,8 @@ class Queue(Base, AsteriskOptionsMixin):
         'random-periodic-announce',
     }
 
-    _options = (
-        []
-    )  # This should eventually be a column to set arbitrary asterisk options
+    # This should eventually be a column to set arbitrary asterisk options
+    _options = []
 
     __tablename__ = 'queue'
     __table_args__ = (

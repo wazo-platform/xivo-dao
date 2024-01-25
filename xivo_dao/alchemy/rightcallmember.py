@@ -26,7 +26,7 @@ class RightCallMember(Base):
     group = relationship(
         'GroupFeatures',
         primaryjoin="""and_(RightCallMember.type == 'group',
-                                             RightCallMember.typeval == cast(GroupFeatures.id, String))""",
+                            RightCallMember.typeval == cast(GroupFeatures.id, String))""",
         foreign_keys='RightCallMember.typeval',
         viewonly=True,
     )
@@ -34,7 +34,7 @@ class RightCallMember(Base):
     outcall = relationship(
         'Outcall',
         primaryjoin="""and_(RightCallMember.type == 'outcall',
-                                               RightCallMember.typeval == cast(Outcall.id, String))""",
+                            RightCallMember.typeval == cast(Outcall.id, String))""",
         foreign_keys='RightCallMember.typeval',
         viewonly=True,
     )
@@ -42,7 +42,7 @@ class RightCallMember(Base):
     user = relationship(
         'UserFeatures',
         primaryjoin="""and_(RightCallMember.type == 'user',
-                                            RightCallMember.typeval == cast(UserFeatures.id, String))""",
+                            RightCallMember.typeval == cast(UserFeatures.id, String))""",
         foreign_keys='RightCallMember.typeval',
         viewonly=True,
     )

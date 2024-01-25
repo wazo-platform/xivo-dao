@@ -25,7 +25,7 @@ class DialPattern(Base):
     extension = relationship(
         'Extension',
         primaryjoin="""and_(Extension.type == 'outcall',
-                                                 Extension.typeval == cast(DialPattern.id, String))""",
+                            Extension.typeval == cast(DialPattern.id, String))""",
         foreign_keys='Extension.typeval',
         uselist=False,
         passive_deletes='all',
@@ -34,7 +34,7 @@ class DialPattern(Base):
     outcall = relationship(
         'Outcall',
         primaryjoin="""and_(DialPattern.type == 'outcall',
-                                               DialPattern.typeid == Outcall.id)""",
+                            DialPattern.typeid == Outcall.id)""",
         foreign_keys='DialPattern.typeid',
         uselist=False,
     )
