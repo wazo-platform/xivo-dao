@@ -20,8 +20,11 @@ def get(session, user_id):
         result = session.query(UserFeatures).filter(UserFeatures.id == user_id).first()
     else:
         result = (
-            session.query(UserFeatures).filter(UserFeatures.uuid == user_id).first()
-        )
+            session
+            .query(UserFeatures)
+            .filter(UserFeatures.uuid == user_id)
+            .first()
+        )  # fmt: skip
     if result is None:
         raise LookupError()
     return result
@@ -30,8 +33,11 @@ def get(session, user_id):
 @daosession
 def get_user_by_agent_id(session, agent_id):
     result = (
-        session.query(UserFeatures).filter(UserFeatures.agent_id == agent_id).first()
-    )
+        session.
+        query(UserFeatures)
+        .filter(UserFeatures.agent_id == agent_id)
+        .first()
+    )  # fmt: skip
     if not result:
         raise LookupError()
     return result

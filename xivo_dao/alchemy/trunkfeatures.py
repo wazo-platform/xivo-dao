@@ -134,8 +134,10 @@ class TrunkFeatures(Base):
             .as_scalar()
         )
         endpoint_iax_query = (
-            select([UserIAX.name]).where(UserIAX.id == cls.endpoint_iax_id).as_scalar()
-        )
+            select([UserIAX.name])
+            .where(UserIAX.id == cls.endpoint_iax_id)
+            .as_scalar()
+        )  # fmt: skip
         endpoint_custom_query = (
             select([UserCustom.interface])
             .where(UserCustom.id == cls.endpoint_custom_id)

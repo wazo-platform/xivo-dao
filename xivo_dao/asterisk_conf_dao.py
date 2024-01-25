@@ -788,19 +788,21 @@ def merge_endpoints_and_template(items, Klass, endpoint_field, *args):
             add_endpoint_configuration(parent)
 
         if item:
-            config = Klass(item, resolved_configs, *args)
+            endpoint_config = Klass(item, resolved_configs, *args)
         else:
-            config = _SIPEndpointResolver(endpoint, resolved_configs)
+            endpoint_config = _SIPEndpointResolver(endpoint, resolved_configs)
 
-        resolved_configs[endpoint.uuid] = config
+        resolved_configs[endpoint.uuid] = endpoint_config
 
     for item in items:
         add_endpoint_configuration(getattr(item, endpoint_field), item)
 
     endpoint_configs = (
-        config for config in resolved_configs.values() if not config.template
+        endpoint_config
+        for endpoint_config in resolved_configs.values()
+        if not endpoint_config.template
     )
-    return [config.resolve() for config in endpoint_configs]
+    return [endpoint_config.resolve() for endpoint_config in endpoint_configs]
 
 
 @daosession

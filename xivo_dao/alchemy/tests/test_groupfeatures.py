@@ -341,8 +341,11 @@ class TestExten(DAOTestCase):
         extension = self.add_extension(type='group', typeval=group.id)
 
         result = (
-            self.session.query(Group).filter(Group.exten == extension.exten).first()
-        )
+            self.session
+            .query(Group)
+            .filter(Group.exten == extension.exten)
+            .first()
+        )  # fmt: skip
 
         assert_that(result, equal_to(group))
         assert_that(result.exten, equal_to(extension.exten))

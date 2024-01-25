@@ -345,7 +345,7 @@ class ItemInserter:
         self.session.flush()
         return call_permission
 
-    def add_user_call_permission_with_user_and_call_permission(self):
+    def add_user_call_permission_with_fixtures(self):
         user = self.add_user()
         call_permission = self.add_call_permission()
         user_call_permission = self.add_user_call_permission(

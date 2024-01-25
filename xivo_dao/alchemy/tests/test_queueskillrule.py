@@ -30,10 +30,9 @@ class TestRules(DAOTestCase):
         assert_that(skill_rule.rule, equal_to(None))
 
     def test_expression(self):
-        skill_rule = self.add_queue_skill_rule(rules=['abcd', '1234'])
-        result = (
-            self.session.query(QueueSkillRule).filter_by(rules=['abcd', '1234']).first()
-        )
+        rules = ['abcd', '1234']
+        skill_rule = self.add_queue_skill_rule(rules=rules)
+        result = self.session.query(QueueSkillRule).filter_by(rules=rules).first()
         assert_that(result, equal_to(skill_rule))
 
     def test_expression_empty_rule(self):

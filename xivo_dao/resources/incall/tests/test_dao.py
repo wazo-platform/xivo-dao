@@ -525,8 +525,11 @@ class TestDelete(DAOTestCase):
         incall_dao.delete(incall)
 
         extension = (
-            self.session.query(Extension).filter(Extension.id == extension.id).first()
-        )
+            self.session
+            .query(Extension)
+            .filter(Extension.id == extension.id)
+            .first()
+        )  # fmt: skip
         assert_that(extension, has_properties(type='user', typeval='0'))
 
 

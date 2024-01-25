@@ -50,8 +50,11 @@ class TestContexts(DAOTestCase):
             ),
         )
         context_includes = (
-            self.session.query(ContextInclude).filter_by(context=context.name).all()
-        )
+            self.session
+            .query(ContextInclude)
+            .filter_by(context=context.name)
+            .all()
+        )  # fmt: skip
         assert_that(
             context_includes,
             contains_inanyorder(

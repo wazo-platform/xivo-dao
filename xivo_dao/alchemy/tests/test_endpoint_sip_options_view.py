@@ -62,8 +62,11 @@ class TestView(DAOTestCase):
         self.session.flush()
 
         result = (
-            self.session.query(EndpointSIPOptionsView).filter_by(root=sip.uuid).first()
-        )
+            self.session
+            .query(EndpointSIPOptionsView)
+            .filter_by(root=sip.uuid)
+            .first()
+        )  # fmt: skip
         assert_that(result.root, equal_to(sip.uuid))
         assert_that(result.options, has_entries(first='value1', second='value2'))
 

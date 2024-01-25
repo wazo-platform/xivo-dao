@@ -439,8 +439,11 @@ class TestDelete(DAOTestCase):
         trunk_dao.delete(trunk)
 
         deleted_register = (
-            self.session.query(StaticIAX).filter(StaticIAX.id == register_id).first()
-        )
+            self.session
+            .query(StaticIAX)
+            .filter(StaticIAX.id == register_id)
+            .first()
+        )  # fmt: skip
         assert_that(deleted_register, none())
 
 

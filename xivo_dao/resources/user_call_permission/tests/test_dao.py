@@ -28,9 +28,7 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, empty())
 
     def test_find_all_by(self):
-        user_call_permission = (
-            self.add_user_call_permission_with_user_and_call_permission()
-        )
+        user_call_permission = self.add_user_call_permission_with_fixtures()
 
         result = user_call_permission_dao.find_all_by(
             user_id=user_call_permission.user_id
@@ -160,9 +158,7 @@ class TestFindBy(DAOTestCase):
         assert_that(result, equal_to(None))
 
     def test_find_by(self):
-        user_call_permission = (
-            self.add_user_call_permission_with_user_and_call_permission()
-        )
+        user_call_permission = self.add_user_call_permission_with_fixtures()
 
         result = user_call_permission_dao.find_by(user_id=user_call_permission.user_id)
         assert_that(result, equal_to(user_call_permission))
@@ -187,9 +183,7 @@ class TestGetBy(DAOTestCase):
         self.assertRaises(NotFoundError, user_call_permission_dao.get_by, user_id=1)
 
     def test_get_by_user_id(self):
-        user_call_permission = (
-            self.add_user_call_permission_with_user_and_call_permission()
-        )
+        user_call_permission = self.add_user_call_permission_with_fixtures()
 
         result = user_call_permission_dao.get_by(user_id=user_call_permission.user_id)
         assert_that(result, equal_to(user_call_permission))
@@ -226,9 +220,7 @@ class TestAssociate(DAOTestCase):
 
 class TestDissociate(DAOTestCase):
     def test_dissociate_user_call_permission(self):
-        user_call_permission = (
-            self.add_user_call_permission_with_user_and_call_permission()
-        )
+        user_call_permission = self.add_user_call_permission_with_fixtures()
 
         user_call_permission_dao.dissociate(
             user_call_permission.user, user_call_permission.call_permission

@@ -114,10 +114,8 @@ class LineFixes:
                     .update({'interface': interface})
                 )
 
-                if row.Extension:
-                    local_interface = (
-                        f'Local/{row.Extension.exten}@{row.Extension.context}'
-                    )
+                if extension := row.Extension:
+                    local_interface = f'Local/{extension.exten}@{extension.context}'
                     (
                         self.session.query(QueueMember)
                         .filter(QueueMember.usertype == 'user')

@@ -48,8 +48,11 @@ class TestMeeting(DAOTestCase):
             ),
         )
         rows = (
-            self.session.query(MeetingOwner).filter_by(meeting_uuid=meeting.uuid).all()
-        )
+            self.session
+            .query(MeetingOwner)
+            .filter_by(meeting_uuid=meeting.uuid)
+            .all()
+        )  # fmt: skip
         assert_that(
             rows,
             contains_inanyorder(
@@ -128,8 +131,11 @@ class TestMeeting(DAOTestCase):
         assert_that(row, is_(not_(none())))
 
         rows = (
-            self.session.query(MeetingOwner).filter_by(meeting_uuid=meeting.uuid).all()
-        )
+            self.session
+            .query(MeetingOwner)
+            .filter_by(meeting_uuid=meeting.uuid)
+            .all()
+        )  # fmt: skip
         assert_that(rows, empty())
 
     def test_that_deleting_an_owner_removes_it_from_the_owners(self):
@@ -153,8 +159,11 @@ class TestMeeting(DAOTestCase):
         self.session.expunge_all()
 
         rows = (
-            self.session.query(MeetingOwner).filter_by(meeting_uuid=meeting.uuid).all()
-        )
+            self.session
+            .query(MeetingOwner)
+            .filter_by(meeting_uuid=meeting.uuid)
+            .all()
+        )  # fmt: skip
         assert_that(
             rows,
             contains_inanyorder(
