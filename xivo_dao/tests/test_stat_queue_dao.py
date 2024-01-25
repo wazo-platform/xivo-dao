@@ -12,7 +12,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestStatQueueDAO(DAOTestCase):
-
     def test_id_from_name(self):
         queue = self._insert_queue('test_queue')
 
@@ -59,18 +58,23 @@ class TestStatQueueDAO(DAOTestCase):
         master_tenant = str(uuid.uuid4())
 
         with flush_session(self.session):
-            stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
+            stat_queue_dao.insert_if_missing(
+                self.session, new_queues, confd_queues, master_tenant
+            )
 
         result = self._fetch_stat_queues()
-        assert_that(result, contains_inanyorder(
-            ('queue1', 'tenant1', 1, False),
-            ('queue2', 'tenant2', 2, False),
-            ('queue3', 'tenant3', 3, False),
-            ('queue4', 'tenant4', 4, False),
-            ('queue5', master_tenant, None, True),
-            ('queue6', 'tenant6', 6, True),
-            ('queue7', 'tenant7', 7, True),
-        ))
+        assert_that(
+            result,
+            contains_inanyorder(
+                ('queue1', 'tenant1', 1, False),
+                ('queue2', 'tenant2', 2, False),
+                ('queue3', 'tenant3', 3, False),
+                ('queue4', 'tenant4', 4, False),
+                ('queue5', master_tenant, None, True),
+                ('queue6', 'tenant6', 6, True),
+                ('queue7', 'tenant7', 7, True),
+            ),
+        )
 
     def test_when_queue_marked_as_deleted_then_new_one_is_created(self):
         confd_queues = [{'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}]
@@ -79,25 +83,35 @@ class TestStatQueueDAO(DAOTestCase):
         master_tenant = str(uuid.uuid4())
 
         with flush_session(self.session):
-            stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
+            stat_queue_dao.insert_if_missing(
+                self.session, new_queues, confd_queues, master_tenant
+            )
 
         result = self._fetch_stat_queues()
-        assert_that(result, contains_inanyorder(
-            ('queue', 'tenant', 1, False),
-            ('queue_', 'tenant', 999, True),
-        ))
+        assert_that(
+            result,
+            contains_inanyorder(
+                ('queue', 'tenant', 1, False),
+                ('queue_', 'tenant', 999, True),
+            ),
+        )
 
     def test_mark_recreated_queues_with_same_name_as_deleted(self):
         confd_queues = {'queue': {'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}}
         self._insert_queue('queue', 'tenant', queue_id=999, deleted=False)
 
         with flush_session(self.session):
-            stat_queue_dao._mark_recreated_queues_with_same_name_as_deleted(self.session, confd_queues)
+            stat_queue_dao._mark_recreated_queues_with_same_name_as_deleted(
+                self.session, confd_queues
+            )
 
         result = self._fetch_stat_queues()
-        assert_that(result, contains_inanyorder(
-            ('queue', 'tenant', 999, True),
-        ))
+        assert_that(
+            result,
+            contains_inanyorder(
+                ('queue', 'tenant', 999, True),
+            ),
+        )
 
     def test_mark_non_confd_queues_as_deleted(self):
         confd_queues = [{'id': 1, 'name': 'queue1', 'tenant_uuid': 'tenant'}]
@@ -108,10 +122,13 @@ class TestStatQueueDAO(DAOTestCase):
             stat_queue_dao._mark_non_confd_queues_as_deleted(self.session, confd_queues)
 
         result = self._fetch_stat_queues()
-        assert_that(result, contains_inanyorder(
-            ('queue2', 'tenant', 2, True),
-            ('queue3', 'tenant', None, True),
-        ))
+        assert_that(
+            result,
+            contains_inanyorder(
+                ('queue2', 'tenant', 2, True),
+                ('queue3', 'tenant', None, True),
+            ),
+        )
 
     def test_create_missing_queues(self):
         confd_queues = {
@@ -127,11 +144,14 @@ class TestStatQueueDAO(DAOTestCase):
             )
 
         result = self._fetch_stat_queues()
-        assert_that(result, contains_inanyorder(
-            ('queue1', 'tenant', 1, False),
-            ('queue2', master_tenant, None, True),
-            ('queue3', 'tenant', None, True),
-        ))
+        assert_that(
+            result,
+            contains_inanyorder(
+                ('queue1', 'tenant', 1, False),
+                ('queue2', master_tenant, None, True),
+                ('queue3', 'tenant', None, True),
+            ),
+        )
 
     def test_rename_deleted_queues_with_duplicate_name(self):
         confd_queues = {'queue': {'id': 1, 'name': 'queue', 'tenant_uuid': 'tenant'}}
@@ -144,10 +164,13 @@ class TestStatQueueDAO(DAOTestCase):
             )
 
         result = self._fetch_stat_queues()
-        assert_that(result, contains_inanyorder(
-            ('queue_', 'tenant', 1, True),
-            ('queue__', 'tenant', 1, True),
-        ))
+        assert_that(
+            result,
+            contains_inanyorder(
+                ('queue_', 'tenant', 1, True),
+                ('queue__', 'tenant', 1, True),
+            ),
+        )
 
     def test_clean_table(self):
         self._insert_queue('queue1')
@@ -159,9 +182,11 @@ class TestStatQueueDAO(DAOTestCase):
     def _fetch_stat_queues(self):
         return [
             (name, tenant_uuid, queue_id, deleted)
-            for name, tenant_uuid, queue_id, deleted
-            in self.session.query(
-                StatQueue.name, StatQueue.tenant_uuid, StatQueue.queue_id, StatQueue.deleted
+            for name, tenant_uuid, queue_id, deleted in self.session.query(
+                StatQueue.name,
+                StatQueue.tenant_uuid,
+                StatQueue.queue_id,
+                StatQueue.deleted,
             ).all()
         ]
 

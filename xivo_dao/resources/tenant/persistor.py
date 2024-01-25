@@ -1,4 +1,4 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -9,7 +9,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class Persistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Tenant
 
     def __init__(self, session, search, tenant_uuids=None):

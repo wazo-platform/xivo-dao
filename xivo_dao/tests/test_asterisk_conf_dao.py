@@ -1405,8 +1405,12 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
                         contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
-                        contains_exactly('set_var', f'WAZO_MEETING_UUID={meeting.uuid}'),
-                        contains_exactly('set_var', f'WAZO_MEETING_NAME={meeting.name}'),
+                        contains_exactly(
+                            'set_var', f'WAZO_MEETING_UUID={meeting.uuid}'
+                        ),
+                        contains_exactly(
+                            'set_var', f'WAZO_MEETING_NAME={meeting.name}'
+                        ),
                         contains_exactly('context', self.context.name),
                     )
                 )
@@ -1572,8 +1576,12 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains_exactly('context', f'stasis-wazo-app-{application.uuid}'),
-                        contains_exactly('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
+                        contains_exactly(
+                            'context', f'stasis-wazo-app-{application.uuid}'
+                        ),
+                        contains_exactly(
+                            'set_var', f'TRANSFER_CONTEXT={self.context.name}'
+                        ),
                     )
                 )
             ),
@@ -1589,7 +1597,9 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        contains_exactly('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
+                        contains_exactly(
+                            'set_var', f'TRANSFER_CONTEXT={self.context.name}'
+                        ),
                     ),
                 )
             ),
@@ -1900,7 +1910,9 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains_exactly('set_var', f'WAZO_LINE_ID={line.id}'),
                         contains_exactly('context', self.context.name),
-                        contains_exactly('set_var', f'TRANSFER_CONTEXT={self.context.name}'),
+                        contains_exactly(
+                            'set_var', f'TRANSFER_CONTEXT={self.context.name}'
+                        ),
                     )
                 )
             ),
@@ -2185,7 +2197,9 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                         contains_exactly('aors', endpoint.name),
                         contains_exactly('auth', endpoint.name),
                         contains_exactly('identify_by', 'auth_username,username'),
-                        contains_exactly('outbound_auth', f'outbound_auth_{endpoint.name}'),
+                        contains_exactly(
+                            'outbound_auth', f'outbound_auth_{endpoint.name}'
+                        ),
                     ),
                     registration_section_options=has_items(
                         contains_exactly('type', 'registration'),

@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.usercustom import UserCustom as Custom
@@ -10,7 +10,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class CustomPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Custom
 
     def __init__(self, session, custom_search, tenant_uuids=None):

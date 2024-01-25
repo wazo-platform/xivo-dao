@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -17,7 +17,6 @@ from ..dialaction import Dialaction
 
 
 class TestDestNode(DAOTestCase):
-
     def test_dest_node_create(self):
         application = self.add_application()
         dest_node = ApplicationDestNode(type_='holding')
@@ -42,7 +41,6 @@ class TestDestNode(DAOTestCase):
 
 
 class TestLines(DAOTestCase):
-
     def test_getter(self):
         application = self.add_application()
         line1 = self.add_line(application_uuid=application.uuid)
@@ -52,7 +50,6 @@ class TestLines(DAOTestCase):
 
 
 class TestDeleter(DAOTestCase):
-
     def test_linefeatures(self):
         application = self.add_application()
         line = self.add_line(application_uuid=application.uuid)

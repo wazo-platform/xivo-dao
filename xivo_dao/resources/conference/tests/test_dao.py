@@ -28,7 +28,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_conference(self):
         result = conference_dao.find(42)
 
@@ -48,12 +47,13 @@ class TestFind(DAOTestCase):
         result = conference_dao.find(conference.id, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(conference))
 
-        result = conference_dao.find(conference.id, tenant_uuids=[self.default_tenant.uuid])
+        result = conference_dao.find(
+            conference.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_conference(self):
         self.assertRaises(NotFoundError, conference_dao.get, 42)
 
@@ -74,12 +74,13 @@ class TestGet(DAOTestCase):
         conference_row = self.add_conference()
         self.assertRaises(
             NotFoundError,
-            conference_dao.get, conference_row.id, tenant_uuids=[tenant.uuid],
+            conference_dao.get,
+            conference_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, conference_dao.find_by, invalid=42)
 
@@ -100,16 +101,19 @@ class TestFindBy(DAOTestCase):
         tenant = self.add_tenant()
 
         conference_row = self.add_conference()
-        conference = conference_dao.find_by(name=conference_row.name, tenant_uuids=[tenant.uuid])
+        conference = conference_dao.find_by(
+            name=conference_row.name, tenant_uuids=[tenant.uuid]
+        )
         assert_that(conference, none())
 
         conference_row = self.add_conference(tenant_uuid=tenant.uuid)
-        conference = conference_dao.find_by(name=conference_row.name, tenant_uuids=[tenant.uuid])
+        conference = conference_dao.find_by(
+            name=conference_row.name, tenant_uuids=[tenant.uuid]
+        )
         assert_that(conference, equal_to(conference_row))
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, conference_dao.get_by, invalid=42)
 
@@ -130,16 +134,19 @@ class TestGetBy(DAOTestCase):
         conference_row = self.add_conference()
         self.assertRaises(
             NotFoundError,
-            conference_dao.get_by, id=conference_row.id, tenant_uuids=[tenant.uuid],
+            conference_dao.get_by,
+            id=conference_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         conference_row = self.add_conference(tenant_uuid=tenant.uuid)
-        conference = conference_dao.get_by(id=conference_row.id, tenant_uuids=[tenant.uuid])
+        conference = conference_dao.get_by(
+            id=conference_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(conference, equal_to(conference_row))
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_conferences(self):
         result = conference_dao.find_all_by(name='toto')
 
@@ -149,8 +156,12 @@ class TestFindAllBy(DAOTestCase):
         pass
 
     def test_find_all_by_native_column(self):
-        conference1 = self.add_conference(name='bob', preprocess_subroutine='subroutine')
-        conference2 = self.add_conference(name='alice', preprocess_subroutine='subroutine')
+        conference1 = self.add_conference(
+            name='bob', preprocess_subroutine='subroutine'
+        )
+        conference2 = self.add_conference(
+            name='alice', preprocess_subroutine='subroutine'
+        )
 
         conferences = conference_dao.find_all_by(preprocess_subroutine='subroutine')
 
@@ -159,7 +170,7 @@ class TestFindAllBy(DAOTestCase):
             has_items(
                 has_property('id', conference1.id),
                 has_property('id', conference2.id),
-            )
+            ),
         )
 
     def test_find_all_multi_tenant(self):
@@ -175,18 +186,18 @@ class TestFindAllBy(DAOTestCase):
 
         tenants = [tenant.uuid]
         conferences = conference_dao.find_all_by(tenant_uuids=tenants, **kwargs)
-        assert_that(conferences, all_of(has_items(conference1), not_(has_items(conference2))))
+        assert_that(
+            conferences, all_of(has_items(conference1), not_(has_items(conference2)))
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = conference_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_conferences_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -214,13 +225,20 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleConferences(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.conference1 = self.add_conference(name='Ashton', preprocess_subroutine='resto')
-        self.conference2 = self.add_conference(name='Beaugarton', preprocess_subroutine='bar')
-        self.conference3 = self.add_conference(name='Casa', preprocess_subroutine='resto')
-        self.conference4 = self.add_conference(name='Dunkin', preprocess_subroutine='resto')
+        self.conference1 = self.add_conference(
+            name='Ashton', preprocess_subroutine='resto'
+        )
+        self.conference2 = self.add_conference(
+            name='Beaugarton', preprocess_subroutine='bar'
+        )
+        self.conference3 = self.add_conference(
+            name='Casa', preprocess_subroutine='resto'
+        )
+        self.conference4 = self.add_conference(
+            name='Dunkin', preprocess_subroutine='resto'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.conference2])
@@ -229,35 +247,46 @@ class TestSearchGivenMultipleConferences(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.conference1])
-        self.assert_search_returns_result(expected_resto, search='ton', preprocess_subroutine='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', preprocess_subroutine='resto'
+        )
 
         expected_bar = SearchResult(1, [self.conference2])
-        self.assert_search_returns_result(expected_bar, search='ton', preprocess_subroutine='bar')
+        self.assert_search_returns_result(
+            expected_bar, search='ton', preprocess_subroutine='bar'
+        )
 
-        expected_all_resto = SearchResult(3, [self.conference1, self.conference3, self.conference4])
-        self.assert_search_returns_result(expected_all_resto, preprocess_subroutine='resto', order='name')
+        expected_all_resto = SearchResult(
+            3, [self.conference1, self.conference3, self.conference4]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, preprocess_subroutine='resto', order='name'
+        )
 
     def test_when_searching_with_a_custom_extra_argument(self):
         expected_allow = SearchResult(1, [self.conference2])
         self.assert_search_returns_result(expected_allow, preprocess_subroutine='bar')
 
-        expected_all_deny = SearchResult(3, [self.conference1, self.conference3, self.conference4])
-        self.assert_search_returns_result(expected_all_deny, preprocess_subroutine='resto')
+        expected_all_deny = SearchResult(
+            3, [self.conference1, self.conference3, self.conference4]
+        )
+        self.assert_search_returns_result(
+            expected_all_deny, preprocess_subroutine='resto'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.conference1,
-                                 self.conference2,
-                                 self.conference3,
-                                 self.conference4])
+        expected = SearchResult(
+            4, [self.conference1, self.conference2, self.conference3, self.conference4]
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.conference4,
-                                    self.conference3,
-                                    self.conference2,
-                                    self.conference1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4, [self.conference4, self.conference3, self.conference2, self.conference1]
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -267,23 +296,21 @@ class TestSearchGivenMultipleConferences(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.conference2, self.conference3, self.conference4])
+        expected = SearchResult(
+            4, [self.conference2, self.conference3, self.conference4]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.conference2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, search='a', order='name', direction='desc', offset=1, limit=1
+        )
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         conference = Conference(tenant_uuid=self.default_tenant.uuid)
         created_conference = conference_dao.create(conference)
@@ -307,7 +334,7 @@ class TestCreate(DAOTestCase):
                 announce_user_count=False,
                 announce_only_user=True,
                 music_on_hold=None,
-            )
+            ),
         )
 
     def test_create_with_all_fields(self):
@@ -345,12 +372,11 @@ class TestCreate(DAOTestCase):
                 announce_only_user=False,
                 music_on_hold='music',
                 tenant_uuid=self.default_tenant.uuid,
-            )
+            ),
         )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         conference = conference_dao.create(
             Conference(
@@ -400,7 +426,7 @@ class TestEdit(DAOTestCase):
                 announce_user_count=False,
                 announce_only_user=True,
                 music_on_hold='other_music',
-            )
+            ),
         )
 
     def test_edit_set_fields_to_null(self):
@@ -433,12 +459,11 @@ class TestEdit(DAOTestCase):
                 pin=none(),
                 admin_pin=none(),
                 music_on_hold=none(),
-            )
+            ),
         )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         conference = self.add_conference()
 

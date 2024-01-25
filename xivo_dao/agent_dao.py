@@ -1,4 +1,4 @@
-# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
@@ -53,7 +53,13 @@ def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
     agent_row = query.first()
     if agent_row is None:
         raise LookupError(f'no agent found for user {user_uuid}')
-    agent = _Agent(agent_row.id, agent_row.tenant_uuid, agent_row.number, [], [user.id for user in agent_row.users])
+    agent = _Agent(
+        agent_row.id,
+        agent_row.tenant_uuid,
+        agent_row.number,
+        [],
+        [user.id for user in agent_row.users],
+    )
     _add_queues_to_agent(session, agent)
     return agent
 
@@ -65,14 +71,25 @@ def _get_agent(session, whereclause, tenant_uuids=None):
     agent = query.first()
     if agent is None:
         raise LookupError(f'no agent matching clause {whereclause.compile().params}')
-    return _Agent(agent.id, agent.tenant_uuid, agent.number, [], [user.id for user in agent.users])
+    return _Agent(
+        agent.id, agent.tenant_uuid, agent.number, [], [user.id for user in agent.users]
+    )
 
 
 def _add_queues_to_agent(session, agent):
-    query = select([QueueFeatures.id, QueueFeatures.tenant_uuid, QueueMember.queue_name, QueueMember.penalty],
-                   and_(QueueMember.usertype == 'agent',
-                        QueueMember.userid == agent.id,
-                        QueueMember.queue_name == QueueFeatures.name))
+    query = select(
+        [
+            QueueFeatures.id,
+            QueueFeatures.tenant_uuid,
+            QueueMember.queue_name,
+            QueueMember.penalty,
+        ],
+        and_(
+            QueueMember.usertype == 'agent',
+            QueueMember.userid == agent.id,
+            QueueMember.queue_name == QueueFeatures.name,
+        ),
+    )
 
     for row in session.execute(query):
         queue = _Queue(row['id'], row['tenant_uuid'], row['queue_name'], row['penalty'])

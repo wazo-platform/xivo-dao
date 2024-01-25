@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -28,7 +28,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class Incall(Base):
-
     __tablename__ = 'incall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -130,7 +129,9 @@ class Incall(Base):
 
     @exten.expression
     def exten(cls):
-        return (select([Extension.exten])
-                .where(Extension.type == 'incall')
-                .where(Extension.typeval == cast(cls.id, String))
-                .as_scalar())
+        return (
+            select([Extension.exten])
+            .where(Extension.type == 'incall')
+            .where(Extension.typeval == cast(cls.id, String))
+            .as_scalar()
+        )

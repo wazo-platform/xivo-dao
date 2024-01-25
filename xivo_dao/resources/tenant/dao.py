@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -9,7 +9,9 @@ from .search import tenant_search
 
 @daosession
 def find(session, resource_uuid, tenant_uuids=None):
-    return Persistor(session, tenant_search, tenant_uuids).find_by({'uuid': resource_uuid})
+    return Persistor(session, tenant_search, tenant_uuids).find_by(
+        {'uuid': resource_uuid}
+    )
 
 
 @daosession
@@ -24,7 +26,9 @@ def find_by(session, tenant_uuids=None, **criteria):
 
 @daosession
 def get(session, resource_uuid, tenant_uuids=None):
-    return Persistor(session, tenant_search, tenant_uuids).get_by({'uuid': resource_uuid})
+    return Persistor(session, tenant_search, tenant_uuids).get_by(
+        {'uuid': resource_uuid}
+    )
 
 
 @daosession

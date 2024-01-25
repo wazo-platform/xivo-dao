@@ -21,7 +21,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_external_app(self):
         user = self.add_user()
         result = user_external_app_dao.find(user.uuid, '42')
@@ -38,7 +37,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_user_external_app(self):
         user = self.add_user()
         self.assertRaises(NotFoundError, user_external_app_dao.get, user.uuid, '42')
@@ -53,10 +51,11 @@ class TestGet(DAOTestCase):
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         user = self.add_user()
-        self.assertRaises(InputError, user_external_app_dao.find_by, user.uuid, invalid=42)
+        self.assertRaises(
+            InputError, user_external_app_dao.find_by, user.uuid, invalid=42
+        )
 
     def test_find_by_name(self):
         user = self.add_user()
@@ -75,10 +74,11 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         user = self.add_user()
-        self.assertRaises(InputError, user_external_app_dao.get_by, user.uuid, invalid=42)
+        self.assertRaises(
+            InputError, user_external_app_dao.get_by, user.uuid, invalid=42
+        )
 
     def test_get_by_name(self):
         user = self.add_user()
@@ -91,11 +91,12 @@ class TestGetBy(DAOTestCase):
 
     def test_given_external_app_does_not_exist_then_raises_error(self):
         user = self.add_user()
-        self.assertRaises(NotFoundError, user_external_app_dao.get_by, user.uuid, name='42')
+        self.assertRaises(
+            NotFoundError, user_external_app_dao.get_by, user.uuid, name='42'
+        )
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_external_apps(self):
         user = self.add_user()
         result = user_external_app_dao.find_all_by(user.uuid, name='123')
@@ -104,18 +105,22 @@ class TestFindAllBy(DAOTestCase):
 
     def test_find_all_by_native_column(self):
         user = self.add_user()
-        user_external_app1 = self.add_user_external_app(name='app1', user_uuid=user.uuid)
+        user_external_app1 = self.add_user_external_app(
+            name='app1', user_uuid=user.uuid
+        )
         self.add_user_external_app(name='app2', user_uuid=user.uuid)
 
         result = user_external_app_dao.find_all_by(user.uuid, name='app1')
 
-        assert_that(result, has_items(
-            has_property('name', user_external_app1.name),
-        ))
+        assert_that(
+            result,
+            has_items(
+                has_property('name', user_external_app1.name),
+            ),
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.user = self.add_user()
@@ -126,7 +131,6 @@ class TestSearch(DAOTestCase):
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_external_apps_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -140,11 +144,12 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleUserExternalApps(TestSearch):
-
     def setUp(self):
         super().setUp()
         self.app1 = self.add_user_external_app(user_uuid=self.user.uuid, name='Ashton')
-        self.app2 = self.add_user_external_app(user_uuid=self.user.uuid, name='Beaugarton')
+        self.app2 = self.add_user_external_app(
+            user_uuid=self.user.uuid, name='Beaugarton'
+        )
         self.app3 = self.add_user_external_app(user_uuid=self.user.uuid, name='Casa')
         self.app4 = self.add_user_external_app(user_uuid=self.user.uuid, name='Dunkin')
 
@@ -166,7 +171,9 @@ class TestSearchGivenMultipleUserExternalApps(TestSearch):
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
         expected = SearchResult(4, [self.app4, self.app3, self.app2, self.app1])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
@@ -195,7 +202,6 @@ class TestSearchGivenMultipleUserExternalApps(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         user = self.add_user()
         external_app_model = UserExternalApp(user_uuid=user.uuid, name='required')
@@ -203,11 +209,14 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(external_app).persistent)
-        assert_that(external_app, has_properties(
-            name='required',
-            user_uuid=user.uuid,
-            configuration=None,
-        ))
+        assert_that(
+            external_app,
+            has_properties(
+                name='required',
+                user_uuid=user.uuid,
+                configuration=None,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         user = self.add_user()
@@ -221,16 +230,18 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(external_app).persistent)
-        assert_that(external_app, has_properties(
-            user_uuid=user.uuid,
-            name='user_external_app',
-            label='External App',
-            configuration={'key': {'subkey': 'value'}},
-        ))
+        assert_that(
+            external_app,
+            has_properties(
+                user_uuid=user.uuid,
+                name='user_external_app',
+                label='External App',
+                configuration={'key': {'subkey': 'value'}},
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         user = self.add_user()
         external_app = self.add_user_external_app(
@@ -243,21 +254,23 @@ class TestEdit(DAOTestCase):
         self.session.expire_all()
         external_app.name = 'other_user_external_app'
         external_app.configuration = {'edited': 'data'}
-        external_app.label = 'Other External App',
+        external_app.label = ('Other External App',)
 
         user_external_app_dao.edit(external_app)
 
         self.session.expire_all()
-        assert_that(external_app, has_properties(
-            user_uuid=user.uuid,
-            name='other_user_external_app',
-            label='Other External App',
-            configuration={'edited': 'data'},
-        ))
+        assert_that(
+            external_app,
+            has_properties(
+                user_uuid=user.uuid,
+                name='other_user_external_app',
+                label='Other External App',
+                configuration={'edited': 'data'},
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         user = self.add_user()
         external_app = self.add_user_external_app(user_uuid=user.uuid)

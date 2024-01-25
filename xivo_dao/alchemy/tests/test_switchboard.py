@@ -1,4 +1,4 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -19,13 +19,20 @@ from ..switchboard import Switchboard
 
 
 class TestDelete(DAOTestCase):
-
     def test_ivr_dialactions_are_deleted(self):
         switchboard = self.add_switchboard()
-        self.add_dialaction(category='ivr_choice', action='switchboard', actionarg1=switchboard.uuid)
-        self.add_dialaction(category='ivr', action='switchboard', actionarg1=switchboard.uuid)
-        self.add_dialaction(category='user', action='switchboard', actionarg1=switchboard.uuid)
-        self.add_dialaction(category='incall', action='switchboard', actionarg1=switchboard.uuid)
+        self.add_dialaction(
+            category='ivr_choice', action='switchboard', actionarg1=switchboard.uuid
+        )
+        self.add_dialaction(
+            category='ivr', action='switchboard', actionarg1=switchboard.uuid
+        )
+        self.add_dialaction(
+            category='user', action='switchboard', actionarg1=switchboard.uuid
+        )
+        self.add_dialaction(
+            category='incall', action='switchboard', actionarg1=switchboard.uuid
+        )
 
         self.session.delete(switchboard)
         self.session.flush()
@@ -63,12 +70,11 @@ class TestDelete(DAOTestCase):
 
 
 class TestFallbacks(DAOTestCase):
-
     def test_getter(self):
         switchboard = self.add_switchboard()
-        dialaction = self.add_dialaction(event='key',
-                                         category='switchboard',
-                                         categoryval=str(switchboard.uuid))
+        dialaction = self.add_dialaction(
+            event='key', category='switchboard', categoryval=str(switchboard.uuid)
+        )
 
         assert_that(switchboard.fallbacks['key'], equal_to(dialaction))
 
@@ -101,8 +107,9 @@ class TestFallbacks(DAOTestCase):
         switchboard.fallbacks = {'key': dialaction2}
         self.session.flush()
 
-        assert_that(switchboard.fallbacks['key'], has_properties(action='user',
-                                                                 actionarg1='1'))
+        assert_that(
+            switchboard.fallbacks['key'], has_properties(action='user', actionarg1='1')
+        )
 
     def test_setter_delete_undefined_key(self):
         switchboard = self.add_switchboard()

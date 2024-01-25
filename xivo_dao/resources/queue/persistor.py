@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -12,7 +12,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class QueuePersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Queue
 
     def __init__(self, session, queue_search, tenant_uuids=None):
@@ -43,8 +42,7 @@ class QueuePersistor(CriteriaBuilderMixin, BasePersistor):
             .options(joinedload('extensions'))
             .options(joinedload('caller_id'))
             .options(joinedload('queue_dialactions'))
-            .options(joinedload('schedule_paths')
-                     .joinedload('schedule'))
+            .options(joinedload('schedule_paths').joinedload('schedule'))
         )
 
     def delete(self, queue):
@@ -53,10 +51,12 @@ class QueuePersistor(CriteriaBuilderMixin, BasePersistor):
         self.session.flush()
 
     def _delete_associations(self, queue):
-        (self.session.query(ContextMember)
-         .filter(ContextMember.type == 'queue')
-         .filter(ContextMember.typeval == str(queue.id))
-         .delete())
+        (
+            self.session.query(ContextMember)
+            .filter(ContextMember.type == 'queue')
+            .filter(ContextMember.typeval == str(queue.id))
+            .delete()
+        )
 
         for extension in queue.extensions:
             extension.type = 'user'

@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers import errors
@@ -7,7 +7,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class Persistor(CriteriaBuilderMixin):
-
     _search_table = UserCallPermission
 
     def __init__(self, session):
@@ -18,7 +17,9 @@ class Persistor(CriteriaBuilderMixin):
         return query.first()
 
     def _find_query(self, criteria):
-        query = self.session.query(UserCallPermission).filter(UserCallPermission.type == 'user')
+        query = self.session.query(UserCallPermission).filter(
+            UserCallPermission.type == 'user'
+        )
         return self.build_criteria(query, criteria)
 
     def get_by(self, **criteria):
@@ -32,15 +33,21 @@ class Persistor(CriteriaBuilderMixin):
         return query.all()
 
     def associate_user_call_permission(self, user, call_permission):
-        user_call_permission = self.find_by(user_id=user.id, call_permission_id=call_permission.id)
+        user_call_permission = self.find_by(
+            user_id=user.id, call_permission_id=call_permission.id
+        )
         if not user_call_permission:
-            user_call_permission = UserCallPermission(user_id=user.id, call_permission_id=call_permission.id)
+            user_call_permission = UserCallPermission(
+                user_id=user.id, call_permission_id=call_permission.id
+            )
             self.session.add(user_call_permission)
             self.session.flush()
         return user_call_permission
 
     def dissociate_user_call_permission(self, user, call_permission):
-        user_call_permission = self.find_by(user_id=user.id, call_permission_id=call_permission.id)
+        user_call_permission = self.find_by(
+            user_id=user.id, call_permission_id=call_permission.id
+        )
         if user_call_permission:
             self.session.delete(user_call_permission)
             self.session.flush()

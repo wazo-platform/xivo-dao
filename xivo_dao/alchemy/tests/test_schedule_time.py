@@ -10,7 +10,6 @@ from xivo_dao.alchemy.schedule_time import ScheduleTime
 
 
 class TestHoursStart(unittest.TestCase):
-
     def test_getter(self):
         schedule_time = ScheduleTime(hours='07:15-08:15')
         assert_that(schedule_time.hours_start, equal_to('07:15'))
@@ -37,7 +36,6 @@ class TestHoursStart(unittest.TestCase):
 
 
 class TestHoursEnd(unittest.TestCase):
-
     def test_getter(self):
         schedule_time = ScheduleTime(hours='07:15-08:15')
         assert_that(schedule_time.hours_end, equal_to('08:15'))
@@ -64,16 +62,24 @@ class TestHoursEnd(unittest.TestCase):
 
 
 class TestWeekDays(unittest.TestCase):
-
     def test_getter_mix_range(self):
         schedule_time = ScheduleTime(weekdays='1,4-7,10')
         assert_that(schedule_time.week_days, contains_exactly(1, 4, 5, 6, 7, 10))
 
     def test_getter_none(self):
         schedule_time = ScheduleTime(weekdays=None)
-        assert_that(schedule_time.week_days, contains_exactly(
-            1, 2, 3, 4, 5, 6, 7,
-        ))
+        assert_that(
+            schedule_time.week_days,
+            contains_exactly(
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+            ),
+        )
 
     def test_setter_mix_range(self):
         schedule_time = ScheduleTime(week_days=[1, 3, 5, 6])
@@ -85,19 +91,48 @@ class TestWeekDays(unittest.TestCase):
 
 
 class TestMonthDays(unittest.TestCase):
-
     def test_getter_mix_range(self):
         schedule_time = ScheduleTime(monthdays='1,4-7,10')
         assert_that(schedule_time.month_days, contains_exactly(1, 4, 5, 6, 7, 10))
 
     def test_getter_none(self):
         schedule_time = ScheduleTime(monthdays=None)
-        assert_that(schedule_time.month_days, contains_exactly(
-            1, 2, 3, 4, 5, 6, 7, 8, 9,
-            10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-            20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-            30, 31,
-        ))
+        assert_that(
+            schedule_time.month_days,
+            contains_exactly(
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+            ),
+        )
 
     def test_setter_mix_range(self):
         schedule_time = ScheduleTime(month_days=[1, 3, 5, 6])
@@ -109,16 +144,29 @@ class TestMonthDays(unittest.TestCase):
 
 
 class TestMonthsList(unittest.TestCase):
-
     def test_getter_mix_range(self):
         schedule_time = ScheduleTime(months='1,4-7,10')
         assert_that(schedule_time.months_list, contains_exactly(1, 4, 5, 6, 7, 10))
 
     def test_getter_none(self):
         schedule_time = ScheduleTime(months=None)
-        assert_that(schedule_time.months_list, contains_exactly(
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-        ))
+        assert_that(
+            schedule_time.months_list,
+            contains_exactly(
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+            ),
+        )
 
     def test_setter_mix_range(self):
         schedule_time = ScheduleTime(months_list=[1, 3, 5, 6])
@@ -130,7 +178,6 @@ class TestMonthsList(unittest.TestCase):
 
 
 class TestType(unittest.TestCase):
-
     def test_getter(self):
         schedule = ScheduleTime(action='endcall:hangup')
         assert_that(schedule.type, equal_to('endcall'))
@@ -157,7 +204,6 @@ class TestType(unittest.TestCase):
 
 
 class TestSubtype(unittest.TestCase):
-
     def test_getter(self):
         schedule = ScheduleTime(action='endcall:hangup')
         assert_that(schedule.subtype, equal_to('hangup'))

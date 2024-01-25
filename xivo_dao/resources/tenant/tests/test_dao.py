@@ -22,7 +22,6 @@ UNKNOWN_UUID = str(uuid.uuid4())
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_resources(self):
         result = dao.find(UNKNOWN_UUID)
 
@@ -46,7 +45,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_resource(self):
         self.assertRaises(NotFoundError, dao.get, UNKNOWN_UUID)
 
@@ -66,7 +64,6 @@ class TestGet(DAOTestCase):
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, dao.find_by, invalid=42)
 
@@ -93,7 +90,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, dao.get_by, invalid=42)
 
@@ -112,7 +108,9 @@ class TestGetBy(DAOTestCase):
         row = self.add_tenant()
         self.assertRaises(
             NotFoundError,
-            dao.get_by, uuid=row.uuid, tenant_uuids=[UNKNOWN_UUID],
+            dao.get_by,
+            uuid=row.uuid,
+            tenant_uuids=[UNKNOWN_UUID],
         )
 
         resource = dao.get_by(uuid=row.uuid, tenant_uuids=[row.uuid])
@@ -120,7 +118,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_resource(self):
         result = dao.find_all_by(uuid=UNKNOWN_UUID)
 
@@ -137,14 +134,12 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_resource_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 

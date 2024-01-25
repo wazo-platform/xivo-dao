@@ -1,4 +1,4 @@
-# Copyright 2017-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -9,7 +9,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class SwitchboardMemberUser(Base):
-
     __tablename__ = 'switchboard_member_user'
     __table_args__ = (
         PrimaryKeyConstraint('switchboard_uuid', 'user_uuid'),

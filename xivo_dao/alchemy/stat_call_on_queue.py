@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, Index
@@ -11,7 +11,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class StatCallOnQueue(Base):
-
     __tablename__ = 'stat_call_on_queue'
     __table_args__ = (
         Index('stat_call_on_queue__idx_callid', 'callid'),
@@ -37,7 +36,7 @@ class StatCallOnQueue(Base):
             'abandoned',
             'timeout',
             name='call_exit_type',
-            metadata=Base.metadata
+            metadata=Base.metadata,
         ),
         nullable=False,
     )

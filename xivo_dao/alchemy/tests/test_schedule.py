@@ -19,7 +19,6 @@ from ..schedulepath import SchedulePath
 
 
 class TestIncalls(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         incall = self.add_incall()
@@ -38,7 +37,6 @@ class TestIncalls(DAOTestCase):
 
 
 class TestGroups(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         group = self.add_group()
@@ -57,11 +55,12 @@ class TestGroups(DAOTestCase):
 
 
 class TestOutcalls(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         outcall = self.add_outcall()
-        self.add_schedule_path(path='outcall', pathid=outcall.id, schedule_id=schedule.id)
+        self.add_schedule_path(
+            path='outcall', pathid=outcall.id, schedule_id=schedule.id
+        )
 
         self.session.expire_all()
         assert_that(schedule.outcalls, contains_exactly(outcall))
@@ -76,7 +75,6 @@ class TestOutcalls(DAOTestCase):
 
 
 class TestQueues(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         queue = self.add_queuefeatures()
@@ -95,7 +93,6 @@ class TestQueues(DAOTestCase):
 
 
 class TestUsers(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         user = self.add_user()
@@ -114,7 +111,6 @@ class TestUsers(DAOTestCase):
 
 
 class TestOpenPeriods(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         open_period = self.add_schedule_time(mode='opened', schedule_id=schedule.id)
@@ -137,7 +133,9 @@ class TestOpenPeriods(DAOTestCase):
     def test_setter_to_empty(self):
         schedule = self.add_schedule()
         self.add_schedule_time(mode='opened', schedule_id=schedule.id)
-        exceptional_period = self.add_schedule_time(mode='closed', schedule_id=schedule.id)
+        exceptional_period = self.add_schedule_time(
+            mode='closed', schedule_id=schedule.id
+        )
 
         schedule.open_periods = []
         self.session.flush()
@@ -148,10 +146,11 @@ class TestOpenPeriods(DAOTestCase):
 
 
 class TestExceptionalPeriods(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
-        exceptional_period = self.add_schedule_time(mode='closed', schedule_id=schedule.id)
+        exceptional_period = self.add_schedule_time(
+            mode='closed', schedule_id=schedule.id
+        )
         self.add_schedule_time(mode='opened', schedule_id=schedule.id)
 
         self.session.expire_all()
@@ -182,7 +181,6 @@ class TestExceptionalPeriods(DAOTestCase):
 
 
 class TestType(unittest.TestCase):
-
     def test_getter(self):
         schedule = Schedule(fallback_action='endcall:hangup')
         assert_that(schedule.type, equal_to('endcall'))
@@ -209,7 +207,6 @@ class TestType(unittest.TestCase):
 
 
 class TestSubtype(unittest.TestCase):
-
     def test_getter(self):
         schedule = Schedule(fallback_action='endcall:hangup')
         assert_that(schedule.subtype, equal_to('hangup'))
@@ -236,7 +233,6 @@ class TestSubtype(unittest.TestCase):
 
 
 class TestActionArg1(unittest.TestCase):
-
     def test_getter(self):
         schedule = Schedule(fallback_actionid=1)
         assert_that(schedule.actionarg1, equal_to(1))
@@ -251,7 +247,6 @@ class TestActionArg1(unittest.TestCase):
 
 
 class TestActionArg2(unittest.TestCase):
-
     def test_getter(self):
         schedule = Schedule(fallback_actionargs=2)
         assert_that(schedule.actionarg2, equal_to(2))
@@ -266,7 +261,6 @@ class TestActionArg2(unittest.TestCase):
 
 
 class TestEnabled(unittest.TestCase):
-
     def test_getter_true(self):
         schedule = Schedule(commented=0)
         assert_that(schedule.enabled, equal_to(True))
@@ -285,7 +279,6 @@ class TestEnabled(unittest.TestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_periods_are_deleted(self):
         schedule = self.add_schedule()
         self.add_schedule_time(mode='opened', schedule_id=schedule.id)

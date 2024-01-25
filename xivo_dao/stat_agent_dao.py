@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import namedtuple
@@ -25,8 +25,7 @@ def insert_missing_agents(session, confd_agents):
 def _mark_recreated_agents_with_same_number_as_deleted(session, confd_agents_by_key):
     db_agent_query = session.query(StatAgent).filter(StatAgent.deleted.is_(False))
     db_agents_by_name = {
-        AgentKey(agent.name, agent.tenant_uuid): agent
-        for agent in db_agent_query.all()
+        AgentKey(agent.name, agent.tenant_uuid): agent for agent in db_agent_query.all()
     }
 
     existing_in_confd = set(list(confd_agents_by_key.keys()))
@@ -44,7 +43,9 @@ def _mark_recreated_agents_with_same_number_as_deleted(session, confd_agents_by_
 def _mark_non_confd_agents_as_deleted(session, confd_agents_by_key):
     active_agent_ids = {agent['id'] for agent in confd_agents_by_key.values()}
     all_agent_ids = {r[0] for r in session.query(distinct(StatAgent.agent_id))}
-    deleted_agents = [agent for agent in list(all_agent_ids - active_agent_ids) if agent]
+    deleted_agents = [
+        agent for agent in list(all_agent_ids - active_agent_ids) if agent
+    ]
     (
         session.query(StatAgent)
         .filter(
@@ -54,7 +55,6 @@ def _mark_non_confd_agents_as_deleted(session, confd_agents_by_key):
             )
         )
         .update({'deleted': True}, synchronize_session=False)
-
     )
     session.flush()
 
@@ -63,8 +63,7 @@ def _create_missing_agents(session, confd_agents_by_key):
     new_agent_keys = set(confd_agents_by_key.keys())
     db_agent_query = session.query(StatAgent).filter(StatAgent.deleted.is_(False))
     old_agent_keys = {
-        AgentKey(agent.name, agent.tenant_uuid)
-        for agent in db_agent_query.all()
+        AgentKey(agent.name, agent.tenant_uuid) for agent in db_agent_query.all()
     }
     missing_agents = list(new_agent_keys - old_agent_keys)
     for agent_key in missing_agents:
@@ -82,7 +81,9 @@ def _rename_deleted_agents_with_duplicate_name(session, confd_agents_by_key):
     db_agent_query = session.query(StatAgent).filter(StatAgent.deleted.is_(True))
     for agent in db_agent_query.all():
         if AgentKey(agent.name, agent.tenant_uuid) in confd_agents_by_key:
-            agent.name = _find_next_available_name(session, agent.name, agent.tenant_uuid)
+            agent.name = _find_next_available_name(
+                session, agent.name, agent.tenant_uuid
+            )
             session.flush()
 
 

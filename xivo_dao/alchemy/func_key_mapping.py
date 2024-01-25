@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -19,18 +19,21 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyMapping(Base):
-
     __tablename__ = 'func_key_mapping'
     __table_args__ = (
         ForeignKeyConstraint(
             ('func_key_id', 'destination_type_id'),
-            ('func_key.id', 'func_key.destination_type_id')
+            ('func_key.id', 'func_key.destination_type_id'),
         ),
         UniqueConstraint('template_id', 'position'),
-        CheckConstraint('position > 0')
+        CheckConstraint('position > 0'),
     )
 
-    template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete='CASCADE'), primary_key=True)
+    template_id = Column(
+        Integer,
+        ForeignKey('func_key_template.id', ondelete='CASCADE'),
+        primary_key=True,
+    )
     func_key_id = Column(Integer, primary_key=True)
     destination_type_id = Column(Integer, primary_key=True)
     label = Column(String(128))
@@ -42,9 +45,10 @@ class FuncKeyMapping(Base):
 
     func_key_template = relationship(FuncKeyTemplate, viewonly=True)
     func_key_template_private = association_proxy(
-        'func_key_template', 'private',
+        'func_key_template',
+        'private',
         # Only to keep value persistent in the instance
-        creator=lambda _private: FuncKeyTemplate(private=_private)
+        creator=lambda _private: FuncKeyTemplate(private=_private),
     )
 
     def __init__(self, **kwargs):

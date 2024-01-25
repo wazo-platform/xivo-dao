@@ -8,7 +8,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestPhoneAccessDao(DAOTestCase):
-
     def test_get_authorized_subnets(self):
         host = '169.254.0.0/16'
         self.add_accessfeatures(host)

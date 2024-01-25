@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
@@ -10,7 +10,6 @@ from xivo_dao.alchemy.line_extension import LineExtension
 
 
 class LineExtensionPersistor(CriteriaBuilderMixin):
-
     _search_table = LineExtension
 
     def __init__(self, session):
@@ -39,9 +38,11 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
 
         line_main_extension = self.find_by(main_extension=True, line_id=line.id)
 
-        line_extension = LineExtension(line_id=line.id,
-                                       extension_id=extension.id,
-                                       main_extension=(False if line_main_extension else True))
+        line_extension = LineExtension(
+            line_id=line.id,
+            extension_id=extension.id,
+            main_extension=(False if line_main_extension else True),
+        )
 
         self.session.add(line_extension)
         self.session.flush()
@@ -66,11 +67,13 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
         return line_extension
 
     def _set_oldest_main_extension(self, line):
-        oldest_line_extension = (self.session.query(LineExtension)
-                                 .filter(LineExtension.line_id == line.id)
-                                 .filter(LineExtension.main_extension == False)  # noqa
-                                 .order_by(LineExtension.extension_id.asc())
-                                 .first())
+        oldest_line_extension = (
+            self.session.query(LineExtension)
+            .filter(LineExtension.line_id == line.id)
+            .filter(LineExtension.main_extension == False)  # noqa
+            .order_by(LineExtension.extension_id.asc())
+            .first()
+        )
 
         if oldest_line_extension:
             oldest_line_extension.main_extension = True

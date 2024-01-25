@@ -24,7 +24,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_schedule(self):
         result = schedule_dao.find(42)
 
@@ -49,7 +48,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_schedule(self):
         self.assertRaises(NotFoundError, schedule_dao.get, 42)
 
@@ -70,12 +68,13 @@ class TestGet(DAOTestCase):
         schedule_row = self.add_schedule()
         self.assertRaises(
             NotFoundError,
-            schedule_dao.get, schedule_row.id, tenant_uuids=[tenant.uuid],
+            schedule_dao.get,
+            schedule_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, schedule_dao.find_by, invalid=42)
 
@@ -105,7 +104,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, schedule_dao.get_by, invalid=42)
 
@@ -126,7 +124,9 @@ class TestGetBy(DAOTestCase):
         schedule_row = self.add_schedule()
         self.assertRaises(
             NotFoundError,
-            schedule_dao.get_by, id=schedule_row.id, tenant_uuids=[tenant.uuid],
+            schedule_dao.get_by,
+            id=schedule_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         schedule_row = self.add_schedule(tenant_uuid=tenant.uuid)
@@ -135,7 +135,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_schedules(self):
         result = schedule_dao.find_all_by(name='123')
 
@@ -150,35 +149,41 @@ class TestFindAllBy(DAOTestCase):
 
         schedules = schedule_dao.find_all_by(name='schedule')
 
-        assert_that(schedules, has_items(
-            has_property('id', schedule1.id),
-            has_property('id', schedule2.id)
-        ))
+        assert_that(
+            schedules,
+            has_items(
+                has_property('id', schedule1.id), has_property('id', schedule2.id)
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        schedule1 = self.add_schedule(description='description', tenant_uuid=tenant.uuid)
+        schedule1 = self.add_schedule(
+            description='description', tenant_uuid=tenant.uuid
+        )
         schedule2 = self.add_schedule(description='description')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        schedules = schedule_dao.find_all_by(description='description', tenant_uuids=tenants)
+        schedules = schedule_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
         assert_that(schedules, has_items(schedule1, schedule2))
 
         tenants = [tenant.uuid]
-        schedules = schedule_dao.find_all_by(description='description', tenant_uuids=tenants)
+        schedules = schedule_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
         assert_that(schedules, all_of(has_items(schedule1), not_(has_items(schedule2))))
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = schedule_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_schedules_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -206,7 +211,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleSchedules(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.schedule1 = self.add_schedule(name='Ashton', timezone='resto')
@@ -221,38 +225,54 @@ class TestSearchGivenMultipleSchedules(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.schedule1])
-        self.assert_search_returns_result(expected_resto, search='ton', timezone='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', timezone='resto'
+        )
 
         expected_bar = SearchResult(1, [self.schedule2])
         self.assert_search_returns_result(expected_bar, search='ton', timezone='bar')
 
-        expected_all_resto = SearchResult(3, [self.schedule1, self.schedule3, self.schedule4])
-        self.assert_search_returns_result(expected_all_resto, timezone='resto', order='timezone')
+        expected_all_resto = SearchResult(
+            3, [self.schedule1, self.schedule3, self.schedule4]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, timezone='resto', order='timezone'
+        )
 
     def test_when_searching_with_a_custom_extra_argument(self):
         expected_allow = SearchResult(1, [self.schedule2])
         self.assert_search_returns_result(expected_allow, timezone='bar')
 
-        expected_all_deny = SearchResult(3, [self.schedule1, self.schedule3, self.schedule4])
+        expected_all_deny = SearchResult(
+            3, [self.schedule1, self.schedule3, self.schedule4]
+        )
         self.assert_search_returns_result(expected_all_deny, timezone='resto')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.schedule1,
-            self.schedule2,
-            self.schedule3,
-            self.schedule4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.schedule1,
+                self.schedule2,
+                self.schedule3,
+                self.schedule4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.schedule4,
-            self.schedule3,
-            self.schedule2,
-            self.schedule1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.schedule4,
+                self.schedule3,
+                self.schedule2,
+                self.schedule1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -280,26 +300,28 @@ class TestSearchGivenMultipleSchedules(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         schedule_model = Schedule(tenant_uuid=self.default_tenant.uuid)
         schedule = schedule_dao.create(schedule_model)
 
         self.session.expire_all()
         assert_that(inspect(schedule).persistent)
-        assert_that(schedule, has_properties(
-            id=is_not(none()),
-            tenant_uuid=self.default_tenant.uuid,
-            name=None,
-            timezone=None,
-            fallback_action='none',
-            type='none',
-            fallback_actionid=None,
-            actionarg1=None,
-            fallback_actionargs=None,
-            actionarg2=None,
-            enabled=True
-        ))
+        assert_that(
+            schedule,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name=None,
+                timezone=None,
+                fallback_action='none',
+                type='none',
+                fallback_actionid=None,
+                actionarg1=None,
+                fallback_actionargs=None,
+                actionarg2=None,
+                enabled=True,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         schedule_model = Schedule(
@@ -315,19 +337,21 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(schedule).persistent)
-        assert_that(schedule, has_properties(
-            name='schedule',
-            tenant_uuid=self.default_tenant.uuid,
-            timezone='time/zone',
-            fallback_action='user',
-            fallback_actionid='2',
-            fallback_actionargs='10',
-            enabled=False,
-        ))
+        assert_that(
+            schedule,
+            has_properties(
+                name='schedule',
+                tenant_uuid=self.default_tenant.uuid,
+                timezone='time/zone',
+                fallback_action='user',
+                fallback_actionid='2',
+                fallback_actionargs='10',
+                enabled=False,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         schedule = self.add_schedule(
             name='schedule',
@@ -349,14 +373,17 @@ class TestEdit(DAOTestCase):
         schedule_dao.edit(schedule)
 
         self.session.expire_all()
-        assert_that(schedule, has_properties(
-            name='other_schedule',
-            timezone='other/time',
-            type='none',
-            actionarg1=None,
-            actionarg2=None,
-            enabled=True,
-        ))
+        assert_that(
+            schedule,
+            has_properties(
+                name='other_schedule',
+                timezone='other/time',
+                type='none',
+                actionarg1=None,
+                actionarg2=None,
+                enabled=True,
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
         schedule = self.add_schedule(
@@ -375,16 +402,18 @@ class TestEdit(DAOTestCase):
         schedule_dao.edit(schedule)
 
         self.session.expire_all()
-        assert_that(schedule, has_properties(
-            name=none(),
-            timezone=none(),
-            actionarg1=none(),
-            actionarg2=none(),
-        ))
+        assert_that(
+            schedule,
+            has_properties(
+                name=none(),
+                timezone=none(),
+                actionarg1=none(),
+                actionarg2=none(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         schedule = self.add_schedule()
 

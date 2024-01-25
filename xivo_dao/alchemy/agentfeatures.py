@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -9,7 +9,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class AgentFeatures(Base):
-
     __tablename__ = 'agentfeatures'
     __table_args__ = (
         UniqueConstraint('number', 'tenant_uuid'),
@@ -17,7 +16,9 @@ class AgentFeatures(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
+    )
     firstname = Column(String(128))
     lastname = Column(String(128))
     number = Column(String(40), nullable=False)
@@ -29,10 +30,7 @@ class AgentFeatures(Base):
     description = Column(Text)
     preprocess_subroutine = Column(String(79))
 
-    func_keys = relationship(
-        'FuncKeyDestAgent',
-        cascade='all, delete-orphan'
-    )
+    func_keys = relationship('FuncKeyDestAgent', cascade='all, delete-orphan')
 
     queue_queue_members = relationship(
         'QueueMember',

@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import sql
@@ -9,7 +9,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestinationType(Base):
-
     __tablename__ = 'func_key_destination_type'
 
     id = Column(Integer, primary_key=True)

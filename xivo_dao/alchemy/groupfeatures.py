@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -24,7 +24,6 @@ from .schedulepath import SchedulePath
 
 
 class GroupFeatures(Base):
-
     __tablename__ = 'groupfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -34,8 +33,12 @@ class GroupFeatures(Base):
     )
 
     id = Column(Integer)
-    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), nullable=False)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    uuid = Column(
+        UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), nullable=False
+    )
+    tenant_uuid = Column(
+        String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
+    )
     name = Column(String(128), nullable=False)
     label = Column(Text, nullable=False)
     transfer_user = Column(Integer, nullable=False, server_default='0')
@@ -57,12 +60,10 @@ class GroupFeatures(Base):
     )
 
     caller_id_mode = association_proxy(
-        'caller_id', 'mode',
-        creator=lambda _mode: Callerid(type='group', mode=_mode)
+        'caller_id', 'mode', creator=lambda _mode: Callerid(type='group', mode=_mode)
     )
     caller_id_name = association_proxy(
-        'caller_id', 'name',
-        creator=lambda _name: Callerid(type='group', name=_name)
+        'caller_id', 'name', creator=lambda _name: Callerid(type='group', name=_name)
     )
 
     extensions = relationship(
@@ -160,8 +161,11 @@ class GroupFeatures(Base):
     )
 
     schedules = association_proxy(
-        'schedule_paths', 'schedule',
-        creator=lambda _schedule: SchedulePath(path='group', schedule_id=_schedule.id, schedule=_schedule)
+        'schedule_paths',
+        'schedule',
+        creator=lambda _schedule: SchedulePath(
+            path='group', schedule_id=_schedule.id, schedule=_schedule
+        ),
     )
     rightcall_members = relationship(
         'RightCallMember',
@@ -171,12 +175,11 @@ class GroupFeatures(Base):
         cascade='all, delete-orphan',
     )
     call_permissions = association_proxy(
-        'rightcall_members', 'rightcall',
+        'rightcall_members',
+        'rightcall',
         creator=lambda _call_permission: RightCallMember(
-            type='group',
-            typeval=str(_call_permission.id),
-            rightcall=_call_permission
-        )
+            type='group', typeval=str(_call_permission.id), rightcall=_call_permission
+        ),
     )
 
     call_pickup_interceptors = relationship(
@@ -253,7 +256,7 @@ class GroupFeatures(Base):
                 weight=0,
                 category='group',
                 autofill=1,
-                announce_position='no'
+                announce_position='no',
             )
 
     @property

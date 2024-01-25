@@ -7,7 +7,13 @@ import pytz
 from datetime import datetime as t
 import pathlib
 
-from hamcrest import assert_that, contains_exactly, contains_inanyorder, equal_to, has_properties
+from hamcrest import (
+    assert_that,
+    contains_exactly,
+    contains_inanyorder,
+    equal_to,
+    has_properties,
+)
 
 from sqlalchemy import func
 
@@ -24,7 +30,6 @@ TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 class TestFillAnsweredCall(DAOTestCase):
-
     def setUp(self):
         DAOTestCase.setUp(self)
         self.callid = '1404377805.6457'
@@ -61,11 +66,15 @@ class TestFillAnsweredCall(DAOTestCase):
     def test_that_incomplete_calls_are_not_added(self):
         self.add_me_all([self.enterqueue_event, self.connect_event])
 
-        stat_dao.fill_answered_calls(self.session, t(2014, 7, 3, 10, 0, 0), t(2014, 7, 3, 10, 59, 59, 999999))
+        stat_dao.fill_answered_calls(
+            self.session, t(2014, 7, 3, 10, 0, 0), t(2014, 7, 3, 10, 59, 59, 999999)
+        )
 
-        count = self.session.query(
-            func.count(StatCallOnQueue.callid)
-        ).filter(StatCallOnQueue.callid == self.callid).scalar()
+        count = (
+            self.session.query(func.count(StatCallOnQueue.callid))
+            .filter(StatCallOnQueue.callid == self.callid)
+            .scalar()
+        )
 
         assert_that(count, equal_to(0))
 
@@ -74,18 +83,24 @@ class TestFillAnsweredCall(DAOTestCase):
         # this test case shows an example with a call starting at 10 and ending at 11 that will only
         # be generated at 11 but that will not be deleted at 11
         begin, end = t(2014, 7, 3, 11, 0, 0), t(2014, 7, 3, 11, 59, 59, 999999)
-        self.add_me_all([self.enterqueue_event, self.connect_event, self.complete_agent_event])
+        self.add_me_all(
+            [self.enterqueue_event, self.connect_event, self.complete_agent_event]
+        )
 
         stat_dao.fill_answered_calls(self.session, begin, end)
 
-        callids = stat_call_on_queue_dao.find_all_callid_between_date(self.session, begin, end)
+        callids = stat_call_on_queue_dao.find_all_callid_between_date(
+            self.session, begin, end
+        )
         stat_call_on_queue_dao.remove_callids(self.session, callids)
 
         stat_dao.fill_answered_calls(self.session, begin, end)
 
-        count = self.session.query(
-            func.count(StatCallOnQueue.callid)
-        ).filter(StatCallOnQueue.callid == self.callid).scalar()
+        count = (
+            self.session.query(func.count(StatCallOnQueue.callid))
+            .filter(StatCallOnQueue.callid == self.callid)
+            .scalar()
+        )
 
         assert_that(count, equal_to(1))
 
@@ -123,75 +138,78 @@ class TestFillAnsweredCall(DAOTestCase):
         )
         self.add_me_all([stat_agent_1, stat_agent_2])
 
-        self.add_me_all([
-            # Call on tenant 1
-            QueueLog(
-                time='2014-07-03 10:57:11.559080',
-                callid=callid_1,
-                queuename=stat_queue_1.name,
-                agent='NONE',
-                event='ENTERQUEUE',
-                data2='00049242184770',
-                data3='1',
-            ),
-            QueueLog(
-                time='2014-07-03 10:57:19.461280',
-                callid=callid_1,
-                queuename=stat_queue_1.name,
-                agent=stat_agent_1.name,
-                event='CONNECT',
-                data1='8',
-                data2='1404377831.6460',
-                data3='4',
-            ),
-            QueueLog(
-                time='2014-07-03 11:06:10.374302',
-                callid=callid_1,
-                queuename=stat_queue_1.name,
-                agent=stat_agent_1.name,
-                event='COMPLETEAGENT',
-                data1='8',
-                data2='531',
-                data3='1',
-            ),
-
-            # Call on tenant 2
-            QueueLog(
-                time='2014-07-03 10:57:11.559080',
-                callid=callid_2,
-                queuename=stat_queue_2.name,
-                agent='NONE',
-                event='ENTERQUEUE',
-                data2='00049242184770',
-                data3='1',
-            ),
-            QueueLog(
-                time='2014-07-03 10:57:19.461280',
-                callid=callid_2,
-                queuename=stat_queue_2.name,
-                agent=stat_agent_2.name,
-                event='CONNECT',
-                data1='8',
-                data2='1404377831.6460',
-                data3='4',
-            ),
-            QueueLog(
-                time='2014-07-03 11:06:10.374302',
-                callid=callid_2,
-                queuename=stat_queue_2.name,
-                agent=stat_agent_2.name,
-                event='COMPLETEAGENT',
-                data1='8',
-                data2='531',
-                data3='1',
-            ),
-        ])
+        self.add_me_all(
+            [
+                # Call on tenant 1
+                QueueLog(
+                    time='2014-07-03 10:57:11.559080',
+                    callid=callid_1,
+                    queuename=stat_queue_1.name,
+                    agent='NONE',
+                    event='ENTERQUEUE',
+                    data2='00049242184770',
+                    data3='1',
+                ),
+                QueueLog(
+                    time='2014-07-03 10:57:19.461280',
+                    callid=callid_1,
+                    queuename=stat_queue_1.name,
+                    agent=stat_agent_1.name,
+                    event='CONNECT',
+                    data1='8',
+                    data2='1404377831.6460',
+                    data3='4',
+                ),
+                QueueLog(
+                    time='2014-07-03 11:06:10.374302',
+                    callid=callid_1,
+                    queuename=stat_queue_1.name,
+                    agent=stat_agent_1.name,
+                    event='COMPLETEAGENT',
+                    data1='8',
+                    data2='531',
+                    data3='1',
+                ),
+                # Call on tenant 2
+                QueueLog(
+                    time='2014-07-03 10:57:11.559080',
+                    callid=callid_2,
+                    queuename=stat_queue_2.name,
+                    agent='NONE',
+                    event='ENTERQUEUE',
+                    data2='00049242184770',
+                    data3='1',
+                ),
+                QueueLog(
+                    time='2014-07-03 10:57:19.461280',
+                    callid=callid_2,
+                    queuename=stat_queue_2.name,
+                    agent=stat_agent_2.name,
+                    event='CONNECT',
+                    data1='8',
+                    data2='1404377831.6460',
+                    data3='4',
+                ),
+                QueueLog(
+                    time='2014-07-03 11:06:10.374302',
+                    callid=callid_2,
+                    queuename=stat_queue_2.name,
+                    agent=stat_agent_2.name,
+                    event='COMPLETEAGENT',
+                    data1='8',
+                    data2='531',
+                    data3='1',
+                ),
+            ]
+        )
 
         stat_dao.fill_answered_calls(self.session, begin, end)
 
-        results = self.session.query(StatCallOnQueue).filter(
-            StatCallOnQueue.callid.in_([callid_1, callid_2])
-        ).all()
+        results = (
+            self.session.query(StatCallOnQueue)
+            .filter(StatCallOnQueue.callid.in_([callid_1, callid_2]))
+            .all()
+        )
 
         assert_that(
             results,
@@ -208,12 +226,11 @@ class TestFillAnsweredCall(DAOTestCase):
                     stat_agent_id=stat_agent_2.id,
                     status='answered',
                 ),
-            )
+            ),
         )
 
 
 class TestFillSimpleCall(DAOTestCase):
-
     def setUp(self):
         DAOTestCase.setUp(self)
         self._create_functions()
@@ -262,12 +279,15 @@ class TestFillSimpleCall(DAOTestCase):
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
-        fill_simple_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_simple_calls.sql').read_text()
+        fill_simple_calls_fn = (
+            pathlib.Path(__file__)
+            .parent.joinpath('helpers/fill_simple_calls.sql')
+            .read_text()
+        )
         self.session.execute(fill_simple_calls_fn)
 
 
 class TestFillLeaveEmptyCall(DAOTestCase):
-
     def setUp(self):
         DAOTestCase.setUp(self)
         self._create_functions()
@@ -336,12 +356,15 @@ class TestFillLeaveEmptyCall(DAOTestCase):
 
     def _create_functions(self):
         # WARNING: This functions should always be the same as the one in xivo-manage-db
-        fill_leaveempty_calls_fn = pathlib.Path(__file__).parent.joinpath('helpers/fill_leaveempty_calls.sql').read_text()
+        fill_leaveempty_calls_fn = (
+            pathlib.Path(__file__)
+            .parent.joinpath('helpers/fill_leaveempty_calls.sql')
+            .read_text()
+        )
         self.session.execute(fill_leaveempty_calls_fn)
 
 
 class TestStatDAO(DAOTestCase):
-
     def setUp(self):
         DAOTestCase.setUp(self)
         self.start = t(2012, 7, 1, tzinfo=pytz.UTC)
@@ -356,7 +379,9 @@ class TestStatDAO(DAOTestCase):
         return [c for c in call_list if c[1] == callid][0]
 
     def test_get_login_intervals_in_range_calls_empty(self):
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         assert len(result) == 0
 
@@ -376,11 +401,11 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs(logins, [])
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
-        expected = {
-            self.aid1: sorted([(logins[0]['time'], self.end)])
-        }
+        expected = {self.aid1: sorted([(logins[0]['time'], self.end)])}
 
         assert expected == result
 
@@ -390,18 +415,22 @@ class TestStatDAO(DAOTestCase):
 
         talktime = datetime.timedelta(minutes=1)
 
-        logoffs = [{
-            'time': self.start,
-            'callid': 'login_1',
-            'agent': self.aname1,
-            'extension': extension,
-            'context': context,
-            'talktime': talktime,
-        }]
+        logoffs = [
+            {
+                'time': self.start,
+                'callid': 'login_1',
+                'agent': self.aname1,
+                'extension': extension,
+                'context': context,
+                'talktime': talktime,
+            }
+        ]
 
         self._insert_agent_callback_logins_logoffs([], logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         assert len(result) == 0
 
@@ -426,7 +455,9 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs([], logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         assert len(result) == 0
 
@@ -469,11 +500,11 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs(logins, logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
-        expected = {
-            self.aid1: sorted([(logintime, logouttime)])
-        }
+        expected = {self.aid1: sorted([(logintime, logouttime)])}
 
         assert expected == result
 
@@ -498,7 +529,9 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs(logins, logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         assert len(result) == 0
 
@@ -523,11 +556,11 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs([], logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
-        expected = {
-            self.aid1: sorted([(logintime, logouttime)])
-        }
+        expected = {self.aid1: sorted([(logintime, logouttime)])}
 
         assert expected == result
 
@@ -540,7 +573,7 @@ class TestStatDAO(DAOTestCase):
             datetime.timedelta(minutes=10, seconds=13),
             datetime.timedelta(minutes=20),
             datetime.timedelta(minutes=7, seconds=21),
-            datetime.timedelta(hours=2, minutes=3)
+            datetime.timedelta(hours=2, minutes=3),
         ]
 
         cb_logins = [
@@ -581,11 +614,17 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         expected = {
-            self.aid1: sorted([(cb_logins[0]['time'], cb_logoffs[0]['time']),
-                               (cb_logins[1]['time'], cb_logoffs[1]['time'])]),
+            self.aid1: sorted(
+                [
+                    (cb_logins[0]['time'], cb_logoffs[0]['time']),
+                    (cb_logins[1]['time'], cb_logoffs[1]['time']),
+                ]
+            ),
         }
 
         assert expected == result
@@ -613,7 +652,9 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_callback_logins_logoffs(cb_logins, [])
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         expected = {
             self.aid1: [(self.start, self.end)],
@@ -630,7 +671,7 @@ class TestStatDAO(DAOTestCase):
             event='CONNECT',
             data1='6',
             data2='linked_callid',
-            data3='2'
+            data3='2',
         )
         self.add_me(connect1)
         connect2 = QueueLog(
@@ -641,12 +682,14 @@ class TestStatDAO(DAOTestCase):
             event='CONNECT',
             data1='6',
             data2='linked_callid_2',
-            data3='4'
+            data3='4',
         )
 
         self.add_me(connect2)
 
-        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(
+            self.session, self.start, self.end
+        )
 
         expected = {}
 
@@ -678,13 +721,19 @@ class TestStatDAO(DAOTestCase):
                 self.session.add(callback_logoff)
 
     def _insert_transferred_calls(self, transferred_calls):
-        map(lambda transferred_call: self._insert_transferred_call(*transferred_call), transferred_calls)
+        map(
+            lambda transferred_call: self._insert_transferred_call(*transferred_call),
+            transferred_calls,
+        )
 
     def _insert_closed_calls(self, closed_calls):
         map(lambda closed_call: self._insert_closed_call(*closed_call), closed_calls)
 
     def _insert_completed_calls(self, completed_calls):
-        map(lambda completed_call: self._insert_completed_call(*completed_call), completed_calls)
+        map(
+            lambda completed_call: self._insert_completed_call(*completed_call),
+            completed_calls,
+        )
 
     def _insert_full_calls(self, full_calls):
         map(lambda full_call: self._insert_full_call(*full_call), full_calls)
@@ -696,10 +745,16 @@ class TestStatDAO(DAOTestCase):
         map(lambda le_call: self._insert_leaveempty_call(*le_call), le_calls)
 
     def _insert_ca_ratio_calls(self, ca_ratio_calls):
-        map(lambda ca_ratio_call: self._insert_ca_ratio_call(*ca_ratio_call), ca_ratio_calls)
+        map(
+            lambda ca_ratio_call: self._insert_ca_ratio_call(*ca_ratio_call),
+            ca_ratio_calls,
+        )
 
     def _insert_holdtime_calls(self, holdtime_calls):
-        map(lambda holdtime_call: self._insert_holdtime_call(*holdtime_call), holdtime_calls)
+        map(
+            lambda holdtime_call: self._insert_holdtime_call(*holdtime_call),
+            holdtime_calls,
+        )
 
     def _insert_transferred_call(self, time, callid, qname, aname, waittime, talktime):
         enterqueue = QueueLog(
@@ -709,22 +764,26 @@ class TestStatDAO(DAOTestCase):
             agent='NONE',
             event='ENTERQUEUE',
             data2='1001',
-            data3='1'
+            data3='1',
         )
 
         connect = QueueLog(
-            time=(time + datetime.timedelta(seconds=waittime)).strftime(TIMESTAMP_FORMAT),
+            time=(time + datetime.timedelta(seconds=waittime)).strftime(
+                TIMESTAMP_FORMAT
+            ),
             callid=callid,
             queuename=qname,
             agent=aname,
             event='CONNECT',
             data1=str(waittime),
             data2='1344965966.141',
-            data3='1'
+            data3='1',
         )
 
         transfer = QueueLog(
-            time=(time + datetime.timedelta(seconds=waittime + talktime)).strftime(TIMESTAMP_FORMAT),
+            time=(time + datetime.timedelta(seconds=waittime + talktime)).strftime(
+                TIMESTAMP_FORMAT
+            ),
             callid=callid,
             queuename=qname,
             agent=aname,
@@ -732,12 +791,14 @@ class TestStatDAO(DAOTestCase):
             data1='s',
             data2='user',
             data3=str(waittime),
-            data4=str(talktime)
+            data4=str(talktime),
         )
 
         self.add_me_all([enterqueue, connect, transfer])
 
-    def _insert_completed_call(self, time, callid, qname, aname, waittime, talktime, agent_complete):
+    def _insert_completed_call(
+        self, time, callid, qname, aname, waittime, talktime, agent_complete
+    ):
         enterqueue = QueueLog(
             time=time.strftime(TIMESTAMP_FORMAT),
             callid=callid,
@@ -745,28 +806,32 @@ class TestStatDAO(DAOTestCase):
             agent='NONE',
             event='ENTERQUEUE',
             data2='1001',
-            data3='1'
+            data3='1',
         )
 
         connect = QueueLog(
-            time=(time + datetime.timedelta(seconds=waittime)).strftime(TIMESTAMP_FORMAT),
+            time=(time + datetime.timedelta(seconds=waittime)).strftime(
+                TIMESTAMP_FORMAT
+            ),
             callid=callid,
             queuename=qname,
             agent=aname,
             event='CONNECT',
             data1=str(waittime),
             data2='1344965966.141',
-            data3='1'
+            data3='1',
         )
 
         complete = QueueLog(
-            time=(time + datetime.timedelta(seconds=waittime + talktime)).strftime(TIMESTAMP_FORMAT),
+            time=(time + datetime.timedelta(seconds=waittime + talktime)).strftime(
+                TIMESTAMP_FORMAT
+            ),
             callid=callid,
             queuename=qname,
             agent=aname,
             event='COMPLETEAGENT' if agent_complete else 'COMPLETECALLER',
             data1=str(waittime),
-            data2=str(talktime)
+            data2=str(talktime),
         )
 
         self.add_me_all([enterqueue, connect, complete])
@@ -777,7 +842,7 @@ class TestStatDAO(DAOTestCase):
             callid=callid,
             queuename=qname,
             agent='NONE',
-            event='FULL'
+            event='FULL',
         )
 
         self.add_me(full)
@@ -788,7 +853,7 @@ class TestStatDAO(DAOTestCase):
             callid=callid,
             queuename=qname,
             agent='NONE',
-            event='JOINEMPTY'
+            event='JOINEMPTY',
         )
 
         self.session.add_me(je)
@@ -801,7 +866,7 @@ class TestStatDAO(DAOTestCase):
             agent='NONE',
             event='ENTERQUEUE',
             data2='1000',
-            data3='1'
+            data3='1',
         )
 
         leave_time = t + datetime.timedelta(seconds=waittime)
@@ -810,7 +875,7 @@ class TestStatDAO(DAOTestCase):
             callid=callid,
             queuename=qname,
             agent='NONE',
-            event='LEAVEEMPTY'
+            event='LEAVEEMPTY',
         )
 
         self.add_me_all([enterqueue, le])
@@ -821,7 +886,7 @@ class TestStatDAO(DAOTestCase):
             callid=callid,
             queuename=qname,
             agent='NONE',
-            event='CLOSED'
+            event='CLOSED',
         )
 
         self.add_me(closed)
@@ -832,7 +897,7 @@ class TestStatDAO(DAOTestCase):
             callid=callid,
             queuename=qname,
             agent='NONE',
-            event='DIVERT_CA_RATIO'
+            event='DIVERT_CA_RATIO',
         )
 
         self.add_me(call)
@@ -843,7 +908,7 @@ class TestStatDAO(DAOTestCase):
             callid=callid,
             queuename=qname,
             agent='NONE',
-            event='DIVERT_HOLDTIME'
+            event='DIVERT_HOLDTIME',
         )
 
         self.add_me(call)
@@ -865,18 +930,14 @@ class TestStatDAO(DAOTestCase):
         return q.name, q.id
 
     def test_merge_agent_statistics(self):
-        stat_1 = {1: [(1, 2),
-                      (2, 3)]}
+        stat_1 = {1: [(1, 2), (2, 3)]}
         stat_2 = {1: [(4, 5)]}
         stat_3 = {1: [(6, 7)]}
         stat_4 = {1: [(5, 8)]}
 
         statistics = stat_dao._merge_agent_statistics(stat_1, stat_2, stat_3, stat_4)
 
-        expected = {1: [(1, 2),
-                        (2, 3),
-                        (4, 5),
-                        (5, 8)]}
+        expected = {1: [(1, 2), (2, 3), (4, 5), (5, 8)]}
 
         assert len(statistics) == len(expected)
 

@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -9,7 +9,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestInSlotsRange(unittest.TestCase):
-
     def setUp(self):
         self.parking_lot = ParkingLot(slots_start='701', slots_end='750')
 
@@ -39,7 +38,6 @@ class TestInSlotsRange(unittest.TestCase):
 
 
 class TestExten(DAOTestCase):
-
     def test_getter(self):
         parking_lot = self.add_parking_lot()
         extension = self.add_extension(type='parking', typeval=parking_lot.id)

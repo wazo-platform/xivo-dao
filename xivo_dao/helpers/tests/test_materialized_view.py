@@ -26,10 +26,12 @@ def _create_materialized_view_class(
     name: str = '_',
     selectable: Base | None = None,
     dependencies: tuple[type[Base], ...] | None = None,
-    indexes: Sequence[Index] | None = None
+    indexes: Sequence[Index] | None = None,
 ) -> type:
     kwargs = {
-        '__table__': func(name, selectable, Base.metadata, indexes) if callable(func) else func,
+        '__table__': func(name, selectable, Base.metadata, indexes)
+        if callable(func)
+        else func,
     }
     if dependencies:
         kwargs['__view_dependencies__'] = dependencies
@@ -37,7 +39,6 @@ def _create_materialized_view_class(
 
 
 class TestMaterializedView(DAOTestCase):
-
     def test_view_init_table(self):
         assert_that(
             calling(_create_materialized_view_class).with_args(
@@ -47,7 +48,9 @@ class TestMaterializedView(DAOTestCase):
         )
 
     def test_view_class_creation(self):
-        view = _create_materialized_view_class(create_materialized_view, 'view-class-creation', select([1]))
+        view = _create_materialized_view_class(
+            create_materialized_view, 'view-class-creation', select([1])
+        )
         assert_that(issubclass(view, MaterializedView), equal_to(True))
 
     def test_view_init_with_none(self):
@@ -61,13 +64,17 @@ class TestMaterializedView(DAOTestCase):
             return 'bad return'
 
         assert_that(
-            calling(_create_materialized_view_class).with_args(some_func, 'view-without-helper-function', select([1])),
-            raises(InvalidRequestError)
+            calling(_create_materialized_view_class).with_args(
+                some_func, 'view-without-helper-function', select([1])
+            ),
+            raises(InvalidRequestError),
         )
 
     def test_view_init_with_invalid_view(self):
         assert_that(
-            calling(_create_materialized_view_class).with_args(('view-init-with-invalid-view', None)),
+            calling(_create_materialized_view_class).with_args(
+                ('view-init-with-invalid-view', None)
+            ),
             raises(InvalidRequestError),
         )
 
@@ -83,10 +90,15 @@ class TestMaterializedView(DAOTestCase):
             id = Column(Integer, primary_key=True)
 
         view = _create_materialized_view_class(
-            create_materialized_view, 'view-deps-event-found', select([1]), dependencies=(MockModel,)
+            create_materialized_view,
+            'view-deps-event-found',
+            select([1]),
+            dependencies=(MockModel,),
         )
         assert_that(view.autorefresh, equal_to(True))
 
     def test_view_dependencies_no_event_bound(self):
-        view = _create_materialized_view_class(create_materialized_view, 'view-deps-no-event-found', select([1]))
+        view = _create_materialized_view_class(
+            create_materialized_view, 'view-deps-no-event-found', select([1])
+        )
         assert_that(view.autorefresh, equal_to(False))

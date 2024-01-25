@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -12,7 +12,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class SipPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = EndpointSIP
 
     def __init__(self, session, sip_search, tenant_uuids=None):
@@ -37,8 +36,7 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
 
     def _search_query(self):
         return (
-            self.session
-            .query(self.search_system.config.table)
+            self.session.query(self.search_system.config.table)
             .options(joinedload('transport'))
             .options(joinedload('template_relations').joinedload('parent'))
             .options(joinedload('_aor_section'))
@@ -78,4 +76,6 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
             sip.name = generators.find_unused_hash(self._name_already_exists)
 
     def _name_already_exists(self, data):
-        return self.session.query(EndpointSIP).filter(EndpointSIP.name == data).count() > 0
+        return (
+            self.session.query(EndpointSIP).filter(EndpointSIP.name == data).count() > 0
+        )

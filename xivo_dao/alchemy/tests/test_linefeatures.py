@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -17,17 +17,19 @@ from ..endpoint_sip_options_view import EndpointSIPOptionsView
 
 
 class TestConstraint(DAOTestCase):
-
     def test_many_endpoints(self):
         sip = self.add_endpoint_sip()
         sccp = self.add_sccpline()
-        assert_that(calling(self.add_line).with_args(
-            endpoint_sip_uuid=sip.uuid, endpoint_sccp_id=sccp.id,
-        ), raises(IntegrityError))
+        assert_that(
+            calling(self.add_line).with_args(
+                endpoint_sip_uuid=sip.uuid,
+                endpoint_sccp_id=sccp.id,
+            ),
+            raises(IntegrityError),
+        )
 
 
 class TestTenantUUID(DAOTestCase):
-
     def test_tenant_uuid_getter(self):
         tenant = self.add_tenant()
         context = self.add_context(tenant_uuid=tenant.uuid)
@@ -42,16 +44,21 @@ class TestTenantUUID(DAOTestCase):
 
         line = self.add_line(context=context.name)
 
-        result = self.session.query(LineFeatures).filter(and_(
-            LineFeatures.id == line.id,
-            LineFeatures.tenant_uuid.in_([tenant.uuid]),
-        )).first()
+        result = (
+            self.session.query(LineFeatures)
+            .filter(
+                and_(
+                    LineFeatures.id == line.id,
+                    LineFeatures.tenant_uuid.in_([tenant.uuid]),
+                )
+            )
+            .first()
+        )
 
         assert_that(result, equal_to(line))
 
 
 class TestApplication(DAOTestCase):
-
     def test_getter(self):
         application = self.add_application()
         line = self.add_line(application_uuid=application.uuid)
@@ -59,13 +66,16 @@ class TestApplication(DAOTestCase):
 
 
 class TestCallerID(DAOTestCase):
-
     def test_get_caller_id_by_name(self):
         sip = self.add_endpoint_sip(caller_id='"Test 1" <1000>')
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
 
-        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_name.ilike("test 1")).first()
+        result = (
+            self.session.query(LineFeatures)
+            .filter(LineFeatures.caller_id_name.ilike("test 1"))
+            .first()
+        )
         assert_that(result, equal_to(line))
 
     def test_get_caller_id_by_num(self):
@@ -73,7 +83,11 @@ class TestCallerID(DAOTestCase):
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
 
-        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_num.ilike("1000")).first()
+        result = (
+            self.session.query(LineFeatures)
+            .filter(LineFeatures.caller_id_num.ilike("1000"))
+            .first()
+        )
         assert_that(result, equal_to(line))
 
     def test_get_inherited_callerid(self):
@@ -82,5 +96,9 @@ class TestCallerID(DAOTestCase):
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
 
         EndpointSIPOptionsView.refresh(concurrently=True)  # Simulate a database commit
-        result = self.session.query(LineFeatures).filter(LineFeatures.caller_id_name == "Test 1").first()
+        result = (
+            self.session.query(LineFeatures)
+            .filter(LineFeatures.caller_id_name == "Test 1")
+            .first()
+        )
         assert_that(result, equal_to(line))

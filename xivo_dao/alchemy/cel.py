@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, Index
@@ -8,7 +8,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class CEL(Base):
-
     __tablename__ = 'cel'
     __table_args__ = (
         Index('cel__idx__call_log_id', 'call_log_id'),

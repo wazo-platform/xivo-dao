@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.resources.configuration import dao
@@ -6,7 +6,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestConfigurationDao(DAOTestCase):
-
     def test_is_live_reload_enabled_when_default(self):
         self.add_infos()
 

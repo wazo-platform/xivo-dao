@@ -1,4 +1,4 @@
-# Copyright 2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload, selectinload, lazyload
@@ -25,9 +25,7 @@ user_unpaginated_strategy = (
         .selectinload('user'),
     ),
     joinedload('user_dialactions').selectinload('user'),
-    joinedload('incall_dialactions')
-    .selectinload('incall')
-    .selectinload('extensions'),
+    joinedload('incall_dialactions').selectinload('incall').selectinload('extensions'),
     joinedload('user_lines').options(
         selectinload('line').options(
             selectinload('application'),

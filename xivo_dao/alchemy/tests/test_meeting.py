@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -20,7 +20,6 @@ from ..userfeatures import UserFeatures
 
 
 class TestMeeting(DAOTestCase):
-
     def test_create_all_relations(self):
         owner_1 = self.add_user()
         owner_2 = self.add_user()
@@ -39,17 +38,28 @@ class TestMeeting(DAOTestCase):
         self.session.expunge_all()
 
         row = self.session.query(Meeting).filter_by(uuid=meeting.uuid).first()
-        assert_that(row, has_properties(
-            uuid=meeting.uuid,
-            name='My meeting',
-            tenant_uuid=self.default_tenant.uuid,
-            guest_endpoint_sip_uuid=endpoint_sip.uuid,
-        ))
-        rows = self.session.query(MeetingOwner).filter_by(meeting_uuid=meeting.uuid).all()
-        assert_that(rows, contains_inanyorder(
-            has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_1.uuid),
-            has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_2.uuid),
-        ))
+        assert_that(
+            row,
+            has_properties(
+                uuid=meeting.uuid,
+                name='My meeting',
+                tenant_uuid=self.default_tenant.uuid,
+                guest_endpoint_sip_uuid=endpoint_sip.uuid,
+            ),
+        )
+        rows = (
+            self.session
+            .query(MeetingOwner)
+            .filter_by(meeting_uuid=meeting.uuid)
+            .all()
+        )  # fmt: skip
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_1.uuid),
+                has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_2.uuid),
+            ),
+        )
 
     def test_owner_uuids(self):
         owner_1 = self.add_user()
@@ -120,7 +130,12 @@ class TestMeeting(DAOTestCase):
         row = self.session.query(UserFeatures).filter_by(uuid=owner_2.uuid).first()
         assert_that(row, is_(not_(none())))
 
-        rows = self.session.query(MeetingOwner).filter_by(meeting_uuid=meeting.uuid).all()
+        rows = (
+            self.session
+            .query(MeetingOwner)
+            .filter_by(meeting_uuid=meeting.uuid)
+            .all()
+        )  # fmt: skip
         assert_that(rows, empty())
 
     def test_that_deleting_an_owner_removes_it_from_the_owners(self):
@@ -143,10 +158,18 @@ class TestMeeting(DAOTestCase):
         self.session.flush()
         self.session.expunge_all()
 
-        rows = self.session.query(MeetingOwner).filter_by(meeting_uuid=meeting.uuid).all()
-        assert_that(rows, contains_inanyorder(
-            has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_2.uuid),
-        ))
+        rows = (
+            self.session
+            .query(MeetingOwner)
+            .filter_by(meeting_uuid=meeting.uuid)
+            .all()
+        )  # fmt: skip
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(meeting_uuid=meeting.uuid, user_uuid=owner_2.uuid),
+            ),
+        )
 
     def test_ingress_http(self):
         tenant = self.add_tenant()

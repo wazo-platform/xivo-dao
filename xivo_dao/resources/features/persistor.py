@@ -12,15 +12,16 @@ from .search import (
 
 
 class FeaturesPersistor:
-
     def __init__(self, session):
         self.session = session
 
     def find_all(self, section):
-        query = (self.session.query(Features)
-                 .filter(Features.category == section)
-                 .filter(Features.var_val != None)  # noqa
-                 .order_by(Features.var_metric.asc()))
+        query = (
+            self.session.query(Features)
+            .filter(Features.category == section)
+            .filter(Features.var_val != None)  # noqa
+            .order_by(Features.var_metric.asc())
+        )
 
         return query.all()
 
@@ -38,32 +39,43 @@ class FeaturesPersistor:
         return features
 
     def _delete_all_section(self, section):
-        query = (self.session.query(Features)
-                 .filter(Features.category == section))
+        query = self.session.query(Features).filter(Features.category == section)
 
         if section == 'featuremap':
-            query = query.filter(not_(Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)))
+            query = query.filter(
+                not_(Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY))
+            )
 
         if section == 'applicationmap':
-            query = query.filter(not_(Features.var_name.in_(FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY)))
+            query = query.filter(
+                not_(Features.var_name.in_(FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY))
+            )
 
         query.delete(synchronize_session=False)
 
     def _update_existing_foreign_key_features(self, features):
-        query = (self.session.query(Features)
-                 .filter(or_(
-                     and_(Features.category == 'featuremap',
-                          Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)),
-                     and_(Features.category == 'applicationmap',
-                          Features.var_name.in_(FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY)),
-                 )))
+        query = self.session.query(Features).filter(
+            or_(
+                and_(
+                    Features.category == 'featuremap',
+                    Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY),
+                ),
+                and_(
+                    Features.category == 'applicationmap',
+                    Features.var_name.in_(FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY),
+                ),
+            )
+        )
         old_features = query.all()
 
         results = []
         for feature in features:
             results.append(feature)
             for old_feature in old_features:
-                if old_feature.category == feature.category and old_feature.var_name == feature.var_name:
+                if (
+                    old_feature.category == feature.category
+                    and old_feature.var_name == feature.var_name
+                ):
                     old_feature.var_val = feature.var_val
                     self._fix_commented(old_feature)
                     results.remove(feature)

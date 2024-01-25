@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.resources.extension.fixes import ExtensionFixes
@@ -12,7 +12,6 @@ from xivo_dao.alchemy.queuemember import QueueMember
 
 
 class Persistor(CriteriaBuilderMixin):
-
     _search_table = UserLine
 
     def __init__(self, session, resource):
@@ -43,10 +42,12 @@ class Persistor(CriteriaBuilderMixin):
         main_user_line = self.find_by(main_user=True, line_id=line.id)
         user_main_line = self.find_by(main_line=True, user_id=user.id)
 
-        user_line = UserLine(user_id=user.id,
-                             line_id=line.id,
-                             main_line=(False if user_main_line else True),
-                             main_user=(False if main_user_line else True))
+        user_line = UserLine(
+            user_id=user.id,
+            line_id=line.id,
+            main_line=(False if user_main_line else True),
+            main_user=(False if main_user_line else True),
+        )
 
         self.session.add(user_line)
         self.session.flush()
@@ -80,18 +81,22 @@ class Persistor(CriteriaBuilderMixin):
         else:
             return
 
-        (self.session.query(QueueMember)
-         .filter(QueueMember.usertype == 'user')
-         .filter(QueueMember.userid == user_line.user_id)
-         .filter(QueueMember.interface == interface)
-         .delete())
+        (
+            self.session.query(QueueMember)
+            .filter(QueueMember.usertype == 'user')
+            .filter(QueueMember.userid == user_line.user_id)
+            .filter(QueueMember.interface == interface)
+            .delete()
+        )
 
     def _set_oldest_main_line(self, user):
-        oldest_user_line = (self.session.query(UserLine)
-                            .filter(UserLine.user_id == user.id)
-                            .filter(UserLine.main_line == False)  # noqa
-                            .order_by(UserLine.line_id.asc())
-                            .first())
+        oldest_user_line = (
+            self.session.query(UserLine)
+            .filter(UserLine.user_id == user.id)
+            .filter(UserLine.main_line == False)  # noqa
+            .order_by(UserLine.line_id.asc())
+            .first()
+        )
         if oldest_user_line:
             oldest_user_line.main_line = True
             self.session.add(oldest_user_line)

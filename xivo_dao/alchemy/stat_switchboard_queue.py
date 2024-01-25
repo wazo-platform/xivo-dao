@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -11,15 +11,10 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class StatSwitchboardQueue(Base):
-
     __tablename__ = 'stat_switchboard_queue'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(
-            ('queue_id',),
-            ('queuefeatures.id',),
-            ondelete='CASCADE'
-        ),
+        ForeignKeyConstraint(('queue_id',), ('queuefeatures.id',), ondelete='CASCADE'),
         Index('stat_switchboard_queue__idx__queue_id', 'queue_id'),
         Index('stat_switchboard_queue__idx__time', 'time'),
     )

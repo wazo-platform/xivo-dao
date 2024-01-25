@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -36,7 +36,6 @@ logger = logging.getLogger(__name__)
 
 
 class EndpointSIPTemplate(Base):
-
     __tablename__ = 'endpoint_sip_template'
 
     child_uuid = Column(
@@ -55,15 +54,18 @@ class EndpointSIPTemplate(Base):
 
 
 class EndpointSIP(Base):
-
     __tablename__ = 'endpoint_sip'
     __table_args__ = (UniqueConstraint('name'),)
 
-    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
+    uuid = Column(
+        UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True
+    )
     label = Column(Text)
     name = Column(Text, nullable=False)
     asterisk_id = Column(Text)
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    tenant_uuid = Column(
+        String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
+    )
     transport_uuid = Column(UUID(as_uuid=True), ForeignKey('pjsip_transport.uuid'))
     template = Column(Boolean, server_default=text('false'))
 
@@ -88,31 +90,45 @@ class EndpointSIP(Base):
     )
     _aor_section = relationship(
         'AORSection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True,
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     _auth_section = relationship(
         'AuthSection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True,
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     _endpoint_section = relationship(
         'EndpointSection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True,
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     _registration_section = relationship(
         'RegistrationSection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     _registration_outbound_auth_section = relationship(
         'RegistrationOutboundAuthSection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True,
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     _identify_section = relationship(
         'IdentifySection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True,
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     _outbound_auth_section = relationship(
         'OutboundAuthSection',
-        uselist=False, cascade="all, delete-orphan", passive_deletes=True,
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     def __init__(
@@ -126,7 +142,7 @@ class EndpointSIP(Base):
         outbound_auth_section_options=None,
         caller_id=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if aor_section_options:
             kwargs['_aor_section'] = AORSection(
@@ -145,7 +161,9 @@ class EndpointSIP(Base):
                 options=registration_section_options,
             )
         if registration_outbound_auth_section_options:
-            kwargs['_registration_outbound_auth_section'] = RegistrationOutboundAuthSection(
+            kwargs[
+                '_registration_outbound_auth_section'
+            ] = RegistrationOutboundAuthSection(
                 options=registration_outbound_auth_section_options,
             )
         if identify_section_options:
@@ -385,16 +403,19 @@ class EndpointSIP(Base):
 
     @username.expression
     def username(cls):
-        return select(
-            [EndpointSIPSectionOption.value]
-        ).where(
-            and_(
-                cls.uuid == EndpointSIPSection.endpoint_sip_uuid,
-                EndpointSIPSection.type == 'auth',
-                EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
-                EndpointSIPSectionOption.key == 'username',
+        return (
+            select([EndpointSIPSectionOption.value])
+            .where(
+                and_(
+                    cls.uuid == EndpointSIPSection.endpoint_sip_uuid,
+                    EndpointSIPSection.type == 'auth',
+                    EndpointSIPSectionOption.endpoint_sip_section_uuid
+                    == EndpointSIPSection.uuid,
+                    EndpointSIPSectionOption.key == 'username',
+                )
             )
-        ).as_scalar()
+            .as_scalar()
+        )
 
     @hybrid_property
     def password(self):
@@ -402,16 +423,19 @@ class EndpointSIP(Base):
 
     @password.expression
     def password(cls):
-        return select(
-            [EndpointSIPSectionOption.value]
-        ).where(
-            and_(
-                cls.uuid == EndpointSIPSection.endpoint_sip_uuid,
-                EndpointSIPSection.type == 'auth',
-                EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
-                EndpointSIPSectionOption.key == 'password',
+        return (
+            select([EndpointSIPSectionOption.value])
+            .where(
+                and_(
+                    cls.uuid == EndpointSIPSection.endpoint_sip_uuid,
+                    EndpointSIPSection.type == 'auth',
+                    EndpointSIPSectionOption.endpoint_sip_section_uuid
+                    == EndpointSIPSection.uuid,
+                    EndpointSIPSectionOption.key == 'password',
+                )
             )
-        ).as_scalar()
+            .as_scalar()
+        )
 
     def _find_first_value(self, section, key):
         if not section:

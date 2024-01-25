@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.extension import Extension
@@ -36,17 +36,14 @@ class LineSearchSystem(SearchSystem):
     def _search_on_extension(self, query):
         return query.outerjoin(
             LineExtension,
-            and_(
-                LineExtension.line_id == LineFeatures.id,
-                LineFeatures.commented == 0
-            )
+            and_(LineExtension.line_id == LineFeatures.id, LineFeatures.commented == 0),
         ).outerjoin(
             Extension,
             and_(
                 LineExtension.extension_id == Extension.id,
                 LineExtension.line_id == LineFeatures.id,
                 Extension.commented == 0,
-            )
+            ),
         )
 
 

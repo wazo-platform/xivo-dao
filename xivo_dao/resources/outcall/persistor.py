@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.outcall import Outcall
@@ -9,7 +9,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class OutcallPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Outcall
 
     def __init__(self, session, outcall_search, tenant_uuids=None):
@@ -31,10 +30,12 @@ class OutcallPersistor(CriteriaBuilderMixin, BasePersistor):
         self.session.flush()
 
     def _delete_associations(self, outcall):
-        (self.session.query(RightCallMember)
-         .filter(RightCallMember.type == 'outcall')
-         .filter(RightCallMember.typeval == str(outcall.id))
-         .delete())
+        (
+            self.session.query(RightCallMember)
+            .filter(RightCallMember.type == 'outcall')
+            .filter(RightCallMember.typeval == str(outcall.id))
+            .delete()
+        )
 
         for extension in outcall.extensions:
             extension.type = 'user'

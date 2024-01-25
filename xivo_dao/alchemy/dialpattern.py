@@ -1,4 +1,4 @@
-# Copyright 2012-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -10,11 +10,8 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class DialPattern(Base):
-
     __tablename__ = 'dialpattern'
-    __table_args__ = (
-        PrimaryKeyConstraint('id'),
-    )
+    __table_args__ = (PrimaryKeyConstraint('id'),)
 
     id = Column(Integer)
     type = Column(String(32), nullable=False)
@@ -25,18 +22,22 @@ class DialPattern(Base):
     stripnum = Column(Integer)
     callerid = Column(String(80))
 
-    extension = relationship('Extension',
-                             primaryjoin="""and_(Extension.type == 'outcall',
-                                                 Extension.typeval == cast(DialPattern.id, String))""",
-                             foreign_keys='Extension.typeval',
-                             uselist=False,
-                             passive_deletes='all')
+    extension = relationship(
+        'Extension',
+        primaryjoin="""and_(Extension.type == 'outcall',
+                            Extension.typeval == cast(DialPattern.id, String))""",
+        foreign_keys='Extension.typeval',
+        uselist=False,
+        passive_deletes='all',
+    )
 
-    outcall = relationship('Outcall',
-                           primaryjoin="""and_(DialPattern.type == 'outcall',
-                                               DialPattern.typeid == Outcall.id)""",
-                           foreign_keys='DialPattern.typeid',
-                           uselist=False)
+    outcall = relationship(
+        'Outcall',
+        primaryjoin="""and_(DialPattern.type == 'outcall',
+                            DialPattern.typeid == Outcall.id)""",
+        foreign_keys='DialPattern.typeid',
+        uselist=False,
+    )
 
     @hybrid_property
     def external_prefix(self):

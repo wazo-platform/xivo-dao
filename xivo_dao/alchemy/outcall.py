@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -32,7 +32,6 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 
 
 class Outcall(Base):
-
     __tablename__ = 'outcall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -100,7 +99,7 @@ class Outcall(Base):
             path='outcall',
             schedule_id=_schedule.id,
             schedule=_schedule,
-        )
+        ),
     )
 
     rightcall_members = relationship(
@@ -117,7 +116,7 @@ class Outcall(Base):
             type='outcall',
             typeval=str(_call_permission.id),
             rightcall=_call_permission,
-        )
+        ),
     )
 
     @hybrid_property
@@ -164,9 +163,7 @@ class Outcall(Base):
     def associate_extension(self, extension, **kwargs):
         if extension not in self.extensions:
             extension.type = 'outcall'
-            dialpattern = DialPattern(type='outcall',
-                                      exten=extension.exten,
-                                      **kwargs)
+            dialpattern = DialPattern(type='outcall', exten=extension.exten, **kwargs)
             self.dialpatterns.append(dialpattern)
             index = self.dialpatterns.index(dialpattern)
             self.dialpatterns[index].extension = extension
@@ -182,9 +179,13 @@ class Outcall(Base):
     def update_extension_association(self, extension, **kwargs):
         for dialpattern in self.dialpatterns:
             if extension == dialpattern.extension:
-                dialpattern.strip_digits = kwargs.get('strip_digits', dialpattern.strip_digits)
+                dialpattern.strip_digits = kwargs.get(
+                    'strip_digits', dialpattern.strip_digits
+                )
                 dialpattern.prefix = kwargs.get('prefix', dialpattern.prefix)
-                dialpattern.external_prefix = kwargs.get('external_prefix', dialpattern.external_prefix)
+                dialpattern.external_prefix = kwargs.get(
+                    'external_prefix', dialpattern.external_prefix
+                )
                 dialpattern.caller_id = kwargs.get('caller_id', dialpattern.caller_id)
 
     def _fix_context(self):

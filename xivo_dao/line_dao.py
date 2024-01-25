@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -11,17 +11,20 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get_interface_from_exten_and_context(session, extension, context):
-    res = (session
-           .query(LineFeatures.endpoint_sip_uuid,
-                  LineFeatures.endpoint_sccp_id,
-                  LineFeatures.endpoint_custom_id,
-                  LineFeatures.name,
-                  UserLine.main_line)
-           .join(LineExtension, LineExtension.line_id == LineFeatures.id)
-           .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
-           .outerjoin(UserLine, UserLine.line_id == LineFeatures.id)
-           .filter(ExtensionTable.exten == extension)
-           .filter(ExtensionTable.context == context))
+    res = (
+        session.query(
+            LineFeatures.endpoint_sip_uuid,
+            LineFeatures.endpoint_sccp_id,
+            LineFeatures.endpoint_custom_id,
+            LineFeatures.name,
+            UserLine.main_line,
+        )
+        .join(LineExtension, LineExtension.line_id == LineFeatures.id)
+        .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
+        .outerjoin(UserLine, UserLine.line_id == LineFeatures.id)
+        .filter(ExtensionTable.exten == extension)
+        .filter(ExtensionTable.context == context)
+    )
 
     interface = None
     for row in res.all():
@@ -37,12 +40,12 @@ def get_interface_from_exten_and_context(session, extension, context):
 
 @daosession
 def get_interface_from_line_id(session, line_id):
-    query = (session
-             .query(LineFeatures.endpoint_sip_uuid,
-                    LineFeatures.endpoint_sccp_id,
-                    LineFeatures.endpoint_custom_id,
-                    LineFeatures.name)
-             .filter(LineFeatures.id == line_id))
+    query = session.query(
+        LineFeatures.endpoint_sip_uuid,
+        LineFeatures.endpoint_sccp_id,
+        LineFeatures.endpoint_custom_id,
+        LineFeatures.name,
+    ).filter(LineFeatures.id == line_id)
 
     line_row = query.first()
 
@@ -54,12 +57,12 @@ def get_interface_from_line_id(session, line_id):
 
 @daosession
 def get_main_extension_context_from_line_id(session, line_id):
-    query = (session
-             .query(ExtensionTable.exten,
-                    ExtensionTable.context)
-             .join(LineExtension, LineExtension.extension_id == ExtensionTable.id)
-             .filter(LineExtension.line_id == line_id)
-             .filter(LineExtension.main_extension.is_(True)))
+    query = (
+        session.query(ExtensionTable.exten, ExtensionTable.context)
+        .join(LineExtension, LineExtension.extension_id == ExtensionTable.id)
+        .filter(LineExtension.line_id == line_id)
+        .filter(LineExtension.main_extension.is_(True))
+    )
 
     line_row = query.first()
     return line_row
@@ -67,11 +70,12 @@ def get_main_extension_context_from_line_id(session, line_id):
 
 @daosession
 def is_line_owned_by_user(session, user_uuid, line_id):
-    query = (session
-             .query(UserLine)
-             .join(UserFeatures)
-             .filter(UserLine.line_id == line_id)
-             .filter(UserFeatures.uuid == user_uuid))
+    query = (
+        session.query(UserLine)
+        .join(UserFeatures)
+        .filter(UserLine.line_id == line_id)
+        .filter(UserFeatures.uuid == user_uuid)
+    )
 
     user_line_row = query.first()
     return user_line_row is not None

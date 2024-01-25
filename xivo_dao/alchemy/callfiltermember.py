@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.elements import and_
@@ -14,19 +14,18 @@ from xivo_dao.alchemy.callfilter import Callfilter
 
 
 class Callfiltermember(Base):
-
     __tablename__ = 'callfiltermember'
     __table_args__ = (
         UniqueConstraint('callfilterid', 'type', 'typeval'),
-        CheckConstraint("bstype in ('boss', 'secretary')")
+        CheckConstraint("bstype in ('boss', 'secretary')"),
     )
 
     id = Column(Integer, primary_key=True)
     callfilterid = Column(Integer, nullable=False, server_default='0')
-    type = Column(Enum('user',
-                       name='callfiltermember_type',
-                       metadata=Base.metadata),
-                  nullable=False)
+    type = Column(
+        Enum('user', name='callfiltermember_type', metadata=Base.metadata),
+        nullable=False,
+    )
     typeval = Column(String(128), nullable=False, server_default='0')
     ringseconds = Column(Integer, nullable=False, server_default='0')
     priority = Column(Integer, nullable=False, server_default='0')
@@ -42,10 +41,12 @@ class Callfiltermember(Base):
 
     func_keys = relationship('FuncKeyDestBSFilter', cascade='all, delete-orphan')
 
-    user = relationship('UserFeatures',
-                        primaryjoin="""and_(Callfiltermember.type == 'user',
-                                            Callfiltermember.typeval == cast(UserFeatures.id, String))""",
-                        foreign_keys='Callfiltermember.typeval')
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(Callfiltermember.type == 'user',
+                            Callfiltermember.typeval == cast(UserFeatures.id, String))""",
+        foreign_keys='Callfiltermember.typeval',
+    )
 
     @hybrid_property
     def timeout(self):

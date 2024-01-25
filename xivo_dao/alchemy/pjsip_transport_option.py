@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, Index
@@ -9,7 +9,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class PJSIPTransportOption(Base):
-
     __tablename__ = 'pjsip_transport_option'
     __table_args__ = (
         Index(

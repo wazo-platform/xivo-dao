@@ -6,7 +6,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestContextDAO(DAOTestCase):
-
     def test_get(self):
         context_name = 'test_context'
         tenant = self.add_tenant()

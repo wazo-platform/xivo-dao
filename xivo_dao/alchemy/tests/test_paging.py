@@ -3,13 +3,15 @@
 
 import unittest
 
-from hamcrest import (assert_that,
-                      contains_exactly,
-                      contains_inanyorder,
-                      empty,
-                      equal_to,
-                      none,
-                      not_)
+from hamcrest import (
+    assert_that,
+    contains_exactly,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    none,
+    not_,
+)
 
 
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
@@ -21,7 +23,6 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
 class TestUsersMember(DAOTestCase):
-
     def test_getter(self):
         paging = self.add_paging()
         user = self.add_user()
@@ -64,7 +65,6 @@ class TestUsersMember(DAOTestCase):
 
 
 class TestUsersCaller(DAOTestCase):
-
     def test_getter(self):
         paging = self.add_paging()
         user = self.add_user()
@@ -107,7 +107,6 @@ class TestUsersCaller(DAOTestCase):
 
 
 class TestEnabled(unittest.TestCase):
-
     def test_getter_true(self):
         paging = Paging(commented=0)
         assert_that(paging.enabled, equal_to(True))
@@ -126,7 +125,6 @@ class TestEnabled(unittest.TestCase):
 
 
 class TestDuplexBool(unittest.TestCase):
-
     def test_getter_true(self):
         paging = Paging(duplex=1)
         assert_that(paging.duplex_bool, equal_to(True))
@@ -145,7 +143,6 @@ class TestDuplexBool(unittest.TestCase):
 
 
 class TestRecordBool(unittest.TestCase):
-
     def test_getter_true(self):
         paging = Paging(record=1)
         assert_that(paging.record_bool, equal_to(True))
@@ -164,7 +161,6 @@ class TestRecordBool(unittest.TestCase):
 
 
 class TestIgnoreForward(unittest.TestCase):
-
     def test_getter_true(self):
         paging = Paging(ignore=1)
         assert_that(paging.ignore_forward, equal_to(True))
@@ -183,7 +179,6 @@ class TestIgnoreForward(unittest.TestCase):
 
 
 class TestCallerNotification(unittest.TestCase):
-
     def test_getter_true(self):
         paging = Paging(quiet=0)
         assert_that(paging.caller_notification, equal_to(True))
@@ -202,7 +197,6 @@ class TestCallerNotification(unittest.TestCase):
 
 
 class TestAnnounceCaller(unittest.TestCase):
-
     def test_getter_true(self):
         paging = Paging(announcement_caller=0)
         assert_that(paging.announce_caller, equal_to(True))
@@ -221,7 +215,6 @@ class TestAnnounceCaller(unittest.TestCase):
 
 
 class TestAnnounceSound(unittest.TestCase):
-
     def test_getter(self):
         paging = Paging(announcement_file='beep')
         assert_that(paging.announce_sound, equal_to('beep'))
@@ -238,7 +231,6 @@ class TestAnnounceSound(unittest.TestCase):
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()

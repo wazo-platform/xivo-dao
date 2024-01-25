@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 from collections.abc import Iterable
 
@@ -26,7 +26,6 @@ def convert_int_to_ast_true(value):
 
 
 class AsteriskOptionsMixin:
-
     EXCLUDE_OPTIONS = set()
     EXCLUDE_OPTIONS_CONFD = set()
     AST_TRUE_INTEGER_COLUMNS = set()

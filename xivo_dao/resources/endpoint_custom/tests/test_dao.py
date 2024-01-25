@@ -25,7 +25,6 @@ from .. import dao as custom_dao
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_sccp(self):
         self.assertRaises(NotFoundError, custom_dao.get, 42)
 
@@ -46,12 +45,13 @@ class TestGet(DAOTestCase):
         custom_row = self.add_usercustom()
         self.assertRaises(
             NotFoundError,
-            custom_dao.get, custom_row.id, tenant_uuids=[tenant.uuid],
+            custom_dao.get,
+            custom_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, custom_dao.find_by, invalid=42)
 
@@ -79,7 +79,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, custom_dao.find_all_by, invalid=42)
 
@@ -111,14 +110,12 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = custom_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_search(self):
         custom = self.add_usercustom()
         expected = SearchResult(1, [custom])
@@ -141,50 +138,51 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_parameters(self):
         custom = custom_dao.create(
-            Custom(
-                interface='custom/create',
-                tenant_uuid=self.default_tenant.uuid
-            )
+            Custom(interface='custom/create', tenant_uuid=self.default_tenant.uuid)
         )
 
         assert_that(inspect(custom).persistent)
-        assert_that(custom, has_properties(
-            id=not_none(),
-            interface='custom/create',
-            enabled=True,
-            name=none(),
-            commented=0,
-            protocol='custom',
-            category='user',
-        ))
+        assert_that(
+            custom,
+            has_properties(
+                id=not_none(),
+                interface='custom/create',
+                enabled=True,
+                name=none(),
+                commented=0,
+                protocol='custom',
+                category='user',
+            ),
+        )
 
     def test_create_all_parameters(self):
         custom = custom_dao.create(
             Custom(
                 interface='custom/create',
                 enabled=False,
-                tenant_uuid=self.default_tenant.uuid
+                tenant_uuid=self.default_tenant.uuid,
             )
         )
 
         assert_that(inspect(custom).persistent)
-        assert_that(custom, has_properties(
-            id=not_none(),
-            tenant_uuid=self.default_tenant.uuid,
-            interface='custom/create',
-            enabled=False,
-            name=none(),
-            commented=1,
-            protocol='custom',
-            category='user',
-        ))
+        assert_that(
+            custom,
+            has_properties(
+                id=not_none(),
+                tenant_uuid=self.default_tenant.uuid,
+                interface='custom/create',
+                enabled=False,
+                name=none(),
+                commented=1,
+                protocol='custom',
+                category='user',
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_parameters(self):
         custom = self.add_usercustom(interface='custom/beforeedit', enabled=True)
 
@@ -195,14 +193,16 @@ class TestEdit(DAOTestCase):
         custom_dao.edit(custom)
 
         self.session.expire_all()
-        assert_that(custom, has_properties(
-            interface='custom/afteredit',
-            enabled=True,
-        ))
+        assert_that(
+            custom,
+            has_properties(
+                interface='custom/afteredit',
+                enabled=True,
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         custom = self.add_usercustom()
 
@@ -226,7 +226,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestRelations(DAOTestCase):
-
     # TODO should be in test_trunkfeatures
     def test_trunk_relationship(self):
         custom = self.add_usercustom()

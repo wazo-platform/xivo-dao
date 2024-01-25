@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import func
@@ -25,19 +25,21 @@ def add_agent_to_queue(session, agent_id, agent_number, queue_name):
 
 @daosession
 def remove_agent_from_queue(session, agent_id, queue_name):
-    (session
-     .query(QueueMember)
-     .filter(QueueMember.queue_name == queue_name)
-     .filter(QueueMember.usertype == 'agent')
-     .filter(QueueMember.userid == agent_id)
-     .delete())
+    (
+        session.query(QueueMember)
+        .filter(QueueMember.queue_name == queue_name)
+        .filter(QueueMember.usertype == 'agent')
+        .filter(QueueMember.userid == agent_id)
+        .delete()
+    )
 
 
 def _get_next_position_for_queue(session, queue_name):
-    result = (session
-              .query(func.max(QueueMember.position).label('max'))
-              .filter(QueueMember.queue_name == queue_name)
-              .first())
+    result = (
+        session.query(func.max(QueueMember.position).label('max'))
+        .filter(QueueMember.queue_name == queue_name)
+        .first()
+    )
     last_position = result.max
     if last_position is None:
         return 0

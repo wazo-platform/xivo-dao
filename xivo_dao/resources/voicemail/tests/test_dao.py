@@ -26,7 +26,6 @@ from xivo_dao.resources.utils.search import SearchResult
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_voicemail(self):
         result = voicemail_dao.find(42)
 
@@ -47,12 +46,13 @@ class TestFind(DAOTestCase):
         result = voicemail_dao.find(voicemail.id, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(voicemail))
 
-        result = voicemail_dao.find(voicemail.id, tenant_uuids=[self.default_tenant.uuid])
+        result = voicemail_dao.find(
+            voicemail.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_voicemail(self):
         self.assertRaises(NotFoundError, voicemail_dao.get, 42)
 
@@ -74,12 +74,13 @@ class TestGet(DAOTestCase):
         voicemail_row = self.add_voicemail()
         self.assertRaises(
             NotFoundError,
-            voicemail_dao.get, voicemail_row.id, tenant_uuids=[tenant.uuid],
+            voicemail_dao.get,
+            voicemail_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, voicemail_dao.find_by, invalid=42)
 
@@ -109,16 +110,19 @@ class TestFindBy(DAOTestCase):
         context = self.add_context(tenant_uuid=tenant.uuid)
 
         voicemail_row = self.add_voicemail()
-        voicemail = voicemail_dao.find_by(name=voicemail_row.name, tenant_uuids=[tenant.uuid])
+        voicemail = voicemail_dao.find_by(
+            name=voicemail_row.name, tenant_uuids=[tenant.uuid]
+        )
         assert_that(voicemail, none())
 
         voicemail_row = self.add_voicemail(context=context.name)
-        voicemail = voicemail_dao.find_by(name=voicemail_row.name, tenant_uuids=[tenant.uuid])
+        voicemail = voicemail_dao.find_by(
+            name=voicemail_row.name, tenant_uuids=[tenant.uuid]
+        )
         assert_that(voicemail, equal_to(voicemail_row))
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, voicemail_dao.get_by, invalid=42)
 
@@ -148,16 +152,19 @@ class TestGetBy(DAOTestCase):
         voicemail_row = self.add_voicemail()
         self.assertRaises(
             NotFoundError,
-            voicemail_dao.get_by, id=voicemail_row.id, tenant_uuids=[tenant.uuid],
+            voicemail_dao.get_by,
+            id=voicemail_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         voicemail_row = self.add_voicemail(context=context.name)
-        voicemail = voicemail_dao.get_by(id=voicemail_row.id, tenant_uuids=[tenant.uuid])
+        voicemail = voicemail_dao.get_by(
+            id=voicemail_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(voicemail, equal_to(voicemail_row))
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_voicemail(self):
         result = voicemail_dao.find_all_by(name='toto')
 
@@ -189,23 +196,27 @@ class TestFindAllBy(DAOTestCase):
         voicemail2 = self.add_voicemail(timezone='timezone', context=context_2.name)
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        voicemails = voicemail_dao.find_all_by(timezone='timezone', tenant_uuids=tenants)
+        voicemails = voicemail_dao.find_all_by(
+            timezone='timezone', tenant_uuids=tenants
+        )
         assert_that(voicemails, has_items(voicemail1, voicemail2))
 
         tenants = [tenant.uuid]
-        voicemails = voicemail_dao.find_all_by(timezone='timezone', tenant_uuids=tenants)
-        assert_that(voicemails, all_of(has_items(voicemail1), not_(has_items(voicemail2))))
+        voicemails = voicemail_dao.find_all_by(
+            timezone='timezone', tenant_uuids=tenants
+        )
+        assert_that(
+            voicemails, all_of(has_items(voicemail1), not_(has_items(voicemail2)))
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = voicemail_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_voicemail_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -227,7 +238,9 @@ class TestSimpleSearch(TestSearch):
 
         expected = SearchResult(2, [voicemail1, voicemail2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        self.assert_search_returns_result(expected, tenant_uuids=tenants, order='number')
+        self.assert_search_returns_result(
+            expected, tenant_uuids=tenants, order='number'
+        )
 
         expected = SearchResult(1, [voicemail2])
         tenants = [tenant.uuid]
@@ -235,15 +248,22 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleVoicemail(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.resto = self.add_context(name='resto')
         self.bar = self.add_context(name='bar')
-        self.voicemail1 = self.add_voicemail(name='Ashton', context=self.resto.name, number='1000')
-        self.voicemail2 = self.add_voicemail(name='Beaugarton', context=self.bar.name, number='1001')
-        self.voicemail3 = self.add_voicemail(name='Casa', context=self.resto.name, number='1002')
-        self.voicemail4 = self.add_voicemail(name='Dunkin', context=self.resto.name, number='1003')
+        self.voicemail1 = self.add_voicemail(
+            name='Ashton', context=self.resto.name, number='1000'
+        )
+        self.voicemail2 = self.add_voicemail(
+            name='Beaugarton', context=self.bar.name, number='1001'
+        )
+        self.voicemail3 = self.add_voicemail(
+            name='Casa', context=self.resto.name, number='1002'
+        )
+        self.voicemail4 = self.add_voicemail(
+            name='Dunkin', context=self.resto.name, number='1003'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.voicemail2])
@@ -252,24 +272,36 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.voicemail1])
-        self.assert_search_returns_result(expected_resto, search='ton', context=self.resto.name)
+        self.assert_search_returns_result(
+            expected_resto, search='ton', context=self.resto.name
+        )
 
         expected_bar = SearchResult(1, [self.voicemail2])
-        self.assert_search_returns_result(expected_bar, search='ton', context=self.bar.name)
+        self.assert_search_returns_result(
+            expected_bar, search='ton', context=self.bar.name
+        )
 
-        expected_all_resto = SearchResult(3, [self.voicemail1, self.voicemail3, self.voicemail4])
-        self.assert_search_returns_result(expected_all_resto, context=self.resto.name, order='name')
+        expected_all_resto = SearchResult(
+            3, [self.voicemail1, self.voicemail3, self.voicemail4]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, context=self.resto.name, order='name'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
-            4, [self.voicemail1, self.voicemail2, self.voicemail3, self.voicemail4],
+            4,
+            [self.voicemail1, self.voicemail2, self.voicemail3, self.voicemail4],
         )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
         expected = SearchResult(
-            4, [self.voicemail4, self.voicemail3, self.voicemail2, self.voicemail1],
+            4,
+            [self.voicemail4, self.voicemail3, self.voicemail2, self.voicemail1],
         )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
@@ -289,12 +321,15 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
 
         self.assert_search_returns_result(
             expected,
-            search='a', order='name', direction='desc', offset=1, limit=1,
+            search='a',
+            order='name',
+            direction='desc',
+            offset=1,
+            limit=1,
         )
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         context = self.add_context(name='default')
         voicemail = Voicemail(number='1000', context=context.name)
@@ -330,8 +365,9 @@ class TestCreate(DAOTestCase):
                     ask_password=True,
                     skipcheckpass=False,
                     enabled=True,
-                    commented=False),
-            )
+                    commented=False,
+                ),
+            ),
         )
 
     def test_create_with_all_fields(self):
@@ -385,13 +421,12 @@ class TestCreate(DAOTestCase):
                     skipcheckpass=True,
                     enabled=False,
                     commented=True,
-                )
-            )
+                ),
+            ),
         )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         context_from_extern = self.add_context(name='from-extern')
         voicemail = voicemail_dao.create(
@@ -459,7 +494,7 @@ class TestEdit(DAOTestCase):
                 skipcheckpass=False,
                 enabled=True,
                 commented=False,
-            )
+            ),
         )
 
     def test_edit_set_fields_to_null(self):
@@ -502,12 +537,11 @@ class TestEdit(DAOTestCase):
                 language=none(),
                 max_messages=none(),
                 attach_audio=none(),
-            )
+            ),
         )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         voicemail = self.add_voicemail()
 

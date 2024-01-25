@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -26,19 +26,20 @@ class AgentActionExtension(NamedTuple):
 
 
 class ServiceExtensionConverter:
-
-    SERVICES = ("enablevm",
-                "vmusermsg",
-                "vmuserpurge",
-                "phonestatus",
-                "recsnd",
-                "calllistening",
-                "directoryaccess",
-                "fwdundoall",
-                "pickup",
-                "callrecord",
-                "incallfilter",
-                "enablednd")
+    SERVICES = (
+        "enablevm",
+        "vmusermsg",
+        "vmuserpurge",
+        "phonestatus",
+        "recsnd",
+        "calllistening",
+        "directoryaccess",
+        "fwdundoall",
+        "pickup",
+        "callrecord",
+        "incallfilter",
+        "enablednd",
+    )
 
     @classmethod
     def typevals(cls):
@@ -46,16 +47,11 @@ class ServiceExtensionConverter:
 
     def to_model(self, row):
         exten = clean_extension(row.exten)
-        return ServiceExtension(id=row.id,
-                                exten=exten,
-                                service=row.typeval)
+        return ServiceExtension(id=row.id, exten=exten, service=row.typeval)
 
 
 class ForwardExtensionConverter:
-
-    FORWARDS = {'fwdbusy': 'busy',
-                'fwdrna': 'noanswer',
-                'fwdunc': 'unconditional'}
+    FORWARDS = {'fwdbusy': 'busy', 'fwdrna': 'noanswer', 'fwdunc': 'unconditional'}
 
     TYPEVALS = {value: key for key, value in FORWARDS.items()}
 
@@ -71,16 +67,15 @@ class ForwardExtensionConverter:
     def to_model(self, row):
         forward = self.FORWARDS[row.typeval]
         exten = clean_extension(row.exten)
-        return ForwardExtension(id=row.id,
-                                exten=exten,
-                                forward=forward)
+        return ForwardExtension(id=row.id, exten=exten, forward=forward)
 
 
 class AgentActionExtensionConverter:
-
-    ACTIONS = {'agentstaticlogin': 'login',
-               'agentstaticlogoff': 'logout',
-               'agentstaticlogtoggle': 'toggle'}
+    ACTIONS = {
+        'agentstaticlogin': 'login',
+        'agentstaticlogoff': 'logout',
+        'agentstaticlogtoggle': 'toggle',
+    }
 
     TYPEVALS = {value: key for key, value in ACTIONS.items()}
 
@@ -96,16 +91,15 @@ class AgentActionExtensionConverter:
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]
         exten = clean_extension(row.exten)
-        return AgentActionExtension(id=row.id,
-                                    exten=exten,
-                                    action=action)
+        return AgentActionExtension(id=row.id, exten=exten, action=action)
 
 
 class GroupMemberActionExtensionConverter:
-
-    ACTIONS = {'groupmemberjoin': 'join',
-               'groupmemberleave': 'leave',
-               'groupmembertoggle': 'toggle'}
+    ACTIONS = {
+        'groupmemberjoin': 'join',
+        'groupmemberleave': 'leave',
+        'groupmembertoggle': 'toggle',
+    }
 
     TYPEVALS = {value: key for key, value in ACTIONS.items()}
 
@@ -121,9 +115,7 @@ class GroupMemberActionExtensionConverter:
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]
         exten = clean_extension(row.exten)
-        return AgentActionExtension(id=row.id,
-                                    exten=exten,
-                                    action=action)
+        return AgentActionExtension(id=row.id, exten=exten, action=action)
 
 
 agent_action_converter = AgentActionExtensionConverter()

@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import sql, Boolean, ForeignKeyConstraint
@@ -26,7 +26,6 @@ from .context import Context
 
 
 class Voicemail(Base):
-
     __tablename__ = 'voicemail'
     __table_args__ = (
         PrimaryKeyConstraint('uniqueid'),
@@ -176,6 +175,10 @@ class Voicemail(Base):
 
     @tenant_uuid.expression
     def tenant_uuid(cls):
-        return sql.select([Context.tenant_uuid]).where(
-            Context.name == cls.context,
-        ).label('tenant_uuid')
+        return (
+            sql.select([Context.tenant_uuid])
+            .where(
+                Context.name == cls.context,
+            )
+            .label('tenant_uuid')
+        )

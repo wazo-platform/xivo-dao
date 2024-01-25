@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -23,7 +23,6 @@ from .contextinclude import ContextInclude
 
 
 class Context(Base):
-
     __tablename__ = 'context'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -88,7 +87,7 @@ class Context(Base):
             ContextNumbers.type == 'incall',
             ContextNumbers.context == Context.name)""",
         foreign_keys='ContextNumbers.context',
-        cascade='all, delete-orphan'
+        cascade='all, delete-orphan',
     )
 
     context_includes_children = relationship(
@@ -110,7 +109,7 @@ class Context(Base):
     contexts = association_proxy(
         'context_include_parents',
         'included_context',
-        creator=lambda _context: ContextInclude(included_context=_context)
+        creator=lambda _context: ContextInclude(included_context=_context),
     )
 
     tenant = relationship('Tenant', viewonly=True)

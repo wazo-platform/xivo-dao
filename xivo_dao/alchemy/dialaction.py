@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -13,11 +13,7 @@ from xivo_dao.alchemy import enum
 
 
 class Dialaction(Base):
-
-    USER_EVENTS = ('noanswer',
-                   'busy',
-                   'congestion',
-                   'chanunavail')
+    USER_EVENTS = ('noanswer', 'busy', 'congestion', 'chanunavail')
 
     __tablename__ = 'dialaction'
     __table_args__ = (
@@ -179,4 +175,6 @@ class Dialaction(Base):
 
     @property
     def gosub_args(self):
-        return ','.join(item or '' for item in (self.action, self.actionarg1, self.actionarg2))
+        return ','.join(
+            item or '' for item in (self.action, self.actionarg1, self.actionarg2)
+        )

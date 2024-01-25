@@ -43,7 +43,13 @@ class TestFind(DAOTestCase):
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
         result = incall_dao.find(incall.id, tenant_uuids=[tenant.uuid])
-        assert_that(result, all_of(has_properties(tenant_uuid=tenant.uuid), equal_to(incall),))
+        assert_that(
+            result,
+            all_of(
+                has_properties(tenant_uuid=tenant.uuid),
+                equal_to(incall),
+            ),
+        )
 
         result = incall_dao.find(incall.id, tenant_uuids=[self.default_tenant.uuid])
         assert_that(result, none())
@@ -69,7 +75,10 @@ class TestGet(DAOTestCase):
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
         self.assertRaises(
-            NotFoundError, incall_dao.get, incall.id, tenant_uuids=[self.default_tenant.uuid],
+            NotFoundError,
+            incall_dao.get,
+            incall.id,
+            tenant_uuids=[self.default_tenant.uuid],
         )
         self.assertRaises(NotFoundError, incall_dao.get, incall.id, tenant_uuids=[])
 
@@ -179,14 +188,21 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, contains_exactly())
 
     def test_find_all_by_custom_column(self):
-        incall1 = self.add_incall(preprocess_subroutine='mysub', destination=Dialaction(action='user', actionarg1='2'))
-        incall2 = self.add_incall(preprocess_subroutine='mysub', destination=Dialaction(action='user', actionarg1='2'))
+        incall1 = self.add_incall(
+            preprocess_subroutine='mysub',
+            destination=Dialaction(action='user', actionarg1='2'),
+        )
+        incall2 = self.add_incall(
+            preprocess_subroutine='mysub',
+            destination=Dialaction(action='user', actionarg1='2'),
+        )
         self.add_incall(destination=Dialaction(action='user', actionarg1='3'))
 
         incalls = incall_dao.find_all_by(preprocess_subroutine='mysub')
 
         assert_that(
-            incalls, has_items(has_property('id', incall1.id), has_property('id', incall2.id)),
+            incalls,
+            has_items(has_property('id', incall1.id), has_property('id', incall2.id)),
         )
 
     def test_find_all_by_native_column(self):
@@ -196,7 +212,8 @@ class TestFindAllBy(DAOTestCase):
         incalls = incall_dao.find_all_by(description='MyIncall')
 
         assert_that(
-            incalls, has_items(has_property('id', incall1.id), has_property('id', incall2.id)),
+            incalls,
+            has_items(has_property('id', incall1.id), has_property('id', incall2.id)),
         )
 
     def test_find_all_by_multi_tenant(self):
@@ -204,7 +221,9 @@ class TestFindAllBy(DAOTestCase):
 
         incall = self.add_incall(tenant_uuid=tenant.uuid)
 
-        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[self.default_tenant.uuid])
+        result = incall_dao.find_all_by(
+            id=incall.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, empty())
 
         result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[])
@@ -244,10 +263,18 @@ class TestSimpleSearch(TestSearch):
 class TestSearchGivenMultipleIncall(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.incall1 = self.add_incall(preprocess_subroutine='Ashton', description='resto')
-        self.incall2 = self.add_incall(preprocess_subroutine='Beaugarton', description='bar')
-        self.incall3 = self.add_incall(preprocess_subroutine='Casa', description='resto')
-        self.incall4 = self.add_incall(preprocess_subroutine='Dunkin', description='resto')
+        self.incall1 = self.add_incall(
+            preprocess_subroutine='Ashton', description='resto'
+        )
+        self.incall2 = self.add_incall(
+            preprocess_subroutine='Beaugarton', description='bar'
+        )
+        self.incall3 = self.add_incall(
+            preprocess_subroutine='Casa', description='resto'
+        )
+        self.incall4 = self.add_incall(
+            preprocess_subroutine='Dunkin', description='resto'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.incall2])
@@ -256,7 +283,9 @@ class TestSearchGivenMultipleIncall(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.incall1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.incall2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
@@ -267,12 +296,18 @@ class TestSearchGivenMultipleIncall(TestSearch):
         )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.incall1, self.incall2, self.incall3, self.incall4])
+        expected = SearchResult(
+            4, [self.incall1, self.incall2, self.incall3, self.incall4]
+        )
 
         self.assert_search_returns_result(expected, order='preprocess_subroutine')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self,):
-        expected = SearchResult(4, [self.incall4, self.incall3, self.incall2, self.incall1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4, [self.incall4, self.incall3, self.incall2, self.incall1]
+        )
 
         self.assert_search_returns_result(
             expected, order='preprocess_subroutine', direction='desc'
@@ -312,7 +347,9 @@ class TestSearchGivenMultipleTenants(TestSearch):
         incall_3 = self.add_incall(tenant_uuid=tenant_3.uuid)
 
         expected = SearchResult(2, [incall_1, incall_2])
-        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+        self.assert_search_returns_result(
+            expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid]
+        )
 
         expected = SearchResult(0, [])
         self.assert_search_returns_result(expected, tenant_uuids=[])
@@ -340,7 +377,9 @@ class TestCreate(DAOTestCase):
                 description=none(),
                 caller_id_mode=none(),
                 caller_id_name=none(),
-                destination=has_properties(action='none', actionarg1=None, actionarg2=None),
+                destination=has_properties(
+                    action='none', actionarg1=None, actionarg2=None
+                ),
                 tenant_uuid=self.default_tenant.uuid,
             ),
         )
@@ -370,7 +409,9 @@ class TestCreate(DAOTestCase):
                 description='incall description',
                 caller_id_mode='prepend',
                 caller_id_name='incall_',
-                destination=has_properties(action='user', actionarg1='2', actionarg2='10'),
+                destination=has_properties(
+                    action='user', actionarg1='2', actionarg2='10'
+                ),
                 tenant_uuid=self.default_tenant.uuid,
             ),
         )
@@ -412,7 +453,9 @@ class TestEdit(DAOTestCase):
                 description='other description',
                 caller_id_mode='append',
                 caller_id_name='_incall',
-                destination=has_properties(action='queue', actionarg1='1', actionarg2='2'),
+                destination=has_properties(
+                    action='queue', actionarg1='1', actionarg2='2'
+                ),
             ),
         )
 
@@ -448,7 +491,9 @@ class TestEdit(DAOTestCase):
                 description=none(),
                 caller_id_mode=none(),
                 caller_id_name=none(),
-                destination=has_properties(action='none', actionarg1=None, actionarg2=None),
+                destination=has_properties(
+                    action='none', actionarg1=None, actionarg2=None
+                ),
             ),
         )
 
@@ -479,7 +524,12 @@ class TestDelete(DAOTestCase):
 
         incall_dao.delete(incall)
 
-        extension = self.session.query(Extension).filter(Extension.id == extension.id).first()
+        extension = (
+            self.session
+            .query(Extension)
+            .filter(Extension.id == extension.id)
+            .first()
+        )  # fmt: skip
         assert_that(extension, has_properties(type='user', typeval='0'))
 
 

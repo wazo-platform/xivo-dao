@@ -43,23 +43,26 @@ class TestEndpointSIP(DAOTestCase):
         self.session.expunge_all()
 
         row = self.session.query(EndpointSIP).filter_by(uuid=endpoint.uuid).first()
-        assert_that(row, has_properties(
-            label='general_config',
-            name='general_config',
-            aor_section_options=[['type', 'aor']],
-            auth_section_options=[['type', 'auth']],
-            endpoint_section_options=[['type', 'endpoint']],
-            registration_section_options=[['type', 'registration']],
-            registration_outbound_auth_section_options=[['type', 'auth']],
-            identify_section_options=[['type', 'identify']],
-            outbound_auth_section_options=[['type', 'auth']],
-            template=True,
-            transport=has_properties(uuid=transport.uuid),
-            templates=contains_exactly(
-                has_properties(uuid=template_1.uuid),
-                has_properties(uuid=template_2.uuid),
+        assert_that(
+            row,
+            has_properties(
+                label='general_config',
+                name='general_config',
+                aor_section_options=[['type', 'aor']],
+                auth_section_options=[['type', 'auth']],
+                endpoint_section_options=[['type', 'endpoint']],
+                registration_section_options=[['type', 'registration']],
+                registration_outbound_auth_section_options=[['type', 'auth']],
+                identify_section_options=[['type', 'identify']],
+                outbound_auth_section_options=[['type', 'auth']],
+                template=True,
+                transport=has_properties(uuid=transport.uuid),
+                templates=contains_exactly(
+                    has_properties(uuid=template_1.uuid),
+                    has_properties(uuid=template_2.uuid),
+                ),
             ),
-        ))
+        )
 
     def test_create_concrete_endpoint(self):
         transport = self.add_transport()
@@ -83,24 +86,27 @@ class TestEndpointSIP(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(EndpointSIP).filter_by(uuid=endpoint.uuid).first()
-        assert_that(row, has_properties(
-            label='my-line',
-            name='general_config',
-            aor_section_options=[],
-            auth_section_options=[
-                ['username', 'random-username'],
-                ['password', 'random-password'],
-            ],
-            endpoint_section_options=[],
-            registration_section_options=[],
-            identify_section_options=[],
-            outbound_auth_section_options=[],
-            template=False,
-            transport_uuid=None,
-            templates=contains_exactly(
-                has_properties(uuid=template.uuid),
-            )
-        ))
+        assert_that(
+            row,
+            has_properties(
+                label='my-line',
+                name='general_config',
+                aor_section_options=[],
+                auth_section_options=[
+                    ['username', 'random-username'],
+                    ['password', 'random-password'],
+                ],
+                endpoint_section_options=[],
+                registration_section_options=[],
+                identify_section_options=[],
+                outbound_auth_section_options=[],
+                template=False,
+                transport_uuid=None,
+                templates=contains_exactly(
+                    has_properties(uuid=template.uuid),
+                ),
+            ),
+        )
 
     def test_username(self):
         endpoint = self.add_endpoint_sip(
@@ -197,17 +203,23 @@ class TestTemplates(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(sip.templates, contains_exactly(
-            template_2,
-            template_3,
-            template_1,
-        ))
+        assert_that(
+            sip.templates,
+            contains_exactly(
+                template_2,
+                template_3,
+                template_1,
+            ),
+        )
         templates = self.session.query(EndpointSIPTemplate).all()
-        assert_that(templates, contains_inanyorder(
-            has_properties(parent_uuid=template_2.uuid, priority=0),
-            has_properties(parent_uuid=template_3.uuid, priority=1),
-            has_properties(parent_uuid=template_1.uuid, priority=2),
-        ))
+        assert_that(
+            templates,
+            contains_inanyorder(
+                has_properties(parent_uuid=template_2.uuid, priority=0),
+                has_properties(parent_uuid=template_3.uuid, priority=1),
+                has_properties(parent_uuid=template_1.uuid, priority=2),
+            ),
+        )
 
     def test_reorder_on_delete(self):
         template_1 = self.add_endpoint_sip(template=True)
@@ -220,10 +232,13 @@ class TestTemplates(DAOTestCase):
 
         self.session.expire_all()
         templates = self.session.query(EndpointSIPTemplate).all()
-        assert_that(templates, contains_inanyorder(
-            has_properties(parent_uuid=template_1.uuid, priority=0),
-            has_properties(parent_uuid=template_3.uuid, priority=1),
-        ))
+        assert_that(
+            templates,
+            contains_inanyorder(
+                has_properties(parent_uuid=template_1.uuid, priority=0),
+                has_properties(parent_uuid=template_3.uuid, priority=1),
+            ),
+        )
 
     def test_delete(self):
         template = self.add_endpoint_sip(template=True)
@@ -257,11 +272,10 @@ class TestInheritedOptions(DAOTestCase):
                 # template_1 options
                 ['max_contacts', '1'],
                 ['remove_existing', 'yes'],
-
                 # template_2 options
                 ['max_contacts', '10'],
                 ['remove_existing', 'no'],
-            )
+            ),
         )
 
     def test_inherited_endpoint_options(self):
@@ -272,7 +286,10 @@ class TestInheritedOptions(DAOTestCase):
         template_2 = self.add_endpoint_sip(
             template=True,
             templates=[template_1],
-            endpoint_section_options=[['max_audio_streams', '25'], ['allow', '!all,alaw,g729']],
+            endpoint_section_options=[
+                ['max_audio_streams', '25'],
+                ['allow', '!all,alaw,g729'],
+            ],
         )
 
         sip = self.add_endpoint_sip(templates=[template_2])
@@ -283,11 +300,10 @@ class TestInheritedOptions(DAOTestCase):
                 # template_1 options
                 ['webrtc', 'yes'],
                 ['allow', '!all,ulaw'],
-
                 # template_2 options
                 ['max_audio_streams', '25'],
                 ['allow', '!all,alaw,g729'],
-            )
+            ),
         )
 
 
@@ -304,8 +320,7 @@ class TestCombinedOptions(DAOTestCase):
         )
 
         sip = self.add_endpoint_sip(
-            templates=[template_2],
-            aor_section_options=[['contact', 'sip:foo@bar']]
+            templates=[template_2], aor_section_options=[['contact', 'sip:foo@bar']]
         )
 
         assert_that(
@@ -314,14 +329,12 @@ class TestCombinedOptions(DAOTestCase):
                 # template_1 options
                 ['max_contacts', '1'],
                 ['remove_existing', 'yes'],
-
                 # template_2 options
                 ['max_contacts', '10'],
                 ['remove_existing', 'no'],
-
                 # endpoint options
                 ['contact', 'sip:foo@bar'],
-            )
+            ),
         )
 
     def test_combined_endpoint_options(self):
@@ -332,7 +345,10 @@ class TestCombinedOptions(DAOTestCase):
         template_2 = self.add_endpoint_sip(
             template=True,
             templates=[template_1],
-            endpoint_section_options=[['max_audio_streams', '25'], ['allow', '!all,alaw,g729']],
+            endpoint_section_options=[
+                ['max_audio_streams', '25'],
+                ['allow', '!all,alaw,g729'],
+            ],
         )
 
         sip = self.add_endpoint_sip(
@@ -346,14 +362,12 @@ class TestCombinedOptions(DAOTestCase):
                 # template_1 options
                 ['webrtc', 'yes'],
                 ['allow', '!all,ulaw'],
-
                 # template_2 options
                 ['max_audio_streams', '25'],
                 ['allow', '!all,alaw,g729'],
-
                 # endpoint options
                 ['allow', '!all,opus'],
-            )
+            ),
         )
 
 
@@ -365,25 +379,16 @@ class TestOptionValue(DAOTestCase):
         EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
     def test_get_value(self):
-        assert_that(
-            self.sip.get_option_value('test'),
-            equal_to('value')
-        )
+        assert_that(self.sip.get_option_value('test'), equal_to('value'))
 
     def test_get_value_invalid_option(self):
-        assert_that(
-            self.sip.get_option_value('invalid'),
-            equal_to(None)
-        )
+        assert_that(self.sip.get_option_value('invalid'), equal_to(None))
 
     def test_get_value_no_option_values(self):
         sip = self.add_endpoint_sip()
         EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
-        assert_that(
-            sip.get_option_value('somevalue'),
-            equal_to(None)
-        )
+        assert_that(sip.get_option_value('somevalue'), equal_to(None))
 
 
 class TestCallerId(DAOTestCase):
@@ -418,11 +423,5 @@ class TestCallerId(DAOTestCase):
         template1 = self.add_endpoint_sip(caller_id='template1')
         sip = self.add_endpoint_sip(templates=[template1])
 
-        assert_that(
-            sip.get_option_value('callerid'),
-            equal_to('template1')
-        )
-        assert_that(
-            template1.get_option_value('callerid'),
-            equal_to('template1')
-        )
+        assert_that(sip.get_option_value('callerid'), equal_to('template1'))
+        assert_that(template1.get_option_value('callerid'), equal_to('template1'))

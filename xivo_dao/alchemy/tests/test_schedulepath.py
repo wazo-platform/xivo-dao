@@ -1,4 +1,4 @@
-# Copyright 2019-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2019-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -12,7 +12,6 @@ from ..schedule import Schedule
 
 
 class TestSchedule(DAOTestCase):
-
     def test_getter(self):
         schedule = self.add_schedule()
         schedule_path = self.add_schedule_path(schedule_id=schedule.id)

@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -9,32 +9,44 @@ from .search import parking_lot_search
 
 @daosession
 def search(session, tenant_uuids=None, **parameters):
-    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).search(parameters)
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).search(
+        parameters
+    )
 
 
 @daosession
 def get(session, parking_lot_id, tenant_uuids=None):
-    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).get_by({'id': parking_lot_id})
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).get_by(
+        {'id': parking_lot_id}
+    )
 
 
 @daosession
 def get_by(session, tenant_uuids=None, **criteria):
-    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).get_by(criteria)
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).get_by(
+        criteria
+    )
 
 
 @daosession
 def find(session, parking_lot_id, tenant_uuids=None):
-    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_by({'id': parking_lot_id})
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_by(
+        {'id': parking_lot_id}
+    )
 
 
 @daosession
 def find_by(session, tenant_uuids=None, **criteria):
-    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_by(criteria)
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_by(
+        criteria
+    )
 
 
 @daosession
 def find_all_by(session, tenant_uuids=None, **criteria):
-    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_all_by(criteria)
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_all_by(
+        criteria
+    )
 
 
 @daosession

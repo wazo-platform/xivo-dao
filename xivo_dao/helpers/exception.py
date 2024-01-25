@@ -1,9 +1,8 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 class ServiceError(ValueError):
-
     template = "{prefix} - {message} {metadata}"
     prefix = "Error"
 
@@ -13,15 +12,12 @@ class ServiceError(ValueError):
 
 
 class InputError(ServiceError):
-
     prefix = "Input Error"
 
 
 class ResourceError(ServiceError):
-
     prefix = "Resource Error"
 
 
 class NotFoundError(ServiceError):
-
     prefix = "Resource Not Found"

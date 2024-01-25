@@ -19,7 +19,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestFeatures(Base):
-
     DESTINATION_TYPE_ID = 8
 
     __tablename__ = 'func_key_dest_features'
@@ -60,7 +59,6 @@ class _FuncKeyDestFeaturesWithoutBaseDeclarative:
 
 
 class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
-
     type = 'onlinerec'
 
     def to_tuple(self):
@@ -68,7 +66,6 @@ class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
 
 
 class FuncKeyDestTransfer(_FuncKeyDestFeaturesWithoutBaseDeclarative):
-
     type = 'transfer'
 
     def __init__(self, **kwargs):

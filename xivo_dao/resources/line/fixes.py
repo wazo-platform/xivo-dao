@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -16,7 +16,6 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 
 
 class LineFixes:
-
     def __init__(self, session):
         self.session = session
 
@@ -36,32 +35,39 @@ class LineFixes:
         self.session.flush()
 
     def get_row(self, line_id):
-        query = (self.session.query(LineFeatures,
-                                    EndpointSIP,
-                                    SCCPLine,
-                                    SCCPDevice,
-                                    UserFeatures,
-                                    UserCustom,
-                                    Extension)
-                 .outerjoin(LineFeatures.endpoint_sip)
-                 .outerjoin(LineFeatures.endpoint_sccp)
-                 .outerjoin(LineFeatures.endpoint_custom)
-                 .outerjoin(SCCPDevice,
-                            SCCPLine.name == SCCPDevice.line)
-                 .outerjoin(LineFeatures.user_lines)
-                 .outerjoin(UserLine.main_user_rel)
-                 .outerjoin(LineFeatures.line_extensions)
-                 .outerjoin(LineExtension.main_extension_rel)
-                 .options(
-                     Load(LineFeatures).load_only("id", "name", "number", "context"),
-                     Load(EndpointSIP).load_only("uuid", "name"),
-                     Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
-                     Load(SCCPDevice).load_only("id", "line"),
-                     Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
-                     Load(UserCustom).load_only("id", "context"),
-                     Load(Extension).load_only("id", "exten", "context"))
-                 .filter(LineFeatures.id == line_id)
-                 )
+        query = (
+            self.session.query(
+                LineFeatures,
+                EndpointSIP,
+                SCCPLine,
+                SCCPDevice,
+                UserFeatures,
+                UserCustom,
+                Extension,
+            )
+            .outerjoin(LineFeatures.endpoint_sip)
+            .outerjoin(LineFeatures.endpoint_sccp)
+            .outerjoin(LineFeatures.endpoint_custom)
+            .outerjoin(SCCPDevice, SCCPLine.name == SCCPDevice.line)
+            .outerjoin(LineFeatures.user_lines)
+            .outerjoin(UserLine.main_user_rel)
+            .outerjoin(LineFeatures.line_extensions)
+            .outerjoin(LineExtension.main_extension_rel)
+            .options(
+                Load(LineFeatures).load_only("id", "name", "number", "context"),
+                Load(EndpointSIP).load_only("uuid", "name"),
+                Load(SCCPLine).load_only(
+                    "id", "name", "context", "cid_name", "cid_num"
+                ),
+                Load(SCCPDevice).load_only("id", "line"),
+                Load(UserFeatures).load_only(
+                    "id", "firstname", "webi_lastname", "callerid"
+                ),
+                Load(UserCustom).load_only("id", "context"),
+                Load(Extension).load_only("id", "exten", "context"),
+            )
+            .filter(LineFeatures.id == line_id)
+        )
 
         return query.first()
 
@@ -100,16 +106,20 @@ class LineFixes:
     def fix_queue_member(self, row, interface):
         if row.UserFeatures and row.UserFeatures.lines:
             if row.UserFeatures.lines[0] == row.LineFeatures:
-                (self.session.query(QueueMember)
-                 .filter(QueueMember.usertype == 'user')
-                 .filter(QueueMember.userid == row.UserFeatures.id)
-                 .filter(QueueMember.channel != 'Local')
-                 .update({'interface': interface}))
+                (
+                    self.session.query(QueueMember)
+                    .filter(QueueMember.usertype == 'user')
+                    .filter(QueueMember.userid == row.UserFeatures.id)
+                    .filter(QueueMember.channel != 'Local')
+                    .update({'interface': interface})
+                )
 
-                if row.Extension:
-                    local_interface = f'Local/{row.Extension.exten}@{row.Extension.context}'
-                    (self.session.query(QueueMember)
-                     .filter(QueueMember.usertype == 'user')
-                     .filter(QueueMember.userid == row.UserFeatures.id)
-                     .filter(QueueMember.channel == 'Local')
-                     .update({'interface': local_interface}))
+                if extension := row.Extension:
+                    local_interface = f'Local/{extension.exten}@{extension.context}'
+                    (
+                        self.session.query(QueueMember)
+                        .filter(QueueMember.usertype == 'user')
+                        .filter(QueueMember.userid == row.UserFeatures.id)
+                        .filter(QueueMember.channel == 'Local')
+                        .update({'interface': local_interface})
+                    )

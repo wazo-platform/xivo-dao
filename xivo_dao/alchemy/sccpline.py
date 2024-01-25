@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -12,7 +12,6 @@ from . import enum
 
 
 class SCCPLine(Base):
-
     __tablename__ = 'sccpline'
     __table_args__ = (
         PrimaryKeyConstraint('id'),

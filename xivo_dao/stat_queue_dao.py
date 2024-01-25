@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import distinct
@@ -24,7 +24,9 @@ def insert_if_missing(session, queuelog_queues, confd_queues, master_tenant):
     confd_queues_by_name = {queue['name']: queue for queue in confd_queues}
     _mark_recreated_queues_with_same_name_as_deleted(session, confd_queues_by_name)
     _mark_non_confd_queues_as_deleted(session, confd_queues)
-    _create_missing_queues(session, queuelog_queues, confd_queues_by_name, master_tenant)
+    _create_missing_queues(
+        session, queuelog_queues, confd_queues_by_name, master_tenant
+    )
     _rename_deleted_queues_with_duplicate_name(session, confd_queues_by_name)
 
 
@@ -47,7 +49,9 @@ def _mark_recreated_queues_with_same_name_as_deleted(session, confd_queues_by_na
 def _mark_non_confd_queues_as_deleted(session, confd_queues):
     active_queue_ids = {queue['id'] for queue in confd_queues}
     all_queue_ids = {r[0] for r in session.query(distinct(StatQueue.queue_id))}
-    deleted_queues = [queue for queue in list(all_queue_ids - active_queue_ids) if queue]
+    deleted_queues = [
+        queue for queue in list(all_queue_ids - active_queue_ids) if queue
+    ]
     (
         session.query(StatQueue)
         .filter(
@@ -57,12 +61,13 @@ def _mark_non_confd_queues_as_deleted(session, confd_queues):
             )
         )
         .update({'deleted': True}, synchronize_session=False)
-
     )
     session.flush()
 
 
-def _create_missing_queues(session, queuelog_queues, confd_queues_by_name, master_tenant):
+def _create_missing_queues(
+    session, queuelog_queues, confd_queues_by_name, master_tenant
+):
     new_queue_names = set(confd_queues_by_name.keys())
     db_queue_query = session.query(StatQueue).filter(StatQueue.deleted.is_(False))
     old_queue_names = {queue.name for queue in db_queue_query.all()}

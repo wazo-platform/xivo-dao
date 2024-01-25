@@ -17,7 +17,6 @@ ONE_HOUR = timedelta(hours=1)
 
 
 class TestStatAgentPeriodicDAO(DAOTestCase):
-
     def _insert_agent_to_stat_agent(self):
         agent = StatAgent()
         agent.name = 'test_agent'
@@ -34,46 +33,45 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             dt(2012, 1, 1, 1, 0, 0, tzinfo=UTC): {
                 agent_id_1: {
                     'login_time': timedelta(minutes=50),
-                    'pause_time': timedelta(minutes=13)
+                    'pause_time': timedelta(minutes=13),
                 },
                 agent_id_2: {
                     'login_time': ONE_HOUR,
-                    'pause_time': timedelta(minutes=13)},
+                    'pause_time': timedelta(minutes=13),
+                },
             },
             dt(2012, 1, 1, 2, 0, 0, tzinfo=UTC): {
                 agent_id_1: {
                     'login_time': timedelta(minutes=20),
-                    'pause_time': timedelta(minutes=33)
+                    'pause_time': timedelta(minutes=33),
                 },
                 agent_id_2: {
                     'login_time': ONE_HOUR,
-                    'pause_time': timedelta(minutes=13)
+                    'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 1, 3, 0, 0, tzinfo=UTC): {
-                agent_id_2: {
-                    'login_time': ONE_HOUR,
-                    'pause_time': ONE_HOUR
-                },
+                agent_id_2: {'login_time': ONE_HOUR, 'pause_time': ONE_HOUR},
             },
             dt(2012, 1, 1, 4, 0, 0, tzinfo=UTC): {
-                agent_id_2: {
-                    'login_time': ONE_HOUR,
-                    'pause_time': ONE_HOUR
-                },
-            }
+                agent_id_2: {'login_time': ONE_HOUR, 'pause_time': ONE_HOUR},
+            },
         }
 
         with flush_session(self.session):
             for period_start, agents_stats in stats.items():
-                stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
+                stat_agent_periodic_dao.insert_stats(
+                    self.session, agents_stats, period_start
+                )
 
         period_start = dt(2012, 1, 1, 1, 0, 0, tzinfo=UTC)
 
         try:
-            result = (self.session.query(StatAgentPeriodic)
-                      .filter(StatAgentPeriodic.time == period_start)
-                      .filter(StatAgentPeriodic.stat_agent_id == agent_id_1)[0])
+            result = (
+                self.session.query(StatAgentPeriodic)
+                .filter(StatAgentPeriodic.time == period_start)
+                .filter(StatAgentPeriodic.stat_agent_id == agent_id_1)[0]
+            )
 
             assert result.login_time == timedelta(minutes=50)
         except LookupError:
@@ -82,13 +80,12 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
     def test_clean_table(self):
         _, agent_id = self._insert_agent_to_stat_agent()
         stats = {
-            agent_id: {
-                'login_time': timedelta(minutes=15),
-                'pause_time': ONE_HOUR
-            },
+            agent_id: {'login_time': timedelta(minutes=15), 'pause_time': ONE_HOUR},
         }
 
-        stat_agent_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1, tzinfo=UTC))
+        stat_agent_periodic_dao.insert_stats(
+            self.session, stats, dt(2012, 1, 1, tzinfo=UTC)
+        )
 
         stat_agent_periodic_dao.clean_table(self.session)
 
@@ -102,26 +99,28 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             dt(2012, 1, 1, tzinfo=UTC): {
                 agent_id: {
                     'login_time': timedelta(minutes=15),
-                    'pause_time': timedelta(minutes=13)
+                    'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 2, tzinfo=UTC): {
                 agent_id: {
                     'login_time': timedelta(minutes=20),
-                    'pause_time': timedelta(minutes=13)
+                    'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 3, tzinfo=UTC): {
                 agent_id: {
                     'login_time': timedelta(minutes=25),
-                    'pause_time': timedelta(minutes=13)
+                    'pause_time': timedelta(minutes=13),
                 },
             },
         }
 
         with flush_session(self.session):
             for period_start, agents_stats in stats.items():
-                stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
+                stat_agent_periodic_dao.insert_stats(
+                    self.session, agents_stats, period_start
+                )
 
         stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=UTC))
 

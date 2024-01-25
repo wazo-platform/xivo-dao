@@ -1,4 +1,4 @@
-# Copyright 2020-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -18,7 +18,6 @@ from ..endpoint_sip_section_option import EndpointSIPSectionOption
 
 
 class TestOptions(DAOTestCase):
-
     def setUp(self):
         super().setUp()
         self.endpoint_sip = self.add_endpoint_sip()
@@ -67,7 +66,9 @@ class TestOptions(DAOTestCase):
         self.session.flush()
         self.session.expire_all()
 
-        assert_that(section.options, contains_inanyorder(['type', 'aor'], ['new', 'value']))
+        assert_that(
+            section.options, contains_inanyorder(['type', 'aor'], ['new', 'value'])
+        )
 
     def test_delete_an_option(self):
         section = EndpointSIPSection(
@@ -97,7 +98,9 @@ class TestOptions(DAOTestCase):
         self.session.flush()
         self.session.expire_all()
 
-        assert_that(section.options, contains_inanyorder(['create', 'value'], ['update', 'new']))
+        assert_that(
+            section.options, contains_inanyorder(['create', 'value'], ['update', 'new'])
+        )
 
     def test_update_and_delete_options(self):
         section = EndpointSIPSection(

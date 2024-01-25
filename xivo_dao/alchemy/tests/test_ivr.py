@@ -1,4 +1,4 @@
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
@@ -8,7 +8,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestDelete(DAOTestCase):
-
     def test_dialaction_actions_are_deleted(self):
         ivr = self.add_ivr()
         self.add_dialaction(category='ivr_choice', action='ivr', actionarg1=ivr.id)

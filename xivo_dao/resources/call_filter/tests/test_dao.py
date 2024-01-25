@@ -29,7 +29,6 @@ from .. import dao as call_filter_dao
 
 
 class TestMemberExist(DAOTestCase):
-
     def test_not_exists(self):
         result = call_filter_dao.member_exists(1)
 
@@ -44,7 +43,6 @@ class TestMemberExist(DAOTestCase):
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_call_filter(self):
         result = call_filter_dao.find(42)
 
@@ -64,12 +62,13 @@ class TestFind(DAOTestCase):
         result = call_filter_dao.find(call_filter.id, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(call_filter))
 
-        result = call_filter_dao.find(call_filter.id, tenant_uuids=[self.default_tenant.uuid])
+        result = call_filter_dao.find(
+            call_filter.id, tenant_uuids=[self.default_tenant.uuid]
+        )
         assert_that(result, none())
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_call_filter(self):
         self.assertRaises(NotFoundError, call_filter_dao.get, 42)
 
@@ -84,18 +83,21 @@ class TestGet(DAOTestCase):
         tenant = self.add_tenant()
 
         call_filter_row = self.add_call_filter(tenant_uuid=tenant.uuid)
-        call_filter = call_filter_dao.get(call_filter_row.id, tenant_uuids=[tenant.uuid])
+        call_filter = call_filter_dao.get(
+            call_filter_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_filter, equal_to(call_filter_row))
 
         call_filter_row = self.add_call_filter()
         self.assertRaises(
             NotFoundError,
-            call_filter_dao.get, call_filter_row.id, tenant_uuids=[tenant.uuid],
+            call_filter_dao.get,
+            call_filter_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, call_filter_dao.find_by, invalid=42)
 
@@ -116,16 +118,19 @@ class TestFindBy(DAOTestCase):
         tenant = self.add_tenant()
 
         call_filter_row = self.add_call_filter()
-        call_filter = call_filter_dao.find_by(id=call_filter_row.id, tenant_uuids=[tenant.uuid])
+        call_filter = call_filter_dao.find_by(
+            id=call_filter_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_filter, none())
 
         call_filter_row = self.add_call_filter(tenant_uuid=tenant.uuid)
-        call_filter = call_filter_dao.find_by(id=call_filter_row.id, tenant_uuids=[tenant.uuid])
+        call_filter = call_filter_dao.find_by(
+            id=call_filter_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_filter, equal_to(call_filter_row))
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, call_filter_dao.get_by, invalid=42)
 
@@ -146,16 +151,19 @@ class TestGetBy(DAOTestCase):
         call_filter_row = self.add_call_filter()
         self.assertRaises(
             NotFoundError,
-            call_filter_dao.get_by, id=call_filter_row.id, tenant_uuids=[tenant.uuid],
+            call_filter_dao.get_by,
+            id=call_filter_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         call_filter_row = self.add_call_filter(tenant_uuid=tenant.uuid)
-        call_filter = call_filter_dao.get_by(id=call_filter_row.id, tenant_uuids=[tenant.uuid])
+        call_filter = call_filter_dao.get_by(
+            id=call_filter_row.id, tenant_uuids=[tenant.uuid]
+        )
         assert_that(call_filter, equal_to(call_filter_row))
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_call_filters(self):
         result = call_filter_dao.find_all_by(name='toto')
 
@@ -167,8 +175,12 @@ class TestFindAllBy(DAOTestCase):
 
         call_filters = call_filter_dao.find_all_by(enabled=True)
 
-        assert_that(call_filters, has_items(has_property('id', call_filter1.id),
-                                            has_property('id', call_filter2.id)))
+        assert_that(
+            call_filters,
+            has_items(
+                has_property('id', call_filter1.id), has_property('id', call_filter2.id)
+            ),
+        )
 
     def test_find_all_by_native_column(self):
         call_filter1 = self.add_call_filter(name='bob', description='description')
@@ -176,35 +188,44 @@ class TestFindAllBy(DAOTestCase):
 
         call_filters = call_filter_dao.find_all_by(description='description')
 
-        assert_that(call_filters, has_items(
-            has_property('id', call_filter1.id),
-            has_property('id', call_filter2.id),
-        ))
+        assert_that(
+            call_filters,
+            has_items(
+                has_property('id', call_filter1.id),
+                has_property('id', call_filter2.id),
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        call_filter1 = self.add_call_filter(description='description', tenant_uuid=tenant.uuid)
+        call_filter1 = self.add_call_filter(
+            description='description', tenant_uuid=tenant.uuid
+        )
         call_filter2 = self.add_call_filter(description='description')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        call_filters = call_filter_dao.find_all_by(description='description', tenant_uuids=tenants)
+        call_filters = call_filter_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
         assert_that(call_filters, has_items(call_filter1, call_filter2))
 
         tenants = [tenant.uuid]
-        call_filters = call_filter_dao.find_all_by(description='description', tenant_uuids=tenants)
-        assert_that(call_filters, all_of(has_items(call_filter1), not_(has_items(call_filter2))))
+        call_filters = call_filter_dao.find_all_by(
+            description='description', tenant_uuids=tenants
+        )
+        assert_that(
+            call_filters, all_of(has_items(call_filter1), not_(has_items(call_filter2)))
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = call_filter_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_call_filters_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -232,7 +253,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleCallFilters(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.call_filter1 = self.add_call_filter(
@@ -251,31 +271,45 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.call_filter1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.call_filter2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.call_filter1, self.call_filter3, self.call_filter4])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
+        expected_all_resto = SearchResult(
+            3, [self.call_filter1, self.call_filter3, self.call_filter4]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='name'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.call_filter1,
-            self.call_filter2,
-            self.call_filter3,
-            self.call_filter4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.call_filter1,
+                self.call_filter2,
+                self.call_filter3,
+                self.call_filter4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.call_filter4,
-            self.call_filter3,
-            self.call_filter2,
-            self.call_filter1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.call_filter4,
+                self.call_filter3,
+                self.call_filter2,
+                self.call_filter1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -285,7 +319,9 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.call_filter2, self.call_filter3, self.call_filter4])
+        expected = SearchResult(
+            4, [self.call_filter2, self.call_filter3, self.call_filter4]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -303,23 +339,27 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
-        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
+        call_filter_model = CallFilter(
+            tenant_uuid=self.default_tenant.uuid, name='name'
+        )
 
         call_filter = call_filter_dao.create(call_filter_model)
 
         self.session.expire_all()
         assert_that(inspect(call_filter).persistent)
-        assert_that(call_filter, has_properties(
-            tenant_uuid=self.default_tenant.uuid,
-            name='name',
-            strategy=none(),
-            callfrom=none(),
-            surrogates_timeout=none(),
-            enabled=True,
-            description=none(),
-        ))
+        assert_that(
+            call_filter,
+            has_properties(
+                tenant_uuid=self.default_tenant.uuid,
+                name='name',
+                strategy=none(),
+                callfrom=none(),
+                surrogates_timeout=none(),
+                enabled=True,
+                description=none(),
+            ),
+        )
 
     def test_create_with_all_fields(self):
         call_filter_model = CallFilter(
@@ -336,28 +376,35 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(inspect(call_filter).persistent)
-        assert_that(call_filter, has_properties(
-            tenant_uuid=self.default_tenant.uuid,
-            name='name',
-            strategy='all-recipients-then-linear-surrogates',
-            callfrom='all',
-            surrogates_timeout=10,
-            enabled=False,
-            description='description',
-        ))
+        assert_that(
+            call_filter,
+            has_properties(
+                tenant_uuid=self.default_tenant.uuid,
+                name='name',
+                strategy='all-recipients-then-linear-surrogates',
+                callfrom='all',
+                surrogates_timeout=10,
+                enabled=False,
+                description='description',
+            ),
+        )
 
     def test_create_fill_default_values(self):
-        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
+        call_filter_model = CallFilter(
+            tenant_uuid=self.default_tenant.uuid, name='name'
+        )
 
         call_filter = call_filter_dao.create(call_filter_model)
 
-        assert_that(call_filter, has_properties(
-            type='bosssecretary',
-        ))
+        assert_that(
+            call_filter,
+            has_properties(
+                type='bosssecretary',
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         call_filter = self.add_call_filter(
             name='name',
@@ -379,18 +426,20 @@ class TestEdit(DAOTestCase):
         call_filter_dao.edit(call_filter)
 
         self.session.expire_all()
-        assert_that(call_filter, has_properties(
-            name='other_name',
-            strategy='all-recipients-then-all-surrogates',
-            callfrom='internal',
-            surrogates_timeout=20,
-            enabled=False,
-            description='other_description',
-        ))
+        assert_that(
+            call_filter,
+            has_properties(
+                name='other_name',
+                strategy='all-recipients-then-all-surrogates',
+                callfrom='internal',
+                surrogates_timeout=20,
+                enabled=False,
+                description='other_description',
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         call_filter = self.add_call_filter()
 
@@ -400,7 +449,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestAssociateTargets(DAOTestCase):
-
     def test_associate(self):
         call_filter = self.add_call_filter()
         recipient = self.add_call_filter_member(bstype='boss')
@@ -435,7 +483,6 @@ class TestAssociateTargets(DAOTestCase):
 
 
 class TestAssociateInterceptors(DAOTestCase):
-
     def test_associate(self):
         call_filter = self.add_call_filter()
         surrogate = self.add_call_filter_member(bstype='secretary')
@@ -470,7 +517,6 @@ class TestAssociateInterceptors(DAOTestCase):
 
 
 class TestUpdateFallbacks(DAOTestCase):
-
     def test_update(self):
         call_filter = self.add_call_filter()
         dialaction = Dialaction(action='none')
@@ -500,7 +546,9 @@ class TestUpdateFallbacks(DAOTestCase):
         self.session.expire_all()
 
         self.session.expire_all()
-        assert_that(call_filter.fallbacks['key'], has_properties(action='user', actionarg1='1'))
+        assert_that(
+            call_filter.fallbacks['key'], has_properties(action='user', actionarg1='1')
+        )
 
     def test_update_delete_undefined_key(self):
         call_filter = self.add_call_filter()

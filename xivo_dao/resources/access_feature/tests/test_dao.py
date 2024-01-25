@@ -22,7 +22,6 @@ from .. import dao as access_feature_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_access_feature(self):
         result = access_feature_dao.find(42)
 
@@ -37,7 +36,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_access_feature(self):
         self.assertRaises(NotFoundError, access_feature_dao.get, 42)
 
@@ -50,7 +48,6 @@ class TestGet(DAOTestCase):
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, access_feature_dao.find_by, invalid=42)
 
@@ -69,7 +66,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, access_feature_dao.get_by, invalid=42)
 
@@ -86,7 +82,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_access_features(self):
         result = access_feature_dao.find_all_by(feature='noresult')
 
@@ -98,21 +93,22 @@ class TestFindAllBy(DAOTestCase):
 
         access_features = access_feature_dao.find_all_by(enabled=False)
 
-        assert_that(access_features, has_items(
-            has_property('id', access_feature1.id),
-            has_property('id', access_feature2.id),
-        ))
+        assert_that(
+            access_features,
+            has_items(
+                has_property('id', access_feature1.id),
+                has_property('id', access_feature2.id),
+            ),
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = access_feature_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_access_features_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -126,7 +122,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleAccessFeatures(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.access_feature1 = self.add_accessfeatures(host='1.2.3.0/24', enabled=False)
@@ -146,30 +141,38 @@ class TestSearchGivenMultipleAccessFeatures(TestSearch):
         expected_host = SearchResult(1, [self.access_feature2])
         self.assert_search_returns_result(expected_host, search='1.2.4', enabled=True)
 
-        expected_all_hosts = SearchResult(3, [
-            self.access_feature2,
-            self.access_feature3,
-            self.access_feature4
-        ])
-        self.assert_search_returns_result(expected_all_hosts, enabled=True, order='host')
+        expected_all_hosts = SearchResult(
+            3, [self.access_feature2, self.access_feature3, self.access_feature4]
+        )
+        self.assert_search_returns_result(
+            expected_all_hosts, enabled=True, order='host'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [
-            self.access_feature1,
-            self.access_feature2,
-            self.access_feature3,
-            self.access_feature4,
-        ])
+        expected = SearchResult(
+            4,
+            [
+                self.access_feature1,
+                self.access_feature2,
+                self.access_feature3,
+                self.access_feature4,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='host')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [
-            self.access_feature4,
-            self.access_feature3,
-            self.access_feature2,
-            self.access_feature1,
-        ])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4,
+            [
+                self.access_feature4,
+                self.access_feature3,
+                self.access_feature2,
+                self.access_feature1,
+            ],
+        )
 
         self.assert_search_returns_result(expected, order='host', direction='desc')
 
@@ -179,11 +182,9 @@ class TestSearchGivenMultipleAccessFeatures(TestSearch):
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_name_of_items(self):
-        expected = SearchResult(4, [
-            self.access_feature2,
-            self.access_feature3,
-            self.access_feature4
-        ])
+        expected = SearchResult(
+            4, [self.access_feature2, self.access_feature3, self.access_feature4]
+        )
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -201,18 +202,20 @@ class TestSearchGivenMultipleAccessFeatures(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         access_feature = AccessFeatures(host='1.2.3.4/24')
         access_feature = access_feature_dao.create(access_feature)
 
         assert_that(inspect(access_feature).persistent)
-        assert_that(access_feature, has_properties(
-            id=not_none(),
-            host='1.2.3.4/24',
-            feature='phonebook',
-            enabled=True,
-        ))
+        assert_that(
+            access_feature,
+            has_properties(
+                id=not_none(),
+                host='1.2.3.4/24',
+                feature='phonebook',
+                enabled=True,
+            ),
+        )
 
     def test_create_with_all_fields(self):
         access_feature = AccessFeatures(
@@ -223,15 +226,17 @@ class TestCreate(DAOTestCase):
         access_feature = access_feature_dao.create(access_feature)
 
         assert_that(inspect(access_feature).persistent)
-        assert_that(access_feature, has_properties(
-            host='1.2.3.4/24',
-            feature='phonebook',
-            enabled=True,
-        ))
+        assert_that(
+            access_feature,
+            has_properties(
+                host='1.2.3.4/24',
+                feature='phonebook',
+                enabled=True,
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         access_feature = self.add_accessfeatures(
             host='1.2.3.0/24',
@@ -245,14 +250,16 @@ class TestEdit(DAOTestCase):
         access_feature_dao.edit(access_feature)
 
         self.session.expire_all()
-        assert_that(access_feature, has_properties(
-            host='1.2.4.0/24',
-            enabled=False,
-        ))
+        assert_that(
+            access_feature,
+            has_properties(
+                host='1.2.4.0/24',
+                enabled=False,
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         access_feature = self.add_accessfeatures(host='1.2.3.0/24')
 

@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from uuid import UUID
@@ -63,17 +63,23 @@ def associate_all_member_users(session, group, members):
 
 @daosession
 def associate_all_member_extensions(session, group, members):
-    GroupPersistor(session, group_search).associate_all_member_extensions(group, members)
+    GroupPersistor(session, group_search).associate_all_member_extensions(
+        group, members
+    )
 
 
 @daosession
 def associate_call_permission(session, group, call_permission):
-    GroupPersistor(session, group_search).associate_call_permission(group, call_permission)
+    GroupPersistor(session, group_search).associate_call_permission(
+        group, call_permission
+    )
 
 
 @daosession
 def dissociate_call_permission(session, group, call_permission):
-    GroupPersistor(session, group_search).dissociate_call_permission(group, call_permission)
+    GroupPersistor(session, group_search).dissociate_call_permission(
+        group, call_permission
+    )
 
 
 def _id_to_field_value(id_or_uuid):

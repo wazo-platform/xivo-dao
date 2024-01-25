@@ -33,7 +33,6 @@ from .. import dao as trunk_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_trunk(self):
         result = trunk_dao.find(42)
 
@@ -58,7 +57,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_trunk(self):
         self.assertRaises(NotFoundError, trunk_dao.get, 42)
 
@@ -79,12 +77,13 @@ class TestGet(DAOTestCase):
         trunk_row = self.add_trunk()
         self.assertRaises(
             NotFoundError,
-            trunk_dao.get, trunk_row.id, tenant_uuids=[tenant.uuid],
+            trunk_dao.get,
+            trunk_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, trunk_dao.find_by, invalid=42)
 
@@ -114,7 +113,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, trunk_dao.get_by, invalid=42)
 
@@ -135,7 +133,9 @@ class TestGetBy(DAOTestCase):
         trunk_row = self.add_trunk()
         self.assertRaises(
             NotFoundError,
-            trunk_dao.get_by, id=trunk_row.id, tenant_uuids=[tenant.uuid],
+            trunk_dao.get_by,
+            id=trunk_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
         trunk_row = self.add_trunk(tenant_uuid=tenant.uuid)
@@ -144,7 +144,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_trunk(self):
         result = trunk_dao.find_all_by(context='toto')
 
@@ -156,10 +155,13 @@ class TestFindAllBy(DAOTestCase):
 
         trunks = trunk_dao.find_all_by(context='MyCôntext')
 
-        assert_that(trunks, has_items(
-            has_property('id', trunk1.id),
-            has_property('id', trunk2.id),
-        ))
+        assert_that(
+            trunks,
+            has_items(
+                has_property('id', trunk1.id),
+                has_property('id', trunk2.id),
+            ),
+        )
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -177,14 +179,12 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = trunk_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_trunk_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -212,7 +212,6 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleTrunks(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.trunk1 = self.add_trunk(context='Ashton', description='resto')
@@ -227,25 +226,27 @@ class TestSearchGivenMultipleTrunks(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.trunk1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.trunk2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
         expected_all_resto = SearchResult(3, [self.trunk1, self.trunk3, self.trunk4])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='context')
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='context'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(
-            4, [self.trunk1, self.trunk2, self.trunk3, self.trunk4]
-        )
+        expected = SearchResult(4, [self.trunk1, self.trunk2, self.trunk3, self.trunk4])
 
         self.assert_search_returns_result(expected, order='context')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(
-            4, [self.trunk4, self.trunk3, self.trunk2, self.trunk1]
-        )
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(4, [self.trunk4, self.trunk3, self.trunk2, self.trunk1])
 
         self.assert_search_returns_result(expected, order='context', direction='desc')
 
@@ -273,7 +274,6 @@ class TestSearchGivenMultipleTrunks(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         trunk = Trunk(tenant_uuid=self.default_tenant.uuid)
         created_trunk = trunk_dao.create(trunk)
@@ -281,16 +281,19 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Trunk).first()
 
         assert_that(created_trunk, equal_to(row))
-        assert_that(created_trunk, has_properties(
-            id=not_none(),
-            context=none(),
-            endpoint_sip_uuid=none(),
-            endpoint_iax_id=none(),
-            endpoint_custom_id=none(),
-            register_iax_id=none(),
-            registercommented=0,
-            description=none(),
-        ))
+        assert_that(
+            created_trunk,
+            has_properties(
+                id=not_none(),
+                context=none(),
+                endpoint_sip_uuid=none(),
+                endpoint_iax_id=none(),
+                endpoint_custom_id=none(),
+                register_iax_id=none(),
+                registercommented=0,
+                description=none(),
+            ),
+        )
 
     def test_create_with_all_fields(self):
         sip = self.add_endpoint_sip()
@@ -310,29 +313,33 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Trunk).first()
 
         assert_that(created_trunk, equal_to(row))
-        assert_that(created_trunk, has_properties(
-            id=not_none(),
-            tenant_uuid=self.default_tenant.uuid,
-            context='default',
-            endpoint_sip_uuid=sip.uuid,
-            endpoint_iax_id=none(),
-            endpoint_custom_id=none(),
-            register_iax_id=none(),
-            registercommented=1,
-            description='description',
-        ))
+        assert_that(
+            created_trunk,
+            has_properties(
+                id=not_none(),
+                tenant_uuid=self.default_tenant.uuid,
+                context='default',
+                endpoint_sip_uuid=sip.uuid,
+                endpoint_iax_id=none(),
+                endpoint_custom_id=none(),
+                register_iax_id=none(),
+                registercommented=1,
+                description='description',
+            ),
+        )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         sip = self.add_endpoint_sip()
-        trunk = trunk_dao.create(Trunk(
-            tenant_uuid=self.default_tenant.uuid,
-            context='default',
-            registercommented=1,
-            description='description',
-        ))
+        trunk = trunk_dao.create(
+            Trunk(
+                tenant_uuid=self.default_tenant.uuid,
+                context='default',
+                registercommented=1,
+                description='description',
+            )
+        )
         trunk_dao.associate_endpoint_sip(trunk, sip)
 
         trunk = trunk_dao.get(trunk.id)
@@ -352,23 +359,28 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Trunk).first()
 
         assert_that(trunk, equal_to(row))
-        assert_that(row, has_properties(
-            context='other_default',
-            endpoint_sip_uuid=none(),
-            endpoint_iax_id=iax.id,
-            endpoint_custom_id=none(),
-            register_iax_id=register_iax.id,
-            registercommented=0,
-            description='other description',
-        ))
+        assert_that(
+            row,
+            has_properties(
+                context='other_default',
+                endpoint_sip_uuid=none(),
+                endpoint_iax_id=iax.id,
+                endpoint_custom_id=none(),
+                register_iax_id=register_iax.id,
+                registercommented=0,
+                description='other description',
+            ),
+        )
 
     def test_edit_set_fields_to_null(self):
-        trunk = trunk_dao.create(Trunk(
-            tenant_uuid=self.default_tenant.uuid,
-            context='default',
-            registercommented=1,
-            description='description',
-        ))
+        trunk = trunk_dao.create(
+            Trunk(
+                tenant_uuid=self.default_tenant.uuid,
+                context='default',
+                registercommented=1,
+                description='description',
+            )
+        )
         trunk = trunk_dao.get(trunk.id)
         trunk.context = None
         trunk.description = None
@@ -382,7 +394,6 @@ class TestEdit(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         trunk = self.add_trunk()
 
@@ -409,7 +420,9 @@ class TestDelete(DAOTestCase):
         deleted_sccp = self.session.query(UserIAX).first()
         assert_that(deleted_sccp, none())
 
-    def test_given_trunk_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(self):
+    def test_given_trunk_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(
+        self,
+    ):
         custom = self.add_usercustom()
         trunk = self.add_trunk(endpoint_custom_id=custom.id)
 
@@ -425,12 +438,16 @@ class TestDelete(DAOTestCase):
 
         trunk_dao.delete(trunk)
 
-        deleted_register = self.session.query(StaticIAX).filter(StaticIAX.id == register_id).first()
+        deleted_register = (
+            self.session
+            .query(StaticIAX)
+            .filter(StaticIAX.id == register_id)
+            .first()
+        )  # fmt: skip
         assert_that(deleted_register, none())
 
 
 class TestAssociateEndpointSIP(DAOTestCase):
-
     def test_associate_trunk_endpoint_sip(self):
         trunk = self.add_trunk()
         sip = self.add_endpoint_sip()
@@ -462,7 +479,6 @@ class TestAssociateEndpointSIP(DAOTestCase):
 
 
 class TestDissociateEndpointSIP(DAOTestCase):
-
     def test_dissociate_trunk_endpoint_sip(self):
         trunk = self.add_trunk()
         sip = self.add_endpoint_sip()
@@ -487,7 +503,6 @@ class TestDissociateEndpointSIP(DAOTestCase):
 
 
 class TestAssociateEndpointIAX(DAOTestCase):
-
     def test_associate_trunk_endpoint_iax(self):
         trunk = self.add_trunk()
         iax = self.add_useriax()
@@ -519,7 +534,6 @@ class TestAssociateEndpointIAX(DAOTestCase):
 
 
 class TestDissociateEndpointIAX(DAOTestCase):
-
     def test_dissociate_trunk_endpoint_iax(self):
         trunk = self.add_trunk()
         iax = self.add_useriax()
@@ -544,7 +558,6 @@ class TestDissociateEndpointIAX(DAOTestCase):
 
 
 class TestAssociateEndpointCustom(DAOTestCase):
-
     def test_associate_trunk_endpoint_custom(self):
         trunk = self.add_trunk()
         custom = self.add_usercustom()
@@ -572,11 +585,12 @@ class TestAssociateEndpointCustom(DAOTestCase):
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
         custom = self.add_usercustom()
 
-        self.assertRaises(ResourceError, trunk_dao.associate_endpoint_custom, trunk, custom)
+        self.assertRaises(
+            ResourceError, trunk_dao.associate_endpoint_custom, trunk, custom
+        )
 
 
 class TestDissociateEndpointCustom(DAOTestCase):
-
     def test_dissociate_trunk_endpoint_custom(self):
         trunk = self.add_trunk()
         custom = self.add_usercustom()
@@ -601,7 +615,6 @@ class TestDissociateEndpointCustom(DAOTestCase):
 
 
 class TestAssociateRegisterIAX(DAOTestCase):
-
     def test_associate_trunk_register_iax(self):
         trunk = self.add_trunk()
         register = self.add_register_iax()
@@ -629,11 +642,12 @@ class TestAssociateRegisterIAX(DAOTestCase):
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
         register = self.add_register_iax()
 
-        self.assertRaises(ResourceError, trunk_dao.associate_register_iax, trunk, register)
+        self.assertRaises(
+            ResourceError, trunk_dao.associate_register_iax, trunk, register
+        )
 
 
 class TestDissociateRegisterIAX(DAOTestCase):
-
     def test_dissociate_trunk_register_iax(self):
         trunk = self.add_trunk()
         register = self.add_register_iax()
@@ -658,9 +672,10 @@ class TestDissociateRegisterIAX(DAOTestCase):
 
 
 class TestRelations(DAOTestCase):
-
     def test_outcalls_create(self):
-        outcall = Outcall(name='test', context='to-extern', tenant_uuid=self.default_tenant.uuid)
+        outcall = Outcall(
+            name='test', context='to-extern', tenant_uuid=self.default_tenant.uuid
+        )
         trunk_row = self.add_trunk()
         trunk_row.outcalls = [outcall]
         trunk = trunk_dao.get(trunk_row.id)
@@ -678,7 +693,10 @@ class TestRelations(DAOTestCase):
         trunk = trunk_dao.get(trunk_row.id)
 
         assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.outcalls, contains_inanyorder(outcall1_row, outcall2_row, outcall3_row))
+        assert_that(
+            trunk.outcalls,
+            contains_inanyorder(outcall1_row, outcall2_row, outcall3_row),
+        )
 
     def test_outcalls_dissociation(self):
         outcall1_row = self.add_outcall()

@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -11,7 +11,6 @@ from xivo_dao.resources.extension.search import extension_search
 
 
 class ExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Extension
 
     def __init__(self, session, tenant_uuids=None):
@@ -26,18 +25,17 @@ class ExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
         return query
 
     def _search_query(self):
-        return (self.session
-                .query(Extension)
-                .options(joinedload('conference'))
-                .options(joinedload('dialpattern')
-                         .joinedload('outcall'))
-                .options(joinedload('group'))
-                .options(joinedload('context_rel'))
-                .options(joinedload('queue'))
-                .options(joinedload('incall'))
-                .options(joinedload('line_extensions')
-                         .joinedload('line'))
-                .options(joinedload('parking_lot')))
+        return (
+            self.session.query(Extension)
+            .options(joinedload('conference'))
+            .options(joinedload('dialpattern').joinedload('outcall'))
+            .options(joinedload('group'))
+            .options(joinedload('context_rel'))
+            .options(joinedload('queue'))
+            .options(joinedload('incall'))
+            .options(joinedload('line_extensions').joinedload('line'))
+            .options(joinedload('parking_lot'))
+        )
 
     def create(self, extension):
         self.fill_default_values(extension)

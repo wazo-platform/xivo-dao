@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.application import Application
@@ -7,7 +7,6 @@ from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
 class ApplicationPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Application
 
     def __init__(self, session, application_search, tenant_uuids=None):

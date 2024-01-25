@@ -1,9 +1,14 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKeyConstraint,
+    CheckConstraint,
+    PrimaryKeyConstraint,
+)
 from sqlalchemy.types import Integer, String
 from sqlalchemy.sql import cast
 
@@ -12,7 +17,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestParkPosition(Base):
-
     DESTINATION_TYPE_ID = 7
 
     __tablename__ = 'func_key_dest_park_position'
@@ -23,7 +27,7 @@ class FuncKeyDestParkPosition(Base):
             ('func_key.id', 'func_key.destination_type_id'),
         ),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
-        CheckConstraint("park_position ~ '^[0-9]+$'")
+        CheckConstraint("park_position ~ '^[0-9]+$'"),
     )
 
     func_key_id = Column(Integer)

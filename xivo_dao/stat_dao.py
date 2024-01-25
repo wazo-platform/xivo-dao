@@ -5,7 +5,8 @@ from sqlalchemy.sql import literal_column, text
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f%z"
 
-FILL_ANSWERED_CALL_ON_QUEUE_QUERY = text('''\n
+FILL_ANSWERED_CALL_ON_QUEUE_QUERY = text(
+    '''\n
 INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_id, stat_agent_id, status)
 (
     WITH
@@ -109,14 +110,16 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_i
     ORDER BY
         all_calls.time
 )
-''')
+'''
+)
 
 
 def fill_simple_calls(session, start, end):
     _run_sql_function_returning_void(
         session,
-        start, end,
-        'SELECT 1 AS place_holder FROM fill_simple_calls(:start, :end)'
+        start,
+        end,
+        'SELECT 1 AS place_holder FROM fill_simple_calls(:start, :end)',
     )
 
 
@@ -132,8 +135,9 @@ def fill_answered_calls(session, start, end):
 def fill_leaveempty_calls(session, start, end):
     _run_sql_function_returning_void(
         session,
-        start, end,
-        'SELECT 1 AS place_holder FROM fill_leaveempty_calls(:start, :end)'
+        start,
+        end,
+        'SELECT 1 AS place_holder FROM fill_leaveempty_calls(:start, :end)',
     )
 
 
@@ -141,11 +145,12 @@ def _run_sql_function_returning_void(session, start, end, function):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    (session
-     .query(literal_column('place_holder'))
-     .from_statement(text(function))
-     .params(start=start, end=end)
-     .first())
+    (
+        session.query(literal_column('place_holder'))
+        .from_statement(text(function))
+        .params(start=start, end=end)
+        .first()
+    )
 
 
 def get_pause_intervals_in_range(session, start, end):
@@ -175,10 +180,15 @@ SELECT stat_agent.id AS agent,
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    rows = (session
-            .query(literal_column('agent'), literal_column('pauseall'), literal_column('unpauseall'))
-            .from_statement(text(pause_in_range))
-            .params(start=start, end=end))
+    rows = (
+        session.query(
+            literal_column('agent'),
+            literal_column('pauseall'),
+            literal_column('unpauseall'),
+        )
+        .from_statement(text(pause_in_range))
+        .params(start=start, end=end)
+    )
 
     results = {}
 
@@ -312,7 +322,7 @@ ORDER BY
         session.query(
             literal_column('agent'),
             literal_column('login_timestamp'),
-            literal_column('logout_timestamp')
+            literal_column('logout_timestamp'),
         )
         .from_statement(text(completed_logins_query))
         .params(start=formatted_start, end=formatted_end)
@@ -378,11 +388,15 @@ HAVING
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    rows = session.query(
-        literal_column('agent'),
-        literal_column('login'),
-        literal_column('logout'),
-    ).from_statement(text(query)).params(start=start, end=end)
+    rows = (
+        session.query(
+            literal_column('agent'),
+            literal_column('login'),
+            literal_column('logout'),
+        )
+        .from_statement(text(query))
+        .params(start=start, end=end)
+    )
 
     agent_last_logins = {}
     agent_last_logouts = {}

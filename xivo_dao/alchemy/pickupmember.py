@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -16,15 +16,18 @@ class PickupMember(Base):
     )
 
     pickupid = Column(Integer, nullable=False, autoincrement=False)
-    category = Column(Enum('member',
-                           'pickup',
-                           name='pickup_category',
-                           metadata=Base.metadata), nullable=False, autoincrement=False)
-    membertype = Column(Enum('group',
-                             'queue',
-                             'user',
-                             name='pickup_membertype',
-                             metadata=Base.metadata), nullable=False, autoincrement=False)
+    category = Column(
+        Enum('member', 'pickup', name='pickup_category', metadata=Base.metadata),
+        nullable=False,
+        autoincrement=False,
+    )
+    membertype = Column(
+        Enum(
+            'group', 'queue', 'user', name='pickup_membertype', metadata=Base.metadata
+        ),
+        nullable=False,
+        autoincrement=False,
+    )
     memberid = Column(Integer, nullable=False, autoincrement=False)
 
     user = relationship(

@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -10,7 +10,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class PagingUser(Base):
-
     __tablename__ = 'paginguser'
     __table_args__ = (
         PrimaryKeyConstraint('pagingid', 'userfeaturesid', 'caller'),

@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.context import Context
@@ -9,7 +9,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class ContextPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = Context
 
     def __init__(self, session, context_search, tenant_uuids=None):
@@ -36,9 +35,11 @@ class ContextPersistor(CriteriaBuilderMixin, BasePersistor):
         self.session.flush()
 
     def _delete_associations(self, context):
-        (self.session.query(ContextMember)
-         .filter(ContextMember.context == context.name)
-         .delete())
+        (
+            self.session.query(ContextMember)
+            .filter(ContextMember.context == context.name)
+            .delete()
+        )
 
     def associate_contexts(self, context, contexts):
         context.contexts = contexts

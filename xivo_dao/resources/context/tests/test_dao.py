@@ -24,7 +24,6 @@ from .. import dao as context_dao
 
 
 class TestFind(DAOTestCase):
-
     def test_find_no_context(self):
         result = context_dao.find(42)
 
@@ -39,7 +38,6 @@ class TestFind(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_context(self):
         self.assertRaises(NotFoundError, context_dao.get, 42)
 
@@ -52,7 +50,6 @@ class TestGet(DAOTestCase):
 
 
 class TestGetByName(DAOTestCase):
-
     def test_get_by_name_no_context(self):
         self.assertRaises(NotFoundError, context_dao.get_by_name, '42')
 
@@ -69,7 +66,9 @@ class TestGetByName(DAOTestCase):
         context_row = self.add_context(name='MyName1')
         self.assertRaises(
             NotFoundError,
-            context_dao.get_by_name, 'MyName1', tenant_uuids=[tenant.uuid],
+            context_dao.get_by_name,
+            'MyName1',
+            tenant_uuids=[tenant.uuid],
         )
 
         context_row = self.add_context(name='MyName2', tenant_uuid=tenant.uuid)
@@ -78,7 +77,6 @@ class TestGetByName(DAOTestCase):
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, context_dao.find_by, invalid=42)
 
@@ -113,7 +111,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestGetBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, context_dao.get_by, invalid=42)
 
@@ -156,7 +153,6 @@ class TestGetBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_find_all_by_no_context(self):
         result = context_dao.find_all_by(description='toto')
 
@@ -171,19 +167,19 @@ class TestFindAllBy(DAOTestCase):
 
         contexts = context_dao.find_all_by(description='MyContext')
 
-        assert_that(contexts, has_items(has_property('id', context1.id),
-                                        has_property('id', context2.id)))
+        assert_that(
+            contexts,
+            has_items(has_property('id', context1.id), has_property('id', context2.id)),
+        )
 
 
 class TestSearch(DAOTestCase):
-
     def assert_search_returns_result(self, search_result, **parameters):
         result = context_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
-
     def test_given_no_context_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
@@ -197,11 +193,12 @@ class TestSimpleSearch(TestSearch):
 
 
 class TestSearchGivenMultipleContext(TestSearch):
-
     def setUp(self):
         super(TestSearch, self).setUp()
         self.context1 = self.add_context(name='O1', type='Ashton', description='resto')
-        self.context2 = self.add_context(name='O2', type='Beaugarton', description='bar')
+        self.context2 = self.add_context(
+            name='O2', type='Beaugarton', description='bar'
+        )
         self.context3 = self.add_context(name='O3', type='Casa', description='resto')
         self.context4 = self.add_context(name='O4', type='Dunkin', description='resto')
 
@@ -212,28 +209,33 @@ class TestSearchGivenMultipleContext(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_resto = SearchResult(1, [self.context1])
-        self.assert_search_returns_result(expected_resto, search='ton', description='resto')
+        self.assert_search_returns_result(
+            expected_resto, search='ton', description='resto'
+        )
 
         expected_bar = SearchResult(1, [self.context2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.context1, self.context3, self.context4])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='type')
+        expected_all_resto = SearchResult(
+            3, [self.context1, self.context3, self.context4]
+        )
+        self.assert_search_returns_result(
+            expected_all_resto, description='resto', order='type'
+        )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.context1,
-                                 self.context2,
-                                 self.context3,
-                                 self.context4])
+        expected = SearchResult(
+            4, [self.context1, self.context2, self.context3, self.context4]
+        )
 
         self.assert_search_returns_result(expected, order='type')
 
-    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.context4,
-                                    self.context3,
-                                    self.context2,
-                                    self.context1])
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
+        self,
+    ):
+        expected = SearchResult(
+            4, [self.context4, self.context3, self.context2, self.context1]
+        )
 
         self.assert_search_returns_result(expected, order='type', direction='desc')
 
@@ -250,16 +252,12 @@ class TestSearchGivenMultipleContext(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.context2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='type',
-                                          direction='desc',
-                                          offset=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected, search='a', order='type', direction='desc', offset=1, limit=1
+        )
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_fields(self):
         tenant = self.add_tenant()
         context = Context(name='mycontext', tenant_uuid=tenant.uuid)
@@ -268,72 +266,91 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Context).first()
 
         assert_that(created_context, equal_to(row))
-        assert_that(created_context, has_properties(id=is_not(none()),
-                                                    name='mycontext',
-                                                    tenant_uuid=tenant.uuid,
-                                                    displayname=none(),
-                                                    label=none(),
-                                                    contexttype='internal',
-                                                    type='internal',
-                                                    description=none(),
-                                                    commented=0,
-                                                    enabled=True,
-                                                    user_ranges=empty(),
-                                                    group_ranges=empty(),
-                                                    queue_ranges=empty(),
-                                                    conference_room_ranges=empty(),
-                                                    incall_ranges=empty()))
+        assert_that(
+            created_context,
+            has_properties(
+                id=is_not(none()),
+                name='mycontext',
+                tenant_uuid=tenant.uuid,
+                displayname=none(),
+                label=none(),
+                contexttype='internal',
+                type='internal',
+                description=none(),
+                commented=0,
+                enabled=True,
+                user_ranges=empty(),
+                group_ranges=empty(),
+                queue_ranges=empty(),
+                conference_room_ranges=empty(),
+                incall_ranges=empty(),
+            ),
+        )
 
     def test_create_with_all_fields(self):
         tenant = self.add_tenant()
-        context = Context(name='myContext',
-                          tenant_uuid=tenant.uuid,
-                          label='My Context Label',
-                          type='outcall',
-                          user_ranges=[ContextNumbers(start='1000', end='1999')],
-                          group_ranges=[ContextNumbers(start='2000', end='2999')],
-                          queue_ranges=[ContextNumbers(start='3000', end='3999')],
-                          conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
-                          incall_ranges=[ContextNumbers(start='1000', end='4999', did_length='2')],
-                          description='context description',
-                          enabled=False)
+        context = Context(
+            name='myContext',
+            tenant_uuid=tenant.uuid,
+            label='My Context Label',
+            type='outcall',
+            user_ranges=[ContextNumbers(start='1000', end='1999')],
+            group_ranges=[ContextNumbers(start='2000', end='2999')],
+            queue_ranges=[ContextNumbers(start='3000', end='3999')],
+            conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
+            incall_ranges=[ContextNumbers(start='1000', end='4999', did_length='2')],
+            description='context description',
+            enabled=False,
+        )
 
         created_context = context_dao.create(context)
 
         row = self.session.query(Context).first()
 
         assert_that(created_context, equal_to(row))
-        assert_that(created_context, has_properties(
-            id=is_not(none()),
-            tenant_uuid=tenant.uuid,
-            name='myContext',
-            label='My Context Label',
-            type='outcall',
-            user_ranges=contains_exactly(has_properties(start='1000', end='1999')),
-            group_ranges=contains_exactly(has_properties(start='2000', end='2999')),
-            queue_ranges=contains_exactly(has_properties(start='3000', end='3999')),
-            conference_room_ranges=contains_exactly(has_properties(start='4000', end='4999')),
-            incall_ranges=contains_exactly(has_properties(start='1000', end='4999', did_length='2')),
-            description='context description',
-            enabled=False)
+        assert_that(
+            created_context,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=tenant.uuid,
+                name='myContext',
+                label='My Context Label',
+                type='outcall',
+                user_ranges=contains_exactly(has_properties(start='1000', end='1999')),
+                group_ranges=contains_exactly(has_properties(start='2000', end='2999')),
+                queue_ranges=contains_exactly(has_properties(start='3000', end='3999')),
+                conference_room_ranges=contains_exactly(
+                    has_properties(start='4000', end='4999')
+                ),
+                incall_ranges=contains_exactly(
+                    has_properties(start='1000', end='4999', did_length='2')
+                ),
+                description='context description',
+                enabled=False,
+            ),
         )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_fields(self):
         tenant = self.add_tenant()
-        context = context_dao.create(Context(name='MyContext',
-                                             tenant_uuid=tenant.uuid,
-                                             label='My Context Label',
-                                             type='outcall',
-                                             user_ranges=[ContextNumbers(start='1000', end='1999')],
-                                             group_ranges=[ContextNumbers(start='2000', end='2999')],
-                                             queue_ranges=[ContextNumbers(start='3000', end='3999')],
-                                             conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
-                                             incall_ranges=[ContextNumbers(start='1000', end='4999', did_length='2')],
-                                             description='context description',
-                                             enabled=False))
+        context = context_dao.create(
+            Context(
+                name='MyContext',
+                tenant_uuid=tenant.uuid,
+                label='My Context Label',
+                type='outcall',
+                user_ranges=[ContextNumbers(start='1000', end='1999')],
+                group_ranges=[ContextNumbers(start='2000', end='2999')],
+                queue_ranges=[ContextNumbers(start='3000', end='3999')],
+                conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
+                incall_ranges=[
+                    ContextNumbers(start='1000', end='4999', did_length='2')
+                ],
+                description='context description',
+                enabled=False,
+            )
+        )
 
         context = context_dao.get(context.id)
         context.label = 'Other Context Label'
@@ -342,7 +359,9 @@ class TestEdit(DAOTestCase):
         context.group_ranges = [ContextNumbers(start='3000', end='3999')]
         context.queue_ranges = [ContextNumbers(start='2000', end='2999')]
         context.conference_room_ranges = [ContextNumbers(start='1000', end='1999')]
-        context.incall_ranges = [ContextNumbers(start='4000', end='6999', did_length='4')]
+        context.incall_ranges = [
+            ContextNumbers(start='4000', end='6999', did_length='4')
+        ]
         context.description = 'other context description'
         context.enabled = True
         context_dao.edit(context)
@@ -350,31 +369,42 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Context).first()
 
         assert_that(context, equal_to(row))
-        assert_that(context, has_properties(
-            id=is_not(none()),
-            tenant_uuid=tenant.uuid,
-            label='Other Context Label',
-            type='incall',
-            user_ranges=contains_exactly(has_properties(start='4000', end='4999')),
-            group_ranges=contains_exactly(has_properties(start='3000', end='3999')),
-            queue_ranges=contains_exactly(has_properties(start='2000', end='2999')),
-            conference_room_ranges=contains_exactly(has_properties(start='1000', end='1999')),
-            incall_ranges=contains_exactly(has_properties(start='4000', end='6999', did_length='4')),
-            description='other context description',
-            enabled=True)
+        assert_that(
+            context,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=tenant.uuid,
+                label='Other Context Label',
+                type='incall',
+                user_ranges=contains_exactly(has_properties(start='4000', end='4999')),
+                group_ranges=contains_exactly(has_properties(start='3000', end='3999')),
+                queue_ranges=contains_exactly(has_properties(start='2000', end='2999')),
+                conference_room_ranges=contains_exactly(
+                    has_properties(start='1000', end='1999')
+                ),
+                incall_ranges=contains_exactly(
+                    has_properties(start='4000', end='6999', did_length='4')
+                ),
+                description='other context description',
+                enabled=True,
+            ),
         )
 
     def test_edit_set_fields_to_null(self):
         tenant = self.add_tenant()
-        context = context_dao.create(Context(name='MyContext',
-                                             tenant_uuid=tenant.uuid,
-                                             label='My Context Label',
-                                             user_ranges=[ContextNumbers(start='1000', end='1999')],
-                                             group_ranges=[ContextNumbers(start='2000', end='2999')],
-                                             queue_ranges=[ContextNumbers(start='3000', end='3999')],
-                                             conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
-                                             incall_ranges=[ContextNumbers(start='1000', end='4999')],
-                                             description='context description'))
+        context = context_dao.create(
+            Context(
+                name='MyContext',
+                tenant_uuid=tenant.uuid,
+                label='My Context Label',
+                user_ranges=[ContextNumbers(start='1000', end='1999')],
+                group_ranges=[ContextNumbers(start='2000', end='2999')],
+                queue_ranges=[ContextNumbers(start='3000', end='3999')],
+                conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
+                incall_ranges=[ContextNumbers(start='1000', end='4999')],
+                description='context description',
+            )
+        )
 
         context = context_dao.get(context.id)
         context.label = None
@@ -389,17 +419,21 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Context).first()
         assert_that(context, equal_to(row))
-        assert_that(row, has_properties(label=none(),
-                                        user_ranges=empty(),
-                                        group_ranges=empty(),
-                                        queue_ranges=empty(),
-                                        conference_room_ranges=empty(),
-                                        incall_ranges=empty(),
-                                        description=none()))
+        assert_that(
+            row,
+            has_properties(
+                label=none(),
+                user_ranges=empty(),
+                group_ranges=empty(),
+                queue_ranges=empty(),
+                conference_room_ranges=empty(),
+                incall_ranges=empty(),
+                description=none(),
+            ),
+        )
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         context = self.add_context()
 
@@ -434,7 +468,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestAssociateContexts(DAOTestCase):
-
     def test_associate(self):
         context = self.add_context()
         included_context = self.add_context()
@@ -452,7 +485,9 @@ class TestAssociateContexts(DAOTestCase):
         context_dao.associate_contexts(context, [included_context1, included_context2])
 
         self.session.expire_all()
-        assert_that(context.contexts, contains_exactly(included_context1, included_context2))
+        assert_that(
+            context.contexts, contains_exactly(included_context1, included_context2)
+        )
 
     def test_dissociate(self):
         context = self.add_context()

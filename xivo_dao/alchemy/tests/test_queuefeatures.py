@@ -29,7 +29,6 @@ from ..schedulepath import SchedulePath
 
 
 class TestCallerId(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         callerid = self.add_callerid(type='queue', typeval=queue.id)
@@ -39,7 +38,6 @@ class TestCallerId(DAOTestCase):
 
 
 class TestCallerIdMode(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures(caller_id_mode='prepend')
 
@@ -53,16 +51,18 @@ class TestCallerIdMode(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.caller_id, has_properties(
-            type='queue',
-            typeval=queue.id,
-            mode='prepend',
-            name=None,
-        ))
+        assert_that(
+            queue.caller_id,
+            has_properties(
+                type='queue',
+                typeval=queue.id,
+                mode='prepend',
+                name=None,
+            ),
+        )
 
 
 class TestCallerIdName(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures(caller_id_name='toto')
         assert_that(queue.caller_id_name, equal_to('toto'))
@@ -73,22 +73,22 @@ class TestCallerIdName(DAOTestCase):
         queue.caller_id_name = 'toto'
         self.session.flush()
 
-        assert_that(queue.caller_id, has_properties(
-            type='queue',
-            typeval=queue.id,
-            mode=None,
-            name='toto',
-        ))
+        assert_that(
+            queue.caller_id,
+            has_properties(
+                type='queue',
+                typeval=queue.id,
+                mode=None,
+                name='toto',
+            ),
+        )
 
 
 class TestFallbacks(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         dialaction = self.add_dialaction(
-            event='busy',
-            category='queue',
-            categoryval=str(queue.id)
+            event='busy', category='queue', categoryval=str(queue.id)
         )
 
         assert_that(queue.fallbacks['busy'], equal_to(dialaction))
@@ -101,11 +101,10 @@ class TestFallbacks(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.fallbacks['busy'], has_properties(
-            action='none',
-            category='queue',
-            event='busy'
-        ))
+        assert_that(
+            queue.fallbacks['busy'],
+            has_properties(action='none', category='queue', event='busy'),
+        )
 
     def test_setter_to_none(self):
         queue = self.add_queuefeatures()
@@ -129,7 +128,9 @@ class TestFallbacks(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.fallbacks['busy'], has_properties(action='user', actionarg1='1'))
+        assert_that(
+            queue.fallbacks['busy'], has_properties(action='user', actionarg1='1')
+        )
 
     def test_setter_delete_undefined_key(self):
         queue = self.add_queuefeatures()
@@ -148,13 +149,10 @@ class TestFallbacks(DAOTestCase):
 
 
 class TestWaitTimeDestination(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         dialaction = self.add_dialaction(
-            event='qwaittime',
-            category='queue',
-            categoryval=str(queue.id)
+            event='qwaittime', category='queue', categoryval=str(queue.id)
         )
 
         assert_that(queue.wait_time_destination, equal_to(dialaction))
@@ -167,11 +165,10 @@ class TestWaitTimeDestination(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.wait_time_destination, has_properties(
-            action='none',
-            category='queue',
-            event='qwaittime'
-        ))
+        assert_that(
+            queue.wait_time_destination,
+            has_properties(action='none', category='queue', event='qwaittime'),
+        )
 
     def test_setter_to_none(self):
         queue = self.add_queuefeatures()
@@ -187,13 +184,10 @@ class TestWaitTimeDestination(DAOTestCase):
 
 
 class TestWaitRatioDestination(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         dialaction = self.add_dialaction(
-            event='qwaitratio',
-            category='queue',
-            categoryval=str(queue.id)
+            event='qwaitratio', category='queue', categoryval=str(queue.id)
         )
 
         assert_that(queue.wait_ratio_destination, equal_to(dialaction))
@@ -206,11 +200,10 @@ class TestWaitRatioDestination(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue.wait_ratio_destination, has_properties(
-            action='none',
-            category='queue',
-            event='qwaitratio'
-        ))
+        assert_that(
+            queue.wait_ratio_destination,
+            has_properties(action='none', category='queue', event='qwaitratio'),
+        )
 
     def test_setter_to_none(self):
         queue = self.add_queuefeatures()
@@ -226,14 +219,19 @@ class TestWaitRatioDestination(DAOTestCase):
 
 
 class TestUserQueueMembers(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
-        queue_member1 = self.add_queue_member(category='queue', usertype='user', queue_name=queue.name, position=1)
-        queue_member2 = self.add_queue_member(category='queue', usertype='user', queue_name=queue.name, position=2)
+        queue_member1 = self.add_queue_member(
+            category='queue', usertype='user', queue_name=queue.name, position=1
+        )
+        queue_member2 = self.add_queue_member(
+            category='queue', usertype='user', queue_name=queue.name, position=2
+        )
 
         self.session.expire_all()
-        assert_that(queue.user_queue_members, contains_exactly(queue_member1, queue_member2))
+        assert_that(
+            queue.user_queue_members, contains_exactly(queue_member1, queue_member2)
+        )
 
     def test_setter(self):
         queue = self.add_queuefeatures()
@@ -269,14 +267,19 @@ class TestUserQueueMembers(DAOTestCase):
 
 
 class TestAgentQueueMembers(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
-        queue_member1 = self.add_queue_member(category='queue', usertype='agent', queue_name=queue.name, position=1)
-        queue_member2 = self.add_queue_member(category='queue', usertype='agent', queue_name=queue.name, position=2)
+        queue_member1 = self.add_queue_member(
+            category='queue', usertype='agent', queue_name=queue.name, position=1
+        )
+        queue_member2 = self.add_queue_member(
+            category='queue', usertype='agent', queue_name=queue.name, position=2
+        )
 
         self.session.expire_all()
-        assert_that(queue.agent_queue_members, contains_exactly(queue_member1, queue_member2))
+        assert_that(
+            queue.agent_queue_members, contains_exactly(queue_member1, queue_member2)
+        )
 
     def test_setter(self):
         queue = self.add_queuefeatures()
@@ -312,7 +315,6 @@ class TestAgentQueueMembers(DAOTestCase):
 
 
 class TestSchedules(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         schedule = self.add_schedule()
@@ -352,7 +354,6 @@ class TestSchedules(DAOTestCase):
 
 
 class TestLabel(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(displayname='toto')
         assert_that(queue.label, equal_to('toto'))
@@ -371,7 +372,6 @@ class TestLabel(DAOTestCase):
 
 
 class TestDataQualityBool(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(data_quality=1)
         assert_that(queue.data_quality_bool, equal_to(True))
@@ -382,7 +382,6 @@ class TestDataQualityBool(DAOTestCase):
 
 
 class TestIgnoreForwardBool(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(ignore_forward=1)
         assert_that(queue.ignore_forward_bool, equal_to(True))
@@ -393,7 +392,6 @@ class TestIgnoreForwardBool(DAOTestCase):
 
 
 class TestDTMFHangupCalleeEnabled(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(hitting_callee=1)
         assert_that(queue.dtmf_hangup_callee_enabled, equal_to(True))
@@ -404,7 +402,6 @@ class TestDTMFHangupCalleeEnabled(DAOTestCase):
 
 
 class TestDTMFHangupCallerEnabled(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(hitting_caller=1)
         assert_that(queue.dtmf_hangup_caller_enabled, equal_to(True))
@@ -415,7 +412,6 @@ class TestDTMFHangupCallerEnabled(DAOTestCase):
 
 
 class TestDTMFTransferCalleeEnabled(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(transfer_user=1)
         assert_that(queue.dtmf_transfer_callee_enabled, equal_to(True))
@@ -426,7 +422,6 @@ class TestDTMFTransferCalleeEnabled(DAOTestCase):
 
 
 class TestDTMFTransferCallerEnabled(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(transfer_call=1)
         assert_that(queue.dtmf_transfer_caller_enabled, equal_to(True))
@@ -437,7 +432,6 @@ class TestDTMFTransferCallerEnabled(DAOTestCase):
 
 
 class TestDTMFRecordCalleeEnabled(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(write_caller=1)
         assert_that(queue.dtmf_record_callee_enabled, equal_to(True))
@@ -448,7 +442,6 @@ class TestDTMFRecordCalleeEnabled(DAOTestCase):
 
 
 class TestDTMFRecordCallerEnabled(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(write_calling=1)
         assert_that(queue.dtmf_record_caller_enabled, equal_to(True))
@@ -459,7 +452,6 @@ class TestDTMFRecordCallerEnabled(DAOTestCase):
 
 
 class TestRetryOnTimeout(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(retries=1)
         assert_that(queue.retry_on_timeout, equal_to(False))
@@ -470,7 +462,6 @@ class TestRetryOnTimeout(DAOTestCase):
 
 
 class TestRingOnHold(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(ring=1)
         assert_that(queue.ring_on_hold, equal_to(True))
@@ -481,7 +472,6 @@ class TestRingOnHold(DAOTestCase):
 
 
 class TestAnnounceHoldTimeOnEntry(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(announce_holdtime=1)
         assert_that(queue.announce_hold_time_on_entry, equal_to(True))
@@ -492,7 +482,6 @@ class TestAnnounceHoldTimeOnEntry(DAOTestCase):
 
 
 class TestWaitTimeThreshold(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(waittime=1234)
         assert_that(queue.wait_time_threshold, equal_to(1234))
@@ -503,7 +492,6 @@ class TestWaitTimeThreshold(DAOTestCase):
 
 
 class TestWaitRatioThreshold(DAOTestCase):
-
     def test_getter(self):
         queue = QueueFeatures(waitratio=12.34)
         assert_that(queue.wait_ratio_threshold, equal_to(12.34))
@@ -514,7 +502,6 @@ class TestWaitRatioThreshold(DAOTestCase):
 
 
 class TestCreate(DAOTestCase):
-
     def test_metaqueue_is_created_with_default_fields(self):
         queue = QueueFeatures(
             tenant_uuid=self.default_tenant.uuid,
@@ -525,34 +512,37 @@ class TestCreate(DAOTestCase):
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(queue._queue, has_properties(
-            name='queuename',
-            category='queue',
-            timeout=15,
-            queue_youarenext='queue-youarenext',
-            queue_thereare='queue-thereare',
-            queue_callswaiting='queue-callswaiting',
-            queue_holdtime='queue-holdtime',
-            queue_minutes='queue-minutes',
-            queue_seconds='queue-seconds',
-            queue_thankyou='queue-thankyou',
-            queue_reporthold='queue-reporthold',
-            periodic_announce='queue-periodic-announce',
-            announce_frequency=0,
-            periodic_announce_frequency=0,
-            announce_round_seconds=0,
-            announce_holdtime='no',
-            retry=5,
-            wrapuptime=0,
-            maxlen=0,
-            servicelevel=0,
-            strategy='ringall',
-            memberdelay=0,
-            weight=0,
-            timeoutpriority='conf',
-            setqueueentryvar=1,
-            setqueuevar=1,
-        ))
+        assert_that(
+            queue._queue,
+            has_properties(
+                name='queuename',
+                category='queue',
+                timeout=15,
+                queue_youarenext='queue-youarenext',
+                queue_thereare='queue-thereare',
+                queue_callswaiting='queue-callswaiting',
+                queue_holdtime='queue-holdtime',
+                queue_minutes='queue-minutes',
+                queue_seconds='queue-seconds',
+                queue_thankyou='queue-thankyou',
+                queue_reporthold='queue-reporthold',
+                periodic_announce='queue-periodic-announce',
+                announce_frequency=0,
+                periodic_announce_frequency=0,
+                announce_round_seconds=0,
+                announce_holdtime='no',
+                retry=5,
+                wrapuptime=0,
+                maxlen=0,
+                servicelevel=0,
+                strategy='ringall',
+                memberdelay=0,
+                weight=0,
+                timeoutpriority='conf',
+                setqueueentryvar=1,
+                setqueuevar=1,
+            ),
+        )
 
     def test_metaqueue_is_created_with_all_fields(self):
         queue = QueueFeatures(
@@ -565,15 +555,17 @@ class TestCreate(DAOTestCase):
         self.session.add(queue)
         self.session.flush()
 
-        assert_that(queue._queue, has_properties(
-            name='queuename',
-            enabled=False,
-            musicclass='music_on_hold',
-        ))
+        assert_that(
+            queue._queue,
+            has_properties(
+                name='queuename',
+                enabled=False,
+                musicclass='music_on_hold',
+            ),
+        )
 
 
 class TestExtensions(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         extension = self.add_extension(type='queue', typeval=str(queue.id))
@@ -583,7 +575,6 @@ class TestExtensions(DAOTestCase):
 
 
 class TestExten(DAOTestCase):
-
     def test_getter(self):
         queue = self.add_queuefeatures()
         extension = self.add_extension(type='queue', typeval=queue.id)
@@ -605,7 +596,6 @@ class TestExten(DAOTestCase):
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()

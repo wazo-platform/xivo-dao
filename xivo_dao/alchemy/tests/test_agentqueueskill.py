@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -11,7 +11,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestAgent(DAOTestCase):
-
     def test_getter(self):
         agent = self.add_agent()
         agent_skill = self.add_agent_queue_skill(agentid=agent.id)
@@ -32,7 +31,6 @@ class TestAgent(DAOTestCase):
 
 
 class TestSkill(DAOTestCase):
-
     def test_getter(self):
         skill = self.add_queue_skill()
         agent_skill = self.add_agent_queue_skill(skillid=skill.id)
@@ -53,7 +51,6 @@ class TestSkill(DAOTestCase):
 
 
 class TestDeleter(DAOTestCase):
-
     def test_agent(self):
         agent = self.add_agent()
         agent_skill = self.add_agent_queue_skill(agentid=agent.id)

@@ -406,7 +406,9 @@ class TestAgentStatusDao(DAOTestCase):
         assert statuses[0].tenant_uuid == tenant.uuid
         assert_that(
             statuses,
-            contains_exactly(has_properties(agent_id=agent.id, tenant_uuid=tenant.uuid)),
+            contains_exactly(
+                has_properties(agent_id=agent.id, tenant_uuid=tenant.uuid)
+            ),
         )
 
         statuses = agent_status_dao.get_statuses(
@@ -453,7 +455,9 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains_exactly(has_properties(agent_id=agent1.id, agent_number=agent1.number)),
+            contains_exactly(
+                has_properties(agent_id=agent1.id, agent_number=agent1.number)
+            ),
         )
 
     def test_get_statuses_to_remove_from_queue(self):
@@ -473,7 +477,9 @@ class TestAgentStatusDao(DAOTestCase):
 
         assert_that(
             statuses,
-            contains_exactly(has_properties(agent_id=agent1.id, agent_number=agent1.number)),
+            contains_exactly(
+                has_properties(agent_id=agent1.id, agent_number=agent1.number)
+            ),
         )
 
     def test_get_logged_agent_ids(self):
@@ -662,7 +668,9 @@ class TestAgentStatusDao(DAOTestCase):
                 AgentMembershipStatus.agent_id == agent_id,
             )
         )
-        assert_that(memberships, contains_exactly(has_properties(penalty=queue_penalty_after)))
+        assert_that(
+            memberships, contains_exactly(has_properties(penalty=queue_penalty_after))
+        )
 
     def test_update_pause_status(self):
         agent_number = '1000'

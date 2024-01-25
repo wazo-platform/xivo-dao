@@ -1,4 +1,4 @@
-# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -7,18 +7,12 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint
 from sqlalchemy.sql.schema import ForeignKey, Index
-from sqlalchemy.types import (
-    Boolean,
-    DateTime,
-    String,
-    Text
-)
+from sqlalchemy.types import Boolean, DateTime, String, Text
 from xivo_dao.helpers.datetime import utcnow_with_tzinfo
 from xivo_dao.helpers.db_manager import Base
 
 
 class MeetingOwner(Base):
-
     __tablename__ = 'meeting_owner'
 
     meeting_uuid = Column(
@@ -36,7 +30,6 @@ class MeetingOwner(Base):
 
 
 class Meeting(Base):
-
     __tablename__ = 'meeting'
     __table_args__ = (
         UniqueConstraint('number', 'tenant_uuid'),
@@ -44,12 +37,20 @@ class Meeting(Base):
         Index('meeting__idx__tenant_uuid', 'tenant_uuid'),
     )
 
-    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
+    uuid = Column(
+        UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True
+    )
     name = Column(Text)
-    guest_endpoint_sip_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'))
-    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
+    guest_endpoint_sip_uuid = Column(
+        UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL')
+    )
+    tenant_uuid = Column(
+        String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
+    )
     created_at = Column(
-        DateTime(timezone=True), default=utcnow_with_tzinfo, server_default=text("(now() at time zone 'utc')")
+        DateTime(timezone=True),
+        default=utcnow_with_tzinfo,
+        server_default=text("(now() at time zone 'utc')"),
     )
     persistent = Column(Boolean, server_default='false', nullable=False)
     number = Column(Text, nullable=False)
@@ -60,9 +61,7 @@ class Meeting(Base):
         cascade='all, delete-orphan',
     )
     owners = association_proxy(
-        'meeting_owners',
-        'owner',
-        creator=lambda owner: MeetingOwner(owner=owner)
+        'meeting_owners', 'owner', creator=lambda owner: MeetingOwner(owner=owner)
     )
     guest_endpoint_sip = relationship(
         'EndpointSIP',

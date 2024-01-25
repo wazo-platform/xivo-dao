@@ -31,19 +31,19 @@ from ..userfeatures import UserFeatures
 
 
 class TestIncalls(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
-        incall1 = self.add_incall(destination=Dialaction(action='group',
-                                                         actionarg1=str(group.id)))
-        incall2 = self.add_incall(destination=Dialaction(action='group',
-                                                         actionarg1=str(group.id)))
+        incall1 = self.add_incall(
+            destination=Dialaction(action='group', actionarg1=str(group.id))
+        )
+        incall2 = self.add_incall(
+            destination=Dialaction(action='group', actionarg1=str(group.id))
+        )
 
         assert_that(group.incalls, contains_inanyorder(incall1, incall2))
 
 
 class TestCallerId(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
         callerid = self.add_callerid(type='group', typeval=group.id)
@@ -52,12 +52,11 @@ class TestCallerId(DAOTestCase):
 
 
 class TestFallbacks(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
-        dialaction = self.add_dialaction(event='key',
-                                         category='group',
-                                         categoryval=str(group.id))
+        dialaction = self.add_dialaction(
+            event='key', category='group', categoryval=str(group.id)
+        )
 
         assert_that(group.fallbacks['key'], equal_to(dialaction))
 
@@ -90,8 +89,9 @@ class TestFallbacks(DAOTestCase):
         group.fallbacks = {'key': dialaction2}
         self.session.flush()
 
-        assert_that(group.fallbacks['key'], has_properties(action='user',
-                                                           actionarg1='1'))
+        assert_that(
+            group.fallbacks['key'], has_properties(action='user', actionarg1='1')
+        )
 
     def test_setter_delete_undefined_key(self):
         group = self.add_group()
@@ -109,7 +109,6 @@ class TestFallbacks(DAOTestCase):
 
 
 class TestCallerIdMode(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group(caller_id_mode='prepend')
         assert_that(group.caller_id_mode, equal_to('prepend'))
@@ -120,16 +119,18 @@ class TestCallerIdMode(DAOTestCase):
         group.caller_id_mode = 'prepend'
         self.session.flush()
 
-        assert_that(group.caller_id, has_properties(
-            type='group',
-            typeval=group.id,
-            mode='prepend',
-            name=None,
-        ))
+        assert_that(
+            group.caller_id,
+            has_properties(
+                type='group',
+                typeval=group.id,
+                mode='prepend',
+                name=None,
+            ),
+        )
 
 
 class TestCallerIdName(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group(caller_id_name='toto')
         assert_that(group.caller_id_name, equal_to('toto'))
@@ -140,16 +141,18 @@ class TestCallerIdName(DAOTestCase):
         group.caller_id_name = 'toto'
         self.session.flush()
 
-        assert_that(group.caller_id, has_properties(
-            type='group',
-            typeval=group.id,
-            mode=None,
-            name='toto',
-        ))
+        assert_that(
+            group.caller_id,
+            has_properties(
+                type='group',
+                typeval=group.id,
+                mode=None,
+                name='toto',
+            ),
+        )
 
 
 class TestSchedules(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
         schedule = self.add_schedule()
@@ -192,18 +195,25 @@ class TestSchedules(DAOTestCase):
 
 
 class TestUserQueueMembers(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
-        queue_member1 = self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=1)
-        queue_member2 = self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=2)
+        queue_member1 = self.add_queue_member(
+            category='group', usertype='user', queue_name=group.name, position=1
+        )
+        queue_member2 = self.add_queue_member(
+            category='group', usertype='user', queue_name=group.name, position=2
+        )
 
         self.session.expire_all()
-        assert_that(group.user_queue_members, contains_exactly(queue_member1, queue_member2))
+        assert_that(
+            group.user_queue_members, contains_exactly(queue_member1, queue_member2)
+        )
 
     def test_getter_when_extension_member(self):
         group = self.add_group()
-        queue_member = self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=1)
+        queue_member = self.add_queue_member(
+            category='group', usertype='user', queue_name=group.name, position=1
+        )
         self.add_queue_member(
             category='group',
             usertype='user',
@@ -248,7 +258,6 @@ class TestUserQueueMembers(DAOTestCase):
 
 
 class TestExtensionQueueMembers(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
         queue_member1 = self.add_queue_member(
@@ -267,7 +276,10 @@ class TestExtensionQueueMembers(DAOTestCase):
         )
 
         self.session.expire_all()
-        assert_that(group.extension_queue_members, contains_exactly(queue_member1, queue_member2))
+        assert_that(
+            group.extension_queue_members,
+            contains_exactly(queue_member1, queue_member2),
+        )
 
     def test_getter_when_user_member(self):
         group = self.add_group()
@@ -277,14 +289,18 @@ class TestExtensionQueueMembers(DAOTestCase):
             queue_name=group.name,
             interface='Local/12@default',
         )
-        self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=1)
+        self.add_queue_member(
+            category='group', usertype='user', queue_name=group.name, position=1
+        )
 
         self.session.expire_all()
         assert_that(group.extension_queue_members, contains_exactly(queue_member))
 
     def test_setter(self):
         group = self.add_group()
-        queue_member = self.add_queue_member(category='group', usertype='user', interface='Local/12@default')
+        queue_member = self.add_queue_member(
+            category='group', usertype='user', interface='Local/12@default'
+        )
         group.user_queue_members = [queue_member]
         self.session.flush()
 
@@ -314,7 +330,6 @@ class TestExtensionQueueMembers(DAOTestCase):
 
 
 class TestExten(DAOTestCase):
-
     def test_getter(self):
         group = self.add_group()
         extension = self.add_extension(type='group', typeval=group.id)
@@ -326,78 +341,87 @@ class TestExten(DAOTestCase):
         extension = self.add_extension(type='group', typeval=group.id)
 
         result = (
-            self.session.query(Group)
+            self.session
+            .query(Group)
             .filter(Group.exten == extension.exten)
             .first()
-        )
+        )  # fmt: skip
 
         assert_that(result, equal_to(group))
         assert_that(result.exten, equal_to(extension.exten))
 
 
 class TestCreate(DAOTestCase):
-
     def test_queue_is_created_with_default_fields(self):
-        group = Group(name='groupname', label='grouplabel', tenant_uuid=self.default_tenant.uuid)
+        group = Group(
+            name='groupname', label='grouplabel', tenant_uuid=self.default_tenant.uuid
+        )
         self.session.add(group)
         self.session.flush()
 
-        assert_that(group.queue, has_properties(
-            name='groupname',
-            retry=5,
-            ring_in_use=True,
-            strategy='ringall',
-            timeout=15,
-            musicclass=None,
-            enabled=True,
-            queue_youarenext='queue-youarenext',
-            queue_thereare='queue-thereare',
-            queue_callswaiting='queue-callswaiting',
-            queue_holdtime='queue-holdtime',
-            queue_minutes='queue-minutes',
-            queue_seconds='queue-seconds',
-            queue_thankyou='queue-thankyou',
-            queue_reporthold='queue-reporthold',
-            periodic_announce='queue-periodic-announce',
-            announce_frequency=0,
-            periodic_announce_frequency=0,
-            announce_round_seconds=0,
-            announce_holdtime='no',
-            wrapuptime=0,
-            maxlen=0,
-            memberdelay=0,
-            weight=0,
-            category='group',
-            autofill=1,
-            announce_position='no'
-        ))
+        assert_that(
+            group.queue,
+            has_properties(
+                name='groupname',
+                retry=5,
+                ring_in_use=True,
+                strategy='ringall',
+                timeout=15,
+                musicclass=None,
+                enabled=True,
+                queue_youarenext='queue-youarenext',
+                queue_thereare='queue-thereare',
+                queue_callswaiting='queue-callswaiting',
+                queue_holdtime='queue-holdtime',
+                queue_minutes='queue-minutes',
+                queue_seconds='queue-seconds',
+                queue_thankyou='queue-thankyou',
+                queue_reporthold='queue-reporthold',
+                periodic_announce='queue-periodic-announce',
+                announce_frequency=0,
+                periodic_announce_frequency=0,
+                announce_round_seconds=0,
+                announce_holdtime='no',
+                wrapuptime=0,
+                maxlen=0,
+                memberdelay=0,
+                weight=0,
+                category='group',
+                autofill=1,
+                announce_position='no',
+            ),
+        )
 
     def test_queue_is_created_with_all_fields(self):
-        group = Group(tenant_uuid=self.default_tenant.uuid,
-                      name='groupname',
-                      label='grouplabel',
-                      retry_delay=6,
-                      ring_in_use=False,
-                      ring_strategy='random',
-                      user_timeout=30,
-                      music_on_hold='music',
-                      enabled=False)
+        group = Group(
+            tenant_uuid=self.default_tenant.uuid,
+            name='groupname',
+            label='grouplabel',
+            retry_delay=6,
+            ring_in_use=False,
+            ring_strategy='random',
+            user_timeout=30,
+            music_on_hold='music',
+            enabled=False,
+        )
         self.session.add(group)
         self.session.flush()
 
-        assert_that(group.queue, has_properties(
-            name='groupname',
-            retry=6,
-            ring_in_use=False,
-            strategy='random',
-            timeout=30,
-            musicclass='music',
-            enabled=False,
-        ))
+        assert_that(
+            group.queue,
+            has_properties(
+                name='groupname',
+                retry=6,
+                ring_in_use=False,
+                strategy='random',
+                timeout=30,
+                musicclass='music',
+                enabled=False,
+            ),
+        )
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()
@@ -527,7 +551,8 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
         )
 
         assert_that(
-            group_interceptor.call_pickup_interceptor_pickups, contains_exactly(call_pickup)
+            group_interceptor.call_pickup_interceptor_pickups,
+            contains_exactly(call_pickup),
         )
 
     def test_two_pickups_two_user_targets(self):
@@ -601,7 +626,11 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains_exactly(contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2))),
+            contains_exactly(
+                contains_exactly(
+                    contains_exactly(user_target1), contains_exactly(user_target2)
+                )
+            ),
         )
 
     def test_two_pickups_two_group_targets(self):
@@ -644,7 +673,10 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains_exactly(contains_exactly(contains_exactly(user_target1)), contains_exactly(contains_exactly(user_target2))),
+            contains_exactly(
+                contains_exactly(contains_exactly(user_target1)),
+                contains_exactly(contains_exactly(user_target2)),
+            ),
         )
 
 
@@ -715,7 +747,9 @@ class TestUsersFromCallPickupUserTargets(DAOTestCase):
 
         assert_that(
             group_interceptor.users_from_call_pickup_user_targets,
-            contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2)),
+            contains_exactly(
+                contains_exactly(user_target1), contains_exactly(user_target2)
+            ),
         )
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
@@ -768,7 +802,11 @@ class TestUsersFromCallPickupGroupTargets(DAOTestCase):
         )
         assert_that(
             group_interceptor.users_from_call_pickup_group_targets,
-            contains_exactly(contains_exactly(contains_exactly(user_target1), contains_exactly(user_target2))),
+            contains_exactly(
+                contains_exactly(
+                    contains_exactly(user_target1), contains_exactly(user_target2)
+                )
+            ),
         )
 
     def test_two_pickups_two_user_targets(self):

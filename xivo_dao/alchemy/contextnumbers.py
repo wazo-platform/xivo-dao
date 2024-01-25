@@ -1,4 +1,4 @@
-# Copyright 2012-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import ForeignKeyConstraint
@@ -11,7 +11,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class ContextNumbers(Base):
-
     __tablename__ = 'contextnumbers'
     __table_args__ = (
         ForeignKeyConstraint(
@@ -22,10 +21,18 @@ class ContextNumbers(Base):
     )
 
     context = Column(String(79), primary_key=True)
-    type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
-                       name='contextnumbers_type',
-                       metadata=Base.metadata),
-                  primary_key=True)
+    type = Column(
+        Enum(
+            'user',
+            'group',
+            'queue',
+            'meetme',
+            'incall',
+            name='contextnumbers_type',
+            metadata=Base.metadata,
+        ),
+        primary_key=True,
+    )
     numberbeg = Column(String(16), server_default='', primary_key=True)
     numberend = Column(String(16), server_default='', primary_key=True)
     didlength = Column(Integer, nullable=False, server_default='0')
@@ -72,4 +79,4 @@ class ContextNumbers(Base):
         return False
 
     def _convert_limit(self, limit):
-        return int(limit[-self.did_length:])
+        return int(limit[-self.did_length :])

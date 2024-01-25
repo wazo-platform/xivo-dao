@@ -9,7 +9,6 @@ from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 
 
 class TestAgentDAO(DAOTestCase):
-
     agent_number = '1234'
     agent1_number = '1001'
     agent2_number = '1002'
@@ -23,18 +22,21 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_id(agent.id)
 
-        assert_that(result, has_properties(
-            id=agent.id,
-            number=agent.number,
-            queues=contains_exactly(
-                has_properties(
-                    id=queue.id,
-                    name=queue_member.queue_name,
-                    penalty=queue_member.penalty,
-                )
+        assert_that(
+            result,
+            has_properties(
+                id=agent.id,
+                number=agent.number,
+                queues=contains_exactly(
+                    has_properties(
+                        id=queue.id,
+                        name=queue_member.queue_name,
+                        penalty=queue_member.penalty,
+                    )
+                ),
+                user_ids=contains_exactly(user.id),
             ),
-            user_ids=contains_exactly(user.id),
-        ))
+        )
 
     def test_agent_with_id_no_user(self):
         agent = self.add_agent()
@@ -43,18 +45,21 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_id(agent.id)
 
-        assert_that(result, has_properties(
-            id=agent.id,
-            number=agent.number,
-            queues=contains_exactly(
-                has_properties(
-                    id=queue.id,
-                    name=queue_member.queue_name,
-                    penalty=queue_member.penalty,
-                )
+        assert_that(
+            result,
+            has_properties(
+                id=agent.id,
+                number=agent.number,
+                queues=contains_exactly(
+                    has_properties(
+                        id=queue.id,
+                        name=queue_member.queue_name,
+                        penalty=queue_member.penalty,
+                    )
+                ),
+                user_ids=empty(),
             ),
-            user_ids=empty(),
-        ))
+        )
 
     def test_agent_with_id_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_with_id, 1)
@@ -62,9 +67,16 @@ class TestAgentDAO(DAOTestCase):
     def test_agent_with_id_multi_tenant(self):
         tenant = self.add_tenant()
         agent = self.add_agent(tenant_uuid=tenant.uuid)
-        self.assertRaises(LookupError, agent_dao.agent_with_id, agent.id, tenant_uuids=[self.default_tenant.uuid])
+        self.assertRaises(
+            LookupError,
+            agent_dao.agent_with_id,
+            agent.id,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
 
-        result = agent_dao.agent_with_id(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        result = agent_dao.agent_with_id(
+            agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid]
+        )
         assert result.id == agent.id
 
     def test_agent_with_number(self):
@@ -73,22 +85,28 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_number(agent.number)
 
-        assert_that(result, has_properties(
-            id=agent.id,
-            number=agent.number,
-            user_ids=contains_exactly(user.id),
-        ))
+        assert_that(
+            result,
+            has_properties(
+                id=agent.id,
+                number=agent.number,
+                user_ids=contains_exactly(user.id),
+            ),
+        )
 
     def test_agent_with_number_no_user(self):
         agent = self.add_agent()
 
         result = agent_dao.agent_with_number(agent.number)
 
-        assert_that(result, has_properties(
-            id=agent.id,
-            number=agent.number,
-            user_ids=empty(),
-        ))
+        assert_that(
+            result,
+            has_properties(
+                id=agent.id,
+                number=agent.number,
+                user_ids=empty(),
+            ),
+        )
 
     def test_agent_with_number_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_with_number, '1234')
@@ -96,9 +114,16 @@ class TestAgentDAO(DAOTestCase):
     def test_agent_with_number_multi_tenant(self):
         tenant = self.add_tenant()
         agent = self.add_agent(tenant_uuid=tenant.uuid)
-        self.assertRaises(LookupError, agent_dao.agent_with_number, agent.number, tenant_uuids=[self.default_tenant.uuid])
+        self.assertRaises(
+            LookupError,
+            agent_dao.agent_with_number,
+            agent.number,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
 
-        result = agent_dao.agent_with_number(agent.number, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        result = agent_dao.agent_with_number(
+            agent.number, tenant_uuids=[self.default_tenant.uuid, tenant.uuid]
+        )
 
         assert_that(result, has_properties(id=agent.id, number=agent.number))
 
@@ -108,7 +133,9 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_user_uuid(user.uuid)
 
-        assert_that(result, has_properties(id=agent.id, user_ids=contains_exactly(user.id)))
+        assert_that(
+            result, has_properties(id=agent.id, user_ids=contains_exactly(user.id))
+        )
 
     def test_agent_with_user_uuid_unknown_user(self):
         self.add_agent()
@@ -120,8 +147,15 @@ class TestAgentDAO(DAOTestCase):
         agent = self.add_agent(tenant_uuid=tenant.uuid)
         user = self.add_user(agentid=agent.id, tenant_uuid=tenant.uuid)
 
-        self.assertRaises(LookupError, agent_dao.agent_with_user_uuid, user.uuid, tenant_uuids=[self.default_tenant.uuid])
-        result = agent_dao.agent_with_user_uuid(user.uuid, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        self.assertRaises(
+            LookupError,
+            agent_dao.agent_with_user_uuid,
+            user.uuid,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
+        result = agent_dao.agent_with_user_uuid(
+            user.uuid, tenant_uuids=[self.default_tenant.uuid, tenant.uuid]
+        )
 
         assert_that(result.id, equal_to(agent.id))
 
@@ -130,13 +164,16 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.get(agent.id)
 
-        assert_that(result, has_properties(
-            id=agent.id,
-            number=agent.number,
-            passwd=agent.passwd,
-            context=agent.context,
-            language=agent.language,
-        ))
+        assert_that(
+            result,
+            has_properties(
+                id=agent.id,
+                number=agent.number,
+                passwd=agent.passwd,
+                context=agent.context,
+                language=agent.language,
+            ),
+        )
 
     def test_get_not_exist(self):
         result = agent_dao.get(1)
@@ -146,12 +183,16 @@ class TestAgentDAO(DAOTestCase):
     def test_get_multi_tenant(self):
         tenant = self.add_tenant()
         agent1 = self.add_agent(number=self.agent1_number, tenant_uuid=tenant.uuid)
-        agent2 = self.add_agent(number=self.agent2_number, tenant_uuid=self.default_tenant.uuid)
+        agent2 = self.add_agent(
+            number=self.agent2_number, tenant_uuid=self.default_tenant.uuid
+        )
 
         result = agent_dao.get(agent1.id, tenant_uuids=[self.default_tenant.uuid])
         assert_that(result, equal_to(None))
 
-        result = agent_dao.get(agent2.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        result = agent_dao.get(
+            agent2.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid]
+        )
         assert_that(result, equal_to(agent2))
 
         result = agent_dao.get(agent1.id, tenant_uuids=[tenant.uuid])
@@ -173,7 +214,9 @@ class TestAgentDAO(DAOTestCase):
 
     def test_all_multi_tenant(self):
         tenant = self.add_tenant()
-        agent1 = self.add_agent(number=self.agent1_number, tenant_uuid=self.default_tenant.uuid)
+        agent1 = self.add_agent(
+            number=self.agent1_number, tenant_uuid=self.default_tenant.uuid
+        )
         agent2 = self.add_agent(number=self.agent2_number, tenant_uuid=tenant.uuid)
 
         expected_tenant1 = [agent1]

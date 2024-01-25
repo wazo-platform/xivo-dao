@@ -1,4 +1,4 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -9,7 +9,7 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get(session):
-    row = (session.query(Infos).first())
+    row = session.query(Infos).first()
 
     if not row:
         raise errors.not_found('Infos')

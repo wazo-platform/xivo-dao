@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -14,7 +14,9 @@ def search(session, tenant_uuids=None, **parameters):
 
 @daosession
 def get(session, outcall_id, tenant_uuids=None):
-    return OutcallPersistor(session, outcall_search, tenant_uuids).get_by({'id': outcall_id})
+    return OutcallPersistor(session, outcall_search, tenant_uuids).get_by(
+        {'id': outcall_id}
+    )
 
 
 @daosession
@@ -24,7 +26,9 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 @daosession
 def find(session, outcall_id, tenant_uuids=None):
-    return OutcallPersistor(session, outcall_search, tenant_uuids).find_by({'id': outcall_id})
+    return OutcallPersistor(session, outcall_search, tenant_uuids).find_by(
+        {'id': outcall_id}
+    )
 
 
 @daosession
@@ -54,9 +58,13 @@ def delete(session, outcall):
 
 @daosession
 def associate_call_permission(session, outcall, call_permission):
-    OutcallPersistor(session, outcall_search).associate_call_permission(outcall, call_permission)
+    OutcallPersistor(session, outcall_search).associate_call_permission(
+        outcall, call_permission
+    )
 
 
 @daosession
 def dissociate_call_permission(session, outcall, call_permission):
-    OutcallPersistor(session, outcall_search).dissociate_call_permission(outcall, call_permission)
+    OutcallPersistor(session, outcall_search).dissociate_call_permission(
+        outcall, call_permission
+    )

@@ -1,4 +1,4 @@
-# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
@@ -9,17 +9,20 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 
-COLUMNS = {'user_id': UserSchema.id,
-           'voicemail_id': UserSchema.voicemailid}
+COLUMNS = {'user_id': UserSchema.id, 'voicemail_id': UserSchema.voicemailid}
 
 
 def find_query(session, criteria):
-    query = (session.query(UserSchema.id.label('user_id'),
-                           UserSchema.uuid.label('user_uuid'),
-                           UserSchema.voicemailid.label('voicemail_id'),
-                           UserSchema.enablevoicemail)
-             .filter(UserSchema.voicemailid != None)  # noqa
-             .filter(UserSchema.voicemailid != 0))
+    query = (
+        session.query(
+            UserSchema.id.label('user_id'),
+            UserSchema.uuid.label('user_uuid'),
+            UserSchema.voicemailid.label('voicemail_id'),
+            UserSchema.enablevoicemail,
+        )
+        .filter(UserSchema.voicemailid != None)  # noqa
+        .filter(UserSchema.voicemailid != 0)
+    )
     for name, value in criteria.items():
         column = COLUMNS.get(name)
         if not column:

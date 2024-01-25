@@ -1,4 +1,4 @@
-# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -62,15 +62,16 @@ class TestView(DAOTestCase):
         self.session.flush()
 
         result = (
-            self.session.query(EndpointSIPOptionsView).filter_by(root=sip.uuid).first()
-        )
+            self.session
+            .query(EndpointSIPOptionsView)
+            .filter_by(root=sip.uuid)
+            .first()
+        )  # fmt: skip
         assert_that(result.root, equal_to(sip.uuid))
         assert_that(result.options, has_entries(first='value1', second='value2'))
 
     def test_view_dont_update_on_get(self):
-        sip = self.add_endpoint_sip(
-            endpoint_section_options=[('test', 'old_value')]
-        )
+        sip = self.add_endpoint_sip(endpoint_section_options=[('test', 'old_value')])
 
         assert_that(sip.get_option_value('test'), equal_to('old_value'))
 

@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import Enum, text, ForeignKey
@@ -54,8 +54,11 @@ class EndpointSIPSection(Base):
     )
 
     options = association_proxy(
-        '_options', 'option',
-        creator=lambda _option: EndpointSIPSectionOption(key=_option[0], value=_option[1]),
+        '_options',
+        'option',
+        creator=lambda _option: EndpointSIPSectionOption(
+            key=_option[0], value=_option[1]
+        ),
     )
 
     def find(self, term):
@@ -73,35 +76,28 @@ class EndpointSIPSection(Base):
 
 
 class AORSection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'aor'}
 
 
 class AuthSection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'auth'}
 
 
 class EndpointSection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'endpoint'}
 
 
 class IdentifySection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'identify'}
 
 
 class OutboundAuthSection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'outbound_auth'}
 
 
 class RegistrationOutboundAuthSection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'registration_outbound_auth'}
 
 
 class RegistrationSection(EndpointSIPSection):
-
     __mapper_args__ = {'polymorphic_identity': 'registration'}

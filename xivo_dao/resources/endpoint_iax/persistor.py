@@ -1,4 +1,4 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -11,7 +11,6 @@ from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class IAXPersistor(CriteriaBuilderMixin, BasePersistor):
-
     _search_table = IAX
 
     def __init__(self, session, iax_search, tenant_uuids=None):
@@ -52,7 +51,9 @@ class IAXPersistor(CriteriaBuilderMixin, BasePersistor):
 
     def fill_default_values(self, iax):
         if iax.name is None:
-            iax.name = generators.find_unused_hash(partial(self._already_exists, IAX.name))
+            iax.name = generators.find_unused_hash(
+                partial(self._already_exists, IAX.name)
+            )
         if iax.type is None:
             iax.type = 'friend'
         if iax.host is None:

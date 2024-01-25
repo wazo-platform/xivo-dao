@@ -1,4 +1,4 @@
-# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
@@ -38,12 +38,16 @@ class MaterializedView(Base):
         if targets := cls.__view_dependencies__:
 
             @listens_for(Session, 'after_flush')
-            def _before_session_commit_handler(session: Session, flush_context: UOWTransaction) -> None:
+            def _before_session_commit_handler(
+                session: Session, flush_context: UOWTransaction
+            ) -> None:
                 for obj in session.dirty | session.new | session.deleted:
                     if isinstance(obj, targets):
                         # Cannot call `refresh_materialized_view` as it will try to flush again.
                         session.execute(
-                            text(f'REFRESH MATERIALIZED VIEW CONCURRENTLY {cls.__table__.fullname}')
+                            text(
+                                f'REFRESH MATERIALIZED VIEW CONCURRENTLY {cls.__table__.fullname}'
+                            )
                         )
                         return
 

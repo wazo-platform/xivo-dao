@@ -28,7 +28,6 @@ from xivo_dao.helpers.exception import NotFoundError, InputError, ResourceError
 
 
 class TestFindBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, line_dao.find_by, column=1)
 
@@ -52,7 +51,6 @@ class TestFindBy(DAOTestCase):
 
 
 class TestFindAllBy(DAOTestCase):
-
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, line_dao.find_by, column=1)
 
@@ -63,9 +61,7 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(
             result,
-            has_items(
-                has_property('id', line1.id),
-                has_property('id', line2.id)),
+            has_items(has_property('id', line1.id), has_property('id', line2.id)),
         )
 
     def test_find_all_by_multi_tenant(self):
@@ -86,13 +82,14 @@ class TestFindAllBy(DAOTestCase):
 
 
 class TestGet(DAOTestCase):
-
     def test_get_no_line(self):
         self.assertRaises(NotFoundError, line_dao.get, 666)
 
     def test_get_minimal_parameters(self):
         context = self.add_context()
-        line_row = self.add_line(context=context.name, registrar='default', provisioningid=123456)
+        line_row = self.add_line(
+            context=context.name, registrar='default', provisioningid=123456
+        )
 
         line = line_dao.get(line_row.id)
 
@@ -110,7 +107,7 @@ class TestGet(DAOTestCase):
                 caller_id_num=none(),
                 registrar='default',
                 tenant_uuid=self.default_tenant.uuid,
-            )
+            ),
         )
 
     def test_get_all_parameters(self):
@@ -138,7 +135,7 @@ class TestGet(DAOTestCase):
                 endpoint_custom_id=none(),
                 registrar='default',
                 tenant_uuid=self.default_tenant.uuid,
-            )
+            ),
         )
 
     def test_given_line_has_sip_endpoint_when_getting_then_line_has_caller_id(self):
@@ -150,8 +147,7 @@ class TestGet(DAOTestCase):
         line = line_dao.get(line_row.id)
 
         assert_that(
-            line,
-            has_properties(caller_id_name="Jôhn Smith", caller_id_num="1000")
+            line, has_properties(caller_id_name="Jôhn Smith", caller_id_num="1000")
         )
 
     def test_given_line_has_sccp_endpoint_when_getting_then_line_has_caller_id(self):
@@ -161,11 +157,12 @@ class TestGet(DAOTestCase):
         line = line_dao.get(line_row.id)
 
         assert_that(
-            line,
-            has_properties(caller_id_name="Jôhn Smith", caller_id_num="1000")
+            line, has_properties(caller_id_name="Jôhn Smith", caller_id_num="1000")
         )
 
-    def test_given_line_has_custom_endpoint_when_getting_then_line_has_no_caller_id(self):
+    def test_given_line_has_custom_endpoint_when_getting_then_line_has_no_caller_id(
+        self,
+    ):
         custom_row = self.add_usercustom()
         line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
@@ -184,12 +181,13 @@ class TestGet(DAOTestCase):
         line_row = self.add_line()
         self.assertRaises(
             NotFoundError,
-            line_dao.get, line_row.id, tenant_uuids=[tenant.uuid],
+            line_dao.get,
+            line_row.id,
+            tenant_uuids=[tenant.uuid],
         )
 
 
 class TestEdit(DAOTestCase):
-
     def test_edit_all_parameters(self):
         context = self.add_context(name='mycontext')
         line_row = self.add_line()
@@ -212,7 +210,7 @@ class TestEdit(DAOTestCase):
                 provisioningid=234567,
                 position=3,
                 registrar='otherregistrar',
-            )
+            ),
         )
 
     def test_edit_null_parameters(self):
@@ -232,7 +230,7 @@ class TestEdit(DAOTestCase):
                 endpoint_sip_uuid=none(),
                 endpoint_sccp_id=none(),
                 endpoint_custom_id=none(),
-            )
+            ),
         )
 
     def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
@@ -242,7 +240,9 @@ class TestEdit(DAOTestCase):
         self.assertRaises(InputError, setattr, line, 'caller_id_name', "Jôhn Smith")
         self.assertRaises(InputError, setattr, line, 'caller_id_num', "1000")
 
-    def test_given_line_has_custom_endpoint_when_setting_caller_id_then_raises_error(self):
+    def test_given_line_has_custom_endpoint_when_setting_caller_id_then_raises_error(
+        self,
+    ):
         custom_row = self.add_usercustom()
         line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
@@ -267,7 +267,9 @@ class TestEdit(DAOTestCase):
         edited_endpoint = self.session.query(EndpointSIP).get(endpoint_sip_row.uuid)
         assert_that(edited_endpoint.caller_id, equal_to('"Rôger Rabbit" <2000>'))
 
-    def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
+    def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(
+        self,
+    ):
         endpoint_sip_row = self.add_endpoint_sip(
             endpoint_section_options=[['callerid', '"Jôhn Smith" <1000>']]
         )
@@ -289,7 +291,9 @@ class TestEdit(DAOTestCase):
         edited_sccpline = self.session.query(SCCPLine).get(sccpline_row.id)
         assert_that(edited_sccpline.cid_name, equal_to("Rôger Rabbit"))
 
-    def test_given_line_has_sccp_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
+    def test_given_line_has_sccp_endpoint_when_setting_caller_id_to_null_then_raises_error(
+        self,
+    ):
         sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
         line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
@@ -297,7 +301,9 @@ class TestEdit(DAOTestCase):
         self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
         self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
 
-    def test_given_line_has_sccp_endpoint_when_setting_caller_id_num_then_raises_error(self):
+    def test_given_line_has_sccp_endpoint_when_setting_caller_id_num_then_raises_error(
+        self,
+    ):
         sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
         line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
@@ -339,7 +345,6 @@ class TestEdit(DAOTestCase):
 
 
 class TestCreate(DAOTestCase):
-
     def test_create_minimal_parameters(self):
         context = self.add_context()
         line = Line(context=context.name, provisioningid=123456)
@@ -362,7 +367,7 @@ class TestCreate(DAOTestCase):
                 registrar='default',
                 ipfrom='',
                 tenant_uuid=self.default_tenant.uuid,
-            )
+            ),
         )
 
     def test_create_all_parameters(self):
@@ -393,7 +398,7 @@ class TestCreate(DAOTestCase):
                 caller_id_num=none(),
                 registrar='otherregistrar',
                 tenant_uuid=self.default_tenant.uuid,
-            )
+            ),
         )
 
     # The caller ID should only be set once associated to update the endpoint
@@ -409,7 +414,6 @@ class TestCreate(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_delete(self):
         line_row = self.add_line()
 
@@ -427,7 +431,9 @@ class TestDelete(DAOTestCase):
         deleted_endpoint_sip = self.session.query(EndpointSIP).get(endpoint_sip.uuid)
         assert_that(deleted_endpoint_sip, none())
 
-    def test_given_line_has_sccp_endpoint_when_deleting_then_sccp_endpoint_deleted(self):
+    def test_given_line_has_sccp_endpoint_when_deleting_then_sccp_endpoint_deleted(
+        self,
+    ):
         sccpline_row = self.add_sccpline()
         line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
@@ -436,7 +442,9 @@ class TestDelete(DAOTestCase):
         deleted_sccp = self.session.query(SCCPLine).get(sccpline_row.id)
         assert_that(deleted_sccp, none())
 
-    def test_given_line_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(self):
+    def test_given_line_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(
+        self,
+    ):
         custom_row = self.add_usercustom()
         line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
@@ -447,7 +455,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestSearch(DAOTestCase):
-
     def test_search(self):
         context = self.add_context(name='default')
         line1 = self.add_line(context=context.name, provisioningid=123456)
@@ -460,7 +467,7 @@ class TestSearch(DAOTestCase):
             has_properties(
                 total=1,
                 items=contains_exactly(has_properties(id=line1.id)),
-            )
+            ),
         )
 
     def test_search_returns_sip_line_associated(self):
@@ -488,7 +495,7 @@ class TestSearch(DAOTestCase):
             result,
             has_properties(
                 items=contains_inanyorder(line1, line2),
-            )
+            ),
         )
 
         tenants = [tenant.uuid]
@@ -497,12 +504,11 @@ class TestSearch(DAOTestCase):
             result,
             has_properties(
                 items=contains_inanyorder(line2),
-            )
+            ),
         )
 
 
 class TestRelationship(DAOTestCase):
-
     def test_endpoint_sip_relationship(self):
         sip_row = self.add_endpoint_sip()
         line_row = self.add_line(endpoint_sip_uuid=sip_row.uuid)
@@ -565,7 +571,6 @@ class TestRelationship(DAOTestCase):
 
 
 class TestAssociateSchedule(DAOTestCase):
-
     def test_associate_application(self):
         line = self.add_line()
         application = self.add_application()
@@ -588,7 +593,6 @@ class TestAssociateSchedule(DAOTestCase):
 
 
 class TestDissociateSchedule(DAOTestCase):
-
     def test_dissociate_line_application(self):
         line = self.add_line()
         application = self.add_application()
@@ -610,7 +614,6 @@ class TestDissociateSchedule(DAOTestCase):
 
 
 class TestAssociateEndpointSIP(DAOTestCase):
-
     def test_associate_line_endpoint_sip(self):
         line = self.add_line()
         sip = self.add_endpoint_sip()
@@ -642,7 +645,6 @@ class TestAssociateEndpointSIP(DAOTestCase):
 
 
 class TestDissociateEndpointSIP(DAOTestCase):
-
     def test_dissociate_line_endpoint_sip(self):
         line = self.add_line()
         sip = self.add_endpoint_sip()
@@ -667,7 +669,6 @@ class TestDissociateEndpointSIP(DAOTestCase):
 
 
 class TestAssociateEndpointSCCP(DAOTestCase):
-
     def test_associate_line_endpoint_sccp(self):
         line = self.add_line()
         sccp = self.add_sccpline()
@@ -699,7 +700,6 @@ class TestAssociateEndpointSCCP(DAOTestCase):
 
 
 class TestDissociateEndpointSCCP(DAOTestCase):
-
     def test_dissociate_line_endpoint_sccp(self):
         line = self.add_line()
         sccp = self.add_sccpline()
@@ -724,7 +724,6 @@ class TestDissociateEndpointSCCP(DAOTestCase):
 
 
 class TestAssociateEndpointCustom(DAOTestCase):
-
     def test_associate_line_endpoint_custom(self):
         line = self.add_line()
         custom = self.add_usercustom()
@@ -752,11 +751,12 @@ class TestAssociateEndpointCustom(DAOTestCase):
         line = self.add_line(endpoint_sip_uuid=sip.uuid)
         custom = self.add_usercustom()
 
-        self.assertRaises(ResourceError, line_dao.associate_endpoint_custom, line, custom)
+        self.assertRaises(
+            ResourceError, line_dao.associate_endpoint_custom, line, custom
+        )
 
 
 class TestDissociateEndpointCustom(DAOTestCase):
-
     def test_dissociate_line_endpoint_custom(self):
         line = self.add_line()
         custom = self.add_usercustom()

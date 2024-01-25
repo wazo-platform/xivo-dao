@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -48,7 +48,6 @@ caller_id_regex = re.compile(
 
 
 class LineFeatures(Base):
-
     CALLER_ID = '"{name}" <{num}>'
 
     __tablename__ = 'linefeatures'
@@ -88,7 +87,9 @@ class LineFeatures(Base):
     provisioningid = Column(Integer, nullable=False)
     num = Column(Integer, server_default='1')
     ipfrom = Column(String(15))
-    application_uuid = Column(String(36), ForeignKey('application.uuid', ondelete='SET NULL'))
+    application_uuid = Column(
+        String(36), ForeignKey('application.uuid', ondelete='SET NULL')
+    )
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
@@ -97,7 +98,9 @@ class LineFeatures(Base):
         ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'),
     )
     endpoint_sccp_id = Column(Integer, ForeignKey('sccpline.id', ondelete='SET NULL'))
-    endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id', ondelete='SET NULL'))
+    endpoint_custom_id = Column(
+        Integer, ForeignKey('usercustom.id', ondelete='SET NULL')
+    )
 
     context_rel = relationship(
         'Context',
@@ -141,11 +144,14 @@ class LineFeatures(Base):
 
     @protocol.expression
     def protocol(cls):
-        return sql.case([
-            (cls.endpoint_sip_uuid.isnot(None), 'sip'),
-            (cls.endpoint_sccp_id.isnot(None), 'sccp'),
-            (cls.endpoint_custom_id.isnot(None), 'custom'),
-        ], else_=None)
+        return sql.case(
+            [
+                (cls.endpoint_sip_uuid.isnot(None), 'sip'),
+                (cls.endpoint_sccp_id.isnot(None), 'sccp'),
+                (cls.endpoint_custom_id.isnot(None), 'custom'),
+            ],
+            else_=None,
+        )
 
     @hybrid_property
     def caller_id_name(self):
@@ -175,15 +181,25 @@ class LineFeatures(Base):
     def caller_id_name(cls):
         regex = '"([^"]+)"\\s+'
 
-        return sql.case([
-            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query_option('callerid', regex_filter=regex)),
-            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name'))
-        ], else_=None)
+        return sql.case(
+            [
+                (
+                    cls.endpoint_sip_uuid.isnot(None),
+                    cls._sip_query_option('callerid', regex_filter=regex),
+                ),
+                (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
+            ],
+            else_=None,
+        )
 
     @caller_id_name.setter
     def caller_id_name(self, value):
         if value is None:
-            if self.endpoint_sip_uuid or self.endpoint_sccp_id or self.endpoint_custom_id:
+            if (
+                self.endpoint_sip_uuid
+                or self.endpoint_sccp_id
+                or self.endpoint_custom_id
+            ):
                 raise InputError("Cannot set caller id to None")
             return
 
@@ -232,15 +248,24 @@ class LineFeatures(Base):
     def caller_id_num(cls):
         regex = '<([0-9A-Z]+)?>'
 
-        return sql.case([
-            (cls.endpoint_sip_uuid.isnot(None), cls._sip_query_option('callerid', regex_filter=regex)),
-            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
-        ])
+        return sql.case(
+            [
+                (
+                    cls.endpoint_sip_uuid.isnot(None),
+                    cls._sip_query_option('callerid', regex_filter=regex),
+                ),
+                (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
+            ]
+        )
 
     @caller_id_num.setter
     def caller_id_num(self, value):
         if value is None:
-            if self.endpoint_sip_uuid or self.endpoint_sccp_id or self.endpoint_custom_id:
+            if (
+                self.endpoint_sip_uuid
+                or self.endpoint_sccp_id
+                or self.endpoint_custom_id
+            ):
                 raise InputError("Cannot set caller id num to None")
             return
 
@@ -312,9 +337,13 @@ class LineFeatures(Base):
 
     @tenant_uuid.expression
     def tenant_uuid(cls):
-        return sql.select([Context.tenant_uuid]).where(
-            Context.name == cls.context,
-        ).label('tenant_uuid')
+        return (
+            sql.select([Context.tenant_uuid])
+            .where(
+                Context.name == cls.context,
+            )
+            .label('tenant_uuid')
+        )
 
     @hybrid_property
     def registrar(self):
@@ -325,7 +354,9 @@ class LineFeatures(Base):
         self.configregistrar = value
 
     def is_associated(self):
-        return self.endpoint_sip_uuid or self.endpoint_sccp_id or self.endpoint_custom_id
+        return (
+            self.endpoint_sip_uuid or self.endpoint_sccp_id or self.endpoint_custom_id
+        )
 
     def update_extension(self, extension):
         self.number = extension.exten
@@ -355,7 +386,9 @@ class LineFeatures(Base):
         attr = EndpointSIPOptionsView.get_option_value(option)
         if regex_filter:
             attr = func.unnest(
-                func.regexp_matches(attr, bindparam('regexp', regex_filter, unique=True))
+                func.regexp_matches(
+                    attr, bindparam('regexp', regex_filter, unique=True)
+                )
             )
 
         return (
@@ -370,9 +403,7 @@ class LineFeatures(Base):
             return
 
         return (
-            select([
-                getattr(SCCPLine, option)
-            ])
+            select([getattr(SCCPLine, option)])
             .where(SCCPLine.id == cls.endpoint_sccp_id)
             .as_scalar()
         )

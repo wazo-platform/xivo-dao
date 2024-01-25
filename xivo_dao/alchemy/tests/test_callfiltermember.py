@@ -1,4 +1,4 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -17,7 +17,6 @@ from ..func_key_dest_bsfilter import FuncKeyDestBSFilter
 
 
 class TestUser(DAOTestCase):
-
     def test_associate(self):
         user = self.add_user()
         member = self.add_call_filter_member(type='user')
@@ -36,7 +35,6 @@ class TestUser(DAOTestCase):
 
 
 class TestTimeout(unittest.TestCase):
-
     def test_getter(self):
         call_filter = CallFilterMember(ringseconds=10)
         assert_that(call_filter.timeout, equal_to(10))
@@ -55,7 +53,6 @@ class TestTimeout(unittest.TestCase):
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
-
     def setUp(self):
         super().setUp()
         self.setup_funckeys()
@@ -73,10 +70,11 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
 
 class TestExtension(DAOTestCase):
-
     def setUp(self):
         super().setUp()
-        self.feature_extension = self.add_feature_extension(feature='bsfilter', exten='_*37')
+        self.feature_extension = self.add_feature_extension(
+            feature='bsfilter', exten='_*37'
+        )
         self.user = self.add_user()
         self.call_filter = self.add_call_filter()
         self.member = self.add_call_filter_member(

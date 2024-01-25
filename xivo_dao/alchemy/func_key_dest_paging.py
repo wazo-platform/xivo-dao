@@ -1,4 +1,4 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -18,7 +18,6 @@ from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestPaging(Base):
-
     DESTINATION_TYPE_ID = 9
 
     __tablename__ = 'func_key_dest_paging'

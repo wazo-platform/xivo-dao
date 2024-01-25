@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import and_
@@ -10,7 +10,6 @@ from ..voicemail import Voicemail
 
 
 class TestGetOldNumberContext(DAOTestCase):
-
     def test_when_number_context_are_modified(self):
         context = self.add_context(name='default')
         voicemail = self.add_voicemail(number='1000', context=context.name)
@@ -44,7 +43,6 @@ class TestGetOldNumberContext(DAOTestCase):
 
 
 class TestTenantUUID(DAOTestCase):
-
     def test_tenant_uuid_getter(self):
         tenant = self.add_tenant()
         context = self.add_context(tenant_uuid=tenant.uuid)
@@ -59,16 +57,21 @@ class TestTenantUUID(DAOTestCase):
 
         voicemail = self.add_voicemail(context=context.name)
 
-        result = self.session.query(Voicemail).filter(and_(
-            Voicemail.id == voicemail.id,
-            Voicemail.tenant_uuid.in_([tenant.uuid]),
-        )).first()
+        result = (
+            self.session.query(Voicemail)
+            .filter(
+                and_(
+                    Voicemail.id == voicemail.id,
+                    Voicemail.tenant_uuid.in_([tenant.uuid]),
+                )
+            )
+            .first()
+        )
 
         assert_that(result, equal_to(voicemail))
 
 
 class TestUsers(DAOTestCase):
-
     def test_getter(self):
         voicemail = self.add_voicemail()
         user1 = self.add_user(voicemail_id=voicemail.id)
@@ -78,13 +81,18 @@ class TestUsers(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_dialaction_actions_are_deleted(self):
         voicemail = self.add_voicemail()
-        self.add_dialaction(category='ivr_choice', action='voicemail', actionarg1=voicemail.id)
+        self.add_dialaction(
+            category='ivr_choice', action='voicemail', actionarg1=voicemail.id
+        )
         self.add_dialaction(category='ivr', action='voicemail', actionarg1=voicemail.id)
-        self.add_dialaction(category='user', action='voicemail', actionarg1=voicemail.id)
-        self.add_dialaction(category='incall', action='voicemail', actionarg1=voicemail.id)
+        self.add_dialaction(
+            category='user', action='voicemail', actionarg1=voicemail.id
+        )
+        self.add_dialaction(
+            category='incall', action='voicemail', actionarg1=voicemail.id
+        )
 
         self.session.delete(voicemail)
         self.session.flush()

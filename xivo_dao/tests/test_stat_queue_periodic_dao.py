@@ -15,7 +15,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestStatQueuePeriodicDAO(DAOTestCase):
-
     def _insert_queue_to_stat_queue(self, tenant_uuid=None):
         queue = StatQueue()
         queue.name = 'test_queue'
@@ -38,7 +37,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
                 'timeout': 5,
                 'divert_ca_ratio': 22,
                 'divert_waittime': 15,
-                'total': 98
+                'total': 98,
             }
         }
         return stats
@@ -51,8 +50,9 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
 
         try:
-            result = (self.session.query(StatQueuePeriodic)
-                      .filter(StatQueuePeriodic.time == period_start)[0])
+            result = self.session.query(StatQueuePeriodic).filter(
+                StatQueuePeriodic.time == period_start
+            )[0]
 
             assert result.abandoned == 7
             assert result.answered == 27
@@ -68,7 +68,9 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             self.fail('Should have found a row')
 
     def test_get_most_recent_time(self):
-        self.assertRaises(LookupError, stat_queue_periodic_dao.get_most_recent_time, self.session)
+        self.assertRaises(
+            LookupError, stat_queue_periodic_dao.get_most_recent_time, self.session
+        )
 
         stats = self._get_stats_for_queue()
         start = dt(2012, 1, 1, 00, 00, 00, tzinfo=UTC)
@@ -86,12 +88,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def test_clean_table(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
-        stats = {
-            queue_id: {
-                'full': 4,
-                'total': 10
-            }
-        }
+        stats = {queue_id: {'full': 4, 'total': 10}}
         period_start = dt(2012, 1, 1, 00, 00, 00, tzinfo=UTC)
 
         stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
@@ -104,17 +101,18 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def test_remove_after(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
-        stats = {
-            queue_id: {
-                'full': 4,
-                'total': 10
-            }
-        }
+        stats = {queue_id: {'full': 4, 'total': 10}}
 
         with flush_session(self.session):
-            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1, tzinfo=UTC))
-            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 2, tzinfo=UTC))
-            stat_queue_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 3, tzinfo=UTC))
+            stat_queue_periodic_dao.insert_stats(
+                self.session, stats, dt(2012, 1, 1, tzinfo=UTC)
+            )
+            stat_queue_periodic_dao.insert_stats(
+                self.session, stats, dt(2012, 1, 2, tzinfo=UTC)
+            )
+            stat_queue_periodic_dao.insert_stats(
+                self.session, stats, dt(2012, 1, 3, tzinfo=UTC)
+            )
 
         stat_queue_periodic_dao.remove_after(self.session, dt(2012, 1, 2, tzinfo=UTC))
 

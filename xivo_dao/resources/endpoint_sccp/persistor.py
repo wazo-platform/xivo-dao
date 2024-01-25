@@ -1,4 +1,4 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -11,7 +11,6 @@ from xivo_dao.resources.utils.search import SearchResult
 
 
 class SccpPersistor:
-
     def __init__(self, session, sccp_search, tenant_uuids=None):
         self.session = session
         self.sccp_search = sccp_search
@@ -42,7 +41,9 @@ class SccpPersistor:
 
     def fill_default_values(self, sccp):
         if sccp.name is None:
-            sccp.name = generators.find_unused_hash(partial(self._already_exists, SCCP.name))
+            sccp.name = generators.find_unused_hash(
+                partial(self._already_exists, SCCP.name)
+            )
         if sccp.context is None:
             sccp.context = ''
         if sccp.cid_name is None:

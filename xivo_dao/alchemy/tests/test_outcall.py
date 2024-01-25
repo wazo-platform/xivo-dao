@@ -26,11 +26,12 @@ from ..trunkfeatures import TrunkFeatures
 
 
 class TestSchedules(DAOTestCase):
-
     def test_getter(self):
         outcall = self.add_outcall()
         schedule = self.add_schedule()
-        self.add_schedule_path(path='outcall', pathid=outcall.id, schedule_id=schedule.id)
+        self.add_schedule_path(
+            path='outcall', pathid=outcall.id, schedule_id=schedule.id
+        )
 
         row = self.session.query(Outcall).filter_by(id=outcall.id).first()
         assert_that(row, equal_to(outcall))
@@ -69,11 +70,12 @@ class TestSchedules(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
-
     def test_schedule_paths_are_deleted(self):
         outcall = self.add_outcall()
         schedule = self.add_schedule()
-        self.add_schedule_path(schedule_id=schedule.id, path='outcall', pathid=outcall.id)
+        self.add_schedule_path(
+            schedule_id=schedule.id, path='outcall', pathid=outcall.id
+        )
 
         self.session.delete(schedule)
         self.session.flush()
@@ -94,7 +96,9 @@ class TestDelete(DAOTestCase):
 
     def test_dialaction_actions_are_deleted(self):
         outcall = self.add_outcall()
-        self.add_dialaction(category='ivr_choice', action='outcall', actionarg1=outcall.id)
+        self.add_dialaction(
+            category='ivr_choice', action='outcall', actionarg1=outcall.id
+        )
         self.add_dialaction(category='ivr', action='outcall', actionarg1=outcall.id)
         self.add_dialaction(category='user', action='outcall', actionarg1=outcall.id)
         self.add_dialaction(category='incall', action='outcall', actionarg1=outcall.id)
@@ -107,7 +111,6 @@ class TestDelete(DAOTestCase):
 
 
 class TestTrunks(DAOTestCase):
-
     def test_trunks_create(self):
         trunk = self.add_trunk()
         outcall_row = self.add_outcall()
@@ -128,7 +131,9 @@ class TestTrunks(DAOTestCase):
 
         outcall = self.session.query(Outcall).filter_by(id=outcall_row.id).first()
         assert_that(outcall, equal_to(outcall_row))
-        assert_that(outcall.trunks, contains_exactly(trunk2_row, trunk3_row, trunk1_row))
+        assert_that(
+            outcall.trunks, contains_exactly(trunk2_row, trunk3_row, trunk1_row)
+        )
 
     def test_trunks_dissociate(self):
         outcall_row = self.add_outcall()
@@ -152,33 +157,41 @@ class TestTrunks(DAOTestCase):
 
 
 class TestAssociateExtension(DAOTestCase):
-
     def test_associate_extension(self):
         extension = self.add_extension()
         outcall_row = self.add_outcall()
 
-        outcall_row.associate_extension(extension,
-                                        strip_digits=5,
-                                        caller_id='toto',
-                                        external_prefix='123',
-                                        prefix='321')
+        outcall_row.associate_extension(
+            extension,
+            strip_digits=5,
+            caller_id='toto',
+            external_prefix='123',
+            prefix='321',
+        )
 
         outcall = self.session.query(Outcall).filter_by(id=outcall_row.id).first()
         assert_that(outcall, equal_to(outcall_row))
         assert_that(outcall.context, equal_to(extension.context))
-        assert_that(outcall.dialpatterns, contains_inanyorder(
-            has_properties(strip_digits=5,
-                           caller_id='toto',
-                           external_prefix='123',
-                           prefix='321',
-                           type='outcall',
-                           typeid=outcall.id,
-                           exten=extension.exten,
-                           extension=has_properties(exten=extension.exten,
-                                                    context=extension.context,
-                                                    type='outcall',
-                                                    typeval=outcall.dialpatterns[0].id))
-        ))
+        assert_that(
+            outcall.dialpatterns,
+            contains_inanyorder(
+                has_properties(
+                    strip_digits=5,
+                    caller_id='toto',
+                    external_prefix='123',
+                    prefix='321',
+                    type='outcall',
+                    typeid=outcall.id,
+                    exten=extension.exten,
+                    extension=has_properties(
+                        exten=extension.exten,
+                        context=extension.context,
+                        type='outcall',
+                        typeval=outcall.dialpatterns[0].id,
+                    ),
+                )
+            ),
+        )
 
     def test_associate_multiple_extensions(self):
         outcall_row = self.add_outcall()
@@ -188,11 +201,16 @@ class TestAssociateExtension(DAOTestCase):
 
         outcall_row.associate_extension(extension1_row, caller_id='toto')
         outcall_row.associate_extension(extension2_row, strip_digits=5)
-        outcall_row.associate_extension(extension3_row, external_prefix='123', prefix='321')
+        outcall_row.associate_extension(
+            extension3_row, external_prefix='123', prefix='321'
+        )
 
         outcall = self.session.query(Outcall).filter_by(id=outcall_row.id).first()
         assert_that(outcall, equal_to(outcall_row))
-        assert_that(outcall.extensions, contains_inanyorder(extension1_row, extension2_row, extension3_row))
+        assert_that(
+            outcall.extensions,
+            contains_inanyorder(extension1_row, extension2_row, extension3_row),
+        )
 
     def test_associate_already_associated(self):
         outcall_row = self.add_outcall()
@@ -207,7 +225,6 @@ class TestAssociateExtension(DAOTestCase):
 
 
 class TestDissociateExtension(DAOTestCase):
-
     def test_dissociate_multiple_extensions(self):
         outcall_row = self.add_outcall()
         extension1_row = self.add_extension()
@@ -228,9 +245,14 @@ class TestDissociateExtension(DAOTestCase):
         assert_that(outcall.context, none())
 
         rows = self.session.query(Extension).all()
-        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0'),
-                                              has_properties(type='user', typeval='0')))
+        assert_that(
+            rows,
+            contains_inanyorder(
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+                has_properties(type='user', typeval='0'),
+            ),
+        )
 
         row = self.session.query(DialPattern).first()
         assert_that(row, none())
@@ -250,23 +272,24 @@ class TestDissociateExtension(DAOTestCase):
 
 
 class TestUpdateExtensionAssociation(DAOTestCase):
-
     def test_update_extension_association(self):
         outcall_row = self.add_outcall()
         extension_row = self.add_extension()
         outcall_row.associate_extension(extension_row, caller_id='toto', prefix='1')
 
-        outcall_row.update_extension_association(extension_row,
-                                                 caller_id='tata',
-                                                 external_prefix='123')
+        outcall_row.update_extension_association(
+            extension_row, caller_id='tata', external_prefix='123'
+        )
 
         rows = self.session.query(Extension).all()
         assert_that(rows, contains_exactly(extension_row))
 
         rows = self.session.query(DialPattern).all()
-        assert_that(rows, contains_exactly(has_properties(
-            caller_id='tata',
-            external_prefix='123',
-            prefix='1',
-            strip_digits=0
-        )))
+        assert_that(
+            rows,
+            contains_exactly(
+                has_properties(
+                    caller_id='tata', external_prefix='123', prefix='1', strip_digits=0
+                )
+            ),
+        )
