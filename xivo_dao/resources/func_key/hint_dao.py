@@ -39,6 +39,8 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.func_key.model import Hint
 
+user_extension = aliased(Extension)
+
 
 def _find_extenfeatures(session, feature):
     return (
@@ -47,37 +49,6 @@ def _find_extenfeatures(session, feature):
             FeatureExtension.feature == feature,
         )
         .scalar()
-    )
-
-
-def _common_filter(query, context):
-    user_extension = aliased(Extension)
-    return (
-        query.join(
-            UserFeatures,
-            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-        )
-        .join(
-            UserLine,
-            UserFeatures.id == UserLine.user_id,
-        )
-        .join(
-            LineExtension,
-            LineExtension.line_id == UserLine.line_id,
-        )
-        .join(
-            user_extension,
-            LineExtension.extension_id == user_extension.id,
-        )
-        .filter(
-            and_(
-                user_extension.context == context,
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                FuncKeyMapping.blf.is_(True),
-            )
-        )
     )
 
 
@@ -247,22 +218,47 @@ def conference_hints(session, context):
 @daosession
 def service_hints(session, context):
     query = (
-        session.query(
-            FeatureExtension.exten.label('feature_extension'),
-            UserFeatures.id.label('user_id'),
+        (
+            session.query(
+                FeatureExtension.exten.label('feature_extension'),
+                UserFeatures.id.label('user_id'),
+            )
+            .join(
+                FuncKeyDestService,
+                FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid,
+            )
+            .join(
+                FuncKeyMapping,
+                FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
+            )
+            .filter(FeatureExtension.enabled == true())
         )
         .join(
-            FuncKeyDestService,
-            FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid,
+            UserFeatures,
+            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
         )
         .join(
-            FuncKeyMapping,
-            FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
+            UserLine,
+            UserFeatures.id == UserLine.user_id,
         )
-        .filter(FeatureExtension.enabled == true())
+        .join(
+            LineExtension,
+            LineExtension.line_id == UserLine.line_id,
+        )
+        .join(
+            user_extension,
+            LineExtension.extension_id == user_extension.id,
+        )
+        .filter(
+            and_(
+                user_extension.context == context,
+                UserLine.main_user.is_(True),
+                UserLine.main_line.is_(True),
+                LineExtension.main_extension.is_(True),
+                FuncKeyMapping.blf.is_(True),
+            )
+        )
     )
-
-    query = _common_filter(query, context)
 
     return tuple(
         Hint(user_id=row.user_id, extension=row.feature_extension, argument=None)
@@ -273,23 +269,48 @@ def service_hints(session, context):
 @daosession
 def forward_hints(session, context):
     query = (
-        session.query(
-            FeatureExtension.exten.label('feature_extension'),
-            UserFeatures.id.label('user_id'),
-            FuncKeyDestForward.number.label('argument'),
+        (
+            session.query(
+                FeatureExtension.exten.label('feature_extension'),
+                UserFeatures.id.label('user_id'),
+                FuncKeyDestForward.number.label('argument'),
+            )
+            .join(
+                FuncKeyDestForward,
+                FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid,
+            )
+            .join(
+                FuncKeyMapping,
+                FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
+            )
+            .filter(FeatureExtension.enabled == true())
         )
         .join(
-            FuncKeyDestForward,
-            FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid,
+            UserFeatures,
+            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
         )
         .join(
-            FuncKeyMapping,
-            FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
+            UserLine,
+            UserFeatures.id == UserLine.user_id,
         )
-        .filter(FeatureExtension.enabled == true())
+        .join(
+            LineExtension,
+            LineExtension.line_id == UserLine.line_id,
+        )
+        .join(
+            user_extension,
+            LineExtension.extension_id == user_extension.id,
+        )
+        .filter(
+            and_(
+                user_extension.context == context,
+                UserLine.main_user.is_(True),
+                UserLine.main_line.is_(True),
+                LineExtension.main_extension.is_(True),
+                FuncKeyMapping.blf.is_(True),
+            )
+        )
     )
-
-    query = _common_filter(query, context)
 
     return tuple(
         Hint(
@@ -304,23 +325,48 @@ def forward_hints(session, context):
 @daosession
 def agent_hints(session, context):
     query = (
-        session.query(
-            sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
-            UserFeatures.id.label('user_id'),
-            FeatureExtension.exten.label('feature_extension'),
+        (
+            session.query(
+                sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
+                UserFeatures.id.label('user_id'),
+                FeatureExtension.exten.label('feature_extension'),
+            )
+            .join(
+                FeatureExtension,
+                FeatureExtension.uuid == FuncKeyDestAgent.feature_extension_uuid,
+            )
+            .join(
+                FuncKeyMapping,
+                FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
+            )
+            .filter(FeatureExtension.enabled == true())
         )
         .join(
-            FeatureExtension,
-            FeatureExtension.uuid == FuncKeyDestAgent.feature_extension_uuid,
+            UserFeatures,
+            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
         )
         .join(
-            FuncKeyMapping,
-            FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
+            UserLine,
+            UserFeatures.id == UserLine.user_id,
         )
-        .filter(FeatureExtension.enabled == true())
+        .join(
+            LineExtension,
+            LineExtension.line_id == UserLine.line_id,
+        )
+        .join(
+            user_extension,
+            LineExtension.extension_id == user_extension.id,
+        )
+        .filter(
+            and_(
+                user_extension.context == context,
+                UserLine.main_user.is_(True),
+                UserLine.main_line.is_(True),
+                LineExtension.main_extension.is_(True),
+                FuncKeyMapping.blf.is_(True),
+            )
+        )
     )
-
-    query = _common_filter(query, context)
 
     return tuple(
         Hint(
@@ -334,14 +380,40 @@ def agent_hints(session, context):
 
 @daosession
 def custom_hints(session, context):
-    query = session.query(
-        FuncKeyDestCustom.exten.label('extension'),
-    ).join(
-        FuncKeyMapping,
-        FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
+    query = (
+        session.query(
+            FuncKeyDestCustom.exten.label('extension'),
+        )
+        .join(
+            FuncKeyMapping,
+            FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
+        )
+        .join(
+            UserFeatures,
+            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+        )
+        .join(
+            UserLine,
+            UserFeatures.id == UserLine.user_id,
+        )
+        .join(
+            LineExtension,
+            LineExtension.line_id == UserLine.line_id,
+        )
+        .join(
+            user_extension,
+            LineExtension.extension_id == user_extension.id,
+        )
+        .filter(
+            and_(
+                user_extension.context == context,
+                UserLine.main_user.is_(True),
+                UserLine.main_line.is_(True),
+                LineExtension.main_extension.is_(True),
+                FuncKeyMapping.blf.is_(True),
+            )
+        )
     )
-
-    query = _common_filter(query, context)
 
     return tuple(Hint(extension=row.extension) for row in query)
 
@@ -398,22 +470,48 @@ def bsfilter_hints(session, context):
 @daosession
 def groupmember_hints(session, context):
     query = (
-        session.query(
-            sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
-            UserFeatures.id.label('user_id'),
-            FeatureExtension.exten.label('feature_extension'),
+        (
+            session.query(
+                sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
+                UserFeatures.id.label('user_id'),
+                FeatureExtension.exten.label('feature_extension'),
+            )
+            .join(
+                FeatureExtension,
+                FeatureExtension.uuid == FuncKeyDestGroupMember.feature_extension_uuid,
+            )
+            .join(
+                FuncKeyMapping,
+                FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id,
+            )
+            .filter(FeatureExtension.enabled == true())
         )
         .join(
-            FeatureExtension,
-            FeatureExtension.uuid == FuncKeyDestGroupMember.feature_extension_uuid,
+            UserFeatures,
+            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
         )
         .join(
-            FuncKeyMapping,
-            FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id,
+            UserLine,
+            UserFeatures.id == UserLine.user_id,
         )
-        .filter(FeatureExtension.enabled == true())
+        .join(
+            LineExtension,
+            LineExtension.line_id == UserLine.line_id,
+        )
+        .join(
+            user_extension,
+            LineExtension.extension_id == user_extension.id,
+        )
+        .filter(
+            and_(
+                user_extension.context == context,
+                UserLine.main_user.is_(True),
+                UserLine.main_line.is_(True),
+                LineExtension.main_extension.is_(True),
+                FuncKeyMapping.blf.is_(True),
+            )
+        )
     )
-    query = _common_filter(query, context)
 
     return tuple(
         Hint(
