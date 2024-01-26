@@ -106,6 +106,42 @@ conference_hints_query = conference_hints_bakery(
 )
 conference_hints_query += lambda q: q.filter(Extension.context == bindparam('context'))
 
+custom_hints_bakery = baked.bakery()
+custom_hints_query = custom_hints_bakery(
+    lambda s: s.query(
+        FuncKeyDestCustom.exten.label('extension'),
+    )
+    .join(
+        FuncKeyMapping,
+        FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
+    )
+    .join(
+        UserFeatures,
+        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+    )
+    .join(
+        UserLine,
+        UserFeatures.id == UserLine.user_id,
+    )
+    .join(
+        LineExtension,
+        LineExtension.line_id == UserLine.line_id,
+    )
+    .join(
+        user_extension,
+        LineExtension.extension_id == user_extension.id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            FuncKeyMapping.blf.is_(True),
+        )
+    )
+)
+custom_hints_query += lambda q: q.filter(user_extension.context == bindparam('context'))
+
 forwards_hints_bakery = baked.bakery()
 forwards_hints_query = forwards_hints_bakery(
     lambda s: s.query(
@@ -399,41 +435,7 @@ def agent_hints(session, context):
 
 @daosession
 def custom_hints(session, context):
-    query = (
-        session.query(
-            FuncKeyDestCustom.exten.label('extension'),
-        )
-        .join(
-            FuncKeyMapping,
-            FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
-        )
-        .join(
-            UserFeatures,
-            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-        )
-        .join(
-            UserLine,
-            UserFeatures.id == UserLine.user_id,
-        )
-        .join(
-            LineExtension,
-            LineExtension.line_id == UserLine.line_id,
-        )
-        .join(
-            user_extension,
-            LineExtension.extension_id == user_extension.id,
-        )
-        .filter(
-            and_(
-                user_extension.context == context,
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                FuncKeyMapping.blf.is_(True),
-            )
-        )
-    )
-
+    query = custom_hints_query(session).params(context=context).all()
     return tuple(Hint(extension=row.extension) for row in query)
 
 
