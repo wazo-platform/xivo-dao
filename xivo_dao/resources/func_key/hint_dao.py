@@ -61,6 +61,51 @@ conference_hints_query = conference_hints_bakery(
 )
 conference_hints_query += lambda q: q.filter(Extension.context == bindparam('context'))
 
+forwards_hints_bakery = baked.bakery()
+forwards_hints_query = forwards_hints_bakery(
+    lambda s: s.query(
+        FeatureExtension.exten.label('feature_extension'),
+        UserFeatures.id.label('user_id'),
+        FuncKeyDestForward.number.label('argument'),
+    )
+    .join(
+        FuncKeyDestForward,
+        FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid,
+    )
+    .join(
+        FuncKeyMapping,
+        FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
+    )
+    .filter(FeatureExtension.enabled == true())
+    .join(
+        UserFeatures,
+        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+    )
+    .join(
+        UserLine,
+        UserFeatures.id == UserLine.user_id,
+    )
+    .join(
+        LineExtension,
+        LineExtension.line_id == UserLine.line_id,
+    )
+    .join(
+        user_extension,
+        LineExtension.extension_id == user_extension.id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            FuncKeyMapping.blf.is_(True),
+        )
+    )
+)
+forwards_hints_query += lambda q: q.filter(
+    user_extension.context == bindparam('context')
+)
+
 user_extensions_bakery = baked.bakery()
 user_extensions_query = user_extensions_bakery(
     lambda s: s.query(
@@ -281,49 +326,7 @@ def service_hints(session, context):
 
 @daosession
 def forward_hints(session, context):
-    query = (
-        (
-            session.query(
-                FeatureExtension.exten.label('feature_extension'),
-                UserFeatures.id.label('user_id'),
-                FuncKeyDestForward.number.label('argument'),
-            )
-            .join(
-                FuncKeyDestForward,
-                FuncKeyDestForward.feature_extension_uuid == FeatureExtension.uuid,
-            )
-            .join(
-                FuncKeyMapping,
-                FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
-            )
-            .filter(FeatureExtension.enabled == true())
-        )
-        .join(
-            UserFeatures,
-            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-        )
-        .join(
-            UserLine,
-            UserFeatures.id == UserLine.user_id,
-        )
-        .join(
-            LineExtension,
-            LineExtension.line_id == UserLine.line_id,
-        )
-        .join(
-            user_extension,
-            LineExtension.extension_id == user_extension.id,
-        )
-        .filter(
-            and_(
-                user_extension.context == context,
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                FuncKeyMapping.blf.is_(True),
-            )
-        )
-    )
+    query = forwards_hints_query(session).params(context=context).all()
 
     return tuple(
         Hint(
