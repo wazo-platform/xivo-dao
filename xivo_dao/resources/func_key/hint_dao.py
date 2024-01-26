@@ -88,6 +88,47 @@ agent_hints_query = agent_hints_bakery(
 )
 agent_hints_query += lambda q: q.filter(user_extension.context == bindparam('context'))
 
+bsfilter_hints_bakery = baked.bakery()
+bsfilter_hints_query = bsfilter_hints_bakery(
+    lambda s: s.query(
+        sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'),
+    )
+    .join(
+        Callfiltermember,
+        Callfiltermember.id == FuncKeyDestBSFilter.filtermember_id,
+    )
+    .join(
+        Callfilter,
+        Callfilter.id == Callfiltermember.callfilterid,
+    )
+    .join(
+        UserFeatures,
+        sql.cast(Callfiltermember.typeval, Integer) == UserFeatures.id,
+    )
+    .join(
+        UserLine,
+        UserLine.user_id == UserFeatures.id,
+    )
+    .join(
+        LineExtension,
+        UserLine.line_id == LineExtension.line_id,
+    )
+    .join(
+        Extension,
+        Extension.id == LineExtension.extension_id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            Extension.commented == 0,
+            Callfilter.commented == 0,
+        )
+    )
+)
+bsfilter_hints_query += lambda q: q.filter(Extension.context == bindparam('context'))
+
 
 conference_hints_bakery = baked.bakery()
 conference_hints_query = conference_hints_bakery(
@@ -442,47 +483,7 @@ def custom_hints(session, context):
 @daosession
 def bsfilter_hints(session, context):
     bsfilter_extension = clean_extension(_find_extenfeatures(session, 'bsfilter'))
-
-    query = (
-        session.query(
-            sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'),
-        )
-        .join(
-            Callfiltermember,
-            Callfiltermember.id == FuncKeyDestBSFilter.filtermember_id,
-        )
-        .join(
-            Callfilter,
-            Callfilter.id == Callfiltermember.callfilterid,
-        )
-        .join(
-            UserFeatures,
-            sql.cast(Callfiltermember.typeval, Integer) == UserFeatures.id,
-        )
-        .join(
-            UserLine,
-            UserLine.user_id == UserFeatures.id,
-        )
-        .join(
-            LineExtension,
-            UserLine.line_id == LineExtension.line_id,
-        )
-        .join(
-            Extension,
-            Extension.id == LineExtension.extension_id,
-        )
-        .filter(
-            and_(
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                Extension.commented == 0,
-                Callfilter.commented == 0,
-                Extension.context == context,
-            )
-        )
-    )
-
+    query = bsfilter_hints_query(session).params(context=context).all()
     return tuple(
         Hint(extension=bsfilter_extension, argument=row.argument) for row in query
     )
