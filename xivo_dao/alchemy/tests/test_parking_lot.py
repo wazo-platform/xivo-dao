@@ -56,3 +56,24 @@ class TestExten(DAOTestCase):
 
         assert_that(result, equal_to(parking_lot))
         assert_that(result.exten, equal_to(extension.exten))
+
+
+class TestContext(DAOTestCase):
+    def test_getter(self):
+        parking_lot = self.add_parking_lot()
+        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+
+        assert_that(parking_lot.context, equal_to(extension.context))
+
+    def test_expression(self):
+        parking_lot = self.add_parking_lot()
+        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+
+        result = (
+            self.session.query(ParkingLot)
+            .filter(ParkingLot.context == extension.context)
+            .first()
+        )
+
+        assert_that(result, equal_to(parking_lot))
+        assert_that(result.context, equal_to(extension.context))
