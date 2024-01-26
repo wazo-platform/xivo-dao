@@ -43,6 +43,51 @@ from xivo_dao.resources.func_key.model import Hint
 
 user_extension = aliased(Extension)
 
+agent_hints_bakery = baked.bakery()
+agent_hints_query = agent_hints_bakery(
+    lambda s: s.query(
+        sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
+        UserFeatures.id.label('user_id'),
+        FeatureExtension.exten.label('feature_extension'),
+    )
+    .join(
+        FeatureExtension,
+        FeatureExtension.uuid == FuncKeyDestAgent.feature_extension_uuid,
+    )
+    .join(
+        FuncKeyMapping,
+        FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
+    )
+    .filter(
+        FeatureExtension.enabled == true(),
+    )
+    .join(
+        UserFeatures,
+        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+    )
+    .join(
+        UserLine,
+        UserFeatures.id == UserLine.user_id,
+    )
+    .join(
+        LineExtension,
+        LineExtension.line_id == UserLine.line_id,
+    )
+    .join(
+        user_extension,
+        LineExtension.extension_id == user_extension.id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            FuncKeyMapping.blf.is_(True),
+        )
+    )
+)
+agent_hints_query += lambda q: q.filter(user_extension.context == bindparam('context'))
+
 
 conference_hints_bakery = baked.bakery()
 conference_hints_query = conference_hints_bakery(
@@ -340,49 +385,7 @@ def forward_hints(session, context):
 
 @daosession
 def agent_hints(session, context):
-    query = (
-        (
-            session.query(
-                sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
-                UserFeatures.id.label('user_id'),
-                FeatureExtension.exten.label('feature_extension'),
-            )
-            .join(
-                FeatureExtension,
-                FeatureExtension.uuid == FuncKeyDestAgent.feature_extension_uuid,
-            )
-            .join(
-                FuncKeyMapping,
-                FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
-            )
-            .filter(FeatureExtension.enabled == true())
-        )
-        .join(
-            UserFeatures,
-            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-        )
-        .join(
-            UserLine,
-            UserFeatures.id == UserLine.user_id,
-        )
-        .join(
-            LineExtension,
-            LineExtension.line_id == UserLine.line_id,
-        )
-        .join(
-            user_extension,
-            LineExtension.extension_id == user_extension.id,
-        )
-        .filter(
-            and_(
-                user_extension.context == context,
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                FuncKeyMapping.blf.is_(True),
-            )
-        )
-    )
+    query = agent_hints_query(session).params(context=context).all()
 
     return tuple(
         Hint(
