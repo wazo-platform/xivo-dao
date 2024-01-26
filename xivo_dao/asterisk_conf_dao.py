@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import NamedTuple
 from collections import defaultdict
 
+from sqlalchemy import bindparam
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import (
     and_,
@@ -15,6 +16,7 @@ from sqlalchemy.sql.expression import (
     or_,
     true,
 )
+from sqlalchemy.ext import baked
 from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.feature_extension import FeatureExtension
@@ -381,34 +383,38 @@ def find_extenfeatures_settings(session, features):
     return query.all()
 
 
+exten_settings_bakery = baked.bakery()
+exten_settings_query = exten_settings_bakery(
+    lambda s: s.query(
+        Extension,
+    )
+    .outerjoin(
+        LineExtension,
+        Extension.id == LineExtension.extension_id,
+    )
+    .outerjoin(
+        LineFeatures,
+        LineFeatures.id == LineExtension.line_id,
+    )
+    .filter(
+        and_(
+            Extension.commented == 0,
+            Extension.typeval != '0',
+            Extension.type != 'parking',
+            or_(
+                LineExtension.line_id.is_(None),
+                LineFeatures.commented == 0,
+            ),
+        )
+    )
+    .order_by('exten')
+)
+exten_settings_query += lambda q: q.filter(Extension.context == bindparam('context'))
+
+
 @daosession
 def find_exten_settings(session, context_name):
-    rows = (
-        session.query(Extension)
-        .outerjoin(
-            LineExtension,
-            Extension.id == LineExtension.extension_id,
-        )
-        .outerjoin(
-            LineFeatures,
-            LineFeatures.id == LineExtension.line_id,
-        )
-        .filter(
-            and_(
-                Extension.context == context_name,
-                Extension.commented == 0,
-                Extension.typeval != '0',
-                Extension.type != 'parking',
-                or_(
-                    LineExtension.line_id.is_(None),
-                    LineFeatures.commented == 0,
-                ),
-            )
-        )
-        .order_by('exten')
-        .all()
-    )
-
+    rows = exten_settings_query(session).params(context=context_name).all()
     return [
         dict(tenant_uuid=row.context_rel.tenant_uuid, **row.todict()) for row in rows
     ]
