@@ -427,15 +427,18 @@ def find_context_settings(session):
     return [row.todict() for row in rows]
 
 
+context_include_bakery = baked.bakery()
+context_include_query = context_include_bakery(
+    lambda s: s.query(ContextInclude).order_by('priority')
+)
+context_include_query += lambda q: q.filter(
+    ContextInclude.context == bindparam('context')
+)
+
+
 @daosession
 def find_contextincludes_settings(session, context_name):
-    rows = (
-        session.query(ContextInclude)
-        .filter(ContextInclude.context == context_name)
-        .order_by('priority')
-        .all()
-    )
-
+    rows = context_include_query(session).params(context=context_name).all()
     return [row.todict() for row in rows]
 
 
