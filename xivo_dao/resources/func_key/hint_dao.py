@@ -43,6 +43,24 @@ from xivo_dao.resources.func_key.model import Hint
 
 user_extension = aliased(Extension)
 
+
+conference_hints_bakery = baked.bakery()
+conference_hints_query = conference_hints_bakery(
+    lambda s: s.query(
+        Conference.id.label('conference_id'), Extension.exten.label('extension')
+    )
+    .select_from(Conference)
+    .join(FuncKeyDestConference, FuncKeyDestConference.conference_id == Conference.id)
+    .join(
+        Extension,
+        sql.and_(
+            Extension.type == 'conference',
+            Extension.typeval == sql.cast(Conference.id, Unicode),
+        ),
+    )
+)
+conference_hints_query += lambda q: q.filter(Extension.context == bindparam('context'))
+
 user_extensions_bakery = baked.bakery()
 user_extensions_query = user_extensions_bakery(
     lambda s: s.query(
@@ -243,23 +261,7 @@ def _list_user_arguments(session, user_ids):
 
 @daosession
 def conference_hints(session, context):
-    query = (
-        session.query(
-            Conference.id.label('conference_id'), Extension.exten.label('extension')
-        )
-        .select_from(Conference)
-        .join(
-            FuncKeyDestConference, FuncKeyDestConference.conference_id == Conference.id
-        )
-        .join(
-            Extension,
-            sql.and_(
-                Extension.type == 'conference',
-                Extension.typeval == sql.cast(Conference.id, Unicode),
-            ),
-        )
-        .filter(Extension.context == context)
-    )
+    query = conference_hints_query(session).params(context=context)
 
     return tuple(
         Hint(conference_id=row.conference_id, extension=row.extension)
