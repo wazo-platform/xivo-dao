@@ -228,6 +228,53 @@ forwards_hints_query += lambda q: q.filter(
     user_extension.context == bindparam('context')
 )
 
+groupmember_hints_bakery = baked.bakery()
+groupmember_hints_query = groupmember_hints_bakery(
+    lambda s: s.query(
+        sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
+        UserFeatures.id.label('user_id'),
+        FeatureExtension.exten.label('feature_extension'),
+    )
+    .join(
+        FeatureExtension,
+        FeatureExtension.uuid == FuncKeyDestGroupMember.feature_extension_uuid,
+    )
+    .join(
+        FuncKeyMapping,
+        FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id,
+    )
+    .filter(
+        FeatureExtension.enabled == true(),
+    )
+    .join(
+        UserFeatures,
+        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+    )
+    .join(
+        UserLine,
+        UserFeatures.id == UserLine.user_id,
+    )
+    .join(
+        LineExtension,
+        LineExtension.line_id == UserLine.line_id,
+    )
+    .join(
+        user_extension,
+        LineExtension.extension_id == user_extension.id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            FuncKeyMapping.blf.is_(True),
+        )
+    )
+)
+groupmember_hints_query += lambda q: q.filter(
+    user_extension.context == bindparam('context')
+)
+
 user_extensions_bakery = baked.bakery()
 user_extensions_query = user_extensions_bakery(
     lambda s: s.query(
@@ -491,50 +538,7 @@ def bsfilter_hints(session, context):
 
 @daosession
 def groupmember_hints(session, context):
-    query = (
-        (
-            session.query(
-                sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
-                UserFeatures.id.label('user_id'),
-                FeatureExtension.exten.label('feature_extension'),
-            )
-            .join(
-                FeatureExtension,
-                FeatureExtension.uuid == FuncKeyDestGroupMember.feature_extension_uuid,
-            )
-            .join(
-                FuncKeyMapping,
-                FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id,
-            )
-            .filter(FeatureExtension.enabled == true())
-        )
-        .join(
-            UserFeatures,
-            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-        )
-        .join(
-            UserLine,
-            UserFeatures.id == UserLine.user_id,
-        )
-        .join(
-            LineExtension,
-            LineExtension.line_id == UserLine.line_id,
-        )
-        .join(
-            user_extension,
-            LineExtension.extension_id == user_extension.id,
-        )
-        .filter(
-            and_(
-                user_extension.context == context,
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                FuncKeyMapping.blf.is_(True),
-            )
-        )
-    )
-
+    query = groupmember_hints_query(session).params(context=context).all()
     return tuple(
         Hint(
             user_id=row.user_id,
