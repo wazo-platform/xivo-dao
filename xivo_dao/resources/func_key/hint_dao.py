@@ -3,6 +3,7 @@
 
 from sqlalchemy import (
     and_,
+    bindparam,
     Integer,
     Unicode,
     literal_column,
@@ -12,6 +13,7 @@ from sqlalchemy.orm import (
     aliased,
     joinedload,
 )
+from sqlalchemy.ext import baked
 from sqlalchemy.sql.expression import true
 
 from xivo.xivo_helpers import clean_extension
@@ -41,15 +43,138 @@ from xivo_dao.resources.func_key.model import Hint
 
 user_extension = aliased(Extension)
 
+user_extensions_bakery = baked.bakery()
+user_extensions_query = user_extensions_bakery(
+    lambda s: s.query(
+        UserFeatures.id.label('user_id'),
+        Extension.exten.label('extension'),
+    )
+    .distinct()
+    .join(
+        UserLine.userfeatures,
+    )
+    .join(
+        LineExtension,
+        UserLine.line_id == LineExtension.line_id,
+    )
+    .join(
+        Extension,
+        LineExtension.extension_id == Extension.id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            LineExtension.main_extension.is_(True),
+            UserFeatures.enablehint == 1,
+        )
+    )
+)
+user_extensions_query += lambda q: q.filter(Extension.context == bindparam('context'))
+
+user_arguments_bakery = baked.bakery()
+user_arguments_query = user_arguments_bakery(
+    lambda s: s.query(
+        UserFeatures.id.label('user_id'),
+        sql.func.string_agg(
+            sql.case(
+                [
+                    (
+                        LineFeatures.endpoint_sip_uuid.isnot(None),
+                        literal_column("'PJSIP/'") + EndpointSIP.name,
+                    ),
+                    (
+                        LineFeatures.endpoint_sccp_id.isnot(None),
+                        literal_column("'SCCP/'") + SCCPLine.name,
+                    ),
+                    (
+                        LineFeatures.endpoint_custom_id.isnot(None),
+                        UserCustom.interface,
+                    ),
+                ]
+            ),
+            literal_column("'&'"),
+        ).label('argument'),
+    )
+    .join(
+        UserLine.userfeatures,
+    )
+    .join(
+        UserLine.linefeatures,
+    )
+    .outerjoin(
+        EndpointSIP,
+    )
+    .outerjoin(
+        SCCPLine,
+    )
+    .outerjoin(
+        UserCustom,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            LineFeatures.commented == 0,
+        )
+    )
+    .group_by(UserFeatures.id)
+)
+user_arguments_query += lambda q: q.filter(
+    UserFeatures.id.in_(bindparam('user_ids', expanding=True))
+)
+
+service_hints_bakery = baked.bakery()
+service_hints_query = service_hints_bakery(
+    lambda s: s.query(
+        FeatureExtension.exten.label('feature_extension'),
+        UserFeatures.id.label('user_id'),
+    )
+    .join(
+        FuncKeyDestService,
+        FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid,
+    )
+    .join(
+        FuncKeyMapping,
+        FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
+    )
+    .filter(FeatureExtension.enabled == true())
+    .join(
+        UserFeatures,
+        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+    )
+    .join(
+        UserLine,
+        UserFeatures.id == UserLine.user_id,
+    )
+    .join(
+        LineExtension,
+        LineExtension.line_id == UserLine.line_id,
+    )
+    .join(
+        user_extension,
+        LineExtension.extension_id == user_extension.id,
+    )
+    .filter(
+        and_(
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            FuncKeyMapping.blf.is_(True),
+        )
+    )
+)
+service_hints_query += lambda q: q.filter(
+    user_extension.context == bindparam('context')
+)
+
+extenfeatures_bakery = baked.bakery()
+extenfeatures_query = extenfeatures_bakery(lambda s: s.query(FeatureExtension.exten))
+extenfeatures_query += lambda q: q.filter(
+    FeatureExtension.feature == bindparam('feature')
+)
+
 
 def _find_extenfeatures(session, feature):
-    return (
-        session.query(FeatureExtension.exten)
-        .filter(
-            FeatureExtension.feature == feature,
-        )
-        .scalar()
-    )
+    return extenfeatures_query(session).params(feature=feature).scalar()
 
 
 @daosession
@@ -108,84 +233,11 @@ def user_shared_hints(session):
 
 
 def _list_user_extensions(session, context):
-    query = (
-        session.query(
-            UserFeatures.id.label('user_id'),
-            Extension.exten.label('extension'),
-        )
-        .distinct()
-        .join(
-            UserLine.userfeatures,
-        )
-        .join(
-            LineExtension,
-            UserLine.line_id == LineExtension.line_id,
-        )
-        .join(
-            Extension,
-            LineExtension.extension_id == Extension.id,
-        )
-        .filter(
-            and_(
-                UserLine.main_user.is_(True),
-                LineExtension.main_extension.is_(True),
-                Extension.context == context,
-                UserFeatures.enablehint == 1,
-            )
-        )
-    )
-    return query.all()
+    return user_extensions_query(session).params(context=context).all()
 
 
 def _list_user_arguments(session, user_ids):
-    query = (
-        session.query(
-            UserFeatures.id.label('user_id'),
-            sql.func.string_agg(
-                sql.case(
-                    [
-                        (
-                            LineFeatures.endpoint_sip_uuid.isnot(None),
-                            literal_column("'PJSIP/'") + EndpointSIP.name,
-                        ),
-                        (
-                            LineFeatures.endpoint_sccp_id.isnot(None),
-                            literal_column("'SCCP/'") + SCCPLine.name,
-                        ),
-                        (
-                            LineFeatures.endpoint_custom_id.isnot(None),
-                            UserCustom.interface,
-                        ),
-                    ]
-                ),
-                literal_column("'&'"),
-            ).label('argument'),
-        )
-        .join(
-            UserLine.userfeatures,
-        )
-        .join(
-            UserLine.linefeatures,
-        )
-        .outerjoin(
-            EndpointSIP,
-        )
-        .outerjoin(
-            SCCPLine,
-        )
-        .outerjoin(
-            UserCustom,
-        )
-        .filter(
-            and_(
-                UserFeatures.id.in_(user_ids),
-                UserLine.main_user.is_(True),
-                LineFeatures.commented == 0,
-            )
-        )
-        .group_by(UserFeatures.id)
-    )
-
+    query = user_arguments_query(session).params(user_ids=list(user_ids)).all()
     return {row.user_id: row.argument for row in query}
 
 
@@ -217,48 +269,7 @@ def conference_hints(session, context):
 
 @daosession
 def service_hints(session, context):
-    query = (
-        (
-            session.query(
-                FeatureExtension.exten.label('feature_extension'),
-                UserFeatures.id.label('user_id'),
-            )
-            .join(
-                FuncKeyDestService,
-                FuncKeyDestService.feature_extension_uuid == FeatureExtension.uuid,
-            )
-            .join(
-                FuncKeyMapping,
-                FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
-            )
-            .filter(FeatureExtension.enabled == true())
-        )
-        .join(
-            UserFeatures,
-            FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-        )
-        .join(
-            UserLine,
-            UserFeatures.id == UserLine.user_id,
-        )
-        .join(
-            LineExtension,
-            LineExtension.line_id == UserLine.line_id,
-        )
-        .join(
-            user_extension,
-            LineExtension.extension_id == user_extension.id,
-        )
-        .filter(
-            and_(
-                user_extension.context == context,
-                UserLine.main_user.is_(True),
-                UserLine.main_line.is_(True),
-                LineExtension.main_extension.is_(True),
-                FuncKeyMapping.blf.is_(True),
-            )
-        )
-    )
+    query = service_hints_query(session).params(context=context).all()
 
     return tuple(
         Hint(user_id=row.user_id, extension=row.feature_extension, argument=None)

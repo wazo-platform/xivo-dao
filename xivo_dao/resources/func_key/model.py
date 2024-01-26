@@ -21,3 +21,6 @@ class Hint:
 
     def __ne__(self, other):
         return not self == other
+
+    def __repr__(self):
+        return f'Hint(user_id={self.user_id}, conference_id={self.conference_id}, extension={self.extension}, argument={self.argument})'
