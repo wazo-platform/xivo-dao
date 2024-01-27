@@ -1,6 +1,8 @@
 # Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections import defaultdict
+
 from sqlalchemy import (
     and_,
     bindparam,
@@ -49,6 +51,7 @@ agent_hints_query = agent_hints_bakery(
         sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
         UserFeatures.id.label('user_id'),
         FeatureExtension.exten.label('feature_extension'),
+        user_extension.context,
     )
     .join(
         FeatureExtension,
@@ -86,12 +89,12 @@ agent_hints_query = agent_hints_bakery(
         )
     )
 )
-agent_hints_query += lambda q: q.filter(user_extension.context == bindparam('context'))
 
 bsfilter_hints_bakery = baked.bakery()
 bsfilter_hints_query = bsfilter_hints_bakery(
     lambda s: s.query(
         sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'),
+        Extension.context,
     )
     .join(
         Callfiltermember,
@@ -127,13 +130,14 @@ bsfilter_hints_query = bsfilter_hints_bakery(
         )
     )
 )
-bsfilter_hints_query += lambda q: q.filter(Extension.context == bindparam('context'))
 
 
 conference_hints_bakery = baked.bakery()
 conference_hints_query = conference_hints_bakery(
     lambda s: s.query(
-        Conference.id.label('conference_id'), Extension.exten.label('extension')
+        Conference.id.label('conference_id'),
+        Extension.exten.label('extension'),
+        Extension.context,
     )
     .select_from(Conference)
     .join(FuncKeyDestConference, FuncKeyDestConference.conference_id == Conference.id)
@@ -145,12 +149,11 @@ conference_hints_query = conference_hints_bakery(
         ),
     )
 )
-conference_hints_query += lambda q: q.filter(Extension.context == bindparam('context'))
 
 custom_hints_bakery = baked.bakery()
 custom_hints_query = custom_hints_bakery(
     lambda s: s.query(
-        FuncKeyDestCustom.exten.label('extension'),
+        FuncKeyDestCustom.exten.label('extension'), user_extension.context
     )
     .join(
         FuncKeyMapping,
@@ -181,7 +184,6 @@ custom_hints_query = custom_hints_bakery(
         )
     )
 )
-custom_hints_query += lambda q: q.filter(user_extension.context == bindparam('context'))
 
 forwards_hints_bakery = baked.bakery()
 forwards_hints_query = forwards_hints_bakery(
@@ -189,6 +191,7 @@ forwards_hints_query = forwards_hints_bakery(
         FeatureExtension.exten.label('feature_extension'),
         UserFeatures.id.label('user_id'),
         FuncKeyDestForward.number.label('argument'),
+        user_extension.context,
     )
     .join(
         FuncKeyDestForward,
@@ -224,9 +227,6 @@ forwards_hints_query = forwards_hints_bakery(
         )
     )
 )
-forwards_hints_query += lambda q: q.filter(
-    user_extension.context == bindparam('context')
-)
 
 groupmember_hints_bakery = baked.bakery()
 groupmember_hints_query = groupmember_hints_bakery(
@@ -234,6 +234,7 @@ groupmember_hints_query = groupmember_hints_bakery(
         sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
         UserFeatures.id.label('user_id'),
         FeatureExtension.exten.label('feature_extension'),
+        user_extension.context,
     )
     .join(
         FeatureExtension,
@@ -271,15 +272,13 @@ groupmember_hints_query = groupmember_hints_bakery(
         )
     )
 )
-groupmember_hints_query += lambda q: q.filter(
-    user_extension.context == bindparam('context')
-)
 
 user_extensions_bakery = baked.bakery()
 user_extensions_query = user_extensions_bakery(
     lambda s: s.query(
         UserFeatures.id.label('user_id'),
         Extension.exten.label('extension'),
+        Extension.context,
     )
     .distinct()
     .join(
@@ -301,7 +300,6 @@ user_extensions_query = user_extensions_bakery(
         )
     )
 )
-user_extensions_query += lambda q: q.filter(Extension.context == bindparam('context'))
 
 user_arguments_bakery = baked.bakery()
 user_arguments_query = user_arguments_bakery(
@@ -359,6 +357,7 @@ service_hints_query = service_hints_bakery(
     lambda s: s.query(
         FeatureExtension.exten.label('feature_extension'),
         UserFeatures.id.label('user_id'),
+        user_extension.context,
     )
     .join(
         FuncKeyDestService,
@@ -394,9 +393,6 @@ service_hints_query = service_hints_bakery(
         )
     )
 )
-service_hints_query += lambda q: q.filter(
-    user_extension.context == bindparam('context')
-)
 
 extenfeatures_bakery = baked.bakery()
 extenfeatures_query = extenfeatures_bakery(lambda s: s.query(FeatureExtension.exten))
@@ -422,20 +418,22 @@ def calluser_extension(session):
 
 
 @daosession
-def user_hints(session, context):
-    user_extensions = _list_user_extensions(session, context)
+def user_hints(session):
+    user_extensions = _list_user_extensions(session)
     if not user_extensions:
-        return tuple()
+        return {}
 
     user_arguments = _list_user_arguments(
         session, {item.user_id for item in user_extensions}
     )
-    hints = []
-    for user_id, extension in user_extensions:
+    hints = defaultdict(list)
+    for user_id, extension, context in user_extensions:
         argument = user_arguments.get(user_id)
         if argument:
-            hints.append(Hint(user_id=user_id, extension=extension, argument=argument))
-    return tuple(hints)
+            hints[context].append(
+                Hint(user_id=user_id, extension=extension, argument=argument)
+            )
+    return hints
 
 
 @daosession
@@ -464,8 +462,8 @@ def user_shared_hints(session):
     return hints
 
 
-def _list_user_extensions(session, context):
-    return user_extensions_query(session).params(context=context).all()
+def _list_user_extensions(session):
+    return user_extensions_query(session).all()
 
 
 def _list_user_arguments(session, user_ids):
@@ -474,76 +472,84 @@ def _list_user_arguments(session, user_ids):
 
 
 @daosession
-def conference_hints(session, context):
-    query = conference_hints_query(session).params(context=context)
-
-    return tuple(
-        Hint(conference_id=row.conference_id, extension=row.extension)
-        for row in query.all()
-    )
-
-
-@daosession
-def service_hints(session, context):
-    query = service_hints_query(session).params(context=context).all()
-
-    return tuple(
-        Hint(user_id=row.user_id, extension=row.feature_extension, argument=None)
-        for row in query
-    )
+def conference_hints(session):
+    query = conference_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(conference_id=row.conference_id, extension=row.extension)
+        hints[row.context].append(hint)
+    return hints
 
 
 @daosession
-def forward_hints(session, context):
-    query = forwards_hints_query(session).params(context=context).all()
+def service_hints(session):
+    query = service_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(user_id=row.user_id, extension=row.feature_extension, argument=None)
+        hints[row.context].append(hint)
+    return hints
 
-    return tuple(
-        Hint(
+
+@daosession
+def forward_hints(session):
+    query = forwards_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(
             user_id=row.user_id,
             extension=clean_extension(row.feature_extension),
             argument=row.argument,
         )
-        for row in query
-    )
+        hints[row.context].append(hint)
+
+    return hints
 
 
 @daosession
-def agent_hints(session, context):
-    query = agent_hints_query(session).params(context=context).all()
-
-    return tuple(
-        Hint(
+def agent_hints(session):
+    query = agent_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(
             user_id=row.user_id,
             extension=clean_extension(row.feature_extension),
             argument=row.argument,
         )
-        for row in query
-    )
+        hints[row.context].append(hint)
+    return hints
 
 
 @daosession
-def custom_hints(session, context):
-    query = custom_hints_query(session).params(context=context).all()
-    return tuple(Hint(extension=row.extension) for row in query)
+def custom_hints(session):
+    query = custom_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(extension=row.extension)
+        hints[row.context].append(hint)
+    return hints
 
 
 @daosession
-def bsfilter_hints(session, context):
+def bsfilter_hints(session):
     bsfilter_extension = clean_extension(_find_extenfeatures(session, 'bsfilter'))
-    query = bsfilter_hints_query(session).params(context=context).all()
-    return tuple(
-        Hint(extension=bsfilter_extension, argument=row.argument) for row in query
-    )
+    query = bsfilter_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(extension=bsfilter_extension, argument=row.argument)
+        hints[row.context].append(hint)
+    return hints
 
 
 @daosession
-def groupmember_hints(session, context):
-    query = groupmember_hints_query(session).params(context=context).all()
-    return tuple(
-        Hint(
+def groupmember_hints(session):
+    query = groupmember_hints_query(session).all()
+    hints = defaultdict(list)
+    for row in query:
+        hint = Hint(
             user_id=row.user_id,
             extension=clean_extension(row.feature_extension),
             argument=row.argument,
         )
-        for row in query
-    )
+        hints[row.context].append(hint)
+    return hints

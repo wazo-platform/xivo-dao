@@ -6,6 +6,7 @@ from hamcrest import (
     contains_exactly,
     contains_inanyorder,
     has_properties,
+    has_entries,
     empty,
     equal_to,
 )
@@ -139,13 +140,17 @@ class TestUserHints(TestHints):
         user_row = self.add_user_sip_and_func_key(endpoint_sip_row.uuid)
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_exactly(
-                has_properties(
-                    user_id=user_row.id,
-                    extension='1000',
-                    argument='PJSIP/abcdef',
-                )
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        has_properties(
+                            user_id=user_row.id,
+                            extension='1000',
+                            argument='PJSIP/abcdef',
+                        )
+                    ),
+                }
             ),
         )
 
@@ -154,13 +159,17 @@ class TestUserHints(TestHints):
         user_row = self.add_user_sccp_and_func_key(sccpline_row.id, '1001')
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_exactly(
-                has_properties(
-                    user_id=user_row.id,
-                    extension='1001',
-                    argument='SCCP/1001',
-                )
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        has_properties(
+                            user_id=user_row.id,
+                            extension='1001',
+                            argument='SCCP/1001',
+                        )
+                    ),
+                }
             ),
         )
 
@@ -169,30 +178,29 @@ class TestUserHints(TestHints):
         user_row = self.add_user_custom_and_func_key(custom_row.id, '1002')
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_exactly(
-                has_properties(
-                    user_id=user_row.id,
-                    extension='1002',
-                    argument='ghijkl',
-                )
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        has_properties(
+                            user_id=user_row.id,
+                            extension='1002',
+                            argument='ghijkl',
+                        )
+                    ),
+                }
             ),
         )
 
     def test_given_user_with_commented_line_then_returns_empty_list(self):
         self.add_user_and_func_key(exten='1002', commented=1)
 
-        assert_that(hint_dao.user_hints(self.context.name), empty())
+        assert_that(hint_dao.user_hints(), empty())
 
     def test_given_user_with_hints_disabled_then_returns_empty_list(self):
         self.add_user_and_func_key(exten='1003', enablehint=0)
 
-        assert_that(hint_dao.user_hints(self.context.name), empty())
-
-    def test_given_user_when_querying_different_context_then_returns_empty_list(self):
-        self.add_user_and_func_key(exten='1004')
-
-        assert_that(hint_dao.user_hints('othercontext'), empty())
+        assert_that(hint_dao.user_hints(), empty())
 
     def test_given_two_users_with_sip_line_then_returns_only_two_hints(self):
         user1 = self.add_user_and_func_key(
@@ -203,14 +211,18 @@ class TestUserHints(TestHints):
         )
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_inanyorder(
-                has_properties(
-                    user_id=user1.id, extension='1001', argument='PJSIP/user1'
-                ),
-                has_properties(
-                    user_id=user2.id, extension='1002', argument='PJSIP/user2'
-                ),
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_inanyorder(
+                        has_properties(
+                            user_id=user1.id, extension='1001', argument='PJSIP/user1'
+                        ),
+                        has_properties(
+                            user_id=user2.id, extension='1002', argument='PJSIP/user2'
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -224,13 +236,17 @@ class TestUserHints(TestHints):
         )
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_exactly(
-                has_properties(
-                    user_id=user.id,
-                    extension='1001',
-                    argument='PJSIP/line1&PJSIP/line2',
-                ),
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        has_properties(
+                            user_id=user.id,
+                            extension='1001',
+                            argument='PJSIP/line1&PJSIP/line2',
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -245,18 +261,22 @@ class TestUserHints(TestHints):
         )
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_inanyorder(
-                has_properties(
-                    user_id=user.id,
-                    extension='1001',
-                    argument='PJSIP/line1&PJSIP/line2',
-                ),
-                has_properties(
-                    user_id=user.id,
-                    extension='1002',
-                    argument='PJSIP/line1&PJSIP/line2',
-                ),
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_inanyorder(
+                        has_properties(
+                            user_id=user.id,
+                            extension='1001',
+                            argument='PJSIP/line1&PJSIP/line2',
+                        ),
+                        has_properties(
+                            user_id=user.id,
+                            extension='1002',
+                            argument='PJSIP/line1&PJSIP/line2',
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -273,13 +293,17 @@ class TestUserHints(TestHints):
         )
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_exactly(
-                has_properties(
-                    user_id=user.id,
-                    extension='1001',
-                    argument='PJSIP/line1&PJSIP/line2',
-                ),
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        has_properties(
+                            user_id=user.id,
+                            extension='1001',
+                            argument='PJSIP/line1&PJSIP/line2',
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -297,18 +321,22 @@ class TestUserHints(TestHints):
         )
 
         assert_that(
-            hint_dao.user_hints(self.context.name),
-            contains_inanyorder(
-                has_properties(
-                    user_id=user.id,
-                    extension='1001',
-                    argument='PJSIP/line1&PJSIP/line2&PJSIP/line3',
-                ),
-                has_properties(
-                    user_id=user.id,
-                    extension='1002',
-                    argument='PJSIP/line1&PJSIP/line2&PJSIP/line3',
-                ),
+            hint_dao.user_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_inanyorder(
+                        has_properties(
+                            user_id=user.id,
+                            extension='1001',
+                            argument='PJSIP/line1&PJSIP/line2&PJSIP/line3',
+                        ),
+                        has_properties(
+                            user_id=user.id,
+                            extension='1002',
+                            argument='PJSIP/line1&PJSIP/line2&PJSIP/line3',
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -326,28 +354,22 @@ class TestConferenceHints(TestHints):
         )
         self.add_conference_destination(conference.id)
 
-        hints = hint_dao.conference_hints(context.name)
+        hints = hint_dao.conference_hints()
         assert_that(
             hints,
-            contains_exactly(
-                Hint(
-                    user_id=None,
-                    conference_id=conference.id,
-                    extension=exten,
-                    argument=None,
-                )
+            has_entries(
+                {
+                    context.name: contains_exactly(
+                        Hint(
+                            user_id=None,
+                            conference_id=conference.id,
+                            extension=exten,
+                            argument=None,
+                        )
+                    ),
+                }
             ),
         )
-
-    def test_given_conference_when_querying_different_context_then_returns_no_hints(
-        self,
-    ):
-        conference = self.add_conference()
-        self.add_extension(type='conference', typeval=str(conference.id))
-        self.add_conference_destination(conference.id)
-
-        hints = hint_dao.conference_hints('othercontext')
-        assert_that(hints, empty())
 
 
 class TestServiceHints(TestHints):
@@ -358,9 +380,13 @@ class TestServiceHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.service_hints(self.context.name),
-            contains_exactly(
-                Hint(user_id=user_row.id, extension='*25', argument=None),
+            hint_dao.service_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(user_id=user_row.id, extension='*25', argument=None),
+                    ),
+                }
             ),
         )
 
@@ -370,7 +396,7 @@ class TestServiceHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.service_hints(self.context.name), empty())
+        assert_that(hint_dao.service_hints(), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_service_func_key('*25', 'enablednd')
@@ -378,7 +404,7 @@ class TestServiceHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.service_hints(self.context.name), empty())
+        assert_that(hint_dao.service_hints(), empty())
 
     def test_given_user_when_query_different_context_then_returns_no_hints(self):
         destination_row = self.create_service_func_key('*25', 'enablednd')
@@ -386,7 +412,7 @@ class TestServiceHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.service_hints('othercontext'), empty())
+        assert_that(hint_dao.service_hints(), empty())
 
 
 class TestForwardHints(TestHints):
@@ -397,9 +423,13 @@ class TestForwardHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.forward_hints(self.context.name),
-            contains_exactly(
-                Hint(user_id=user_row.id, extension='*23', argument='1234'),
+            hint_dao.forward_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(user_id=user_row.id, extension='*23', argument='1234'),
+                    ),
+                }
             ),
         )
 
@@ -410,9 +440,13 @@ class TestForwardHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.forward_hints(self.context.name),
-            contains_exactly(
-                Hint(user_id=user_row.id, extension='*23', argument=None),
+            hint_dao.forward_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(user_id=user_row.id, extension='*23', argument=None),
+                    ),
+                }
             ),
         )
 
@@ -424,7 +458,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints(self.context.name), contains_exactly())
+        assert_that(hint_dao.forward_hints(), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
@@ -432,15 +466,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.forward_hints(self.context.name), contains_exactly())
-
-    def test_given_user_when_query_other_context_then_returns_no_hints(self):
-        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
-
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
-
-        assert_that(hint_dao.forward_hints('othercontext'), contains_exactly())
+        assert_that(hint_dao.forward_hints(), empty())
 
     def test_forward_extension_with_xxx_pattern_is_cleaned(self):
         destination_row = self.create_forward_func_key('_*23XXXX', 'fwdbusy', '1234')
@@ -449,9 +475,13 @@ class TestForwardHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.forward_hints(self.context.name),
-            contains_exactly(
-                Hint(user_id=user_row.id, extension='*23', argument='1234'),
+            hint_dao.forward_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(user_id=user_row.id, extension='*23', argument='1234'),
+                    ),
+                }
             ),
         )
 
@@ -464,13 +494,17 @@ class TestAgentHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.agent_hints(self.context.name),
-            contains_exactly(
-                Hint(
-                    user_id=user_row.id,
-                    extension='*31',
-                    argument=str(destination_row.agent_id),
-                ),
+            hint_dao.agent_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(
+                            user_id=user_row.id,
+                            extension='*31',
+                            argument=str(destination_row.agent_id),
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -480,7 +514,7 @@ class TestAgentHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.agent_hints(self.context.name), empty())
+        assert_that(hint_dao.agent_hints(), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
@@ -488,15 +522,7 @@ class TestAgentHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.agent_hints(self.context.name), empty())
-
-    def test_given_user_when_querying_other_context_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
-
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
-
-        assert_that(hint_dao.agent_hints('othercontext'), empty())
+        assert_that(hint_dao.agent_hints(), empty())
 
     def test_agent_extension_with_xxx_pattern_is_cleaned(self):
         destination_row = self.create_agent_func_key('_*31XXXX', 'agentstaticlogin')
@@ -505,13 +531,17 @@ class TestAgentHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.agent_hints(self.context.name),
-            contains_exactly(
-                Hint(
-                    user_id=user_row.id,
-                    extension='*31',
-                    argument=str(destination_row.agent_id),
-                ),
+            hint_dao.agent_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(
+                            user_id=user_row.id,
+                            extension='*31',
+                            argument=str(destination_row.agent_id),
+                        ),
+                    ),
+                }
             ),
         )
 
@@ -524,19 +554,15 @@ class TestCustomHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(
-            hint_dao.custom_hints(self.context.name),
-            contains_exactly(
-                Hint(user_id=None, extension='1234', argument=None),
+            hint_dao.custom_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(user_id=None, extension='1234', argument=None),
+                    ),
+                }
             ),
         )
-
-    def test_given_user_when_querying_other_context_then_returns_no_hints(self):
-        destination_row = self.create_custom_func_key('1234')
-
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
-
-        assert_that(hint_dao.custom_hints('othercontext'), empty())
 
 
 class TestBSFilterHints(TestHints):
@@ -565,23 +591,24 @@ class TestBSFilterHints(TestHints):
         _, filtermember_row = self.create_boss_and_secretary()
 
         assert_that(
-            hint_dao.bsfilter_hints(self.context.name),
-            contains_exactly(
-                Hint(user_id=None, extension='*37', argument=str(filtermember_row.id)),
+            hint_dao.bsfilter_hints(),
+            has_entries(
+                {
+                    self.context.name: contains_exactly(
+                        Hint(
+                            user_id=None,
+                            extension='*37',
+                            argument=str(filtermember_row.id),
+                        ),
+                    ),
+                }
             ),
         )
 
     def test_given_commented_bs_filter_func_key_then_returns_empty_list(self):
         self.create_boss_and_secretary(commented=1)
 
-        assert_that(hint_dao.bsfilter_hints(self.context.name), empty())
-
-    def test_given_secretary_when_querying_different_context_then_returns_no_hints(
-        self,
-    ):
-        self.create_boss_and_secretary()
-
-        assert_that(hint_dao.bsfilter_hints('othercontext'), empty())
+        assert_that(hint_dao.bsfilter_hints(), empty())
 
 
 class TestGroupHints(TestHints):
@@ -596,7 +623,8 @@ class TestGroupHints(TestHints):
         )
 
         assert_that(
-            hint_dao.groupmember_hints(self.context.name), contains_exactly(expected)
+            hint_dao.groupmember_hints(),
+            has_entries({self.context.name: contains_exactly(expected)}),
         )
 
     def test_given_commented_extension_then_returns_no_hints(self):
@@ -605,7 +633,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly())
+        assert_that(hint_dao.groupmember_hints(), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -613,15 +641,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.groupmember_hints(self.context.name), contains_exactly())
-
-    def test_given_user_when_querying_other_context_then_returns_no_hints(self):
-        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
-
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
-
-        assert_that(hint_dao.groupmember_hints('othercontext'), contains_exactly())
+        assert_that(hint_dao.groupmember_hints(), empty())
 
     def test_group_extension_with_xxx_pattern_is_cleaned(self):
         destination_row = self.create_group_member_func_key(
@@ -636,7 +656,8 @@ class TestGroupHints(TestHints):
         )
 
         assert_that(
-            hint_dao.groupmember_hints(self.context.name), contains_exactly(expected)
+            hint_dao.groupmember_hints(),
+            has_entries({self.context.name: contains_exactly(expected)}),
         )
 
 
