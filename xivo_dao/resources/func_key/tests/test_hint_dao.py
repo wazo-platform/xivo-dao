@@ -650,21 +650,32 @@ class TestAgentHints(TestHints):
 
 class TestCustomHints(TestHints):
     def test_given_custom_func_key_then_returns_custom_hint(self):
+        context_1 = self.add_context()
+        context_2 = self.add_context()
+        context_3 = self.add_context()
+
         destination_row = self.create_custom_func_key('1234')
 
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
+        user_1 = self.add_sip_user_line_extension_in_context(context_1.name)
+        user_2 = self.add_sip_user_line_extension_in_context(context_2.name)
+        self.add_func_key_to_user(destination_row, user_1)
+        self.add_func_key_to_user(destination_row, user_2)
 
+        result = hint_dao.custom_hints()
         assert_that(
-            hint_dao.custom_hints(),
+            result,
             has_entries(
                 {
-                    self.context.name: contains_exactly(
+                    context_1.name: contains_exactly(
+                        Hint(user_id=None, extension='1234', argument=None),
+                    ),
+                    context_2.name: contains_exactly(
                         Hint(user_id=None, extension='1234', argument=None),
                     ),
                 }
             ),
         )
+        assert_that(result, not_(has_key(context_3.name)))
 
 
 class TestBSFilterHints(TestHints):
