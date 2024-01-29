@@ -398,29 +398,46 @@ class TestUserHints(TestHints):
 
 class TestConferenceHints(TestHints):
     def test_given_conference_then_returns_conference_hint(self):
-        exten = '1234'
-        context = self.add_context(name='default')
-        conference = self.add_conference()
+        exten_1 = '1234'
+        context_1 = self.add_context(name='default')
+        conference_1 = self.add_conference()
         self.add_extension(
-            context=context.name,
-            exten=exten,
+            context=context_1.name,
+            exten=exten_1,
             type='conference',
-            typeval=str(conference.id),
+            typeval=str(conference_1.id),
         )
-        self.add_conference_destination(conference.id)
+        self.add_conference_destination(conference_1.id)
+
+        exten_2 = '1234'
+        context_2 = self.add_context(name='two')
+        conference_2 = self.add_conference()
+        self.add_extension(
+            context=context_2.name,
+            exten=exten_2,
+            type='conference',
+            typeval=str(conference_2.id),
+        )
+        self.add_conference_destination(conference_2.id)
 
         hints = hint_dao.conference_hints()
         assert_that(
             hints,
             has_entries(
                 {
-                    context.name: contains_exactly(
+                    context_1.name: contains_exactly(
                         Hint(
                             user_id=None,
-                            conference_id=conference.id,
-                            extension=exten,
+                            conference_id=conference_1.id,
+                            extension=exten_1,
                             argument=None,
                         )
+                    ),
+                    context_2.name: contains_exactly(
+                        Hint(
+                            conference_id=conference_2.id,
+                            extension=exten_2,
+                        ),
                     ),
                 }
             ),
