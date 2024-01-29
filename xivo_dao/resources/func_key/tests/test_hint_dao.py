@@ -439,21 +439,32 @@ class TestConferenceHints(TestHints):
 
 class TestServiceHints(TestHints):
     def test_given_service_func_key_then_returns_service_hint(self):
+        context_1 = self.add_context()
+        context_2 = self.add_context()
+        context_3 = self.add_context()
+
         destination_row = self.create_service_func_key('*25', 'enablednd')
 
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
+        user_1 = self.add_sip_user_line_extension_in_context(context_1.name)
+        user_2 = self.add_sip_user_line_extension_in_context(context_2.name)
+        self.add_func_key_to_user(destination_row, user_1)
+        self.add_func_key_to_user(destination_row, user_2)
 
+        result = hint_dao.service_hints()
         assert_that(
-            hint_dao.service_hints(),
+            result,
             has_entries(
                 {
-                    self.context.name: contains_exactly(
-                        Hint(user_id=user_row.id, extension='*25', argument=None),
+                    context_1.name: contains_exactly(
+                        Hint(user_id=user_1.id, extension='*25', argument=None),
+                    ),
+                    context_2.name: contains_exactly(
+                        Hint(user_id=user_2.id, extension='*25', argument=None),
                     ),
                 }
             ),
         )
+        assert_that(result, not_(has_key(context_3.name)))
 
     def test_given_commented_extension_then_returns_no_hints(self):
         destination_row = self.create_service_func_key('*25', 'enablednd', commented=1)
@@ -482,21 +493,32 @@ class TestServiceHints(TestHints):
 
 class TestForwardHints(TestHints):
     def test_given_forward_func_key_then_returns_forward_hint(self):
+        context_1 = self.add_context()
+        context_2 = self.add_context()
+        context_3 = self.add_context()
+
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
 
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
+        user_1 = self.add_sip_user_line_extension_in_context(context_1.name)
+        user_2 = self.add_sip_user_line_extension_in_context(context_2.name)
+        self.add_func_key_to_user(destination_row, user_1)
+        self.add_func_key_to_user(destination_row, user_2)
 
+        result = hint_dao.forward_hints()
         assert_that(
-            hint_dao.forward_hints(),
+            result,
             has_entries(
                 {
-                    self.context.name: contains_exactly(
-                        Hint(user_id=user_row.id, extension='*23', argument='1234'),
+                    context_1.name: contains_exactly(
+                        Hint(user_id=user_1.id, extension='*23', argument='1234'),
+                    ),
+                    context_2.name: contains_exactly(
+                        Hint(user_id=user_2.id, extension='*23', argument='1234'),
                     ),
                 }
             ),
         )
+        assert_that(result, not_(has_key(context_3.name)))
 
     def test_given_forward_without_number_then_returns_forward_hint(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy')
