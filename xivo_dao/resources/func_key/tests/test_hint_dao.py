@@ -5,10 +5,12 @@ from hamcrest import (
     assert_that,
     contains_exactly,
     contains_inanyorder,
+    has_key,
     has_properties,
     has_entries,
     empty,
     equal_to,
+    not_,
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -61,15 +63,19 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         exten='1000',
         commented=0,
         enablehint=1,
+        context_name=None,
     ):
+        context_name = context_name or self.context.name
         if not endpoint_sip_uuid:
             endpoint_sip_uuid = self.add_endpoint_sip().uuid
         line = self.add_line(
-            context=self.context.name,
+            context=context_name,
             endpoint_sip_uuid=endpoint_sip_uuid,
             commented=commented,
         )
-        user_row = self._add_user_line_extension(line.id, exten, commented, enablehint)
+        user_row = self._add_user_line_extension(
+            line.id, exten, context_name, commented, enablehint
+        )
         self.add_user_destination(user_row.id)
 
         return user_row
@@ -84,7 +90,9 @@ class TestHints(DAOTestCase, FuncKeyHelper):
             endpoint_sccp_id=endpoint_sccp_id,
             commented=commented,
         )
-        user_row = self._add_user_line_extension(line.id, exten, commented, enablehint)
+        user_row = self._add_user_line_extension(
+            line.id, exten, self.context.name, commented, enablehint
+        )
         self.add_user_destination(user_row.id)
 
         return user_row
@@ -104,9 +112,12 @@ class TestHints(DAOTestCase, FuncKeyHelper):
 
         return user_row
 
-    def _add_user_line_extension(self, line_id, exten, commented=0, enablehint=1):
+    def _add_user_line_extension(
+        self, line_id, exten, context_name=None, commented=0, enablehint=1
+    ):
+        context_name = context_name or self.context.name
         user_row = self.add_user(enablehint=enablehint)
-        extension_row = self.add_extension(exten=exten, context=self.context.name)
+        extension_row = self.add_extension(exten=exten, context=context_name)
 
         self.add_user_line(
             user_id=user_row.id,
@@ -135,6 +146,50 @@ class TestHints(DAOTestCase, FuncKeyHelper):
 
 
 class TestUserHints(TestHints):
+    def test_given_users_in_different_contexts(self):
+        context_1 = self.add_context()
+        context_2 = self.add_context()
+        context_3 = self.add_context()
+
+        endpoint_sip_row_1 = self.add_endpoint_sip(
+            endpoint_section_options=[['context', context_1.name]],
+        )
+        endpoint_sip_row_2 = self.add_endpoint_sip(
+            endpoint_section_options=[['context', context_2.name]],
+        )
+        line_1 = self.add_line(
+            endpoint_sip_uuid=endpoint_sip_row_1.uuid,
+            context=context_1.name,
+        )
+        line_2 = self.add_line(
+            endpoint_sip_uuid=endpoint_sip_row_2.uuid,
+            context=context_2.name,
+        )
+        user_1 = self._add_user_line_extension(
+            line_id=line_1.id, exten='1000', context_name=context_1.name
+        )
+        user_2 = self._add_user_line_extension(
+            line_id=line_2.id,
+            exten='1000',
+            context_name=context_2.name,
+        )
+
+        result = hint_dao.user_hints()
+        assert_that(
+            result,
+            has_entries(
+                {
+                    context_1.name: contains_exactly(
+                        has_properties(user_id=user_1.id),
+                    ),
+                    context_2.name: contains_exactly(
+                        has_properties(user_id=user_2.id),
+                    ),
+                }
+            ),
+        )
+        assert_that(result, not_(has_key(context_3.name)))
+
     def test_given_user_with_sip_line_then_returns_user_hint(self):
         endpoint_sip_row = self.add_endpoint_sip(name='abcdef')
         user_row = self.add_user_sip_and_func_key(endpoint_sip_row.uuid)
