@@ -575,18 +575,32 @@ class TestForwardHints(TestHints):
 
 class TestAgentHints(TestHints):
     def test_given_agent_func_key_then_returns_agent_hint(self):
+        context_1 = self.add_context()
+        context_2 = self.add_context()
+        context_3 = self.add_context()
+
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
 
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
+        user_1 = self.add_sip_user_line_extension_in_context(context_1.name)
+        user_2 = self.add_sip_user_line_extension_in_context(context_2.name)
+        self.add_func_key_to_user(destination_row, user_1)
+        self.add_func_key_to_user(destination_row, user_2)
 
+        result = hint_dao.agent_hints()
         assert_that(
-            hint_dao.agent_hints(),
+            result,
             has_entries(
                 {
-                    self.context.name: contains_exactly(
+                    context_1.name: contains_exactly(
                         Hint(
-                            user_id=user_row.id,
+                            user_id=user_1.id,
+                            extension='*31',
+                            argument=str(destination_row.agent_id),
+                        ),
+                    ),
+                    context_2.name: contains_exactly(
+                        Hint(
+                            user_id=user_2.id,
                             extension='*31',
                             argument=str(destination_row.agent_id),
                         ),
@@ -594,6 +608,7 @@ class TestAgentHints(TestHints):
                 }
             ),
         )
+        assert_that(result, not_(has_key(context_3.name)))
 
     def test_given_commented_extension_then_returns_no_hints(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
