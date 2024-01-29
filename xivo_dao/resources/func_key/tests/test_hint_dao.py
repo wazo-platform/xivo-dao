@@ -144,6 +144,19 @@ class TestHints(DAOTestCase, FuncKeyHelper):
             line_id=line.id, extension_id=extension_id, main_extension=True
         )
 
+    def add_sip_user_line_extension_in_context(self, context_name):
+        endpoint_sip_row = self.add_endpoint_sip(
+            endpoint_section_options=[['context', context_name]],
+        )
+        line = self.add_line(
+            endpoint_sip_uuid=endpoint_sip_row.uuid,
+            context=context_name,
+        )
+        user = self._add_user_line_extension(
+            line_id=line.id, exten='1000', context_name=context_name
+        )
+        return user
+
 
 class TestUserHints(TestHints):
     def test_given_users_in_different_contexts(self):
@@ -151,28 +164,8 @@ class TestUserHints(TestHints):
         context_2 = self.add_context()
         context_3 = self.add_context()
 
-        endpoint_sip_row_1 = self.add_endpoint_sip(
-            endpoint_section_options=[['context', context_1.name]],
-        )
-        endpoint_sip_row_2 = self.add_endpoint_sip(
-            endpoint_section_options=[['context', context_2.name]],
-        )
-        line_1 = self.add_line(
-            endpoint_sip_uuid=endpoint_sip_row_1.uuid,
-            context=context_1.name,
-        )
-        line_2 = self.add_line(
-            endpoint_sip_uuid=endpoint_sip_row_2.uuid,
-            context=context_2.name,
-        )
-        user_1 = self._add_user_line_extension(
-            line_id=line_1.id, exten='1000', context_name=context_1.name
-        )
-        user_2 = self._add_user_line_extension(
-            line_id=line_2.id,
-            exten='1000',
-            context_name=context_2.name,
-        )
+        user_1 = self.add_sip_user_line_extension_in_context(context_1.name)
+        user_2 = self.add_sip_user_line_extension_in_context(context_2.name)
 
         result = hint_dao.user_hints()
         assert_that(
