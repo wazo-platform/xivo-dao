@@ -726,19 +726,40 @@ class TestBSFilterHints(TestHints):
 
 class TestGroupHints(TestHints):
     def test_given_group_member_func_key_then_returns_group_member_hint(self):
+        context_1 = self.add_context()
+        context_2 = self.add_context()
+        context_3 = self.add_context()
+
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
 
-        user_row = self.add_user_and_func_key()
-        self.add_func_key_to_user(destination_row, user_row)
+        user_1 = self.add_sip_user_line_extension_in_context(context_1.name)
+        user_2 = self.add_sip_user_line_extension_in_context(context_2.name)
+        self.add_func_key_to_user(destination_row, user_1)
+        self.add_func_key_to_user(destination_row, user_2)
 
-        expected = Hint(
-            user_id=user_row.id, extension='*51', argument=str(destination_row.group_id)
-        )
-
+        result = hint_dao.groupmember_hints()
         assert_that(
-            hint_dao.groupmember_hints(),
-            has_entries({self.context.name: contains_exactly(expected)}),
+            result,
+            has_entries(
+                {
+                    context_1.name: contains_exactly(
+                        Hint(
+                            user_id=user_1.id,
+                            extension='*51',
+                            argument=str(destination_row.group_id),
+                        ),
+                    ),
+                    context_2.name: contains_exactly(
+                        Hint(
+                            user_id=user_2.id,
+                            extension='*51',
+                            argument=str(destination_row.group_id),
+                        ),
+                    ),
+                }
+            ),
         )
+        assert_that(result, not_(has_key(context_3.name)))
 
     def test_given_commented_extension_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
