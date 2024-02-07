@@ -21,6 +21,20 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
 
     def _find_query(self, criteria):
         query = self.session.query(EndpointSIP)
+        query = (
+            self.session.query(EndpointSIP)
+            .options(joinedload('transport'))
+            .options(joinedload('template_relations').joinedload('parent'))
+            .options(joinedload('_aor_section'))
+            .options(joinedload('_auth_section'))
+            .options(joinedload('_endpoint_section'))
+            .options(joinedload('_registration_section'))
+            .options(joinedload('_registration_outbound_auth_section'))
+            .options(joinedload('_identify_section'))
+            .options(joinedload('_outbound_auth_section'))
+            .options(joinedload('line'))
+            .options(joinedload('trunk'))
+        )
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
