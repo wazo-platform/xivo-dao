@@ -605,23 +605,34 @@ class ParkPositionPersistor(DestinationPersistor):
         return query.first()
 
     def find_or_create(self, destination):
-        func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
-
-        destination_row = FuncKeyDestParkPosition(
-            func_key_id=func_key_row.id, park_position=str(destination.position)
+        destination_row = (
+            self.session.query(FuncKeyDestParkPosition)
+            .filter(
+                FuncKeyDestParkPosition.parking_lot_id == destination.parking_lot_id
+            )
+            .filter(FuncKeyDestParkPosition.position == str(destination.position))
+            .first()
         )
 
-        self.session.add(destination_row)
-        self.session.flush()
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestParkPosition(
+                func_key_id=func_key_row.id,
+                parking_lot_id=destination.parking_lot_id,
+                position=str(destination.position),
+            )
+            self.session.add(destination_row)
+            self.session.flush()
 
         return destination_row
 
     def delete(self, func_key_id):
-        (
-            self.session.query(FuncKeyDestParkPosition)
-            .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
-            .delete()
-        )
+        if not self._func_key_is_still_mapped(func_key_id):
+            (
+                self.session.query(FuncKeyDestParkPosition)
+                .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
+                .delete()
+            )
 
 
 class CustomPersistor(DestinationPersistor):
