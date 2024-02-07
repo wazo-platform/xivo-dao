@@ -106,3 +106,6 @@ secondary_users = FormattedError(
 not_permitted = FormattedError(ResourceError, "Operation not permitted. {}")
 different_tenants = FormattedError(ResourceError, "different tenants")
 quota_exceeded = FormattedError(ResourceError, "Quota for {} exceeded. Maximum: {}")
+extension_conflict = FormattedError(
+    ResourceError, "{} is already used for a destination or parking slot"
+)

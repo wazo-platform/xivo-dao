@@ -66,3 +66,18 @@ class ParkingLot(Base):
             .where(Extension.typeval == cast(cls.id, String))
             .as_scalar()
         )
+
+    @hybrid_property
+    def context(self):
+        for extension in self.extensions:
+            return extension.context
+        return None
+
+    @context.expression
+    def context(cls):
+        return (
+            select([Extension.context])
+            .where(Extension.type == 'parking')
+            .where(Extension.typeval == cast(cls.id, String))
+            .as_scalar()
+        )

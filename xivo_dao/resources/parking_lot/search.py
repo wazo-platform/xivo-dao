@@ -1,4 +1,4 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.parking_lot import ParkingLot
@@ -15,6 +15,7 @@ config = SearchConfig(
         'slots_end': ParkingLot.slots_end,
         'timeout': ParkingLot.timeout,
         'exten': ParkingLot.exten,
+        'context': ParkingLot.context,
     },
     search=[
         'name',
@@ -22,6 +23,7 @@ config = SearchConfig(
         'slots_end',
         'timeout',
         'exten',
+        'context',
     ],
     default_sort='name',
 )
