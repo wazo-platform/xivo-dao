@@ -12,6 +12,25 @@ from sqlalchemy_utils.view import refresh_materialized_view
 
 from .db_manager import Base, Session
 
+import concurrent.futures
+
+
+def _offload_refresh_view(view_name: str) -> None:
+    def run(view_name: str) -> None:
+        engine = Base.metadata.bind
+
+        with engine.connect() as connection:
+            print(f'refreshing view {view_name}')
+            connection.execute(
+                text(f'REFRESH MATERIALIZED VIEW CONCURRENTLY {view_name}')
+            )
+
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    executor.submit(run, view_name)
+    executor.shutdown(wait=False)
+
+    return
+
 
 class MaterializedView(Base):
     """
@@ -43,12 +62,7 @@ class MaterializedView(Base):
             ) -> None:
                 for obj in session.dirty | session.new | session.deleted:
                     if isinstance(obj, targets):
-                        # Cannot call `refresh_materialized_view` as it will try to flush again.
-                        session.execute(
-                            text(
-                                f'REFRESH MATERIALIZED VIEW CONCURRENTLY {cls.__table__.fullname}'
-                            )
-                        )
+                        _offload_refresh_view(cls.__table__.fullname)
                         return
 
             cls._view_dependencies_handler = staticmethod(
