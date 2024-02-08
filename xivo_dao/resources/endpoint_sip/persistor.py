@@ -1,7 +1,7 @@
 # Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.helpers import errors, generators
@@ -20,20 +20,19 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
         self.tenant_uuids = tenant_uuids
 
     def _find_query(self, criteria):
-        query = self.session.query(EndpointSIP)
         query = (
             self.session.query(EndpointSIP)
-            .options(joinedload('transport'))
-            .options(joinedload('template_relations').joinedload('parent'))
-            .options(joinedload('_aor_section'))
-            .options(joinedload('_auth_section'))
-            .options(joinedload('_endpoint_section'))
-            .options(joinedload('_registration_section'))
-            .options(joinedload('_registration_outbound_auth_section'))
-            .options(joinedload('_identify_section'))
-            .options(joinedload('_outbound_auth_section'))
-            .options(joinedload('line'))
-            .options(joinedload('trunk'))
+            .options(selectinload('transport'))
+            .options(selectinload('template_relations').selectinload('parent'))
+            .options(selectinload('_aor_section'))
+            .options(selectinload('_auth_section'))
+            .options(selectinload('_endpoint_section'))
+            .options(selectinload('_registration_section'))
+            .options(selectinload('_registration_outbound_auth_section'))
+            .options(selectinload('_identify_section'))
+            .options(selectinload('_outbound_auth_section'))
+            .options(selectinload('line'))
+            .options(selectinload('trunk'))
         )
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
