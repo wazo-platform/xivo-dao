@@ -24,6 +24,7 @@ from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
+from xivo_dao.alchemy.func_key_dest_parking import FuncKeyDestParking
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
@@ -370,6 +371,21 @@ class TestCreate(TestDao):
         self.assert_mapping_has_destination('park_position', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
+    def test_given_template_has_parking_func_key_when_creating_then_creates_mapping(
+        self,
+    ):
+        destination_row = self.create_parking_func_key()
+        template = self.build_template_with_key(
+            FuncKeyDestParking(
+                parking_lot_id=destination_row.parking_lot_id,
+            )
+        )
+
+        result = dao.create(template)
+
+        self.assert_mapping_has_destination('parking', destination_row)
+        assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
+
     def test_given_destination_funckey_does_not_exist_then_raises_error(self):
         self.create_service_func_key('', '')
 
@@ -619,6 +635,35 @@ class TestCreate(TestDao):
         )
         assert_that(dest_park_position_count, equal_to(1))
 
+    def test_given_no_parking_func_key_when_created_then_create_new_parking_func_key(
+        self,
+    ):
+        parking_lot = self.add_parking_lot()
+
+        dest_parking_count = (
+            self.session.query(FuncKeyDestParking)
+            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .count()
+        )
+        assert_that(dest_parking_count, equal_to(0))
+
+        template = self.build_template_with_key(
+            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+        )
+        dao.create(template)
+
+        template = self.build_template_with_key(
+            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+        )
+        dao.create(template)
+
+        dest_parking_count = (
+            self.session.query(FuncKeyDestParking)
+            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .count()
+        )
+        assert_that(dest_parking_count, equal_to(1))
+
 
 class TestGet(TestDao):
     def test_given_no_template_then_raises_error(self):
@@ -832,6 +877,21 @@ class TestGet(TestDao):
             FuncKeyDestParkPosition(
                 parking_lot_id=destination_row.parking_lot_id,
                 position='801',
+            ),
+        )
+
+        result = dao.get(expected.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_has_parking_func_key_when_getting_then_returns_parking_func_key(
+        self,
+    ):
+        destination_row = self.create_parking_func_key()
+        expected = self.prepare_template(
+            destination_row,
+            FuncKeyDestParkPosition(
+                parking_lot_id=destination_row.parking_lot_id,
             ),
         )
 
@@ -1201,6 +1261,45 @@ class TestDelete(TestDao):
             .count()
         )
         assert_that(dest_park_position_count, equal_to(1))
+
+    def test_given_template_is_associated_to_parking_when_deleting_template(self):
+        parking_lot = self.add_parking_lot()
+        template = self.build_template_with_key(
+            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+        )
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_parking_count = (
+            self.session.query(FuncKeyDestParking)
+            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .count()
+        )
+        assert_that(dest_parking_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_parking_when_deleting_template(
+        self,
+    ):
+        parking_lot = self.add_parking_lot()
+        template = self.build_template_with_key(
+            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+        )
+        dao.create(template)
+
+        template = self.build_template_with_key(
+            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+        )
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_parking_count = (
+            self.session.query(FuncKeyDestParking)
+            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .count()
+        )
+        assert_that(dest_parking_count, equal_to(1))
 
 
 class TestEdit(TestDao):

@@ -9,6 +9,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..func_key_dest_park_position import FuncKeyDestParkPosition
+from ..func_key_dest_parking import FuncKeyDestParking
 from ..func_key import FuncKey
 
 
@@ -99,4 +100,17 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         assert_that(row, none())
 
         row = self.session.query(FuncKeyDestParkPosition).first()
+        assert_that(row, none())
+
+    def test_funckeys_parking_are_deleted(self):
+        parking_lot = self.add_parking_lot()
+        self.add_parking_destination(parking_lot.id)
+
+        self.session.delete(parking_lot)
+        self.session.flush()
+
+        row = self.session.query(FuncKey).first()
+        assert_that(row, none())
+
+        row = self.session.query(FuncKeyDestParking).first()
         assert_that(row, none())

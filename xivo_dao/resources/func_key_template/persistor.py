@@ -23,6 +23,7 @@ from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
+from xivo_dao.alchemy.func_key_dest_parking import FuncKeyDestParking
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
@@ -53,7 +54,7 @@ def build_persistor(session, tenant_uuids=None):
         'onlinerec': FeaturesPersistor,
         'paging': PagingPersistor,
         'park_position': ParkPositionPersistor,
-        'parking': FeaturesPersistor,
+        'parking': ParkingPersistor,
         'queue': QueuePersistor,
         'service': ServicePersistor,
         'transfer': FeaturesPersistor,
@@ -631,6 +632,44 @@ class ParkPositionPersistor(DestinationPersistor):
             (
                 self.session.query(FuncKeyDestParkPosition)
                 .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
+                .delete()
+            )
+
+
+class ParkingPersistor(DestinationPersistor):
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 14
+
+    def get(self, func_key_id):
+        query = self.session.query(FuncKeyDestParking).filter(
+            FuncKeyDestParking.func_key_id == func_key_id
+        )
+
+        return query.first()
+
+    def find_or_create(self, destination):
+        destination_row = (
+            self.session.query(FuncKeyDestParking)
+            .filter(FuncKeyDestParking.parking_lot_id == destination.parking_lot_id)
+            .first()
+        )
+
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestParking(
+                func_key_id=func_key_row.id,
+                parking_lot_id=destination.parking_lot_id,
+            )
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
+
+    def delete(self, func_key_id):
+        if not self._func_key_is_still_mapped(func_key_id):
+            (
+                self.session.query(FuncKeyDestParking)
+                .filter(FuncKeyDestParking.func_key_id == func_key_id)
                 .delete()
             )
 
