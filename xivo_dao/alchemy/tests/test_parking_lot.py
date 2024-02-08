@@ -3,9 +3,13 @@
 
 import unittest
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, none
 from xivo_dao.alchemy.parking_lot import ParkingLot
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from ..func_key_dest_park_position import FuncKeyDestParkPosition
+from ..func_key import FuncKey
 
 
 class TestInSlotsRange(unittest.TestCase):
@@ -77,3 +81,22 @@ class TestContext(DAOTestCase):
 
         assert_that(result, equal_to(parking_lot))
         assert_that(result.context, equal_to(extension.context))
+
+
+class TestDelete(DAOTestCase, FuncKeyHelper):
+    def setUp(self):
+        super().setUp()
+        self.setup_funckeys()
+
+    def test_funckeys_park_position_are_deleted(self):
+        parking_lot = self.add_parking_lot()
+        self.add_park_position_destination(parking_lot.id, position='801')
+
+        self.session.delete(parking_lot)
+        self.session.flush()
+
+        row = self.session.query(FuncKey).first()
+        assert_that(row, none())
+
+        row = self.session.query(FuncKeyDestParkPosition).first()
+        assert_that(row, none())
