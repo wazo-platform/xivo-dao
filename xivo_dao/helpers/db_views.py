@@ -17,12 +17,8 @@ import concurrent.futures
 
 def _offload_refresh_view(view_name: str) -> None:
     def run(view_name: str) -> None:
-        engine = Base.metadata.bind
-
         print(f'refreshing view {view_name}')
-        Session().execute(
-            text(f'REFRESH MATERIALIZED VIEW CONCURRENTLY {view_name}')
-        )
+        Session().execute(text(f'REFRESH MATERIALIZED VIEW CONCURRENTLY {view_name}'))
 
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
     executor.submit(run, view_name)
