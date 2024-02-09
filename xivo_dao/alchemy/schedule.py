@@ -97,6 +97,88 @@ class Schedule(Base):
     )
     queues = association_proxy('schedule_queues', 'queue')
 
+    # Begin definitions for fallback destination
+    conference = relationship(
+        'Conference',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'conference',
+            Schedule.fallback_actionid == cast(Conference.id, String)
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'group',
+            Schedule.fallback_actionid == cast(GroupFeatures.id, String)
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'user',
+            Schedule.fallback_actionid == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    ivr = relationship(
+        'IVR',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'ivr',
+            Schedule.fallback_actionid == cast(IVR.id, String)
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    switchboard = relationship(
+        'Switchboard',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'switchboard',
+            Schedule.fallback_actionid == Switchboard.uuid
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    voicemail = relationship(
+        'Voicemail',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'voicemail',
+            Schedule.fallback_actionid == cast(Voicemail.id, String)
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    application = relationship(
+        'Application',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'application:custom',
+            Schedule.fallback_actionid == Application.uuid
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+
+    queue = relationship(
+        'QueueFeatures',
+        primaryjoin="""and_(
+            Schedule.fallback_action == 'queue',
+            Schedule.fallback_actionid == cast(QueueFeatures.id, String)
+        )""",
+        foreign_keys='Schedule.fallback_actionid',
+        viewonly=True,
+    )
+    # End definitions for fallback destination
+
     @property
     def open_periods(self):
         return self._get_periods('opened')

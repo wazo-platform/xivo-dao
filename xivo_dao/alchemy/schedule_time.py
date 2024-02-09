@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum
 
@@ -32,6 +33,86 @@ class ScheduleTime(Base):
     actionid = Column(IntAsString(255))
     actionargs = Column(String(255))
     commented = Column(Integer, nullable=False, server_default='0')
+
+    conference = relationship(
+        'Conference',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'conference',
+            ScheduleTime.actionid == cast(Conference.id, String)
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'group',
+            ScheduleTime.actionid == cast(GroupFeatures.id, String)
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'user',
+            ScheduleTime.actionid == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    ivr = relationship(
+        'IVR',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'ivr',
+            ScheduleTime.actionid == cast(IVR.id, String)
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    switchboard = relationship(
+        'Switchboard',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'switchboard',
+            ScheduleTime.actionid == Switchboard.uuid
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    voicemail = relationship(
+        'Voicemail',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'voicemail',
+            ScheduleTime.actionid == cast(Voicemail.id, String)
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    application = relationship(
+        'Application',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'application:custom',
+            ScheduleTime.actionid == Application.uuid
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
+
+    queue = relationship(
+        'QueueFeatures',
+        primaryjoin="""and_(
+            ScheduleTime.action == 'queue',
+            ScheduleTime.actionid == cast(QueueFeatures.id, String)
+        )""",
+        foreign_keys='ScheduleTime.actionid',
+        viewonly=True,
+    )
 
     @property
     def destination(self):
