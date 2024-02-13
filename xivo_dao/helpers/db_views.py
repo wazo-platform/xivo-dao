@@ -19,7 +19,7 @@ class MaterializedView(Base):
 
     Used to tell SQLAlchemy to construct a materialized view.
 
-    Usage:
+    Usage: 
 
     Assign the '__table__' attribute using the create_materialized_view function
     """

@@ -4,7 +4,7 @@
 import random
 
 from sqlalchemy import text
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
@@ -25,7 +25,20 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
         self.search_system = line_search
 
     def _find_query(self, criteria):
-        query = self.session.query(Line)
+        query = (
+            self.session.query(EndpointSIP)
+            .options(selectinload('transport'))
+            .options(selectinload('template_relations').selectinload('parent'))
+            .options(selectinload('_aor_section'))
+            .options(selectinload('_auth_section'))
+            .options(selectinload('_endpoint_section'))
+            .options(selectinload('_registration_section'))
+            .options(selectinload('_registration_outbound_auth_section'))
+            .options(selectinload('_identify_section'))
+            .options(selectinload('_outbound_auth_section'))
+            .options(selectinload('line'))
+            .options(selectinload('trunk'))
+        )
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
