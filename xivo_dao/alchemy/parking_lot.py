@@ -43,6 +43,16 @@ class ParkingLot(Base):
         viewonly=True,
     )
 
+    func_keys_park_position = relationship(
+        'FuncKeyDestParkPosition',
+        cascade='all, delete-orphan',
+    )
+
+    func_keys_parking = relationship(
+        'FuncKeyDestParking',
+        cascade='all, delete-orphan',
+    )
+
     def in_slots_range(self, exten):
         exten = int(exten)
         start = int(self.slots_start)

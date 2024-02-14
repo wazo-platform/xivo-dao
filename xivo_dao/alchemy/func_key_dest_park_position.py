@@ -5,14 +5,17 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
-    ForeignKeyConstraint,
     CheckConstraint,
+    ForeignKey,
+    ForeignKeyConstraint,
     PrimaryKeyConstraint,
+    UniqueConstraint,
 )
 from sqlalchemy.types import Integer, String
 from sqlalchemy.sql import cast
 
 from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -26,20 +29,26 @@ class FuncKeyDestParkPosition(Base):
             ('func_key_id', 'destination_type_id'),
             ('func_key.id', 'func_key.destination_type_id'),
         ),
+        UniqueConstraint('parking_lot_id', 'park_position'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         CheckConstraint("park_position ~ '^[0-9]+$'"),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
+    parking_lot_id = Column(Integer, ForeignKey('parking_lot.id'), nullable=False)
     park_position = Column(String(40), nullable=False)
 
     type = 'park_position'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
+    parking_lot = relationship(ParkingLot)
 
     def to_tuple(self):
-        return (('position', self.position),)
+        return (
+            ('parking_lot_id', self.parking_lot_id),
+            ('position', self.position),
+        )
 
     @hybrid_property
     def position(self):

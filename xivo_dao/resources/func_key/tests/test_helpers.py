@@ -1,4 +1,4 @@
-# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
@@ -34,6 +34,9 @@ from xivo_dao.alchemy.func_key_dest_paging import (
 from xivo_dao.alchemy.func_key_dest_park_position import (
     FuncKeyDestParkPosition as FuncKeyDestParkPositionSchema,
 )
+from xivo_dao.alchemy.func_key_dest_parking import (
+    FuncKeyDestParking as FuncKeyDestParkingSchema,
+)
 from xivo_dao.alchemy.func_key_dest_queue import (
     FuncKeyDestQueue as FuncKeyDestQueueSchema,
 )
@@ -59,6 +62,7 @@ class FuncKeyHelper:
         11: 'agent',
         12: 'bsfilter',
         13: 'groupmember',
+        14: 'parking',
     }
 
     destinations = {
@@ -71,6 +75,7 @@ class FuncKeyHelper:
         'groupmember': (FuncKeyDestGroupMemberSchema, 'group_id', 13),
         'paging': (FuncKeyDestPagingSchema, 'paging_id', 9),
         'park_position': (FuncKeyDestParkPositionSchema, 'park_position', 7),
+        'parking': (FuncKeyDestParkingSchema, 'parking', 14),
         'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
         'service': (FuncKeyDestServiceSchema, 'feature_extension_uuid', 5),
         'user': (FuncKeyDestUserSchema, 'user_id', 1),
@@ -179,11 +184,23 @@ class FuncKeyHelper:
         self.add_me(destination_row)
         return destination_row
 
-    def add_park_position_destination(self, position):
+    def add_park_position_destination(self, parking_lot_id, position):
         destination_type_id = 7
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestParkPositionSchema(
-            func_key_id=func_key_row.id, park_position=position
+            func_key_id=func_key_row.id,
+            parking_lot_id=parking_lot_id,
+            park_position=position,
+        )
+        self.add_me(destination_row)
+        return destination_row
+
+    def add_parking_destination(self, parking_lot_id):
+        destination_type_id = 14
+        func_key_row = self.create_func_key(destination_type_id)
+        destination_row = FuncKeyDestParkingSchema(
+            func_key_id=func_key_row.id,
+            parking_lot_id=parking_lot_id,
         )
         self.add_me(destination_row)
         return destination_row
@@ -257,7 +274,12 @@ class FuncKeyHelper:
         return self.add_features_destination(features_row.id)
 
     def create_park_position_func_key(self, position):
-        return self.add_park_position_destination(position)
+        parking_lot = self.add_parking_lot()
+        return self.add_park_position_destination(parking_lot.id, position)
+
+    def create_parking_func_key(self):
+        parking_lot = self.add_parking_lot()
+        return self.add_parking_destination(parking_lot.id)
 
     def add_func_key_to_user(self, destination_row, user_row, position=1, blf=True):
         self.add_func_key_mapping(
