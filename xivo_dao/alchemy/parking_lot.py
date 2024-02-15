@@ -54,6 +54,9 @@ class ParkingLot(Base):
     )
 
     def in_slots_range(self, exten):
+        if not str(exten).isdigit() or str(exten).startswith('0'):
+            return False
+
         exten = int(exten)
         start = int(self.slots_start)
         end = int(self.slots_end)
