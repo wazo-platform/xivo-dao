@@ -25,6 +25,18 @@ class TestInSlotsRange(unittest.TestCase):
         result = self.parking_lot.in_slots_range('725')
         assert_that(result, equal_to(True))
 
+    def test_in_range_str_pattern(self):
+        result = self.parking_lot.in_slots_range('_725')
+        assert_that(result, equal_to(False))
+
+    def test_in_range_str_char(self):
+        result = self.parking_lot.in_slots_range('*725')
+        assert_that(result, equal_to(False))
+
+    def test_in_range_str_beginning_zero(self):
+        result = self.parking_lot.in_slots_range('0725')
+        assert_that(result, equal_to(False))
+
     def test_limit_start_range(self):
         result = self.parking_lot.in_slots_range(701)
         assert_that(result, equal_to(True))
