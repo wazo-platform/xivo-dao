@@ -213,6 +213,35 @@ class TestQueueLogDAO(DAOTestCase):
 
         assert_that(result, contains_inanyorder(*expected))
 
+    def test_get_queue_abandoned_call_missing_data(self):
+        # sometimes ABANDONED events are missing an integer value for expected field waittime
+        start = datetime(2024, 2, 16, 1, 0, 0, tzinfo=UTC)
+        leave_time = start + timedelta(minutes=5)
+        waittime = self._random_time()
+        enter_time = leave_time - timedelta(seconds=waittime)
+        callid = format(start.timestamp(), '.3f')
+        self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
+        self._insert_entry_queue_abandoned(
+            time=leave_time, callid=callid, queuename=self.queue_name, waittime=''
+        )
+        expected = [
+            {
+                'time': enter_time,
+                'callid': callid,
+                'queue_name': self.queue_name,
+                'talktime': 0,
+                'waittime': None,
+                'event': 'abandoned',
+            }
+        ]
+        result = list(
+            queue_log_dao.get_queue_abandoned_call(
+                self.session, start, start + ONE_HOUR - ONE_MICROSECOND
+            )
+        )
+
+        assert_that(result, contains_inanyorder(*expected))
+
     def test_get_queue_abandoned_call_following_transfer_at_hour_border(self):
         queue_logs = [
             # New call in queue2
@@ -468,6 +497,34 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_queue_timeout_call(
             self.session, start, start + ONE_HOUR - ONE_MICROSECOND
         )
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_get_queue_timeout_call_missing_data(self):
+        # sometimes TIMEOUT events are missing an integer value for expected field waittime
+        start = datetime(2024, 2, 16, 1, 0, 0, tzinfo=UTC)
+        leave_time = start + timedelta(minutes=5)
+        waittime = self._random_time()
+        enter_time = leave_time - timedelta(seconds=waittime)
+        callid = format(start.timestamp(), '.3f')
+        self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
+        self._insert_entry_queue_timeout(leave_time, callid, self.queue_name, '')
+        result = list(
+            queue_log_dao.get_queue_timeout_call(
+                self.session, start, start + ONE_HOUR - ONE_MICROSECOND
+            )
+        )
+
+        expected = [
+            {
+                'time': enter_time,
+                'callid': callid,
+                'queue_name': self.queue_name,
+                'waittime': None,
+                'talktime': 0,
+                'event': 'timeout',
+            }
+        ]
 
         assert_that(result, contains_inanyorder(*expected))
 
