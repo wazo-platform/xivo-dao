@@ -93,15 +93,6 @@ def _enumerate_periods(start, end, interval):
         tmp += interval
 
 
-# class EndedCallInfo(TypedDict):
-#     callid: str
-#     queue_name: str
-#     time: str
-#     event: str
-#     talktime: int
-#     waittime: int | None
-
-
 def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
     pairs = []
     enter_queue_event = None
