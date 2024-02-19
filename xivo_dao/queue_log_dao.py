@@ -1,6 +1,7 @@
 # Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import logging
 from sqlalchemy import between, distinct, literal_column
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import and_, or_
@@ -10,6 +11,7 @@ from sqlalchemy import func
 from datetime import timedelta
 from xivo_dao.helpers.db_manager import daosession
 
+logger = logging.getLogger(__name__)
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f%z"
 
@@ -146,13 +148,23 @@ def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
         pairs.append((enter_queue_event, end_event))
 
     for enter_queue, end_event in pairs:
+        # NOTE(clanglois): data3 should be a valid waittime integer value as per asterisk doc,
+        # but was observed missing(empty string) in the wild
+        try:
+            waittime = int(end_event.data3)
+        except (TypeError, ValueError):
+            logger.error(
+                "(callid=%s) Invalid waittime: %s", end_event.callid, end_event.data3
+            )
+            waittime = None
+
         yield {
             'callid': enter_queue.callid,
             'queue_name': enter_queue.queuename,
             'time': enter_queue.time,
             'event': stat_event,
             'talktime': 0,
-            'waittime': int(end_event.data3),
+            'waittime': waittime,
         }
 
 
