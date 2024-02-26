@@ -46,11 +46,9 @@ from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
-from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
@@ -1164,13 +1162,6 @@ def find_queue_skillrule_settings(session):
 
 
 @daosession
-def find_queue_penalty_settings(session):
-    rows = session.query(QueuePenalty).filter(QueuePenalty.commented == 0).all()
-
-    return [row.todict() for row in rows]
-
-
-@daosession
 def find_queue_members_settings(session, queue_name):
     user_members = (
         session.query(
@@ -1240,36 +1231,6 @@ def find_agent_queue_skills_settings(session):
                 'id': id_,
                 'name': name,
                 'weight': weight,
-            }
-        )
-
-    return res
-
-
-@daosession
-def find_queue_penalties_settings(session):
-    rows = (
-        session.query(QueuePenalty.name, QueuePenaltyChange)
-        .filter(
-            and_(
-                QueuePenalty.id == QueuePenaltyChange.queuepenalty_id,
-                QueuePenalty.commented == 0,
-            )
-        )
-        .order_by(QueuePenalty.name)
-        .all()
-    )
-
-    res = []
-    for name, penalty_change in rows:
-        res.append(
-            {
-                'name': name,
-                'seconds': penalty_change.seconds,
-                'maxp_sign': penalty_change.maxp_sign,
-                'maxp_value': penalty_change.maxp_value,
-                'minp_sign': penalty_change.minp_sign,
-                'minp_value': penalty_change.minp_value,
             }
         )
 

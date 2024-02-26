@@ -23,8 +23,6 @@ from wazo_test_helpers.hamcrest.uuid_ import uuid_
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
-from xivo_dao.alchemy.queuepenalty import QueuePenalty
-from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -949,32 +947,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             ),
         )
 
-    def test_find_queue_penalty_settings(self):
-        queue_penalty1 = QueuePenalty(name='foo1', commented=1, description='')
-        queue_penalty2 = QueuePenalty(name='foo2', commented=0, description='')
-        queue_penalty3 = QueuePenalty(name='foo3', commented=0, description='')
-        self.add_me_all([queue_penalty1, queue_penalty2, queue_penalty3])
-
-        queue_penalty = asterisk_conf_dao.find_queue_penalty_settings()
-
-        assert_that(
-            queue_penalty,
-            contains_inanyorder(
-                has_entries(
-                    id=queue_penalty2.id,
-                    name=queue_penalty2.name,
-                    commented=queue_penalty2.commented,
-                    description=queue_penalty2.description,
-                ),
-                has_entries(
-                    id=queue_penalty3.id,
-                    name=queue_penalty3.name,
-                    commented=queue_penalty3.commented,
-                    description=queue_penalty3.description,
-                ),
-            ),
-        )
-
     def test_find_queue_members_settings(self):
         queue_name = 'toto'
 
@@ -1080,30 +1052,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                     id=agent1.id,
                     weight=1,
                     name=queue_skill1.name,
-                ),
-            ),
-        )
-
-    def test_find_queue_penalties_settings(self):
-        queue_penalty1 = QueuePenalty(name='foo1', commented=1, description='')
-        queue_penalty2 = QueuePenalty(name='foo2', commented=0, description='')
-        self.add_me_all([queue_penalty1, queue_penalty2])
-        queue_penalty_change1 = QueuePenaltyChange(queuepenalty_id=queue_penalty1.id)
-        queue_penalty_change2 = QueuePenaltyChange(queuepenalty_id=queue_penalty2.id)
-        self.add_me_all([queue_penalty_change1, queue_penalty_change2])
-
-        result = asterisk_conf_dao.find_queue_penalties_settings()
-
-        assert_that(
-            result,
-            contains_inanyorder(
-                has_entries(
-                    name=queue_penalty2.name,
-                    maxp_sign=None,
-                    seconds=0,
-                    minp_sign=None,
-                    minp_value=None,
-                    maxp_value=None,
                 ),
             ),
         )
