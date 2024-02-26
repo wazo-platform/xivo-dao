@@ -66,7 +66,6 @@ from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
 from xivo_dao.alchemy.meeting import MeetingOwner
 from xivo_dao.alchemy.moh import MOH
-from xivo_dao.alchemy.monitoring import Monitoring
 from xivo_dao.alchemy.netiface import Netiface
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
@@ -188,7 +187,6 @@ __all__ = [
     "MeetingAuthorization",
     "MeetingOwner",
     "MOH",
-    "Monitoring",
     "Netiface",
     "Outcall",
     "OutcallTrunk",
