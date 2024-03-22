@@ -15,7 +15,20 @@ DEFAULT_POOL_SIZE = 16
 
 logger = logging.getLogger(__name__)
 Session = scoped_session(sessionmaker())
-Base = declarative_base()
+
+
+class BaseMixin:
+    def __repr__(self):
+        attrs = {
+            col.name: getattr(self, col.name)
+            for col in self.__table__.columns
+            if col.primary_key
+        }
+        attrs_fmt = ", ".join(f"{k}={v}" for k, v in attrs.items())
+        return f"{self.__class__.__name__}({attrs_fmt})"
+
+
+Base = declarative_base(cls=BaseMixin)
 
 
 # http://docs.sqlalchemy.org/en/rel_0_9/_modules/examples/join_conditions/cast.html
