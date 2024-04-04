@@ -21,7 +21,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
     def test_func_key_deleted(self):
         parking_lot = self.add_parking_lot()
         func_key_dest_parking = self.add_parking_destination(
-            parking_lot_id=parking_lot.id,
+            parking_lot_uuid=parking_lot.uuid,
         )
 
         row = self.session.query(FuncKey).first()

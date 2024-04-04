@@ -361,7 +361,7 @@ class TestCreate(TestDao):
         destination_row = self.create_park_position_func_key('801')
         template = self.build_template_with_key(
             FuncKeyDestParkPosition(
-                parking_lot_id=destination_row.parking_lot_id,
+                parking_lot_uuid=destination_row.parking_lot_uuid,
                 position=destination_row.position,
             )
         )
@@ -377,7 +377,7 @@ class TestCreate(TestDao):
         destination_row = self.create_parking_func_key()
         template = self.build_template_with_key(
             FuncKeyDestParking(
-                parking_lot_id=destination_row.parking_lot_id,
+                parking_lot_uuid=destination_row.parking_lot_uuid,
             )
         )
 
@@ -613,24 +613,24 @@ class TestCreate(TestDao):
 
         dest_park_position_count = (
             self.session.query(FuncKeyDestParkPosition)
-            .filter(FuncKeyDestParkPosition.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParkPosition.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_park_position_count, equal_to(0))
 
         template = self.build_template_with_key(
-            FuncKeyDestParkPosition(parking_lot_id=parking_lot.id, position='801')
+            FuncKeyDestParkPosition(parking_lot_uuid=parking_lot.uuid, position='801')
         )
         dao.create(template)
 
         template = self.build_template_with_key(
-            FuncKeyDestParkPosition(parking_lot_id=parking_lot.id, position='801')
+            FuncKeyDestParkPosition(parking_lot_uuid=parking_lot.uuid, position='801')
         )
         dao.create(template)
 
         dest_park_position_count = (
             self.session.query(FuncKeyDestParkPosition)
-            .filter(FuncKeyDestParkPosition.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParkPosition.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_park_position_count, equal_to(1))
@@ -642,24 +642,24 @@ class TestCreate(TestDao):
 
         dest_parking_count = (
             self.session.query(FuncKeyDestParking)
-            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParking.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_parking_count, equal_to(0))
 
         template = self.build_template_with_key(
-            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+            FuncKeyDestParking(parking_lot_uuid=parking_lot.uuid)
         )
         dao.create(template)
 
         template = self.build_template_with_key(
-            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+            FuncKeyDestParking(parking_lot_uuid=parking_lot.uuid)
         )
         dao.create(template)
 
         dest_parking_count = (
             self.session.query(FuncKeyDestParking)
-            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParking.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_parking_count, equal_to(1))
@@ -875,7 +875,7 @@ class TestGet(TestDao):
         expected = self.prepare_template(
             destination_row,
             FuncKeyDestParkPosition(
-                parking_lot_id=destination_row.parking_lot_id,
+                parking_lot_uuid=destination_row.parking_lot_uuid,
                 position='801',
             ),
         )
@@ -891,7 +891,7 @@ class TestGet(TestDao):
         expected = self.prepare_template(
             destination_row,
             FuncKeyDestParkPosition(
-                parking_lot_id=destination_row.parking_lot_id,
+                parking_lot_uuid=destination_row.parking_lot_uuid,
             ),
         )
 
@@ -1226,7 +1226,7 @@ class TestDelete(TestDao):
     def test_given_template_is_associated_to_park_position_when_deleting_template(self):
         parking_lot = self.add_parking_lot()
         template = self.build_template_with_key(
-            FuncKeyDestParkPosition(parking_lot_id=parking_lot.id, position='801')
+            FuncKeyDestParkPosition(parking_lot_uuid=parking_lot.uuid, position='801')
         )
         dao.create(template)
 
@@ -1234,7 +1234,7 @@ class TestDelete(TestDao):
 
         dest_park_position_count = (
             self.session.query(FuncKeyDestParkPosition)
-            .filter(FuncKeyDestParkPosition.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParkPosition.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_park_position_count, equal_to(0))
@@ -1244,12 +1244,12 @@ class TestDelete(TestDao):
     ):
         parking_lot = self.add_parking_lot()
         template = self.build_template_with_key(
-            FuncKeyDestParkPosition(parking_lot_id=parking_lot.id, position='801')
+            FuncKeyDestParkPosition(parking_lot_uuid=parking_lot.uuid, position='801')
         )
         dao.create(template)
 
         template = self.build_template_with_key(
-            FuncKeyDestParkPosition(parking_lot_id=parking_lot.id, position='801')
+            FuncKeyDestParkPosition(parking_lot_uuid=parking_lot.uuid, position='801')
         )
         dao.create(template)
 
@@ -1257,7 +1257,7 @@ class TestDelete(TestDao):
 
         dest_park_position_count = (
             self.session.query(FuncKeyDestParkPosition)
-            .filter(FuncKeyDestParkPosition.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParkPosition.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_park_position_count, equal_to(1))
@@ -1265,7 +1265,7 @@ class TestDelete(TestDao):
     def test_given_template_is_associated_to_parking_when_deleting_template(self):
         parking_lot = self.add_parking_lot()
         template = self.build_template_with_key(
-            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+            FuncKeyDestParking(parking_lot_uuid=parking_lot.uuid)
         )
         dao.create(template)
 
@@ -1273,7 +1273,7 @@ class TestDelete(TestDao):
 
         dest_parking_count = (
             self.session.query(FuncKeyDestParking)
-            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParking.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_parking_count, equal_to(0))
@@ -1283,12 +1283,12 @@ class TestDelete(TestDao):
     ):
         parking_lot = self.add_parking_lot()
         template = self.build_template_with_key(
-            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+            FuncKeyDestParking(parking_lot_uuid=parking_lot.uuid)
         )
         dao.create(template)
 
         template = self.build_template_with_key(
-            FuncKeyDestParking(parking_lot_id=parking_lot.id)
+            FuncKeyDestParking(parking_lot_uuid=parking_lot.uuid)
         )
         dao.create(template)
 
@@ -1296,7 +1296,7 @@ class TestDelete(TestDao):
 
         dest_parking_count = (
             self.session.query(FuncKeyDestParking)
-            .filter(FuncKeyDestParking.parking_lot_id == parking_lot.id)
+            .filter(FuncKeyDestParking.parking_lot_uuid == parking_lot.uuid)
             .count()
         )
         assert_that(dest_parking_count, equal_to(1))

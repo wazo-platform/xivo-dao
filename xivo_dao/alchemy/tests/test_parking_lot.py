@@ -57,13 +57,13 @@ class TestInSlotsRange(unittest.TestCase):
 class TestExten(DAOTestCase):
     def test_getter(self):
         parking_lot = self.add_parking_lot()
-        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+        extension = self.add_extension(type='parking', typeval=parking_lot.uuid)
 
         assert_that(parking_lot.exten, equal_to(extension.exten))
 
     def test_expression(self):
         parking_lot = self.add_parking_lot()
-        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+        extension = self.add_extension(type='parking', typeval=parking_lot.uuid)
 
         result = (
             self.session.query(ParkingLot)
@@ -78,13 +78,13 @@ class TestExten(DAOTestCase):
 class TestContext(DAOTestCase):
     def test_getter(self):
         parking_lot = self.add_parking_lot()
-        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+        extension = self.add_extension(type='parking', typeval=parking_lot.uuid)
 
         assert_that(parking_lot.context, equal_to(extension.context))
 
     def test_expression(self):
         parking_lot = self.add_parking_lot()
-        extension = self.add_extension(type='parking', typeval=parking_lot.id)
+        extension = self.add_extension(type='parking', typeval=parking_lot.uuid)
 
         result = (
             self.session.query(ParkingLot)
@@ -103,7 +103,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def test_funckeys_park_position_are_deleted(self):
         parking_lot = self.add_parking_lot()
-        self.add_park_position_destination(parking_lot.id, position='801')
+        self.add_park_position_destination(parking_lot.uuid, position='801')
 
         self.session.delete(parking_lot)
         self.session.flush()
@@ -116,7 +116,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def test_funckeys_parking_are_deleted(self):
         parking_lot = self.add_parking_lot()
-        self.add_parking_destination(parking_lot.id)
+        self.add_parking_destination(parking_lot.uuid)
 
         self.session.delete(parking_lot)
         self.session.flush()

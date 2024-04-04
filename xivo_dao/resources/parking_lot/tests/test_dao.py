@@ -15,6 +15,7 @@ from hamcrest import (
     not_,
 )
 from sqlalchemy.inspection import inspect
+from uuid import uuid4
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.parking_lot import ParkingLot
@@ -24,17 +25,19 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 from .. import dao as parking_lot_dao
 
+INVALID_UUID = '00000000-0000-4000-b000-000000000000'
+
 
 class TestFind(DAOTestCase):
     def test_find_no_parking_lot(self):
-        result = parking_lot_dao.find(42)
+        result = parking_lot_dao.find(INVALID_UUID)
 
         assert_that(result, none())
 
     def test_find(self):
         parking_lot_row = self.add_parking_lot()
 
-        parking_lot = parking_lot_dao.find(parking_lot_row.id)
+        parking_lot = parking_lot_dao.find(parking_lot_row.uuid)
 
         assert_that(parking_lot, equal_to(parking_lot_row))
 
@@ -42,32 +45,32 @@ class TestFind(DAOTestCase):
         tenant = self.add_tenant()
         parking_lot = self.add_parking_lot(tenant_uuid=tenant.uuid)
 
-        result = parking_lot_dao.find(parking_lot.id, tenant_uuids=[tenant.uuid])
+        result = parking_lot_dao.find(parking_lot.uuid, tenant_uuids=[tenant.uuid])
         assert_that(result, equal_to(parking_lot))
 
         result = parking_lot_dao.find(
-            parking_lot.id, tenant_uuids=[self.default_tenant.uuid]
+            parking_lot.uuid, tenant_uuids=[self.default_tenant.uuid]
         )
         assert_that(result, none())
 
 
 class TestGet(DAOTestCase):
     def test_get_no_parking_lot(self):
-        self.assertRaises(NotFoundError, parking_lot_dao.get, 42)
+        self.assertRaises(NotFoundError, parking_lot_dao.get, INVALID_UUID)
 
     def test_get(self):
         parking_lot_row = self.add_parking_lot()
 
-        parking_lot = parking_lot_dao.get(parking_lot_row.id)
+        parking_lot = parking_lot_dao.get(parking_lot_row.uuid)
 
-        assert_that(parking_lot.id, equal_to(parking_lot.id))
+        assert_that(parking_lot.uuid, equal_to(parking_lot_row.uuid))
 
     def test_get_multi_tenant(self):
         tenant = self.add_tenant()
 
         parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
         parking_lot = parking_lot_dao.get(
-            parking_lot_row.id, tenant_uuids=[tenant.uuid]
+            parking_lot_row.uuid, tenant_uuids=[tenant.uuid]
         )
         assert_that(parking_lot, equal_to(parking_lot_row))
 
@@ -75,14 +78,14 @@ class TestGet(DAOTestCase):
         self.assertRaises(
             NotFoundError,
             parking_lot_dao.get,
-            parking_lot_row.id,
+            parking_lot_row.uuid,
             tenant_uuids=[tenant.uuid],
         )
 
 
 class TestFindBy(DAOTestCase):
     def test_given_column_does_not_exist_then_error_raised(self):
-        self.assertRaises(InputError, parking_lot_dao.find_by, invalid=42)
+        self.assertRaises(InputError, parking_lot_dao.find_by, invalid=INVALID_UUID)
 
     def test_find_by_name(self):
         parking_lot_row = self.add_parking_lot(name='Jôhn')
@@ -102,20 +105,20 @@ class TestFindBy(DAOTestCase):
 
         parking_lot_row = self.add_parking_lot()
         parking_lot = parking_lot_dao.find_by(
-            id=parking_lot_row.id, tenant_uuids=[tenant.uuid]
+            uuid=parking_lot_row.uuid, tenant_uuids=[tenant.uuid]
         )
         assert_that(parking_lot, none())
 
         parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
         parking_lot = parking_lot_dao.find_by(
-            id=parking_lot_row.id, tenant_uuids=[tenant.uuid]
+            uuid=parking_lot_row.uuid, tenant_uuids=[tenant.uuid]
         )
         assert_that(parking_lot, equal_to(parking_lot_row))
 
 
 class TestGetBy(DAOTestCase):
     def test_given_column_does_not_exist_then_error_raised(self):
-        self.assertRaises(InputError, parking_lot_dao.get_by, invalid=42)
+        self.assertRaises(InputError, parking_lot_dao.get_by, invalid=INVALID_UUID)
 
     def test_get_by_name(self):
         parking_lot_row = self.add_parking_lot(name='Jôhn')
@@ -135,13 +138,13 @@ class TestGetBy(DAOTestCase):
         self.assertRaises(
             NotFoundError,
             parking_lot_dao.get_by,
-            id=parking_lot_row.id,
+            uuid=parking_lot_row.uuid,
             tenant_uuids=[tenant.uuid],
         )
 
         parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
         parking_lot = parking_lot_dao.get_by(
-            id=parking_lot_row.id, tenant_uuids=[tenant.uuid]
+            uuid=parking_lot_row.uuid, tenant_uuids=[tenant.uuid]
         )
         assert_that(parking_lot, equal_to(parking_lot_row))
 
@@ -164,8 +167,8 @@ class TestFindAllBy(DAOTestCase):
         assert_that(
             parking_lots,
             has_items(
-                has_property('id', parking_lot1.id),
-                has_property('id', parking_lot2.id),
+                has_property('uuid', parking_lot1.uuid),
+                has_property('uuid', parking_lot2.uuid),
             ),
         )
 
@@ -320,7 +323,7 @@ class TestCreate(DAOTestCase):
         assert_that(
             parking_lot,
             has_properties(
-                id=is_not(none()),
+                uuid=is_not(none()),
                 tenant_uuid=self.default_tenant.uuid,
                 name=None,
                 slots_start='701',
@@ -424,7 +427,7 @@ class TestDelete(DAOTestCase):
 
     def test_when_deleting_then_extension_are_dissociated(self):
         parking_lot = self.add_parking_lot()
-        extension = self.add_extension(type='parking', typeval=str(parking_lot.id))
+        extension = self.add_extension(type='parking', typeval=str(parking_lot.uuid))
 
         parking_lot_dao.delete(parking_lot)
 

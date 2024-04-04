@@ -184,23 +184,23 @@ class FuncKeyHelper:
         self.add_me(destination_row)
         return destination_row
 
-    def add_park_position_destination(self, parking_lot_id, position):
+    def add_park_position_destination(self, parking_lot_uuid, position):
         destination_type_id = 7
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestParkPositionSchema(
             func_key_id=func_key_row.id,
-            parking_lot_id=parking_lot_id,
+            parking_lot_uuid=parking_lot_uuid,
             park_position=position,
         )
         self.add_me(destination_row)
         return destination_row
 
-    def add_parking_destination(self, parking_lot_id):
+    def add_parking_destination(self, parking_lot_uuid):
         destination_type_id = 14
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestParkingSchema(
             func_key_id=func_key_row.id,
-            parking_lot_id=parking_lot_id,
+            parking_lot_uuid=parking_lot_uuid,
         )
         self.add_me(destination_row)
         return destination_row
@@ -275,11 +275,11 @@ class FuncKeyHelper:
 
     def create_park_position_func_key(self, position):
         parking_lot = self.add_parking_lot()
-        return self.add_park_position_destination(parking_lot.id, position)
+        return self.add_park_position_destination(parking_lot.uuid, position)
 
     def create_parking_func_key(self):
         parking_lot = self.add_parking_lot()
-        return self.add_parking_destination(parking_lot.id)
+        return self.add_parking_destination(parking_lot.uuid)
 
     def add_func_key_to_user(self, destination_row, user_row, position=1, blf=True):
         self.add_func_key_mapping(

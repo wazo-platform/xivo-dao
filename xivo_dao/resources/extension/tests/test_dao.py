@@ -893,7 +893,7 @@ class TestAssociateParkingLot(DAOTestCase):
                     exten=extension.exten,
                     context=extension.context,
                     type='parking',
-                    typeval=str(parking_lot.id),
+                    typeval=str(parking_lot.uuid),
                 )
             ),
         )
