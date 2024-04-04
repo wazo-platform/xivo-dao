@@ -1,6 +1,8 @@
 # Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
@@ -17,11 +19,12 @@ from .extension import Extension
 class ParkingLot(Base):
     __tablename__ = 'parking_lot'
     __table_args__ = (
-        PrimaryKeyConstraint('id'),
         Index('parking_lot__idx__tenant_uuid', 'tenant_uuid'),
     )
 
-    id = Column(Integer)
+    uuid = Column(
+        UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True
+    )
     tenant_uuid = Column(
         String(36),
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
@@ -37,7 +40,7 @@ class ParkingLot(Base):
         'Extension',
         primaryjoin="""and_(
             Extension.type == 'parking',
-            Extension.typeval == cast(ParkingLot.id, String)
+            Extension.typeval == cast(ParkingLot.uuid, String)
         )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
@@ -76,7 +79,7 @@ class ParkingLot(Base):
         return (
             select([Extension.exten])
             .where(Extension.type == 'parking')
-            .where(Extension.typeval == cast(cls.id, String))
+            .where(Extension.typeval == cast(cls.uuid, String))
             .as_scalar()
         )
 
@@ -91,6 +94,6 @@ class ParkingLot(Base):
         return (
             select([Extension.context])
             .where(Extension.type == 'parking')
-            .where(Extension.typeval == cast(cls.id, String))
+            .where(Extension.typeval == cast(cls.uuid, String))
             .as_scalar()
         )
