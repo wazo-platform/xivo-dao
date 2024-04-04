@@ -9,7 +9,7 @@ from xivo_dao.resources.utils.search import SearchConfig
 config = SearchConfig(
     table=ParkingLot,
     columns={
-        'id': ParkingLot.id,
+        'id': ParkingLot.uuid,
         'name': ParkingLot.name,
         'slots_start': ParkingLot.slots_start,
         'slots_end': ParkingLot.slots_end,

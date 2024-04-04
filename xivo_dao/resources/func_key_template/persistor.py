@@ -609,7 +609,7 @@ class ParkPositionPersistor(DestinationPersistor):
         destination_row = (
             self.session.query(FuncKeyDestParkPosition)
             .filter(
-                FuncKeyDestParkPosition.parking_lot_id == destination.parking_lot_id
+                FuncKeyDestParkPosition.parking_lot_uuid == destination.parking_lot_uuid
             )
             .filter(FuncKeyDestParkPosition.position == str(destination.position))
             .first()
@@ -619,7 +619,7 @@ class ParkPositionPersistor(DestinationPersistor):
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
             destination_row = FuncKeyDestParkPosition(
                 func_key_id=func_key_row.id,
-                parking_lot_id=destination.parking_lot_id,
+                parking_lot_uuid=destination.parking_lot_uuid,
                 position=str(destination.position),
             )
             self.session.add(destination_row)
@@ -650,7 +650,7 @@ class ParkingPersistor(DestinationPersistor):
     def find_or_create(self, destination):
         destination_row = (
             self.session.query(FuncKeyDestParking)
-            .filter(FuncKeyDestParking.parking_lot_id == destination.parking_lot_id)
+            .filter(FuncKeyDestParking.parking_lot_uuid == destination.parking_lot_uuid)
             .first()
         )
 
@@ -658,7 +658,7 @@ class ParkingPersistor(DestinationPersistor):
             func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
             destination_row = FuncKeyDestParking(
                 func_key_id=func_key_row.id,
-                parking_lot_id=destination.parking_lot_id,
+                parking_lot_uuid=destination.parking_lot_uuid,
             )
             self.session.add(destination_row)
             self.session.flush()

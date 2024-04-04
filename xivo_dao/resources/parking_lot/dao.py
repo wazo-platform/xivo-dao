@@ -15,9 +15,9 @@ def search(session, tenant_uuids=None, **parameters):
 
 
 @daosession
-def get(session, parking_lot_id, tenant_uuids=None):
+def get(session, parking_lot_uuid, tenant_uuids=None):
     return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).get_by(
-        {'id': parking_lot_id}
+        {'uuid': parking_lot_uuid}
     )
 
 
@@ -29,9 +29,9 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def find(session, parking_lot_id, tenant_uuids=None):
+def find(session, parking_lot_uuid, tenant_uuids=None):
     return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_by(
-        {'id': parking_lot_id}
+        {'uuid': parking_lot_uuid}
     )
 
 

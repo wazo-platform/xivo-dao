@@ -107,7 +107,7 @@ class ExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
 
     def associate_parking_lot(self, parking_lot, extension):
         extension.type = 'parking'
-        extension.typeval = str(parking_lot.id)
+        extension.typeval = str(parking_lot.uuid)
         self.session.flush()
         self.session.expire(parking_lot, ['extensions'])
 
