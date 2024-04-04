@@ -1,6 +1,7 @@
 # Copyright 2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
@@ -31,9 +32,9 @@ class FuncKeyDestParking(Base):
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    parking_lot_id = Column(
-        Integer,
-        ForeignKey('parking_lot.id'),
+    parking_lot_uuid = Column(
+        UUID(as_uuid=True),
+        ForeignKey('parking_lot.uuid'),
         nullable=False,
         unique=True,
     )
@@ -44,4 +45,4 @@ class FuncKeyDestParking(Base):
     parking_lot = relationship(ParkingLot)
 
     def to_tuple(self):
-        return (('parking_lot_id', self.parking_lot_id),)
+        return (('parking_lot_uuid', self.parking_lot_uuid),)

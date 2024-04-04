@@ -1,6 +1,7 @@
 # Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
@@ -29,14 +30,14 @@ class FuncKeyDestParkPosition(Base):
             ('func_key_id', 'destination_type_id'),
             ('func_key.id', 'func_key.destination_type_id'),
         ),
-        UniqueConstraint('parking_lot_id', 'park_position'),
+        UniqueConstraint('parking_lot_uuid', 'park_position'),
         CheckConstraint(f'destination_type_id = {DESTINATION_TYPE_ID}'),
         CheckConstraint("park_position ~ '^[0-9]+$'"),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    parking_lot_id = Column(Integer, ForeignKey('parking_lot.id'), nullable=False)
+    parking_lot_uuid = Column(UUID(as_uuid=True), ForeignKey('parking_lot.uuid'), nullable=False)
     park_position = Column(String(40), nullable=False)
 
     type = 'park_position'
@@ -46,7 +47,7 @@ class FuncKeyDestParkPosition(Base):
 
     def to_tuple(self):
         return (
-            ('parking_lot_id', self.parking_lot_id),
+            ('parking_lot_uuid', self.parking_lot_uuid),
             ('position', self.position),
         )
 
