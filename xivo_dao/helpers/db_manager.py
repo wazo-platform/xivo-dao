@@ -10,7 +10,9 @@ from sqlalchemy.types import String, TypeDecorator
 
 from xivo.config_helper import ConfigParser, ErrorHandler
 
-DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
+DEFAULT_DB_URI = (
+    'postgresql://asterisk:proformatique@localhost/asterisk?application_name=xivo-dao'
+)
 DEFAULT_POOL_SIZE = 16
 
 logger = logging.getLogger(__name__)
