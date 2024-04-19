@@ -559,6 +559,16 @@ class TestDelete(DAOTestCase):
         )  # fmt: skip
         assert_that(extension, has_properties(type='user', typeval='0'))
 
+    def test_when_deleting_then_main_is_not_reassigned(self):
+        # NOTE(fblackburn): This behavior is intentional to have a workaround to change main
+        incall1 = self.add_incall(main=True)
+        incall2 = self.add_incall(main=False)
+
+        incall_dao.delete(incall1)
+
+        row = incall_dao.get(incall2.id)
+        assert_that(row, has_properties(main=False))
+
 
 class TestRelationship(DAOTestCase):
     def test_extensions_relationship(self):
