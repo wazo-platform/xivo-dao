@@ -3,6 +3,7 @@
 
 from hamcrest import (
     all_of,
+    any_of,
     assert_that,
     contains_exactly,
     empty,
@@ -604,3 +605,46 @@ class TestRelationship(DAOTestCase):
         incall = incall_dao.get(incall_row.id)
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.destination.voicemail, voicemail_row)
+
+
+class TestFindMainCallerID(DAOTestCase):
+    def test_given_no_incall_then_returns_none(self):
+        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
+
+        assert_that(result, none())
+
+    def test_given_no_main_incall_then_returns_none(self):
+        self.add_incall(main=False)
+        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
+
+        assert_that(result, none())
+
+    def test_given_one_main_incall_then_returns_one(self):
+        incall = self.add_incall(main=True)
+        exten = self.add_extension(type='incall', typeval=str(incall.id))
+
+        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
+
+        assert_that(result, has_properties(type='main', number=exten.exten))
+
+    def test_given_many_main_incalls_then_returns_one(self):
+        incall1 = self.add_incall(main=True)
+        exten1 = self.add_extension(type='incall', typeval=str(incall1.id))
+        incall2 = self.add_incall(main=True)
+        exten2 = self.add_extension(type='incall', typeval=str(incall2.id))
+
+        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
+
+        caller_id1 = has_properties(type='main', number=exten1.exten)
+        caller_id2 = has_properties(type='main', number=exten2.exten)
+        assert_that(result, any_of(caller_id1, caller_id2))
+
+    def test_given_many_incalls_then_returns_only_main(self):
+        incall1 = self.add_incall(main=True)
+        exten1 = self.add_extension(type='incall', typeval=str(incall1.id))
+        incall2 = self.add_incall(main=False)
+        self.add_extension(type='incall', typeval=str(incall2.id))
+
+        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
+
+        assert_that(result, has_properties(type='main', number=exten1.exten))

@@ -37,6 +37,10 @@ def find_all_by(tenant_uuids=None, **criteria):
     return persistor(tenant_uuids).find_all_by(criteria)
 
 
+def find_main_callerid(tenant_uuid):
+    return persistor().find_main_callerid(tenant_uuid)
+
+
 def create(incall):
     return persistor().create(incall)
 

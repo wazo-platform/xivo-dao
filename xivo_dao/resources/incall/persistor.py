@@ -1,6 +1,10 @@
 # Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy.sql import cast
+from sqlalchemy.sql.expression import and_, literal_column
+from sqlalchemy.types import String
+
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 
@@ -51,3 +55,24 @@ class IncallPersistor(QueryOptionsMixin, CriteriaBuilderMixin, BasePersistor):
             .filter(Extension.typeval == str(incall.id))
             .update({'type': 'user', 'typeval': '0'})
         )
+
+    def find_main_callerid(self, tenant_uuid):
+        query = (
+            self.session.query(
+                Extension.exten.label('number'),
+                literal_column("'main'").label('type'),
+            )
+            .select_from(Incall)
+            .join(
+                Extension,
+                and_(
+                    Extension.type == 'incall',
+                    Extension.typeval == cast(Incall.id, String),
+                ),
+            )
+            .filter(
+                Incall.tenant_uuid == tenant_uuid,
+                Incall.main.is_(True),
+            )
+        )
+        return query.first()
