@@ -17,6 +17,20 @@ class IncallPersistor(QueryOptionsMixin, CriteriaBuilderMixin, BasePersistor):
         self.search_system = incall_search
         self.tenant_uuids = tenant_uuids
 
+    def create(self, incall):
+        incall.main = not self._is_main_already_exists(incall.tenant_uuid)
+        self.session.add(incall)
+        self.session.flush()
+        return incall
+
+    def _is_main_already_exists(self, tenant_uuid):
+        return (
+            self.session.query(Incall)
+            .filter(Incall.main.is_(True))
+            .filter(Incall.tenant_uuid == tenant_uuid)
+            .first()
+        )
+
     def _find_query(self, criteria):
         query = self._generate_query()
         query = self._filter_tenant_uuid(query)

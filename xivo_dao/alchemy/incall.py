@@ -15,6 +15,7 @@ from sqlalchemy.sql import (
     select,
 )
 from sqlalchemy.types import (
+    Boolean,
     Integer,
     String,
     Text,
@@ -40,6 +41,7 @@ class Incall(Base):
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
         nullable=False,
     )
+    main = Column(Boolean, nullable=False, server_default='false')
     preprocess_subroutine = Column(String(79))
     greeting_sound = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')

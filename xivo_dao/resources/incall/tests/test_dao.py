@@ -416,6 +416,32 @@ class TestCreate(DAOTestCase):
             ),
         )
 
+    def test_create_when_main_does_not_exists(self):
+        incall = Incall(
+            destination=Dialaction(action='none'),
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        created_incall = incall_dao.create(incall)
+
+        row = self.session.query(Incall).first()
+
+        assert_that(created_incall, equal_to(row))
+        assert_that(created_incall, has_properties(main=True))
+
+    def test_create_when_main_exists(self):
+        self.add_incall(main=True)
+
+        incall = Incall(
+            destination=Dialaction(action='none'),
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        created_incall = incall_dao.create(incall)
+
+        row = incall_dao.get(created_incall.id)
+
+        assert_that(created_incall, equal_to(row))
+        assert_that(created_incall, has_properties(main=False))
+
 
 class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
