@@ -19,6 +19,7 @@ from hamcrest import (
 )
 
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
@@ -1341,3 +1342,37 @@ class TestAssociateGroups(DAOTestCase):
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
+
+
+class TestListOutgoingCallerIDAssociated(DAOTestCase):
+    def test_given_no_incall_associated_to_a_user_then_returns_empty_list(self):
+        user = self.add_user()
+
+        result = user_dao.list_outgoing_callerid_associated(user.id)
+
+        assert_that(result, empty())
+
+    def test_given_one_incall_associated_to_a_user_then_returns_extens(self):
+        user = self.add_user()
+        destination = {'action': 'user', 'actionarg1': str(user.id)}
+        incall = self.add_incall(destination=Dialaction(**destination))
+        exten = self.add_extension(type='incall', typeval=str(incall.id))
+
+        result = user_dao.list_outgoing_callerid_associated(user.id)
+
+        caller_id = has_properties(type='associated', number=exten.exten)
+        assert_that(result, contains_exactly(caller_id))
+
+    def test_given_many_incalls_associated_to_a_user_then_returns_extens(self):
+        user = self.add_user()
+        destination = {'action': 'user', 'actionarg1': str(user.id)}
+        incall1 = self.add_incall(destination=Dialaction(**destination))
+        exten1 = self.add_extension(type='incall', typeval=str(incall1.id))
+        incall2 = self.add_incall(destination=Dialaction(**destination))
+        exten2 = self.add_extension(type='incall', typeval=str(incall2.id))
+
+        result = user_dao.list_outgoing_callerid_associated(user.id)
+
+        caller_id1 = has_properties(type='associated', number=exten1.exten)
+        caller_id2 = has_properties(type='associated', number=exten2.exten)
+        assert_that(result, contains_inanyorder(caller_id1, caller_id2))

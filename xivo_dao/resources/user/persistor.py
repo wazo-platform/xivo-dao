@@ -1,8 +1,13 @@
-# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, cast
+from sqlalchemy.sql.expression import and_, literal_column
+from sqlalchemy.types import String
 
+from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Session
@@ -100,3 +105,33 @@ class UserPersistor(QueryOptionsMixin, CriteriaBuilderMixin, BasePersistor):
                 member.user = user
                 member.fix()
         self.session.flush()
+
+    def list_outgoing_callerid_associated(self, user_id):
+        query = (
+            self.session.query(
+                Extension.exten.label('number'),
+                literal_column("'associated'").label('type'),
+            )
+            .select_from(Incall)
+            .join(
+                Dialaction,
+                and_(
+                    Dialaction.category == 'incall',
+                    Dialaction.categoryval == cast(Incall.id, String),
+                ),
+            )
+            .join(
+                Extension,
+                and_(
+                    Extension.type == 'incall',
+                    Extension.typeval == cast(Incall.id, String),
+                ),
+            )
+            .filter(
+                and_(
+                    Dialaction.action == 'user',
+                    Dialaction.actionarg1 == str(user_id),
+                )
+            )
+        )
+        return query.all()
