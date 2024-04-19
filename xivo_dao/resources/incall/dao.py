@@ -3,59 +3,50 @@
 
 from contextlib import contextmanager
 
+from xivo_dao.helpers.db_manager import Session
+
 from xivo_dao.resources.incall.persistor import IncallPersistor
 from xivo_dao.resources.incall.search import incall_search
 
-from xivo_dao.helpers.db_manager import daosession
+
+def persistor(tenant_uuids=None):
+    return IncallPersistor(Session, incall_search, tenant_uuids)
 
 
-@daosession
-def search(session, tenant_uuids=None, **parameters):
-    return IncallPersistor(session, incall_search, tenant_uuids).search(parameters)
+def search(tenant_uuids=None, **parameters):
+    return persistor(tenant_uuids).search(parameters)
 
 
-@daosession
-def get(session, incall_id, tenant_uuids=None):
-    return IncallPersistor(session, incall_search, tenant_uuids).get_by(
-        {'id': incall_id}
-    )
+def get(incall_id, tenant_uuids=None):
+    return persistor(tenant_uuids).get_by({'id': incall_id})
 
 
-@daosession
-def get_by(session, tenant_uuids=None, **criteria):
-    return IncallPersistor(session, incall_search, tenant_uuids).get_by(criteria)
+def get_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).get_by(criteria)
 
 
-@daosession
-def find(session, incall_id, tenant_uuids=None):
-    return IncallPersistor(session, incall_search, tenant_uuids).find_by(
-        {'id': incall_id}
-    )
+def find(incall_id, tenant_uuids=None):
+    return persistor(tenant_uuids).find_by({'id': incall_id})
 
 
-@daosession
-def find_by(session, tenant_uuids=None, **criteria):
-    return IncallPersistor(session, incall_search, tenant_uuids).find_by(criteria)
+def find_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).find_by(criteria)
 
 
-@daosession
-def find_all_by(session, tenant_uuids=None, **criteria):
-    return IncallPersistor(session, incall_search, tenant_uuids).find_all_by(criteria)
+def find_all_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).find_all_by(criteria)
 
 
-@daosession
-def create(session, incall):
-    return IncallPersistor(session, incall_search).create(incall)
+def create(incall):
+    return persistor().create(incall)
 
 
-@daosession
-def edit(session, incall):
-    IncallPersistor(session, incall_search).edit(incall)
+def edit(incall):
+    persistor().edit(incall)
 
 
-@daosession
-def delete(session, incall):
-    IncallPersistor(session, incall_search).delete(incall)
+def delete(incall):
+    persistor().delete(incall)
 
 
 @contextmanager
