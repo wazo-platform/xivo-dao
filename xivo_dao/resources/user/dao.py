@@ -1,4 +1,4 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from contextlib import contextmanager
@@ -81,6 +81,10 @@ def delete(user):
 
 def associate_all_groups(user, groups):
     persistor().associate_all_groups(user, groups)
+
+
+def list_outgoing_callerid_associated(user_id):
+    return persistor().list_outgoing_callerid_associated(user_id)
 
 
 @contextmanager
