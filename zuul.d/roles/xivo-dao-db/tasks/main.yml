@@ -1,10 +1,10 @@
 ---
 - name: Start DB container
-  command: docker-compose up -d
+  command: docker compose up -d
   args:
     chdir: "{{ zuul.project.src_dir }}"
 - name: Get DB container port
-  command: docker-compose port db 5432
+  command: docker compose port db 5432
   register: container_port
   args:
     chdir: "{{ zuul.project.src_dir }}"

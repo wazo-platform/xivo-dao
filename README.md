@@ -37,8 +37,8 @@ database by passing `CREATE_TABLES=0` on the command line
 Start the database (needed only once):
 
 ```sh
-docker-compose up -d db
-export XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker-compose port db 5432)/asterisk
+docker compose up -d db
+export XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker compose port db 5432)/asterisk
 ```
 
 Run your tests:
