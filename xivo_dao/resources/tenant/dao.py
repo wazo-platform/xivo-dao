@@ -42,5 +42,10 @@ def search(session, tenant_uuids=None, **parameters):
 
 
 @daosession
+def edit(session, tenant):
+    Persistor(session, tenant_search).edit(tenant)
+
+
+@daosession
 def delete(session, tenant):
     Persistor(session, tenant_search).delete(tenant)
