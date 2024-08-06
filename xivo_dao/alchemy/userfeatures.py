@@ -365,6 +365,7 @@ class UserFeatures(Base):
     )
 
     func_keys = relationship('FuncKeyDestUser', cascade='all, delete-orphan')
+    tenant = relationship('Tenant')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
@@ -798,3 +799,7 @@ class UserFeatures(Base):
     @property
     def services(self):
         return self
+
+    @property
+    def country(self):
+        return self.tenant.country

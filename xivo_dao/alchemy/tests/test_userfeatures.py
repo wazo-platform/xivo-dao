@@ -825,3 +825,13 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Dialaction).first()
         assert_that(row, none())
+
+
+class TestCountry(DAOTestCase):
+    def test_getter(self):
+        tenant = self.add_tenant(country='CA')
+        user = self.add_user(tenant_uuid=tenant.uuid)
+
+        row = self.session.query(UserFeatures).filter_by(uuid=user.uuid).first()
+        assert_that(row, equal_to(user))
+        assert_that(row.country, equal_to('CA'))

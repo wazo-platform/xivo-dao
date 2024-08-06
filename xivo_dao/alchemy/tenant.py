@@ -77,6 +77,7 @@ class Tenant(Base):
             name='tenant_twilio_trunk_sip_template_uuid_fkey',
         ),
     )
+    country = Column(String(2), nullable=True)
 
     global_sip_template = relationship(
         'EndpointSIP',
