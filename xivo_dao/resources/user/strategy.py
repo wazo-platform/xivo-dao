@@ -43,6 +43,7 @@ user_unpaginated_strategy = (
     joinedload('queue_members'),
     joinedload('schedule_paths').selectinload('schedule'),
     joinedload('switchboard_member_users').selectinload('switchboard'),
+    joinedload('tenant'),
     joinedload('voicemail'),
     lazyload('*'),
 )
