@@ -11,7 +11,7 @@
 - name: Export DB container port
   set_fact:
     tox_environment:
-      XIVO_TEST_DB_URL: "postgresql://asterisk:proformatique@{{ container_port.stdout }}/asterisk"
+      WAZO_TEST_DB_URL: "postgresql://asterisk:proformatique@{{ container_port.stdout }}/asterisk"
 - name: Show DB container URL
   debug:
     var: tox_environment
