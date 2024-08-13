@@ -38,7 +38,7 @@ Start the database (needed only once):
 
 ```sh
 docker compose up -d db
-export XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker compose port db 5432)/asterisk
+export WAZO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker compose port db 5432)/asterisk
 ```
 
 Run your tests:
