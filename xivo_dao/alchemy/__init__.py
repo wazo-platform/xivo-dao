@@ -3,6 +3,7 @@
 
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors
+
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.application import Application

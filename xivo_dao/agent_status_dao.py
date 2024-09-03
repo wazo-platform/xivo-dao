@@ -1,5 +1,6 @@
-# Copyright 2007-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 from __future__ import annotations
 
 from datetime import datetime
