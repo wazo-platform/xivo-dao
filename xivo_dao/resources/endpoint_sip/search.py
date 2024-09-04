@@ -1,5 +1,9 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+import uuid
+
+from sqlalchemy.sql import or_, text
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.resources.utils.search import SearchSystem
@@ -17,4 +21,28 @@ config = SearchConfig(
     default_sort='label',
 )
 
-sip_search = SearchSystem(config)
+
+class EndpointSIPSearchSystem(SearchSystem):
+    def search_from_query(self, query, parameters=None):
+        if isinstance(parameters, dict):
+            if uuid_param := parameters.pop('uuid', None):
+                uuids = [uuid for uuid in uuid_param.split(',') if is_valid_uuid(uuid)]
+                query = self._filter_exact_match_uuids(query, uuids)
+            return super().search_from_query(query, parameters)
+
+    def _filter_exact_match_uuids(self, query, uuids):
+        if not uuids:
+            return query.filter(text('false'))
+        else:
+            return query.filter(or_(EndpointSIP.uuid == uuid for uuid in uuids))
+
+
+def is_valid_uuid(input):
+    try:
+        uuid.UUID(input)
+        return True
+    except ValueError:
+        return False
+
+
+sip_search = EndpointSIPSearchSystem(config)
