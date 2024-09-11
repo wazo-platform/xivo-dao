@@ -3,7 +3,7 @@
 
 import uuid
 
-from sqlalchemy.sql import or_, text
+from sqlalchemy.sql import text
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.resources.utils.search import SearchSystem
@@ -34,7 +34,7 @@ class EndpointSIPSearchSystem(SearchSystem):
         if not uuids:
             return query.filter(text('false'))
         else:
-            return query.filter(or_(EndpointSIP.uuid == uuid for uuid in uuids))
+            return query.filter(EndpointSIP.uuid.in_(uuids))
 
 
 def is_valid_uuid(input):
