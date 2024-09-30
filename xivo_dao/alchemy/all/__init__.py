@@ -72,6 +72,7 @@ from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
+from xivo_dao.alchemy.phone_number import PhoneNumber
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
@@ -191,6 +192,7 @@ __all__ = [
     "Paging",
     "PagingUser",
     "ParkingLot",
+    "PhoneNumber",
     "Pickup",
     "PickupMember",
     "PJSIPTransport",

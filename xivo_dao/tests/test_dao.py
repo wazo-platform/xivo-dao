@@ -63,6 +63,7 @@ from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
+from xivo_dao.alchemy.phone_number import PhoneNumber
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queue import Queue
@@ -1019,6 +1020,12 @@ class ItemInserter:
         parking_lot = ParkingLot(**kwargs)
         self.add_me(parking_lot)
         return parking_lot
+
+    def add_phone_number(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        phone_number = PhoneNumber(**kwargs)
+        self.add_me(phone_number)
+        return phone_number
 
     def add_accessfeatures(self, host, **kwargs):
         kwargs.setdefault('feature', 'phonebook')
