@@ -6,6 +6,7 @@ from sqlalchemy.schema import (
     Column,
     ForeignKeyConstraint,
     PrimaryKeyConstraint,
+    UniqueConstraint,
 )
 from sqlalchemy.sql import text
 from sqlalchemy.types import Boolean, String, Text
@@ -22,6 +23,7 @@ class PhoneNumber(Base):
             ('tenant.uuid',),
             ondelete='CASCADE',
         ),
+        UniqueConstraint('number', 'tenant_uuid'),
     )
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(String(36), nullable=False)

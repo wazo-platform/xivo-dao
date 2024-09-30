@@ -3,11 +3,16 @@
 
 from hamcrest import (
     assert_that,
+    calling,
     contains_exactly,
     equal_to,
     has_properties,
     none,
+    not_,
+    raises,
 )
+
+from sqlalchemy.exc import IntegrityError
 
 from xivo_dao.alchemy.phone_number import PhoneNumber
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -18,6 +23,7 @@ from .. import dao
 
 UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 SAMPLE_NUMBER = '+15551234567'
+SAMPLE_NUMBER_2 = '+18001234567'
 
 
 class TestFind(DAOTestCase):
@@ -239,7 +245,7 @@ class TestFindAllBy(DAOTestCase):
             shareable=True,
         )
         self.add_phone_number(
-            number=SAMPLE_NUMBER,
+            number=SAMPLE_NUMBER_2,
             shareable=False,
         )
 
@@ -253,7 +259,7 @@ class TestFindAllBy(DAOTestCase):
             main=True,
         )
         self.add_phone_number(
-            number=SAMPLE_NUMBER,
+            number=SAMPLE_NUMBER_2,
             main=False,
         )
 
@@ -268,7 +274,7 @@ class TestFindAllBy(DAOTestCase):
             caller_id_name=name,
         )
         self.add_phone_number(
-            number=SAMPLE_NUMBER,
+            number=SAMPLE_NUMBER_2,
         )
 
         result = dao.find_all_by(caller_id_name=name)
@@ -497,3 +503,36 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(PhoneNumber).first()
         assert_that(row, none())
+
+
+class TestThatNumberIsUnique(DAOTestCase):
+    def setUp(self):
+        super().setUp()
+        self._phone_number = self.add_phone_number(number=SAMPLE_NUMBER)
+
+    def test_unique_number_on_create(self):
+        assert_that(
+            calling(self.add_phone_number).with_args(number=SAMPLE_NUMBER),
+            raises(IntegrityError),
+        )
+
+    def test_unique_number_on_create_multi_tenant(self):
+        other_tenant = self.add_tenant()
+        assert_that(
+            calling(self.add_phone_number).with_args(
+                number=SAMPLE_NUMBER,
+                tenant_uuid=other_tenant.uuid,
+            ),
+            not_(raises(IntegrityError)),
+        )
+
+    def test_unique_number_on_edit(self):
+        created_phone_number = self.add_phone_number(number=SAMPLE_NUMBER_2)
+
+        phone_number = dao.get(created_phone_number.uuid)
+        phone_number.number = SAMPLE_NUMBER
+
+        assert_that(
+            calling(dao.edit).with_args(phone_number),
+            raises(IntegrityError),
+        )
