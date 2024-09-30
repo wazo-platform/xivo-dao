@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import (
     Column,
     ForeignKeyConstraint,
+    Index,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -24,6 +25,13 @@ class PhoneNumber(Base):
             ondelete='CASCADE',
         ),
         UniqueConstraint('number', 'tenant_uuid'),
+        Index(
+            'only_one_main_allowed',
+            'main',
+            'tenant_uuid',
+            unique=True,
+            postgresql_where=(text('main is true')),
+        ),
     )
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(String(36), nullable=False)

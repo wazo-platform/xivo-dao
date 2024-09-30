@@ -536,3 +536,43 @@ class TestThatNumberIsUnique(DAOTestCase):
             calling(dao.edit).with_args(phone_number),
             raises(IntegrityError),
         )
+
+
+class TestThatMainIsUnique(DAOTestCase):
+    def setUp(self):
+        super().setUp()
+        self._phone_number = self.add_phone_number(
+            number=SAMPLE_NUMBER,
+            main=True,
+        )
+
+    def test_unique_main_on_create(self):
+        assert_that(
+            calling(self.add_phone_number).with_args(
+                number=SAMPLE_NUMBER_2,
+                main=True,
+            ),
+            raises(IntegrityError),
+        )
+
+    def test_unique_main_on_create_multi_tenant(self):
+        other_tenant = self.add_tenant()
+        assert_that(
+            calling(self.add_phone_number).with_args(
+                number=SAMPLE_NUMBER_2,
+                main=True,
+                tenant_uuid=other_tenant.uuid,
+            ),
+            not_(raises(IntegrityError)),
+        )
+
+    def test_unique_main_on_edit(self):
+        created_phone_number = self.add_phone_number(number=SAMPLE_NUMBER_2)
+
+        phone_number = dao.get(created_phone_number.uuid)
+        phone_number.main = True
+
+        assert_that(
+            calling(dao.edit).with_args(phone_number),
+            raises(IntegrityError),
+        )
