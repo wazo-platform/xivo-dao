@@ -37,7 +37,7 @@ class PhoneNumber(Base):
     tenant_uuid = Column(String(36), nullable=False)
     number = Column(Text, nullable=False)
     caller_id_name = Column(Text, nullable=True)
-    shareable = Column(Boolean, nullable=False, server_default=text('false'))
+    shared = Column(Boolean, nullable=False, server_default=text('false'))
     main = Column(Boolean, nullable=False, server_default=text('false'))
 
     def __repr__(self):

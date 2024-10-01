@@ -10,7 +10,7 @@ config = SearchConfig(
     columns={
         'number': PhoneNumber.number,
         'caller_id_name': PhoneNumber.caller_id_name,
-        'shareable': PhoneNumber.shareable,
+        'shared': PhoneNumber.shared,
         'main': PhoneNumber.main,
     },
     default_sort='number',

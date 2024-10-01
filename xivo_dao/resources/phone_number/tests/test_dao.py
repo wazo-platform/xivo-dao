@@ -77,24 +77,24 @@ class TestFindBy(DAOTestCase):
 
         assert_that(result, equal_to(None))
 
-    def test_find_by_shareable(self):
+    def test_find_by_shared(self):
         row = self.add_phone_number(
             number=SAMPLE_NUMBER,
-            shareable=True,
+            shared=True,
         )
 
-        result = dao.find_by(shareable=True)
+        result = dao.find_by(shared=True)
 
         assert_that(result, equal_to(row))
-        assert_that(result.shareable, equal_to(True))
+        assert_that(result.shared, equal_to(True))
 
-    def test_find_by_shareable_no_match(self):
+    def test_find_by_shared_no_match(self):
         self.add_phone_number(
             number=SAMPLE_NUMBER,
-            shareable=True,
+            shared=True,
         )
 
-        result = dao.find_by(shareable=False)
+        result = dao.find_by(shared=False)
 
         assert_that(result, equal_to(None))
 
@@ -161,24 +161,24 @@ class TestGetBy(DAOTestCase):
 
         self.assertRaises(NotFoundError, dao.get_by, number=not_matched)
 
-    def test_get_by_shareable(self):
+    def test_get_by_shared(self):
         row = self.add_phone_number(
             number=SAMPLE_NUMBER,
-            shareable=True,
+            shared=True,
         )
 
-        result = dao.get_by(shareable=True)
+        result = dao.get_by(shared=True)
 
         assert_that(result, equal_to(row))
-        assert_that(result.shareable, equal_to(True))
+        assert_that(result.shared, equal_to(True))
 
-    def test_get_by_shareable_no_match(self):
+    def test_get_by_shared_no_match(self):
         self.add_phone_number(
             number=SAMPLE_NUMBER,
-            shareable=True,
+            shared=True,
         )
 
-        self.assertRaises(NotFoundError, dao.get_by, shareable=False)
+        self.assertRaises(NotFoundError, dao.get_by, shared=False)
 
     def test_get_by_main(self):
         row = self.add_phone_number(
@@ -239,17 +239,17 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(result, contains_exactly(row))
 
-    def test_find_all_by_shareable(self):
+    def test_find_all_by_shared(self):
         row = self.add_phone_number(
             number=SAMPLE_NUMBER,
-            shareable=True,
+            shared=True,
         )
         self.add_phone_number(
             number=SAMPLE_NUMBER_2,
-            shareable=False,
+            shared=False,
         )
 
-        result = dao.find_all_by(shareable=True)
+        result = dao.find_all_by(shared=True)
 
         assert_that(result, contains_exactly(row))
 
@@ -305,16 +305,16 @@ class TestSearchGivenMultiplePhoneNumbers(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
         self.row_1 = self.add_phone_number(
-            number='+15551230000', caller_id_name='one', shareable=True, main=True
+            number='+15551230000', caller_id_name='one', shared=True, main=True
         )
         self.row_2 = self.add_phone_number(
-            number='+15551231111', caller_id_name='two', shareable=True, main=False
+            number='+15551231111', caller_id_name='two', shared=True, main=False
         )
         self.row_3 = self.add_phone_number(
-            number='+15551232222', caller_id_name='three', shareable=False, main=False
+            number='+15551232222', caller_id_name='three', shared=False, main=False
         )
         self.row_4 = self.add_phone_number(
-            number='+15551233333', shareable=False, main=False
+            number='+15551233333', shared=False, main=False
         )
 
     def test_when_searching_then_returns_one_result(self):
@@ -338,7 +338,7 @@ class TestSearchGivenMultiplePhoneNumbers(TestSearch):
         expected = SearchResult(2, [self.row_1, self.row_2])
         self.assert_search_returns_result(
             expected,
-            shareable=True,
+            shared=True,
             order='number',
         )
 
@@ -370,7 +370,7 @@ class TestSearchGivenMultiplePhoneNumbers(TestSearch):
         self.assert_search_returns_result(
             expected,
             search='555',
-            shareable=True,
+            shared=True,
             direction='desc',
             offset=1,
             limit=1,
@@ -395,7 +395,7 @@ class TestCreate(DAOTestCase):
             has_properties(
                 uuid=row.uuid,
                 number=SAMPLE_NUMBER,
-                shareable=False,
+                shared=False,
                 main=False,
                 caller_id_name=None,
                 tenant_uuid=tenant.uuid,
@@ -410,7 +410,7 @@ class TestCreate(DAOTestCase):
             tenant_uuid=tenant.uuid,
             caller_id_name=name,
             main=True,
-            shareable=True,
+            shared=True,
         )
 
         created_phone_number = dao.create(phone_number)
@@ -423,7 +423,7 @@ class TestCreate(DAOTestCase):
             has_properties(
                 uuid=row.uuid,
                 number=SAMPLE_NUMBER,
-                shareable=True,
+                shared=True,
                 main=True,
                 caller_id_name=name,
                 tenant_uuid=tenant.uuid,
@@ -440,7 +440,7 @@ class TestEdit(DAOTestCase):
                 tenant_uuid=tenant.uuid,
                 caller_id_name='Alice',
                 main=True,
-                shareable=True,
+                shared=True,
             )
         )
 
@@ -448,7 +448,7 @@ class TestEdit(DAOTestCase):
         new_number = phone_number.number = '+18001234567'
         new_caller_id = phone_number.caller_id_name = 'Bob'
         new_main = phone_number.main = False
-        new_shareable = phone_number.shareable = False
+        new_shared = phone_number.shared = False
 
         dao.edit(phone_number)
 
@@ -463,7 +463,7 @@ class TestEdit(DAOTestCase):
                 number=new_number,
                 caller_id_name=new_caller_id,
                 main=new_main,
-                shareable=new_shareable,
+                shared=new_shared,
             ),
         )
 
@@ -475,7 +475,7 @@ class TestEdit(DAOTestCase):
                 tenant_uuid=tenant.uuid,
                 caller_id_name='Alice',
                 main=True,
-                shareable=True,
+                shared=True,
             )
         )
 
