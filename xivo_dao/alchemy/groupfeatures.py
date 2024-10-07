@@ -141,6 +141,7 @@ class GroupFeatures(Base):
     ring_in_use = association_proxy('queue', 'ring_in_use')
     ring_strategy = association_proxy('queue', 'strategy')
     user_timeout = association_proxy('queue', 'timeout')
+    max_calls = association_proxy('queue', 'maxlen')
 
     func_keys_group = relationship(
         'FuncKeyDestGroup',
@@ -228,6 +229,7 @@ class GroupFeatures(Base):
         timeout = kwargs.pop('user_timeout', 15)
         musicclass = kwargs.pop('music_on_hold', None)
         enabled = kwargs.pop('enabled', True)
+        max_calls = kwargs.pop('max_calls', 0)
         super().__init__(**kwargs)
         if not self.queue:
             self.queue = Queue(
@@ -251,7 +253,7 @@ class GroupFeatures(Base):
                 announce_round_seconds=0,
                 announce_holdtime='no',
                 wrapuptime=0,
-                maxlen=0,
+                maxlen=max_calls,
                 memberdelay=0,
                 weight=0,
                 category='group',
