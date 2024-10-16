@@ -403,6 +403,7 @@ class TestCreate(DAOTestCase):
             user_timeout=30,
             music_on_hold='music',
             enabled=False,
+            max_calls=10,
         )
         self.session.add(group)
         self.session.flush()
@@ -417,6 +418,7 @@ class TestCreate(DAOTestCase):
                 timeout=30,
                 musicclass='music',
                 enabled=False,
+                maxlen=10,
             ),
         )
 
