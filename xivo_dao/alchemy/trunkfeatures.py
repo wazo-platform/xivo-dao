@@ -77,6 +77,12 @@ class TrunkFeatures(Base):
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
     context = Column(String(79))
+    outgoing_caller_id_format = Column(
+        Text,
+        CheckConstraint("outgoing_caller_id_format in ('+E164', 'E164', 'national')"),
+        nullable=False,
+        server_default='+E164',
+    )
     twilio_incoming = Column(Boolean, nullable=False, server_default='False')
 
     endpoint_sip = relationship('EndpointSIP', viewonly=True)

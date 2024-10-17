@@ -214,10 +214,15 @@ class TestSimpleSearch(TestSearch):
 class TestSearchGivenMultipleTrunks(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.trunk1 = self.add_trunk(context='Ashton', description='resto')
-        self.trunk2 = self.add_trunk(context='Beaugarton', description='bar')
-        self.trunk3 = self.add_trunk(context='Casa', description='resto')
-        self.trunk4 = self.add_trunk(context='Dunkin', description='resto')
+        self.trunk1 = self.add_trunk(
+            context='Ashton', description='resto', outgoing_caller_id_format='+E164'
+        )
+        self.trunk2 = self.add_trunk(
+            context='Beaugarton', description='bar', outgoing_caller_id_format='E164'
+        )
+        self.trunk3 = self.add_trunk(
+            context='Dunkin', description='resto', outgoing_caller_id_format='national'
+        )
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.trunk2])
@@ -233,30 +238,34 @@ class TestSearchGivenMultipleTrunks(TestSearch):
         expected_bar = SearchResult(1, [self.trunk2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.trunk1, self.trunk3, self.trunk4])
+        expected_all_resto = SearchResult(2, [self.trunk1, self.trunk3])
         self.assert_search_returns_result(
             expected_all_resto, description='resto', order='context'
         )
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.trunk1, self.trunk2, self.trunk3, self.trunk4])
+        expected = SearchResult(3, [self.trunk1, self.trunk2, self.trunk3])
 
         self.assert_search_returns_result(expected, order='context')
+        self.assert_search_returns_result(expected, order='outgoing_caller_id_format')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(
         self,
     ):
-        expected = SearchResult(4, [self.trunk4, self.trunk3, self.trunk2, self.trunk1])
+        expected = SearchResult(3, [self.trunk3, self.trunk2, self.trunk1])
 
         self.assert_search_returns_result(expected, order='context', direction='desc')
+        self.assert_search_returns_result(
+            expected, order='outgoing_caller_id_format', direction='desc'
+        )
 
     def test_when_limiting_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.trunk1])
+        expected = SearchResult(3, [self.trunk1])
 
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_offset_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.trunk2, self.trunk3, self.trunk4])
+        expected = SearchResult(3, [self.trunk2, self.trunk3])
 
         self.assert_search_returns_result(expected, offset=1)
 
@@ -292,6 +301,7 @@ class TestCreate(DAOTestCase):
                 register_iax_id=none(),
                 registercommented=0,
                 description=none(),
+                outgoing_caller_id_format='+E164',
             ),
         )
 
@@ -306,6 +316,7 @@ class TestCreate(DAOTestCase):
             register_iax_id=None,
             registercommented=1,
             description='description',
+            outgoing_caller_id_format='national',
         )
 
         created_trunk = trunk_dao.create(trunk)
@@ -325,6 +336,7 @@ class TestCreate(DAOTestCase):
                 register_iax_id=none(),
                 registercommented=1,
                 description='description',
+                outgoing_caller_id_format='national',
             ),
         )
 
@@ -346,6 +358,7 @@ class TestEdit(DAOTestCase):
         trunk.context = 'other_default'
         trunk.registercommented = 0
         trunk.description = 'other description'
+        trunk.outgoing_caller_id_format = 'national'
 
         trunk_dao.dissociate_endpoint_sip(trunk, sip)
 
@@ -369,6 +382,7 @@ class TestEdit(DAOTestCase):
                 register_iax_id=register_iax.id,
                 registercommented=0,
                 description='other description',
+                outgoing_caller_id_format='national',
             ),
         )
 
