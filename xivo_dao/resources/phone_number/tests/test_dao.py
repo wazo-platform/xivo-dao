@@ -281,6 +281,14 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(result, contains_exactly(row))
 
+    def test_find_all_by_multiple_numbers(self):
+        row1 = self.add_phone_number(number=SAMPLE_NUMBER)
+        row2 = self.add_phone_number(number=SAMPLE_NUMBER_2)
+
+        result = dao.find_all_by(number_in=[SAMPLE_NUMBER, SAMPLE_NUMBER_2])
+
+        assert_that(result, contains_exactly(row1, row2))
+
 
 class TestSearch(DAOTestCase):
     def assert_search_returns_result(self, search_result, **parameters):
