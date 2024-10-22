@@ -127,6 +127,22 @@ class Incall(Base):
         self.dialaction.actionarg2 = destination.actionarg2
 
     @hybrid_property
+    def user_id(self):
+        if self.dialaction and self.dialaction.action == 'user':
+            return int(self.dialaction.actionarg1)
+        return None
+
+    @user_id.expression
+    def user_id(cls):
+        return (
+            select([cast(Dialaction.actionarg1, Integer)])
+            .where(Dialaction.action == 'user')
+            .where(Dialaction.category == 'incall')
+            .where(Dialaction.categoryval == cast(cls.id, String))
+            .as_scalar()
+        )
+
+    @hybrid_property
     def exten(self):
         for extension in self.extensions:
             return extension.exten
