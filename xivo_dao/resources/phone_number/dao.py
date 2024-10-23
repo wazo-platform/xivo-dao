@@ -23,18 +23,24 @@ def edit(session, resource):
 
 
 @daosession
-def find(session, uuid):
-    return Persistor(session, search_system).find_by({'uuid': uuid})
+def find(session, uuid, tenant_uuids=None):
+    return Persistor(session, search_system, tenant_uuids=tenant_uuids).find_by(
+        {'uuid': uuid}
+    )
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return Persistor(session, search_system).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return Persistor(session, search_system, tenant_uuids=tenant_uuids).find_all_by(
+        criteria
+    )
 
 
 @daosession
-def find_by(session, **criteria):
-    return Persistor(session, search_system).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return Persistor(session, search_system, tenant_uuids=tenant_uuids).find_by(
+        criteria
+    )
 
 
 @daosession
