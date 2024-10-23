@@ -1,4 +1,4 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.incall import Incall
@@ -12,8 +12,15 @@ config = SearchConfig(
         'greeting_sound': Incall.greeting_sound,
         'description': Incall.description,
         'exten': Incall.exten,
+        'user_id': Incall.user_id,
     },
     default_sort='exten',
+    search={
+        'preprocess_subroutine': Incall.preprocess_subroutine,
+        'greeting_sound': Incall.greeting_sound,
+        'description': Incall.description,
+        'exten': Incall.exten,
+    },
 )
 
 incall_search = SearchSystem(config)

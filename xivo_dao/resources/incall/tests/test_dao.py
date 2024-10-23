@@ -115,6 +115,16 @@ class TestFindBy(DAOTestCase):
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.description, equal_to('mydescription'))
 
+    def test_find_by_user_id(self):
+        incall_row = self.add_incall(
+            destination=Dialaction(action='user', actionarg1='2')
+        )
+
+        incall = incall_dao.find_by(user_id=2)
+
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.user_id, equal_to(2))
+
     def test_given_incall_does_not_exist_then_returns_null(self):
         incall = incall_dao.find_by(id=42)
 
@@ -162,6 +172,16 @@ class TestGetBy(DAOTestCase):
 
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.description, equal_to('mydescription'))
+
+    def test_get_by_user_id(self):
+        incall_row = self.add_incall(
+            destination=Dialaction(action='user', actionarg1='2')
+        )
+
+        incall = incall_dao.get_by(user_id=2)
+
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.user_id, equal_to(2))
 
     def test_given_incall_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, incall_dao.get_by, id='42')
