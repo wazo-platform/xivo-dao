@@ -19,6 +19,7 @@ class Dialaction(Base):
     __table_args__ = (
         PrimaryKeyConstraint('event', 'category', 'categoryval'),
         Index('dialaction__idx__action_actionarg1', 'action', 'actionarg1'),
+        Index('dialaction__idx__category_categoryval', 'category', 'categoryval'),
     )
 
     # Remove the following warning:
