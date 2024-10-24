@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError
 from xivo_dao.alchemy.phone_number import PhoneNumber
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DEFAULT_TENANT, DAOTestCase
 
 from .. import dao
 
@@ -288,6 +288,29 @@ class TestFindAllBy(DAOTestCase):
         result = dao.find_all_by(number_in=[SAMPLE_NUMBER, SAMPLE_NUMBER_2])
 
         assert_that(result, contains_exactly(row1, row2))
+
+    def find_all_multitenant(self):
+        tenant = self.add_tenant()
+        name = 'Alice'
+        alice = self.add_phone_number(
+            number=SAMPLE_NUMBER, caller_id_name=name, tenant_uuid=tenant.uuid
+        )
+        bob = self.add_phone_number(
+            number=SAMPLE_NUMBER,
+            name='Bob',
+        )
+
+        result = dao.find_all_by(number=SAMPLE_NUMBER)
+
+        assert_that(result, contains_exactly(alice, bob))
+
+        result = dao.find_all_by(number=SAMPLE_NUMBER, tenant_uuids=[tenant.uuid])
+
+        assert_that(result, contains_exactly(alice))
+
+        result = dao.find_all_by(number=SAMPLE_NUMBER, tenant_uuids=[DEFAULT_TENANT])
+
+        assert_that(result, contains_exactly(bob))
 
 
 class TestSearch(DAOTestCase):
