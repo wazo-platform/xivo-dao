@@ -8,9 +8,11 @@ from sqlalchemy.schema import (
     Index,
     PrimaryKeyConstraint,
     UniqueConstraint,
+    CheckConstraint,
 )
 from sqlalchemy.sql import text
 from sqlalchemy.types import Boolean, String, Text
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -32,13 +34,27 @@ class PhoneNumber(Base):
             unique=True,
             postgresql_where=(text('main is true')),
         ),
+        CheckConstraint(
+            'main AND shared',
+            name='shared_if_main',
+        ),
     )
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(String(36), nullable=False)
     number = Column(Text, nullable=False)
     caller_id_name = Column(Text, nullable=True)
     shared = Column(Boolean, nullable=False, server_default=text('false'))
-    main = Column(Boolean, nullable=False, server_default=text('false'))
+    _main = Column('main', Boolean, nullable=False, server_default=text('false'))
+
+    @hybrid_property
+    def main(self):
+        return self._main
+
+    @main.setter
+    def main(self, value):
+        self._main = value
+        if value:
+            self.shared = True
 
     def __repr__(self):
         return f'{self.__class__.__name__}(uuid={self.uuid}, number={self.number})'
