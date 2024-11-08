@@ -35,10 +35,11 @@ class PhoneNumber(Base):
             postgresql_where=(text('main is true')),
         ),
         CheckConstraint(
-            'main AND shared',
+            'CASE WHEN main THEN shared ELSE true END',
             name='shared_if_main',
         ),
     )
+
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(String(36), nullable=False)
     number = Column(Text, nullable=False)
