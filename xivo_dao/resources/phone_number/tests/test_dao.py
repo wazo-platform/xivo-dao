@@ -525,6 +525,27 @@ class TestEdit(DAOTestCase):
             ),
         )
 
+    def test_edit_set_main_implies_shared(self):
+        tenant = self.add_tenant()
+        created_phone_number = dao.create(
+            PhoneNumber(
+                number=SAMPLE_NUMBER, tenant_uuid=tenant.uuid, caller_id_name='Alice'
+            )
+        )
+
+        phone_number = dao.get(created_phone_number.uuid)
+        assert_that(not phone_number.shared)
+        assert_that(not phone_number.main)
+
+        phone_number.main = True
+
+        dao.edit(phone_number)
+
+        main = self.session.query(PhoneNumber).filter(PhoneNumber.main).first()
+
+        assert_that(phone_number, equal_to(main))
+        assert_that(main.shared)
+
 
 class TestDelete(DAOTestCase):
     def test_delete(self):
