@@ -36,7 +36,7 @@ class PhoneNumber(Base):
         ),
         CheckConstraint(
             'CASE WHEN main THEN shared ELSE true END',
-            name='shared_if_main',
+            name='phone_number_shared_if_main',
         ),
     )
 
