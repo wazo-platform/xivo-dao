@@ -1183,12 +1183,12 @@ def find_queue_members_settings(session, queue_name):
         .all()
     )
 
-    def is_user_in_group(row):
-        return row.category == 'group' and row.uuid is not None
+    def is_user(row):
+        return row.uuid is not None
 
     res = []
     for row in user_members:
-        if is_user_in_group(row):
+        if is_user(row):
             member = Member(
                 interface=f'Local/{row.uuid}@usersharedlines',
                 penalty=str(row.penalty),
