@@ -986,6 +986,16 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             commented=1,
         )
 
+        user_queue = self.add_user()
+        self.add_queue_member(
+            queue_name=queue_name,
+            interface='ignored',
+            usertype='user',
+            userid=user_queue.id,
+            penalty=0,
+            commented=0,
+        )
+
         result = asterisk_conf_dao.find_queue_members_settings(queue_name)
         assert_that(
             result,
@@ -993,6 +1003,12 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                 contains_exactly('Local/100@default', '1', '', ''),
                 contains_exactly('PJSIP/3m6dsc', '5', '', ''),
                 contains_exactly('SCCP/1003', '15', '', ''),
+                contains_exactly(
+                    f'Local/{user_queue.uuid}@usersharedlines',
+                    '0',
+                    '',
+                    f'hint:{user_queue.uuid}@usersharedlines',
+                ),
             ),
         )
 
