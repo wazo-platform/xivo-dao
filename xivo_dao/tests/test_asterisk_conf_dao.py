@@ -1769,6 +1769,24 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             ),
         )
 
+    def test_that_the_simultcalls_var_is_set(self):
+        user = self.add_user()
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', f'WAZO_CALLER_SIMULTCALLS={user.simultcalls}'],
+                    ),
+                )
+            ),
+        )
+
     def test_that_all_section_reference_are_added(self):
         endpoint = self.add_endpoint_sip(
             templates=[self.general_config_template, self.webrtc_config_template],

@@ -759,6 +759,7 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
             options.append(('set_var', f'WAZO_USERUUID={user.uuid}'))
             if user.enableonlinerec:
                 options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
+            options.append(('set_var', f'WAZO_CALLER_SIMULTCALLS={user.simultcalls}'))
 
         if self._line.extensions:
             for extension in self._line.extensions:
