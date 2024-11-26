@@ -115,6 +115,7 @@ def find_sccp_line_settings(session):
             number,
             uuid,
             enable_online_recording,
+            simultcalls,
         ) = args
 
         line = {
@@ -129,6 +130,7 @@ def find_sccp_line_settings(session):
             'uuid': uuid,
             'tenant_uuid': tenant_uuid,
             'enable_online_recording': enable_online_recording,
+            'simultcalls': simultcalls,
         }
 
         if allow:
@@ -155,6 +157,7 @@ def find_sccp_line_settings(session):
             Extension.exten,
             UserFeatures.uuid,
             UserFeatures.enableonlinerec,
+            UserFeatures.simultcalls,
         )
         .join(
             LineFeatures,
