@@ -163,6 +163,7 @@ class ItemInserter:
         kwargs.setdefault('endpoint_sccp_id', None)
         kwargs.setdefault('endpoint_custom_id', None)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        kwargs.setdefault('enablednd', 0)
         if not kwargs.get('context'):
             context = self.add_context()
             kwargs['context'] = context.name
@@ -179,6 +180,7 @@ class ItemInserter:
             userfield=kwargs['userfield'],
             description=kwargs['description'],
             tenant_uuid=kwargs['tenant_uuid'],
+            enablednd=kwargs['enablednd'],
         )
         line = self.add_line(
             context=kwargs['context'],
