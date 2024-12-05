@@ -104,6 +104,36 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                     context=self.context.name,
                     cid_num=number,
                     uuid=uuid_(),
+                    simultcalls=5,
+                )
+            ),
+        )
+
+    def test_find_sccp_line_settings_simultcalls(self):
+        number = '1234'
+        sccp_line = self.add_sccpline(cid_num=number, context=self.context.name)
+        ule = self.add_user_line_with_exten(
+            endpoint_sccp_id=sccp_line.id,
+            exten=number,
+            context=self.context.name,
+            simultcalls=2,
+        )
+
+        sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
+
+        assert_that(
+            sccp_lines,
+            contains_inanyorder(
+                has_entries(
+                    user_id=ule.user_id,
+                    name=sccp_line.name,
+                    language=None,
+                    number=number,
+                    cid_name='Tester One',
+                    context=self.context.name,
+                    cid_num=number,
+                    uuid=uuid_(),
+                    simultcalls=2,
                 )
             ),
         )
@@ -1764,6 +1794,24 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 has_entries(
                     endpoint_section_options=has_items(
                         ['set_var', f'WAZO_LINE_ID={line.id}'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_simultcalls_var_is_set(self):
+        user = self.add_user()
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', f'WAZO_CALLER_SIMULTCALLS={user.simultcalls}'],
                     ),
                 )
             ),

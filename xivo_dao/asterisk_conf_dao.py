@@ -115,6 +115,7 @@ def find_sccp_line_settings(session):
             number,
             uuid,
             enable_online_recording,
+            simultcalls,
         ) = args
 
         line = {
@@ -129,6 +130,7 @@ def find_sccp_line_settings(session):
             'uuid': uuid,
             'tenant_uuid': tenant_uuid,
             'enable_online_recording': enable_online_recording,
+            'simultcalls': simultcalls,
         }
 
         if allow:
@@ -155,6 +157,7 @@ def find_sccp_line_settings(session):
             Extension.exten,
             UserFeatures.uuid,
             UserFeatures.enableonlinerec,
+            UserFeatures.simultcalls,
         )
         .join(
             LineFeatures,
@@ -759,6 +762,7 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
             options.append(('set_var', f'WAZO_USERUUID={user.uuid}'))
             if user.enableonlinerec:
                 options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
+            options.append(('set_var', f'WAZO_CALLER_SIMULTCALLS={user.simultcalls}'))
 
         if self._line.extensions:
             for extension in self._line.extensions:

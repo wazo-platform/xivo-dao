@@ -157,6 +157,7 @@ class ItemInserter:
         kwargs.setdefault('musiconhold', 'default')
         kwargs.setdefault('agentid', None)
         kwargs.setdefault('mobilephonenumber', '')
+        kwargs.setdefault('simultcalls', 5)
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
         kwargs.setdefault('endpoint_sip_uuid', None)
@@ -178,6 +179,7 @@ class ItemInserter:
             agentid=kwargs['agentid'],
             mobilephonenumber=kwargs['mobilephonenumber'],
             userfield=kwargs['userfield'],
+            simultcalls=kwargs['simultcalls'],
             description=kwargs['description'],
             tenant_uuid=kwargs['tenant_uuid'],
             enablednd=kwargs['enablednd'],
