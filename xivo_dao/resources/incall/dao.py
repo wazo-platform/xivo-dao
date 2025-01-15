@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from contextlib import contextmanager
@@ -35,10 +35,6 @@ def find_by(tenant_uuids=None, **criteria):
 
 def find_all_by(tenant_uuids=None, **criteria):
     return persistor(tenant_uuids).find_all_by(criteria)
-
-
-def find_main_callerid(tenant_uuid):
-    return persistor().find_main_callerid(tenant_uuid)
 
 
 def create(incall):

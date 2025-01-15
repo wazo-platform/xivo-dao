@@ -1,4 +1,4 @@
-# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -15,7 +15,6 @@ from sqlalchemy.sql import (
     select,
 )
 from sqlalchemy.types import (
-    Boolean,
     Integer,
     String,
     Text,
@@ -41,9 +40,6 @@ class Incall(Base):
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
         nullable=False,
     )
-
-    # NOTE(WAZO-3715): This field is a workaround and must not be exposed to the API.
-    main = Column(Boolean, nullable=False, server_default='false')
 
     preprocess_subroutine = Column(String(79))
     greeting_sound = Column(Text)
