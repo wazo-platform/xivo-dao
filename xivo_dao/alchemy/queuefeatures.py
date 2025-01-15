@@ -1,4 +1,4 @@
-# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
@@ -18,7 +18,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Boolean, Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -77,6 +77,7 @@ class QueueFeatures(Base):
     number = Column(String(40))
     context = Column(String(79))
     data_quality = Column(Integer, nullable=False, server_default='0')
+    dtmf_record_toggle = Column(Boolean, nullable=False, server_default='true')
     hitting_callee = Column(Integer, nullable=False, server_default='0')
     hitting_caller = Column(Integer, nullable=False, server_default='0')
     retries = Column(Integer, nullable=False, server_default='0')
