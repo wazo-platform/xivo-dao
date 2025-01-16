@@ -1,9 +1,8 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     all_of,
-    any_of,
     assert_that,
     contains_exactly,
     empty,
@@ -437,32 +436,6 @@ class TestCreate(DAOTestCase):
             ),
         )
 
-    def test_create_when_main_does_not_exists(self):
-        incall = Incall(
-            destination=Dialaction(action='none'),
-            tenant_uuid=self.default_tenant.uuid,
-        )
-        created_incall = incall_dao.create(incall)
-
-        row = self.session.query(Incall).first()
-
-        assert_that(created_incall, equal_to(row))
-        assert_that(created_incall, has_properties(main=True))
-
-    def test_create_when_main_exists(self):
-        self.add_incall(main=True)
-
-        incall = Incall(
-            destination=Dialaction(action='none'),
-            tenant_uuid=self.default_tenant.uuid,
-        )
-        created_incall = incall_dao.create(incall)
-
-        row = incall_dao.get(created_incall.id)
-
-        assert_that(created_incall, equal_to(row))
-        assert_that(created_incall, has_properties(main=False))
-
 
 class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
@@ -579,16 +552,6 @@ class TestDelete(DAOTestCase):
         )  # fmt: skip
         assert_that(extension, has_properties(type='user', typeval='0'))
 
-    def test_when_deleting_then_main_is_not_reassigned(self):
-        # NOTE(fblackburn): This behavior is intentional to have a workaround to change main
-        incall1 = self.add_incall(main=True)
-        incall2 = self.add_incall(main=False)
-
-        incall_dao.delete(incall1)
-
-        row = incall_dao.get(incall2.id)
-        assert_that(row, has_properties(main=False))
-
 
 class TestRelationship(DAOTestCase):
     def test_extensions_relationship(self):
@@ -635,46 +598,3 @@ class TestRelationship(DAOTestCase):
         incall = incall_dao.get(incall_row.id)
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.destination.voicemail, voicemail_row)
-
-
-class TestFindMainCallerID(DAOTestCase):
-    def test_given_no_incall_then_returns_none(self):
-        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
-
-        assert_that(result, none())
-
-    def test_given_no_main_incall_then_returns_none(self):
-        self.add_incall(main=False)
-        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
-
-        assert_that(result, none())
-
-    def test_given_one_main_incall_then_returns_one(self):
-        incall = self.add_incall(main=True)
-        exten = self.add_extension(type='incall', typeval=str(incall.id))
-
-        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
-
-        assert_that(result, has_properties(type='main', number=exten.exten))
-
-    def test_given_many_main_incalls_then_returns_one(self):
-        incall1 = self.add_incall(main=True)
-        exten1 = self.add_extension(type='incall', typeval=str(incall1.id))
-        incall2 = self.add_incall(main=True)
-        exten2 = self.add_extension(type='incall', typeval=str(incall2.id))
-
-        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
-
-        caller_id1 = has_properties(type='main', number=exten1.exten)
-        caller_id2 = has_properties(type='main', number=exten2.exten)
-        assert_that(result, any_of(caller_id1, caller_id2))
-
-    def test_given_many_incalls_then_returns_only_main(self):
-        incall1 = self.add_incall(main=True)
-        exten1 = self.add_extension(type='incall', typeval=str(incall1.id))
-        incall2 = self.add_incall(main=False)
-        self.add_extension(type='incall', typeval=str(incall2.id))
-
-        result = incall_dao.find_main_callerid(self.default_tenant.uuid)
-
-        assert_that(result, has_properties(type='main', number=exten1.exten))
