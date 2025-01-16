@@ -30,7 +30,6 @@ from .schedulepath import SchedulePath
 DEFAULT_QUEUE_OPTIONS = {
     'timeout': '15',
     'queue-youarenext': 'queue-youarenext',
-    'queue-youarenext': 'queue-youarenext',
     'queue-thereare': 'queue-thereare',
     'queue-callswaiting': 'queue-callswaiting',
     'queue-holdtime': 'queue-holdtime',
