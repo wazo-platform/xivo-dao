@@ -1,4 +1,4 @@
-# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -11,7 +11,7 @@ from sqlalchemy.sql import (
     cast,
     select,
 )
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.types import Boolean, Integer, String, Text
 from sqlalchemy import text
 
 from xivo_dao.helpers.db_manager import Base
@@ -40,6 +40,7 @@ class GroupFeatures(Base):
         String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
     )
     name = Column(String(128), nullable=False)
+    dtmf_record_toggle = Column(Boolean, nullable=False, server_default='true')
     label = Column(Text, nullable=False)
     transfer_user = Column(Integer, nullable=False, server_default='0')
     transfer_call = Column(Integer, nullable=False, server_default='0')
