@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -318,6 +318,7 @@ class TestCreate(DAOTestCase):
                 dtmf_transfer_caller_enabled=False,
                 dtmf_record_callee_enabled=False,
                 dtmf_record_caller_enabled=False,
+                dtmf_record_toggle=True,
                 retry_on_timeout=True,
                 ring_on_hold=False,
                 announce_hold_time_on_entry=False,
@@ -344,6 +345,7 @@ class TestCreate(DAOTestCase):
             dtmf_transfer_caller_enabled=True,
             dtmf_record_callee_enabled=True,
             dtmf_record_caller_enabled=True,
+            dtmf_record_toggle=False,
             retry_on_timeout=False,
             ring_on_hold=True,
             announce_hold_time_on_entry=True,
@@ -374,6 +376,7 @@ class TestCreate(DAOTestCase):
                 dtmf_transfer_caller_enabled=True,
                 dtmf_record_callee_enabled=True,
                 dtmf_record_caller_enabled=True,
+                dtmf_record_toggle=False,
                 retry_on_timeout=False,
                 ring_on_hold=True,
                 announce_hold_time_on_entry=True,
@@ -403,6 +406,7 @@ class TestEdit(DAOTestCase):
                 dtmf_transfer_caller_enabled=False,
                 dtmf_record_callee_enabled=False,
                 dtmf_record_caller_enabled=False,
+                dtmf_record_toggle=True,
                 retry_on_timeout=True,
                 ring_on_hold=False,
                 announce_hold_time_on_entry=False,
@@ -428,6 +432,7 @@ class TestEdit(DAOTestCase):
         queue.dtmf_transfer_caller_enabled = True
         queue.dtmf_record_callee_enabled = True
         queue.dtmf_record_caller_enabled = True
+        queue.dtmf_record_toggle = False
         queue.retry_on_timeout = False
         queue.ring_on_hold = True
         queue.announce_hold_time_on_entry = True
@@ -456,6 +461,7 @@ class TestEdit(DAOTestCase):
                 dtmf_transfer_caller_enabled=True,
                 dtmf_record_callee_enabled=True,
                 dtmf_record_caller_enabled=True,
+                dtmf_record_toggle=False,
                 retry_on_timeout=False,
                 ring_on_hold=True,
                 announce_hold_time_on_entry=True,

@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -761,7 +761,7 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
             )  # Deprecated in 24.01
             options.append(('set_var', f'WAZO_USERUUID={user.uuid}'))
             if user.enableonlinerec:
-                options.append(('set_var', 'DYNAMIC_FEATURES=togglerecord'))
+                options.append(('set_var', 'WAZO_USER_DTMF_RECORD_TOGGLE_ENABLED=1'))
             options.append(('set_var', f'WAZO_CALLER_SIMULTCALLS={user.simultcalls}'))
 
         if self._line.extensions:
