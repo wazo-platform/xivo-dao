@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -372,6 +372,7 @@ class TestCreate(DAOTestCase):
                 label='mygroup label',
                 caller_id_mode=none(),
                 caller_id_name=none(),
+                dtmf_record_toggle=True,
                 timeout=none(),
                 music_on_hold=none(),
                 preprocess_subroutine=none(),
@@ -390,6 +391,7 @@ class TestCreate(DAOTestCase):
             label='my group label',
             caller_id_mode='prepend',
             caller_id_name='toto',
+            dtmf_record_toggle=False,
             timeout=60,
             music_on_hold='default',
             preprocess_subroutine='tata',
@@ -415,6 +417,7 @@ class TestCreate(DAOTestCase):
                 label='my group label',
                 caller_id_mode='prepend',
                 caller_id_name='toto',
+                dtmf_record_toggle=False,
                 timeout=60,
                 music_on_hold='default',
                 preprocess_subroutine='tata',
@@ -436,6 +439,7 @@ class TestEdit(DAOTestCase):
                 label='my group label',
                 caller_id_mode='prepend',
                 caller_id_name='toto',
+                dtmf_record_toggle=False,
                 timeout=60,
                 music_on_hold='default',
                 preprocess_subroutine='tata',
@@ -452,6 +456,7 @@ class TestEdit(DAOTestCase):
         group.label = 'other label'
         group.caller_id_mode = 'overwrite'
         group.caller_id_name = 'bob'
+        group.dtmf_record_toggle = False
         group.timeout = 5
         group.music_on_hold = 'not_default'
         group.preprocess_subroutine = 'other_routine'
@@ -474,6 +479,7 @@ class TestEdit(DAOTestCase):
                 label='other label',
                 caller_id_mode='overwrite',
                 caller_id_name='bob',
+                dtmf_record_toggle=False,
                 timeout=5,
                 music_on_hold='not_default',
                 preprocess_subroutine='other_routine',
