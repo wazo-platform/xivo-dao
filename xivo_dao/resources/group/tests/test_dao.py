@@ -372,7 +372,7 @@ class TestCreate(DAOTestCase):
                 label='mygroup label',
                 caller_id_mode=none(),
                 caller_id_name=none(),
-                dtmf_record_toggle=True,
+                dtmf_record_toggle=False,
                 timeout=none(),
                 music_on_hold=none(),
                 preprocess_subroutine=none(),
@@ -391,7 +391,7 @@ class TestCreate(DAOTestCase):
             label='my group label',
             caller_id_mode='prepend',
             caller_id_name='toto',
-            dtmf_record_toggle=False,
+            dtmf_record_toggle=True,
             timeout=60,
             music_on_hold='default',
             preprocess_subroutine='tata',
@@ -417,7 +417,7 @@ class TestCreate(DAOTestCase):
                 label='my group label',
                 caller_id_mode='prepend',
                 caller_id_name='toto',
-                dtmf_record_toggle=False,
+                dtmf_record_toggle=True,
                 timeout=60,
                 music_on_hold='default',
                 preprocess_subroutine='tata',
@@ -439,7 +439,7 @@ class TestEdit(DAOTestCase):
                 label='my group label',
                 caller_id_mode='prepend',
                 caller_id_name='toto',
-                dtmf_record_toggle=False,
+                dtmf_record_toggle=True,
                 timeout=60,
                 music_on_hold='default',
                 preprocess_subroutine='tata',
@@ -456,7 +456,7 @@ class TestEdit(DAOTestCase):
         group.label = 'other label'
         group.caller_id_mode = 'overwrite'
         group.caller_id_name = 'bob'
-        group.dtmf_record_toggle = False
+        group.dtmf_record_toggle = True
         group.timeout = 5
         group.music_on_hold = 'not_default'
         group.preprocess_subroutine = 'other_routine'
@@ -479,7 +479,7 @@ class TestEdit(DAOTestCase):
                 label='other label',
                 caller_id_mode='overwrite',
                 caller_id_name='bob',
-                dtmf_record_toggle=False,
+                dtmf_record_toggle=True,
                 timeout=5,
                 music_on_hold='not_default',
                 preprocess_subroutine='other_routine',

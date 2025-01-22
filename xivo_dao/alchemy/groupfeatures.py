@@ -40,7 +40,7 @@ class GroupFeatures(Base):
         String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False
     )
     name = Column(String(128), nullable=False)
-    dtmf_record_toggle = Column(Boolean, nullable=False, server_default='true')
+    dtmf_record_toggle = Column(Boolean, nullable=False, server_default='false')
     label = Column(Text, nullable=False)
     transfer_user = Column(Integer, nullable=False, server_default='0')
     transfer_call = Column(Integer, nullable=False, server_default='0')

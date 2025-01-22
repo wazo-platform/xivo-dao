@@ -76,7 +76,7 @@ class QueueFeatures(Base):
     number = Column(String(40))
     context = Column(String(79))
     data_quality = Column(Integer, nullable=False, server_default='0')
-    dtmf_record_toggle = Column(Boolean, nullable=False, server_default='true')
+    dtmf_record_toggle = Column(Boolean, nullable=False, server_default='false')
     hitting_callee = Column(Integer, nullable=False, server_default='0')
     hitting_caller = Column(Integer, nullable=False, server_default='0')
     retries = Column(Integer, nullable=False, server_default='0')
