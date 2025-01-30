@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import Integer
@@ -15,7 +15,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 def find_by_incall_id(session, incall_id):
     row = (
         session.query(
-            UserFeatures.uuid.label('xivo_user_uuid'),
+            UserFeatures.uuid.label('user_uuid'),
             LineFeatures.context.label('profile'),
         ).filter(
             Dialaction.category == 'incall',
