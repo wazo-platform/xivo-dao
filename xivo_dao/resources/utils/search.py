@@ -13,8 +13,13 @@ import sqlalchemy as sa
 from sqlalchemy import sql
 from sqlalchemy.sql.functions import ReturnTypeFromArgs
 from sqlalchemy.types import Integer
+import re
 
 from xivo_dao.helpers import errors
+
+
+def contains_latin(text):
+    return bool(re.search(r'[a-zA-Z]', text))  # Check if the text has Latin characters
 
 
 class SearchResult(NamedTuple):
@@ -138,7 +143,7 @@ class SearchSystem:
 
         criteria = []
         for column in self.config.all_search_columns():
-            clean_term = unidecode(term)
+            clean_term = unidecode(term) if contains_latin(term) else term
             expression = unaccent(sql.cast(column, sa.String)).ilike(f'%{clean_term}%')
             criteria.append(expression)
 
