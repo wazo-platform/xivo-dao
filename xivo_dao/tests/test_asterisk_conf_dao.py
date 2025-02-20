@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -1340,6 +1340,59 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             ),
         )
 
+    def test_that_the_tenant_recording_start_is_set(self):
+        tenant = self.add_tenant(record_start_announcement='tt-monkeys')
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_tenant_recording_stop_is_set(self):
+        tenant = self.add_tenant(record_stop_announcement='tt-monkeys')
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=pP(tt-monkeys)'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_tenant_recording_start_and_stop_are_set(self):
+        tenant = self.add_tenant(
+            record_start_announcement='tt-monkeys', record_stop_announcement='beep'
+        )
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P(beep)'],
+                    ),
+                )
+            ),
+        )
+
     def test_that_all_section_reference_are_added(self):
         endpoint = self.add_endpoint_sip(
             templates=[self.meeting_guest_config_template],
@@ -1405,6 +1458,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                         contains_exactly(
                             'set_var', f'WAZO_MEETING_NAME={meeting.name}'
                         ),
+                        contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
                         contains_exactly('context', self.context.name),
                     )
                 )
@@ -1781,6 +1835,59 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             ),
         )
 
+    def test_that_the_tenant_recording_start_is_set(self):
+        tenant = self.add_tenant(record_start_announcement='tt-monkeys')
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_tenant_recording_stop_is_set(self):
+        tenant = self.add_tenant(record_stop_announcement='tt-monkeys')
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=pP(tt-monkeys)'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_tenant_recording_start_and_stop_are_set(self):
+        tenant = self.add_tenant(
+            record_start_announcement='tt-monkeys', record_stop_announcement='beep'
+        )
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P(beep)'],
+                    ),
+                )
+            ),
+        )
+
     def test_that_the_line_id_var_is_set(self):
         user = self.add_user()
         endpoint = self.add_endpoint_sip(template=False)
@@ -1921,6 +2028,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         ),
                         contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains_exactly('set_var', f'WAZO_LINE_ID={line.id}'),
+                        contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
                         contains_exactly('context', self.context.name),
                         contains_exactly(
                             'set_var', f'TRANSFER_CONTEXT={self.context.name}'
@@ -2283,6 +2391,59 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             ),
         )
 
+    def test_that_the_tenant_recording_start_is_set(self):
+        tenant = self.add_tenant(record_start_announcement='tt-monkeys')
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_tenant_recording_stop_is_set(self):
+        tenant = self.add_tenant(record_stop_announcement='tt-monkeys')
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=pP(tt-monkeys)'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_tenant_recording_start_and_stop_are_set(self):
+        tenant = self.add_tenant(
+            record_start_announcement='tt-monkeys', record_stop_announcement='beep'
+        )
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P(beep)'],
+                    ),
+                )
+            ),
+        )
+
     def test_that_doubles_are_removed(self):
         template = self.add_endpoint_sip(
             template=True, endpoint_section_options=[['webrtc', 'true']]
@@ -2309,6 +2470,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                         contains_exactly(
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
+                        contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
                     )
                 )
             ),

@@ -51,6 +51,7 @@ from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 
 
@@ -628,6 +629,18 @@ class _SIPEndpointResolver:
             ('set_var', f'__WAZO_TENANT_UUID={self._endpoint_config.tenant_uuid}'),
         ]
 
+    def _add_mixmonitor_options(self, tenant, options):
+        mixmonitor_options = "p"
+        if start_announce := tenant['record_start_announcement']:
+            mixmonitor_options += f"({start_announce})"
+
+        mixmonitor_options += "P"
+        if stop_announce := tenant['record_stop_announcement']:
+            mixmonitor_options += f"({stop_announce})"
+
+        options.append(('set_var', f'__WAZO_MIXMONITOR_OPTIONS={mixmonitor_options}'))
+        return options
+
     def _iterover_parents(self):
         for template in self._endpoint_config.templates:
             yield self._parents[template.uuid]
@@ -684,22 +697,28 @@ class _SIPEndpointResolver:
 
 
 class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
-    def __init__(self, meeting, parents):
+    def __init__(self, meeting, parents, tenants_settings):
         super().__init__(meeting.guest_endpoint_sip, parents)
         self._meeting = meeting
+        self._tenants_settings = tenants_settings
 
     def _default_endpoint_section(self):
-        return super()._default_endpoint_section() + [
+        options = super()._default_endpoint_section() + [
             ('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
             ('set_var', f'WAZO_MEETING_UUID={self._meeting.uuid}'),
             ('set_var', f'WAZO_MEETING_NAME={self._meeting.name}'),
         ]
+        options = self._add_mixmonitor_options(
+            self._tenants_settings[self._endpoint_config.tenant_uuid], options
+        )
+        return options
 
 
 class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
-    def __init__(self, trunk, parents):
+    def __init__(self, trunk, parents, tenants_settings):
         super().__init__(trunk.endpoint_sip, parents)
         self._trunk = trunk
+        self._tenants_settings = tenants_settings
 
     def _default_endpoint_section(self):
         options = super()._default_endpoint_section()
@@ -707,14 +726,18 @@ class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
         if self._trunk.context:
             options.append(('context', self._trunk.context))
 
+        options = self._add_mixmonitor_options(
+            self._tenants_settings[self._endpoint_config.tenant_uuid], options
+        )
         return options
 
 
 class _EndpointSIPLineResolver(_SIPEndpointResolver):
-    def __init__(self, line, parents, pickup_members):
+    def __init__(self, line, parents, pickup_members, tenants_settings):
         super().__init__(line.endpoint_sip, parents)
         self._line = line
         self._pickup_members = pickup_members
+        self._tenants_settings = tenants_settings
 
     def _add_mailboxes(self, options):
         mailboxes = []
@@ -771,6 +794,10 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
                 )
                 break
 
+        options = self._add_mixmonitor_options(
+            self._tenants_settings[self._endpoint_config.tenant_uuid], options
+        )
+
         pickup_groups = self._pickup_members.get(self._endpoint_config.uuid, {})
         named_pickup_groups = ','.join(
             str(id) for id in pickup_groups.get('pickupgroup', [])
@@ -818,6 +845,7 @@ def merge_endpoints_and_template(items, Klass, endpoint_field, *args):
 
 @daosession
 def find_sip_meeting_guests_settings(session):
+    tenant_settings = find_tenant_settings()
     query = (
         session.query(
             Meeting,
@@ -857,13 +885,14 @@ def find_sip_meeting_guests_settings(session):
     )
 
     return merge_endpoints_and_template(
-        query.all(), _EndpointSIPMeetingResolver, 'guest_endpoint_sip'
+        query.all(), _EndpointSIPMeetingResolver, 'guest_endpoint_sip', tenant_settings
     )
 
 
 @daosession
 def find_sip_user_settings(session):
     pickup_members = find_pickup_members('sip')
+    tenant_settings = find_tenant_settings()
     query = (
         session.query(
             LineFeatures,
@@ -911,12 +940,17 @@ def find_sip_user_settings(session):
     )
 
     return merge_endpoints_and_template(
-        query.all(), _EndpointSIPLineResolver, 'endpoint_sip', pickup_members
+        query.all(),
+        _EndpointSIPLineResolver,
+        'endpoint_sip',
+        pickup_members,
+        tenant_settings,
     )
 
 
 @daosession
 def find_sip_trunk_settings(session):
+    tenant_settings = find_tenant_settings()
     query = (
         session.query(
             TrunkFeatures,
@@ -958,8 +992,18 @@ def find_sip_trunk_settings(session):
     )
 
     return merge_endpoints_and_template(
-        query.all(), _EndpointSIPTrunkResolver, 'endpoint_sip'
+        query.all(), _EndpointSIPTrunkResolver, 'endpoint_sip', tenant_settings
     )
+
+
+@daosession
+def find_tenant_settings(session):
+    res = dict()
+    rows = session.query(Tenant).all()
+    for row in rows:
+        row_dict = row.todict()
+        res[row_dict['uuid']] = row_dict
+    return res
 
 
 @daosession
