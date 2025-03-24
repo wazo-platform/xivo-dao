@@ -1,4 +1,4 @@
-# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -398,6 +398,7 @@ class TestCallerId(DAOTestCase):
         sip = self.add_endpoint_sip(
             templates=[template1, template2], caller_id='template3'
         )
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         result = sip.get_option_value('callerid')
         assert_that(result, equal_to('template3'))
@@ -406,6 +407,7 @@ class TestCallerId(DAOTestCase):
         template1 = self.add_endpoint_sip(caller_id='template1')
         template2 = self.add_endpoint_sip(caller_id='template2')
         sip = self.add_endpoint_sip(templates=[template1, template2])
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         result = sip.get_option_value('callerid')
         assert_that(result, equal_to('template1'))
@@ -415,6 +417,7 @@ class TestCallerId(DAOTestCase):
         template1 = self.add_endpoint_sip(templates=[template0])
         template2 = self.add_endpoint_sip(caller_id='template2')
         sip = self.add_endpoint_sip(templates=[template1, template2])
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         result = sip.get_option_value('callerid')
         assert_that(result, equal_to('template0'))
@@ -422,6 +425,7 @@ class TestCallerId(DAOTestCase):
     def test_callerid_inheritance(self):
         template1 = self.add_endpoint_sip(caller_id='template1')
         sip = self.add_endpoint_sip(templates=[template1])
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         assert_that(sip.get_option_value('callerid'), equal_to('template1'))
         assert_that(template1.get_option_value('callerid'), equal_to('template1'))
