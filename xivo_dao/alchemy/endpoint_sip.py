@@ -1,21 +1,17 @@
-# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 
-from sqlalchemy import and_, text, select, column, table
-from sqlalchemy.orm import column_property, relationship
+from operator import attrgetter
+from sqlalchemy.dialects.postgresql import UUID, JSONB, aggregate_order_by
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.types import (
-    Boolean,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy.sql import and_, cast, func, literal, select, text
+from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -82,11 +78,10 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
-    _options = column_property(
-        select([column('options')])
-        .where(column('root') == uuid)
-        .select_from(table('endpoint_sip_options_view'))
-        .as_scalar()
+    _all_sections = relationship(
+        'EndpointSIPSection',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
     )
     _aor_section = relationship(
         'AORSection',
@@ -161,10 +156,10 @@ class EndpointSIP(Base):
                 options=registration_section_options,
             )
         if registration_outbound_auth_section_options:
-            kwargs[
-                '_registration_outbound_auth_section'
-            ] = RegistrationOutboundAuthSection(
-                options=registration_outbound_auth_section_options,
+            kwargs['_registration_outbound_auth_section'] = (
+                RegistrationOutboundAuthSection(
+                    options=registration_outbound_auth_section_options,
+                )
             )
         if identify_section_options:
             kwargs['_identify_section'] = IdentifySection(
@@ -368,16 +363,11 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def caller_id(self):
-        if not self._endpoint_section:
-            return
-
-        matching_options = self._endpoint_section.find('callerid')
-        for key, value in matching_options:
-            return value
+        return self.all_options.get('endpoint', {}).get('callerid')
 
     @caller_id.expression
     def caller_id(cls):
-        return cls._query_option_value('callerid')
+        return cls.all_options.op('#>>')('{endpoint,callerid}')
 
     @caller_id.setter
     def caller_id(self, caller_id):
@@ -444,14 +434,112 @@ class EndpointSIP(Base):
         for _, value in matching_options:
             return value
 
-    def get_option_value(self, option):
-        if not self._options:
-            return None
-        return self._options.get(option, None)
+    @hybrid_property
+    def all_options(self):
+        '''Depth-first mapping of all options (including inherited)'''
 
-    @classmethod
-    def _query_option_value(cls, option):
-        if option is None:
-            return None
+        options = {}
 
-        return cls._options.remote_attr[option].astext
+        def recurse_endpoints(endpoint: EndpointSIP):
+            for section in endpoint._all_sections:
+                type_ = section.type
+                options.setdefault(type_, dict())
+                for option in section._options:
+                    options[type_].setdefault(option.key, option.value)
+
+            templates = sorted(endpoint.template_relations, key=attrgetter('priority'))
+            parents = [template.parent for template in templates]
+            for parent in parents:
+                recurse_endpoints(parent)
+
+        recurse_endpoints(self)
+        return options
+
+    @all_options.expression
+    def all_options(cls):
+        node = (
+            select(
+                [
+                    EndpointSIP.uuid.label('uuid'),
+                    literal(0).label('level'),
+                    literal('0').label('path'),
+                    EndpointSIP.uuid.label('root'),
+                ]
+            )
+            .where(EndpointSIP.uuid == cls.uuid)
+            .cte(recursive=True)
+        )
+
+        endpoints = node.union_all(
+            select(
+                [
+                    EndpointSIPTemplate.parent_uuid.label('uuid'),
+                    (node.c.level + 1).label('level'),
+                    (
+                        node.c.path
+                        + cast(
+                            func.row_number().over(
+                                partition_by='level',
+                                order_by=EndpointSIPTemplate.priority,
+                            ),
+                            String,
+                        )
+                    ).label('path'),
+                    (node.c.root).label('root'),
+                ]
+            ).where(
+                and_(
+                    EndpointSIPTemplate.child_uuid == node.c.uuid,
+                    node.c.root == cls.uuid,
+                )
+            )
+        )
+
+        options = (
+            select(
+                [
+                    endpoints.c.root,
+                    EndpointSIPSection.type.label('section'),
+                    func.jsonb_object(
+                        func.array_agg(
+                            aggregate_order_by(
+                                EndpointSIPSectionOption.key, endpoints.c.path.desc()
+                            )
+                        ),
+                        func.array_agg(
+                            aggregate_order_by(
+                                EndpointSIPSectionOption.value, endpoints.c.path.desc()
+                            )
+                        ),
+                    ).label('json'),
+                ]
+            )
+            .select_from(
+                endpoints.join(
+                    EndpointSIPSection,
+                    EndpointSIPSection.endpoint_sip_uuid == endpoints.c.uuid,
+                ).join(
+                    EndpointSIPSectionOption,
+                    EndpointSIPSectionOption.endpoint_sip_section_uuid
+                    == EndpointSIPSection.uuid,
+                )
+            )
+            .group_by(endpoints.c.root, EndpointSIPSection.type)
+        )
+
+        merged_options = select(
+            [
+                options.c.root,
+                cast(
+                    func.jsonb_object_agg(options.c.section, options.c.json),
+                    JSONB,
+                ).label('json'),
+            ],
+        ).group_by(options.c.root)
+
+        return (
+            select([merged_options.c.json])
+            .where(merged_options.c.root == cls.uuid)
+            .limit(1)
+            .as_scalar()
+        )
