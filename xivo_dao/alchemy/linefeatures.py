@@ -5,7 +5,7 @@ import re
 
 from sqlalchemy import sql, func, ForeignKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import relationship, aliased
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import bindparam, select
 from sqlalchemy.types import (
     Integer,

@@ -156,10 +156,10 @@ class EndpointSIP(Base):
                 options=registration_section_options,
             )
         if registration_outbound_auth_section_options:
-            kwargs['_registration_outbound_auth_section'] = (
-                RegistrationOutboundAuthSection(
-                    options=registration_outbound_auth_section_options,
-                )
+            kwargs[
+                '_registration_outbound_auth_section'
+            ] = RegistrationOutboundAuthSection(
+                options=registration_outbound_auth_section_options,
             )
         if identify_section_options:
             kwargs['_identify_section'] = IdentifySection(

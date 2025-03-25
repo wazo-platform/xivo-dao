@@ -14,7 +14,6 @@ from hamcrest import (
     none,
 )
 from xivo_dao.tests.test_dao import DAOTestCase
-from sqlalchemy.sql import func
 
 from ..endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from ..endpoint_sip_section import EndpointSIPSection
