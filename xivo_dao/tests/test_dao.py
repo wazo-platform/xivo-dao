@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -1110,7 +1110,7 @@ class DAOTestCase(unittest.TestCase, ItemInserter):
     def setUpClass(cls):
         global engine
         if not engine:
-            engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=DB_ECHO)
+            engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=False)
 
         cls.engine = Base.metadata.bind = engine
         expensive_setup()

@@ -27,7 +27,6 @@ from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 
 from .sccpline import SCCPLine
-from .endpoint_sip_options_view import EndpointSIPOptionsView
 from .context import Context
 
 
