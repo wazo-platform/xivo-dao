@@ -78,6 +78,11 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
+    _all_sections = relationship(
+        'EndpointSIPSection',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
+    )
     _aor_section = relationship(
         'AORSection',
         uselist=False,
