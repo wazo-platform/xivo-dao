@@ -1,11 +1,11 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
 
 from sqlalchemy import sql, func, ForeignKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, aliased
 from sqlalchemy.sql.expression import bindparam, select
 from sqlalchemy.types import (
     Integer,
@@ -27,6 +27,7 @@ from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 
 from .sccpline import SCCPLine
+from .endpoint_sip import EndpointSIP
 from .context import Context
 
 
@@ -184,7 +185,7 @@ class LineFeatures(Base):
             [
                 (
                     cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('callerid', regex_filter=regex),
+                    cls._sip_query_option('endpoint', 'callerid', regex),
                 ),
                 (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
             ],
@@ -251,7 +252,7 @@ class LineFeatures(Base):
             [
                 (
                     cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('callerid', regex_filter=regex),
+                    cls._sip_query_option('endpoint', 'callerid', regex),
                 ),
                 (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
             ]
@@ -381,18 +382,19 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_query_option(cls, option, regex_filter=None):
-        attr = EndpointSIPOptionsView.get_option_value(option)
-        if regex_filter:
-            attr = func.unnest(
-                func.regexp_matches(
-                    attr, bindparam('regexp', regex_filter, unique=True)
-                )
-            )
-
+    def _sip_query_option(cls, section, option, regex_filter):
         return (
-            select([attr])
-            .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
+            select(
+                [
+                    func.unnest(
+                        func.regexp_matches(
+                            EndpointSIP.all_options[section][option].as_string(),
+                            bindparam('regex', regex_filter, unique=True),
+                        )
+                    )
+                ]
+            )
+            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
             .as_scalar()
         )
 
