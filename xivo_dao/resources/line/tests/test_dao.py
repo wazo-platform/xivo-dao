@@ -17,8 +17,6 @@ from hamcrest import (
     not_,
 )
 
-from sqlalchemy import func, bindparam, select
-
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
