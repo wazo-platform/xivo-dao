@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
-from xivo_dao.alchemy.blocklist import BlocklistNumber
+from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.persistor import BasePersistor
@@ -28,13 +28,13 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
 
     def _find_query(self, criteria):
         query = self.session.query(BlocklistNumber).options(
-            joinedload(BlocklistNumber.user)
+            joinedload(BlocklistNumber.blocklist).joinedload(Blocklist.user),
         )
         if self.tenant_uuids is not None:
             query = query.filter(
-                BlocklistNumber.user.has(
-                    UserFeatures.tenant_uuid.in_(self.tenant_uuids)
-                )
+                BlocklistNumber.blocklist.has(
+                    Blocklist.user.has(UserFeatures.tenant_uuid.in_(self.tenant_uuids))
+                ),
             )
         bulk_criteria, criteria = split_by(
             criteria.items(), lambda x: x[0].endswith('_in')
@@ -45,5 +45,5 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
 
     def _search_query(self):
         return self.session.query(BlocklistNumber).options(
-            joinedload(BlocklistNumber.user)
+            joinedload(BlocklistNumber.blocklist).joinedload(Blocklist.user)
         )
