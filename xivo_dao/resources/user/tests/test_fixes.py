@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -87,7 +87,7 @@ class TestUserFixes(DAOTestCase):
         self.fixes.fix(main_user.id)
         self.fixes.fix(other_user.id)
 
-        sip = self.session.query(EndpointSIP).first()
+        self.session.refresh(sip)
         assert_that(sip.caller_id, equal_to(main_user.callerid))
 
     def test_given_line_has_multiple_users_then_sccp_caller_id_updated(self):
@@ -105,6 +105,6 @@ class TestUserFixes(DAOTestCase):
         self.fixes.fix(main_user.id)
         self.fixes.fix(other_user.id)
 
-        sccp = self.session.query(SCCPLine).first()
+        self.session.refresh(sccp)
         assert_that(sccp.cid_name, equal_to("John Smith"))
         assert_that(sccp.cid_num, equal_to("1000"))
