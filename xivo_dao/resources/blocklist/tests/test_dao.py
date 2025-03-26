@@ -13,12 +13,13 @@ from hamcrest import (
 
 from sqlalchemy.exc import IntegrityError
 
-from xivo_dao.alchemy.blocklist import BlocklistNumber
+from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DEFAULT_TENANT, DAOTestCase
 
 from .. import dao
+
 
 UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 SAMPLE_NUMBER = '+15551234567'
@@ -33,10 +34,31 @@ class BlocklistDAOTestCase(DAOTestCase):
         self.user_1 = self.add_user(uuid=USER_UUID, tenant_uuid=DEFAULT_TENANT)
         self.user_2 = self.add_user(uuid=USER_UUID_2, tenant_uuid=DEFAULT_TENANT)
 
+    def add_blocklist(self, numbers, user_uuid=None):
+        blocklist = Blocklist(
+            numbers=numbers,
+            _user_link=BlocklistUser(user_uuid=user_uuid) if user_uuid else None,
+        )
+        self.add_me(blocklist)
+        return blocklist
+
     def add_blocklist_number(self, **kwargs):
-        blocklist_number = BlocklistNumber(**kwargs)
+        if blocklist_uuid := kwargs.pop('blocklist_uuid', None):
+            blocklist = self.session.query(Blocklist).get(blocklist_uuid)
+        else:
+            blocklist = Blocklist()
+
+        if user_uuid := kwargs.pop('user_uuid', None):
+            blocklist.user_uuid = user_uuid
+
+        blocklist_number = BlocklistNumber(blocklist=blocklist, **kwargs)
         self.add_me(blocklist_number)
         return blocklist_number
+
+    def add_blocklist_user(self, **kwargs):
+        blocklist_user = BlocklistUser(**kwargs)
+        self.add_me(blocklist_user)
+        return blocklist_user
 
 
 class TestFind(BlocklistDAOTestCase):
@@ -116,6 +138,46 @@ class TestFindBy(BlocklistDAOTestCase):
 
         assert_that(result, equal_to(None))
 
+    def test_find_by_user_uuid(self):
+        row = self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            user_uuid=USER_UUID,
+        )
+
+        result = dao.find_by(user_uuid=USER_UUID)
+
+        assert_that(result, equal_to(row))
+
+    def test_find_by_user_uuid_no_match(self):
+        self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            user_uuid=USER_UUID,
+        )
+
+        result = dao.find_by(user_uuid=USER_UUID_2)
+
+        assert_that(result, equal_to(None))
+
+    def test_find_by_blocklist_uuid(self):
+        row = self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            user_uuid=USER_UUID,
+        )
+
+        result = dao.find_by(blocklist_uuid=row.blocklist_uuid)
+
+        assert_that(result, equal_to(row))
+
+    def test_find_by_blocklist_uuid_no_match(self):
+        self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            user_uuid=USER_UUID,
+        )
+
+        result = dao.find_by(blocklist_uuid=UNKNOWN_UUID)
+
+        assert_that(result, equal_to(None))
+
 
 class TestGetBy(BlocklistDAOTestCase):
     def test_given_column_does_not_exist(self):
@@ -157,6 +219,24 @@ class TestGetBy(BlocklistDAOTestCase):
         )
 
         self.assertRaises(NotFoundError, dao.get_by, label=name)
+
+    def test_get_by_user_uuid(self):
+        row = self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            user_uuid=USER_UUID,
+        )
+
+        result = dao.get_by(user_uuid=USER_UUID)
+
+        assert_that(result, equal_to(row))
+
+    def test_get_by_user_uuid_no_match(self):
+        self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            user_uuid=USER_UUID,
+        )
+
+        self.assertRaises(NotFoundError, dao.get_by, user_uuid=USER_UUID_2)
 
 
 class TestFindAllBy(BlocklistDAOTestCase):
@@ -202,31 +282,52 @@ class TestFindAllBy(BlocklistDAOTestCase):
 
         assert_that(result, contains_exactly(row1, row2))
 
-    def find_all_multitenant(self):
+    def test_find_all_by_user_uuid(self):
+        blocklist_row = self.add_blocklist(
+            numbers=[
+                BlocklistNumber(number=SAMPLE_NUMBER),
+                BlocklistNumber(number=SAMPLE_NUMBER_2),
+            ],
+            user_uuid=USER_UUID,
+        )
+
+        result = dao.find_all_by(user_uuid=USER_UUID)
+
+        assert_that(result, contains_exactly(*blocklist_row.numbers))
+
+    def test_find_all_multitenant(self):
         tenant = self.add_tenant()
-        name = 'Alice'
+        user_3 = self.add_user(tenant_uuid=tenant.uuid)
+
+        # default tenant
         alice = self.add_blocklist_number(
             number=SAMPLE_NUMBER,
-            label=name,
+            label='Alice',
             user_uuid=USER_UUID,
         )
         bob = self.add_blocklist_number(
             number=SAMPLE_NUMBER,
             label='Bob',
-            user_uuid=USER_UUID,
+            user_uuid=USER_UUID_2,
+        )
+
+        charlie = self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            label='Charlie',
+            user_uuid=user_3.uuid,
         )
 
         result = dao.find_all_by(number=SAMPLE_NUMBER)
 
-        assert_that(result, contains_exactly(alice, bob))
+        assert_that(result, contains_exactly(alice, bob, charlie))
 
         result = dao.find_all_by(number=SAMPLE_NUMBER, tenant_uuids=[tenant.uuid])
 
-        assert_that(result, contains_exactly(alice))
+        assert_that(result, contains_exactly(charlie))
 
         result = dao.find_all_by(number=SAMPLE_NUMBER, tenant_uuids=[DEFAULT_TENANT])
 
-        assert_that(result, contains_exactly(bob))
+        assert_that(result, contains_exactly(alice, bob))
 
 
 class TestSearch(BlocklistDAOTestCase):
@@ -248,21 +349,20 @@ class TestSimpleSearch(TestSearch):
         self.assert_search_returns_result(expected)
 
 
-class TestSearchGivenMultiplePhoneNumbers(TestSearch):
+class TestSearchGivenMultipleBlocklistNumber(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.row_1 = self.add_blocklist_number(
-            number='+15551230000', label='one', user_uuid=USER_UUID
+
+        self.blocklist = self.add_blocklist(
+            numbers=[
+                BlocklistNumber(number='+15551230000', label='one'),
+                BlocklistNumber(number='+15551231111', label='two'),
+                BlocklistNumber(number='+15551232222', label='three'),
+                BlocklistNumber(number='+15551233333'),
+            ],
+            user_uuid=USER_UUID,
         )
-        self.row_2 = self.add_blocklist_number(
-            number='+15551231111', label='two', user_uuid=USER_UUID
-        )
-        self.row_3 = self.add_blocklist_number(
-            number='+15551232222', label='three', user_uuid=USER_UUID
-        )
-        self.row_4 = self.add_blocklist_number(
-            number='+15551233333', user_uuid=USER_UUID
-        )
+        self.row_1, self.row_2, self.row_3, self.row_4 = self.blocklist.numbers
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.row_1])
@@ -327,9 +427,10 @@ class TestSearchGivenMultiplePhoneNumbers(TestSearch):
 
 class TestCreate(BlocklistDAOTestCase):
     def test_create_minimal_fields(self):
+        blocklist = Blocklist()
         blocklist_number = BlocklistNumber(
             number=SAMPLE_NUMBER,
-            user_uuid=USER_UUID,
+            blocklist=blocklist,
         )
 
         created_blocklist_number = dao.create(blocklist_number)
@@ -343,7 +444,7 @@ class TestCreate(BlocklistDAOTestCase):
                 uuid=row.uuid,
                 number=SAMPLE_NUMBER,
                 label=None,
-                user_uuid=USER_UUID,
+                blocklist_uuid=blocklist.uuid,
             ),
         )
 
@@ -351,8 +452,10 @@ class TestCreate(BlocklistDAOTestCase):
         name = 'Alice'
         blocklist_number = BlocklistNumber(
             number=SAMPLE_NUMBER,
-            user_uuid=USER_UUID,
             label=name,
+            blocklist=Blocklist(
+                user_uuid=USER_UUID,
+            ),
         )
 
         created_blocklist_number = dao.create(blocklist_number)
@@ -373,12 +476,10 @@ class TestCreate(BlocklistDAOTestCase):
 
 class TestEdit(BlocklistDAOTestCase):
     def test_edit_all_fields(self):
-        created_blocklist_number = dao.create(
-            BlocklistNumber(
-                number=SAMPLE_NUMBER,
-                user_uuid=USER_UUID,
-                label='Alice',
-            )
+        created_blocklist_number = self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            label='Alice',
+            user_uuid=USER_UUID,
         )
 
         blocklist_number = dao.get(created_blocklist_number.uuid)
@@ -401,12 +502,10 @@ class TestEdit(BlocklistDAOTestCase):
         )
 
     def test_edit_set_fields_to_null(self):
-        created_blocklist_number = dao.create(
-            BlocklistNumber(
-                number=SAMPLE_NUMBER,
-                user_uuid=USER_UUID,
-                label='Alice',
-            )
+        created_blocklist_number = self.add_blocklist_number(
+            number=SAMPLE_NUMBER,
+            label='Alice',
+            user_uuid=USER_UUID,
         )
 
         blocklist_number = dao.get(created_blocklist_number.uuid)
@@ -447,17 +546,18 @@ class TestThatNumberIsUnique(BlocklistDAOTestCase):
             number=SAMPLE_NUMBER, user_uuid=USER_UUID
         )
 
-    def test_unique_number_on_create(self):
+    def test_unique_number_in_blocklist_on_create(self):
         assert_that(
             calling(self.add_blocklist_number).with_args(
-                number=SAMPLE_NUMBER, user_uuid=USER_UUID
+                number=SAMPLE_NUMBER,
+                blocklist_uuid=self._blocklist_number.blocklist_uuid,
             ),
             raises(IntegrityError),
         )
 
     def test_unique_number_on_edit(self):
         created_blocklist_number = self.add_blocklist_number(
-            number=SAMPLE_NUMBER_2, user_uuid=USER_UUID
+            number=SAMPLE_NUMBER_2, blocklist_uuid=self._blocklist_number.blocklist_uuid
         )
 
         blocklist_number = dao.get(created_blocklist_number.uuid)
