@@ -493,21 +493,20 @@ class EndpointSIP(Base):
                 )
             )
             .group_by(endpoints.c.root, EndpointSIPSection.type)
+            .alias()
         )
 
-        merged_options = select(
-            [
-                options.c.root,
-                cast(
-                    func.jsonb_object_agg(options.c.section, options.c.json),
-                    JSONB,
-                ).label('json'),
-            ],
-        ).group_by(options.c.root)
-
         return (
-            select([merged_options.c.json])
-            .where(merged_options.c.root == cls.uuid)
+            select(
+                [
+                    cast(
+                        func.jsonb_object_agg(options.c.section, options.c.json),
+                        JSONB,
+                    )
+                ]
+            )
+            .where(options.c.root == cls.uuid)
             .limit(1)
+            .group_by(options.c.root)
             .as_scalar()
         )
