@@ -3,12 +3,13 @@
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.schema import (
     Column,
     PrimaryKeyConstraint,
-    UniqueConstraint,
 )
 from sqlalchemy.sql import text
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.types import Text, String
 from sqlalchemy.orm import relationship
 
@@ -16,24 +17,67 @@ from xivo_dao.helpers.db_manager import Base
 from .userfeatures import UserFeatures
 
 
+class Blocklist(Base):
+    __tablename__ = 'blocklist'
+    __table_args__ = (PrimaryKeyConstraint('uuid'),)
+
+    uuid = Column(UUID(as_uuid=False), server_default=text('uuid_generate_v4()'))
+
+    numbers = relationship(lambda: BlocklistNumber, lazy='joined')
+    user = relationship(
+        UserFeatures,
+        secondary=lambda: BlocklistUser.__table__,
+        lazy='joined',
+        backref='blocklist',
+        uselist=False,
+    )
+    _user_link = relationship(lambda: BlocklistUser, uselist=False)
+
+    user_uuid = association_proxy(
+        '_user_link',
+        'user_uuid',
+        creator=lambda user_uuid: BlocklistUser(user_uuid=user_uuid),
+    )
+
+
 class BlocklistNumber(Base):
     __tablename__ = 'blocklist_number'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
-        UniqueConstraint('number', 'user_uuid'),
-        UniqueConstraint('label', 'user_uuid'),
+        UniqueConstraint('number', 'blocklist_uuid'),
     )
 
-    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
+    uuid = Column(UUID(as_uuid=False), server_default=text('uuid_generate_v4()'))
     number = Column(Text, nullable=False)
     label = Column(Text, nullable=True)
-    user_uuid = Column(
-        String(38),
-        ForeignKey(UserFeatures.uuid, ondelete='CASCADE'),
+    blocklist_uuid = Column(
+        UUID(as_uuid=False),
+        ForeignKey(Blocklist.uuid, ondelete='CASCADE'),
         nullable=False,
     )
 
-    user = relationship("UserFeatures", foreign_keys=[user_uuid], lazy='joined')
+    blocklist = relationship(Blocklist, lazy='joined', uselist=False)
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}(uuid={self.uuid}, number={self.number})'
+    user_uuid = association_proxy('blocklist', 'user_uuid')
+
+
+class BlocklistUser(Base):
+    __tablename__ = 'blocklist_user'
+    __table_args__ = (PrimaryKeyConstraint('user_uuid', 'blocklist_uuid'),)
+
+    user_uuid = Column(
+        String(38),
+        ForeignKey(
+            UserFeatures.uuid, ondelete='CASCADE', name='blocklist_user_user_uuid_fkey'
+        ),
+        nullable=False,
+    )
+    blocklist_uuid = Column(
+        UUID(as_uuid=False),
+        ForeignKey(
+            Blocklist.uuid,
+            ondelete='CASCADE',
+            name='blocklist_user_blocklist_uuid_fkey',
+        ),
+        nullable=False,
+    )
