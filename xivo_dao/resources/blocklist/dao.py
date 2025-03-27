@@ -3,7 +3,7 @@
 
 from xivo_dao.helpers.db_manager import daosession
 
-from .persistor import Persistor
+from .persistor import BlocklistPersistor, Persistor
 from .search import search_system
 
 
@@ -14,7 +14,7 @@ def create(session, resource):
 
 @daosession
 def create_blocklist(session, resource):
-    return Persistor(session, search_system).create(resource)
+    return BlocklistPersistor(session, search_system).create(resource)
 
 
 @daosession
@@ -56,6 +56,11 @@ def get(session, uuid, tenant_uuids=None):
 @daosession
 def get_by(session, tenant_uuids=None, **criteria):
     return Persistor(session, search_system, tenant_uuids).get_by(criteria)
+
+
+@daosession
+def get_blocklist_by(session, tenant_uuids=None, **criteria):
+    return BlocklistPersistor(session, search_system, tenant_uuids).get_by(criteria)
 
 
 @daosession
