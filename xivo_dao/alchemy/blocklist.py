@@ -9,7 +9,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
 )
 from sqlalchemy.sql import text
-from sqlalchemy.sql.schema import UniqueConstraint
+from sqlalchemy.sql.schema import Index, UniqueConstraint
 from sqlalchemy.types import Text, String
 from sqlalchemy.orm import relationship
 
@@ -63,7 +63,16 @@ class BlocklistNumber(Base):
 
 class BlocklistUser(Base):
     __tablename__ = 'blocklist_user'
-    __table_args__ = (PrimaryKeyConstraint('user_uuid', 'blocklist_uuid'),)
+    __table_args__ = (
+        PrimaryKeyConstraint('user_uuid', 'blocklist_uuid'),
+        Index('blocklist_user__idx__user_uuid', 'user_uuid'),
+        Index('blocklist_user__idx__blocklist_uuid', 'blocklist_uuid'),
+        UniqueConstraint(
+            'user_uuid',
+            'blocklist_uuid',
+            name='blocklist_user_user_uuid_blocklist_uuid_key',
+        ),
+    )
 
     user_uuid = Column(
         String(38),
