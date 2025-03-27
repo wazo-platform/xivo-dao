@@ -14,6 +14,7 @@ from hamcrest import (
 from sqlalchemy.exc import IntegrityError
 
 from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DEFAULT_TENANT, DAOTestCase
@@ -34,10 +35,17 @@ class BlocklistDAOTestCase(DAOTestCase):
         self.user_1 = self.add_user(uuid=USER_UUID, tenant_uuid=DEFAULT_TENANT)
         self.user_2 = self.add_user(uuid=USER_UUID_2, tenant_uuid=DEFAULT_TENANT)
 
-    def add_blocklist(self, numbers, user_uuid=None):
+    def add_blocklist(self, numbers, user_uuid=None, tenant_uuid=None):
         blocklist = Blocklist(
             numbers=numbers,
             _user_link=BlocklistUser(user_uuid=user_uuid) if user_uuid else None,
+            tenant_uuid=tenant_uuid
+            or self.session.query(UserFeatures)
+            .filter(UserFeatures.uuid == user_uuid)
+            .first()
+            .tenant_uuid
+            if user_uuid
+            else self.default_tenant.uuid,
         )
         self.add_me(blocklist)
         return blocklist
@@ -46,10 +54,11 @@ class BlocklistDAOTestCase(DAOTestCase):
         if blocklist_uuid := kwargs.pop('blocklist_uuid', None):
             blocklist = self.session.query(Blocklist).get(blocklist_uuid)
         else:
-            blocklist = Blocklist()
-
-        if user_uuid := kwargs.pop('user_uuid', None):
-            blocklist.user_uuid = user_uuid
+            blocklist = self.add_blocklist(
+                numbers=[],
+                user_uuid=kwargs.pop('user_uuid', None),
+                tenant_uuid=kwargs.pop('tenant_uuid', None),
+            )
 
         blocklist_number = BlocklistNumber(blocklist=blocklist, **kwargs)
         self.add_me(blocklist_number)
@@ -427,7 +436,7 @@ class TestSearchGivenMultipleBlocklistNumber(TestSearch):
 
 class TestCreate(BlocklistDAOTestCase):
     def test_create_minimal_fields(self):
-        blocklist = Blocklist()
+        blocklist = Blocklist(tenant_uuid=self.default_tenant.uuid)
         blocklist_number = BlocklistNumber(
             number=SAMPLE_NUMBER,
             blocklist=blocklist,
@@ -454,7 +463,8 @@ class TestCreate(BlocklistDAOTestCase):
             number=SAMPLE_NUMBER,
             label=name,
             blocklist=Blocklist(
-                user_uuid=USER_UUID,
+                user_uuid=self.user_1.uuid,
+                tenant_uuid=self.user_1.tenant_uuid,
             ),
         )
 
