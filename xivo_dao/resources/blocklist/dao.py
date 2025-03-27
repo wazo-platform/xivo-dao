@@ -13,6 +13,11 @@ def create(session, resource):
 
 
 @daosession
+def create_blocklist(session, resource):
+    return Persistor(session, search_system).create(resource)
+
+
+@daosession
 def delete(session, resource):
     Persistor(session, search_system).delete(resource)
 
