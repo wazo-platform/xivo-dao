@@ -13,6 +13,7 @@ from sqlalchemy.sql.schema import Index, UniqueConstraint
 from sqlalchemy.types import Text, String
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.helpers.db_manager import Base
 from .userfeatures import UserFeatures
 
@@ -22,7 +23,13 @@ class Blocklist(Base):
     __table_args__ = (PrimaryKeyConstraint('uuid'),)
 
     uuid = Column(UUID(as_uuid=False), server_default=text('uuid_generate_v4()'))
+    tenant_uuid = Column(
+        String(38),
+        ForeignKey(Tenant.uuid, ondelete='CASCADE'),
+        nullable=False,
+    )
 
+    tenant = relationship(Tenant, lazy='joined', uselist=False)
     numbers = relationship(lambda: BlocklistNumber, lazy='joined')
     user = relationship(
         UserFeatures,
