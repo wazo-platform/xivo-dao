@@ -29,16 +29,14 @@ class Blocklist(Base):
         nullable=False,
     )
 
-    tenant = relationship(Tenant, lazy='joined', uselist=False)
-    numbers = relationship(lambda: BlocklistNumber, lazy='joined')
+    tenant = relationship(Tenant, uselist=False)
+    numbers = relationship(lambda: BlocklistNumber)
     user = relationship(
         UserFeatures,
         secondary=lambda: BlocklistUser.__table__,
-        lazy='joined',
-        backref='blocklist',
         uselist=False,
     )
-    _user_link = relationship(lambda: BlocklistUser, uselist=False)
+    _user_link = relationship(lambda: BlocklistUser, lazy='joined', uselist=False)
 
     user_uuid = association_proxy(
         '_user_link',

@@ -4,7 +4,6 @@
 from sqlalchemy.orm import joinedload
 from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber
 
-from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.helpers.sequence_utils import split_by
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
@@ -33,8 +32,8 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
         if self.tenant_uuids is not None:
             query = query.filter(
                 BlocklistNumber.blocklist.has(
-                    Blocklist.user.has(UserFeatures.tenant_uuid.in_(self.tenant_uuids))
-                ),
+                    Blocklist.tenant_uuid.in_(self.tenant_uuids)
+                )
             )
         bulk_criteria, criteria = split_by(
             criteria.items(), lambda x: x[0].endswith('_in')
@@ -47,3 +46,20 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
         return self.session.query(BlocklistNumber).options(
             joinedload(BlocklistNumber.blocklist).joinedload(Blocklist.user)
         )
+
+
+class BlocklistPersistor(Persistor):
+    _search_table = Blocklist
+
+    def _find_query(self, criteria):
+        query = self.session.query(Blocklist).options(
+            joinedload(Blocklist.user),
+        )
+        if self.tenant_uuids is not None:
+            query = query.filter(Blocklist.tenant_uuid.in_(self.tenant_uuids))
+
+        query = self.build_criteria(query, dict(criteria))
+        return query
+
+    def _search_query(self):
+        return self.session.query(Blocklist).options(joinedload(Blocklist.user))
