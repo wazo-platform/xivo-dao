@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -416,7 +416,9 @@ class TestCreate(DAOTestCase):
             ],
         )
 
-        result = sip_dao.create(model)  # create triggers view refresh
+        result = sip_dao.create(model)
+        self.session.commit()
+        self.session.expire(result)
 
         assert_that(result.get_option_value('some_key'), equal_to('some_value'))
         assert_that(result.get_option_value('other_key'), equal_to('other_value'))
@@ -507,6 +509,8 @@ class TestEdit(DAOTestCase):
             setattr(sip, field, options)
 
             sip_dao.edit(sip)
+            self.session.commit()
+            self.session.expire(sip)
 
             assert_that(sip.get_option_value('new-key'), equal_to(options[0][1]))
 
@@ -539,6 +543,7 @@ class TestDelete(DAOTestCase):
         assert_that(sip.get_option_value('some-key'), equal_to('some-value'))
 
         sip_dao.delete(parent)
+        self.session.commit()
         self.session.expire(sip)
 
         assert_that(inspect(parent).deleted)

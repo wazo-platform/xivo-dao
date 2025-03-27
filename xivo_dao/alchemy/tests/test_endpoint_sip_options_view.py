@@ -1,4 +1,4 @@
-# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -18,7 +18,7 @@ class TestView(DAOTestCase):
 
         assert_that(sip.get_option_value('key'), equal_to(None))
 
-        self.session.flush()
+        self.session.commit()
         self.session.expire(sip)
 
         assert_that(sip.get_option_value('key'), equal_to('value'))
@@ -34,7 +34,7 @@ class TestView(DAOTestCase):
         template3.endpoint_section_options = [('templ3', 'third')]
         sip.endpoint_section_options = [('sip', 'fourth')]
 
-        self.session.flush()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         assert_that(
             sip._options,
@@ -48,7 +48,7 @@ class TestView(DAOTestCase):
         template.endpoint_section_options = [('option', 'template')]
         sip.endpoint_section_options = [('option', 'sip')]
 
-        self.session.flush()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         assert_that(sip.get_option_value('option'), equal_to('sip'))
 
@@ -59,7 +59,7 @@ class TestView(DAOTestCase):
         template.endpoint_section_options = [('second', 'value2')]
         sip.endpoint_section_options = [('first', 'value1')]
 
-        self.session.flush()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         result = (
             self.session
@@ -72,16 +72,19 @@ class TestView(DAOTestCase):
 
     def test_view_dont_update_on_get(self):
         sip = self.add_endpoint_sip(endpoint_section_options=[('test', 'old_value')])
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
 
         assert_that(sip.get_option_value('test'), equal_to('old_value'))
 
         sip.endpoint_section_options = [('test', 'new_value')]
 
-        # view should not be updated, because no flush occurred
-        assert_that(sip.get_option_value('test'), equal_to('old_value'))
-
         self.session.add(sip)
         self.session.flush()
+
+        # view should not be updated, because no commit occurred
+        assert_that(sip.get_option_value('test'), equal_to('old_value'))
+
+        self.session.commit()
         self.session.expire(sip)
 
         # view is only updated when a EndpointSIPOption object is updated
