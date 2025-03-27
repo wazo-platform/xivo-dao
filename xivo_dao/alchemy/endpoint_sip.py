@@ -1,21 +1,17 @@
-# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 
-from sqlalchemy import and_, text, select, column, table
-from sqlalchemy.orm import column_property, relationship
+from operator import attrgetter
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.types import (
-    Boolean,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy.sql import and_, cast, func, literal, select, text, join
+from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -82,11 +78,10 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
-    _options = column_property(
-        select([column('options')])
-        .where(column('root') == uuid)
-        .select_from(table('endpoint_sip_options_view'))
-        .as_scalar()
+    _all_sections = relationship(
+        'EndpointSIPSection',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
     )
     _aor_section = relationship(
         'AORSection',
@@ -368,16 +363,11 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def caller_id(self):
-        if not self._endpoint_section:
-            return
-
-        matching_options = self._endpoint_section.find('callerid')
-        for key, value in matching_options:
-            return value
+        return self._options_dfs('callerid', 'endpoint')
 
     @caller_id.expression
     def caller_id(cls):
-        return cls._query_option_value('callerid')
+        return cls._options_dfs_sql('callerid', 'endpoint')
 
     @caller_id.setter
     def caller_id(self, caller_id):
@@ -444,14 +434,81 @@ class EndpointSIP(Base):
         for _, value in matching_options:
             return value
 
-    def get_option_value(self, option):
-        if not self._options:
-            return None
-        return self._options.get(option, None)
+    def _options_dfs(self, option, section=None):
+        def walk_endpoints(endpoint: EndpointSIP):
+            for current_section in endpoint._all_sections:
+                if section and section != current_section.type:
+                    continue
+                for current_option in current_section._options:
+                    if current_option.key == option:
+                        return current_option.value
+
+            templates = sorted(endpoint.template_relations, key=attrgetter('priority'))
+            parents = [template.parent for template in templates]
+            for parent in parents:
+                if found := walk_endpoints(parent):
+                    return found
+
+        return walk_endpoints(self)
 
     @classmethod
-    def _query_option_value(cls, option):
-        if option is None:
-            return None
+    def _options_dfs_sql(cls, option, section=None):
+        node = select(
+            [
+                cls.uuid,
+                literal(0).label('level'),
+                literal('0').label('path'),
+                cls.uuid.label('root'),
+            ]
+        ).cte(recursive=True)
 
-        return cls._options.remote_attr[option].astext
+        tree = node.union_all(
+            select(
+                [
+                    EndpointSIPTemplate.parent_uuid.label('uuid'),
+                    (node.c.level + 1).label('level'),
+                    (
+                        node.c.path
+                        + '-'
+                        + cast(
+                            func.row_number().over(
+                                partition_by='level',
+                                order_by=EndpointSIPTemplate.priority,
+                            ),
+                            String,
+                        )
+                    ).label('path'),
+                    (node.c.root).label('root'),
+                ]
+            ).where(
+                and_(
+                    EndpointSIPTemplate.child_uuid == node.c.uuid,
+                    node.c.root == cls.uuid,
+                )
+            )
+        )
+
+        endpoints = join(
+            tree,
+            EndpointSIPSection,
+            EndpointSIPSection.endpoint_sip_uuid == tree.c.uuid,
+        ).join(EndpointSIPSectionOption)
+
+        filters = [
+            EndpointSIPSectionOption.key == option,
+            EndpointSIPSectionOption.endpoint_sip_section_uuid
+            == EndpointSIPSection.uuid,
+        ]
+
+        if section:
+            filters.append(EndpointSIPSection.type == section)
+
+        return (
+            select([EndpointSIPSectionOption.value])
+            .where(and_(*filters))
+            .select_from(endpoints)
+            .where(tree.c.root == cls.uuid)
+            .order_by(tree.c.path.asc())
+            .limit(1)
+            .as_scalar()
+        )
