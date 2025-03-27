@@ -4,13 +4,13 @@
 import logging
 
 from operator import attrgetter
-from sqlalchemy.dialects.postgresql import UUID, JSONB, aggregate_order_by
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
-from sqlalchemy.sql import and_, cast, func, literal, select, text
+from sqlalchemy.sql import and_, cast, func, literal, select, text, join
 from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -363,11 +363,11 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def caller_id(self):
-        return self.all_options.get('endpoint', {}).get('callerid')
+        return self._options_dfs('callerid', 'endpoint')
 
     @caller_id.expression
     def caller_id(cls):
-        return cls.all_options.op('#>>')('{endpoint,callerid}')
+        return cls._options_dfs_sql('callerid', 'endpoint')
 
     @caller_id.setter
     def caller_id(self, caller_id):
@@ -402,49 +402,42 @@ class EndpointSIP(Base):
         for _, value in matching_options:
             return value
 
-    @hybrid_property
-    def all_options(self):
-        '''Depth-first mapping of all options (including inherited)'''
-
-        options = {}
-
-        def recurse_endpoints(endpoint: EndpointSIP):
-            for section in endpoint._all_sections:
-                type_ = section.type
-                options.setdefault(type_, dict())
-                for option in section._options:
-                    options[type_].setdefault(option.key, option.value)
+    def _options_dfs(self, option, section=None):
+        def walk_endpoints(endpoint: EndpointSIP):
+            for current_section in endpoint._all_sections:
+                if section and section != current_section.type:
+                    continue
+                for current_option in current_section._options:
+                    if current_option.key == option:
+                        return current_option.value
 
             templates = sorted(endpoint.template_relations, key=attrgetter('priority'))
             parents = [template.parent for template in templates]
             for parent in parents:
-                recurse_endpoints(parent)
+                if found := walk_endpoints(parent):
+                    return found
 
-        recurse_endpoints(self)
-        return options
+        return walk_endpoints(self)
 
-    @all_options.expression
-    def all_options(cls):
-        node = (
-            select(
-                [
-                    EndpointSIP.uuid.label('uuid'),
-                    literal(0).label('level'),
-                    literal('0').label('path'),
-                    EndpointSIP.uuid.label('root'),
-                ]
-            )
-            .where(EndpointSIP.uuid == cls.uuid)
-            .cte(recursive=True)
-        )
+    @classmethod
+    def _options_dfs_sql(cls, option, section=None):
+        node = select(
+            [
+                cls.uuid,
+                literal(0).label('level'),
+                literal('0').label('path'),
+                cls.uuid.label('root'),
+            ]
+        ).cte(recursive=True)
 
-        endpoints = node.union_all(
+        tree = node.union_all(
             select(
                 [
                     EndpointSIPTemplate.parent_uuid.label('uuid'),
                     (node.c.level + 1).label('level'),
                     (
                         node.c.path
+                        + '-'
                         + cast(
                             func.row_number().over(
                                 partition_by='level',
@@ -463,50 +456,27 @@ class EndpointSIP(Base):
             )
         )
 
-        options = (
-            select(
-                [
-                    endpoints.c.root,
-                    EndpointSIPSection.type.label('section'),
-                    func.jsonb_object(
-                        func.array_agg(
-                            aggregate_order_by(
-                                EndpointSIPSectionOption.key, endpoints.c.path.desc()
-                            )
-                        ),
-                        func.array_agg(
-                            aggregate_order_by(
-                                EndpointSIPSectionOption.value, endpoints.c.path.desc()
-                            )
-                        ),
-                    ).label('json'),
-                ]
-            )
-            .select_from(
-                endpoints.join(
-                    EndpointSIPSection,
-                    EndpointSIPSection.endpoint_sip_uuid == endpoints.c.uuid,
-                ).join(
-                    EndpointSIPSectionOption,
-                    EndpointSIPSectionOption.endpoint_sip_section_uuid
-                    == EndpointSIPSection.uuid,
-                )
-            )
-            .group_by(endpoints.c.root, EndpointSIPSection.type)
-            .alias()
-        )
+        endpoints = join(
+            tree,
+            EndpointSIPSection,
+            EndpointSIPSection.endpoint_sip_uuid == tree.c.uuid,
+        ).join(EndpointSIPSectionOption)
+
+        filters = [
+            EndpointSIPSectionOption.key == option,
+            EndpointSIPSectionOption.endpoint_sip_section_uuid
+            == EndpointSIPSection.uuid,
+        ]
+
+        if section:
+            filters.append(EndpointSIPSection.type == section)
 
         return (
-            select(
-                [
-                    cast(
-                        func.jsonb_object_agg(options.c.section, options.c.json),
-                        JSONB,
-                    )
-                ]
-            )
-            .where(options.c.root == cls.uuid)
+            select([EndpointSIPSectionOption.value])
+            .where(and_(*filters))
+            .select_from(endpoints)
+            .where(tree.c.root == cls.uuid)
+            .order_by(tree.c.path.asc())
             .limit(1)
-            .group_by(options.c.root)
             .as_scalar()
         )
