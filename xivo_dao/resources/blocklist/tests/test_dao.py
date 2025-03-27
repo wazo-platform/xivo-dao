@@ -436,10 +436,12 @@ class TestSearchGivenMultipleBlocklistNumber(TestSearch):
 
 class TestCreate(BlocklistDAOTestCase):
     def test_create_minimal_fields(self):
-        blocklist = Blocklist(tenant_uuid=self.default_tenant.uuid)
+        created_blocklist = dao.create_blocklist(
+            Blocklist(tenant_uuid=self.default_tenant.uuid)
+        )
         blocklist_number = BlocklistNumber(
             number=SAMPLE_NUMBER,
-            blocklist=blocklist,
+            blocklist_uuid=created_blocklist.uuid,
         )
 
         created_blocklist_number = dao.create(blocklist_number)
@@ -453,7 +455,7 @@ class TestCreate(BlocklistDAOTestCase):
                 uuid=row.uuid,
                 number=SAMPLE_NUMBER,
                 label=None,
-                blocklist_uuid=blocklist.uuid,
+                blocklist_uuid=created_blocklist.uuid,
             ),
         )
 
