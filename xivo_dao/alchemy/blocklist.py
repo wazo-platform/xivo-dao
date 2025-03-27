@@ -9,7 +9,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
 )
 from sqlalchemy.sql import text
-from sqlalchemy.sql.schema import UniqueConstraint
+from sqlalchemy.sql.schema import Index, UniqueConstraint
 from sqlalchemy.types import Text, String
 from sqlalchemy.orm import relationship
 
