@@ -185,7 +185,7 @@ class LineFeatures(Base):
             [
                 (
                     cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('endpoint', 'callerid', regex),
+                    cls._sip_query_option('caller_id', regex),
                 ),
                 (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
             ],
@@ -252,7 +252,7 @@ class LineFeatures(Base):
             [
                 (
                     cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('endpoint', 'callerid', regex),
+                    cls._sip_query_option('caller_id', regex),
                 ),
                 (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
             ]
@@ -382,21 +382,17 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_query_option(cls, section, option, regex_filter):
-        return (
-            select(
-                [
-                    func.unnest(
-                        func.regexp_matches(
-                            EndpointSIP.all_options[section][option].as_string(),
-                            bindparam('regex', regex_filter, unique=True),
-                        )
-                    )
-                ]
+    def _sip_query_option(cls, option, regex_filter=None):
+        if option not in dir(EndpointSIP):
+            return None
+
+        op = getattr(EndpointSIP, option)
+        if regex_filter:
+            op = func.unnest(
+                func.regexp_matches(op, bindparam('regex', regex_filter, unique=True))
             )
-            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
-            .as_scalar()
-        )
+
+        return select([op]).where(EndpointSIP.uuid == cls.endpoint_sip_uuid).as_scalar()
 
     @classmethod
     def _sccp_query_option(cls, option):
