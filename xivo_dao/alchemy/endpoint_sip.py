@@ -4,14 +4,14 @@
 import logging
 
 from operator import attrgetter
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ARRAY, UUID, array
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, aliased
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
-from sqlalchemy.sql import and_, cast, func, literal, select, text, join
-from sqlalchemy.types import Boolean, Integer, String, Text
+from sqlalchemy.sql import and_, cast, func, join, literal, select, text
+from sqlalchemy.types import BigInteger, Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -421,62 +421,82 @@ class EndpointSIP(Base):
 
     @classmethod
     def _options_dfs_sql(cls, option, section=None):
-        node = select(
-            [
-                cls.uuid,
-                literal(0).label('level'),
-                literal('0').label('path'),
-                cls.uuid.label('root'),
-            ]
-        ).cte(recursive=True)
+        endpoint = aliased(EndpointSIP)
+        template = aliased(EndpointSIPTemplate)
+        endpoint_section = aliased(EndpointSIPSection)
+        endpoint_option = aliased(EndpointSIPSectionOption)
 
-        tree = node.union_all(
+        target_uuid = cls.uuid
+
+        ep = (
             select(
                 [
-                    EndpointSIPTemplate.parent_uuid.label('uuid'),
-                    (node.c.level + 1).label('level'),
-                    (
-                        node.c.path
-                        + '-'
-                        + cast(
-                            func.row_number().over(
-                                partition_by='level',
-                                order_by=EndpointSIPTemplate.priority,
-                            ),
-                            String,
-                        )
-                    ).label('path'),
-                    (node.c.root).label('root'),
+                    endpoint.uuid.label('root'),
+                    endpoint.uuid.label('uuid'),
+                    literal(0).label('level'),
+                    cast(array([0]), ARRAY(BigInteger)).label('path'),
                 ]
-            ).where(
-                and_(
-                    EndpointSIPTemplate.child_uuid == node.c.uuid,
-                    node.c.root == cls.uuid,
-                )
             )
+            .where(endpoint.uuid == target_uuid)
+            .cte(recursive=True)
         )
 
-        endpoints = join(
+        templates = (
+            select(
+                [
+                    ep.c.root.label('root'),
+                    template.parent_uuid.label('uuid'),
+                    (ep.c.level + 1).label('level'),
+                    (
+                        ep.c.path.op('||')(
+                            array(
+                                [
+                                    func.row_number().over(
+                                        partition_by='level', order_by=template.priority
+                                    )
+                                ]
+                            )
+                        )
+                    ).label('path'),
+                ]
+            )
+            .select_from(
+                join(
+                    ep,
+                    template,
+                    and_(
+                        ep.c.uuid == template.child_uuid,
+                    ),
+                )
+            )
+            .where(ep.c.root == target_uuid)
+        )
+
+        tree = ep.union(templates).select().order_by(ep.c.root, ep.c.path.asc()).alias()
+
+        options = join(
             tree,
-            EndpointSIPSection,
-            EndpointSIPSection.endpoint_sip_uuid == tree.c.uuid,
-        ).join(EndpointSIPSectionOption)
-
-        filters = [
-            EndpointSIPSectionOption.key == option,
-            EndpointSIPSectionOption.endpoint_sip_section_uuid
-            == EndpointSIPSection.uuid,
-        ]
-
-        if section:
-            filters.append(EndpointSIPSection.type == section)
+            endpoint_section,
+            and_(
+                tree.c.root == target_uuid,
+                tree.c.uuid == endpoint_section.endpoint_sip_uuid,
+                endpoint_section.type == section if section else True,
+            ),
+        ).join(
+            endpoint_option,
+            and_(
+                endpoint_option.endpoint_sip_section_uuid == endpoint_section.uuid,
+                endpoint_option.key == option,
+            ),
+        )
 
         return (
-            select([EndpointSIPSectionOption.value])
-            .where(and_(*filters))
-            .select_from(endpoints)
-            .where(tree.c.root == cls.uuid)
-            .order_by(tree.c.path.asc())
-            .limit(1)
+            select(
+                [
+                    endpoint_option.value,
+                ]
+            )
+            .select_from(options)
+            .distinct(tree.c.root)
             .as_scalar()
         )

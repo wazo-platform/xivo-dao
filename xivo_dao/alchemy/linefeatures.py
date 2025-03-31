@@ -392,7 +392,7 @@ class LineFeatures(Base):
                 func.regexp_matches(op, bindparam('regex', regex_filter, unique=True))
             )
 
-        return select([op]).where(EndpointSIP.uuid == cls.endpoint_sip_uuid).as_scalar()
+        return op.select().where(EndpointSIP.uuid == cls.endpoint_sip_uuid).as_scalar()
 
     @classmethod
     def _sccp_query_option(cls, option):
