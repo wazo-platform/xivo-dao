@@ -1,4 +1,4 @@
-# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -397,25 +397,9 @@ class EndpointSIP(Base):
     def endpoint_protocol(self):
         return 'sip'
 
-    @hybrid_property
+    @property
     def username(self):
         return self._find_first_value(self._auth_section, 'username')
-
-    @username.expression
-    def username(cls):
-        return (
-            select([EndpointSIPSectionOption.value])
-            .where(
-                and_(
-                    cls.uuid == EndpointSIPSection.endpoint_sip_uuid,
-                    EndpointSIPSection.type == 'auth',
-                    EndpointSIPSectionOption.endpoint_sip_section_uuid
-                    == EndpointSIPSection.uuid,
-                    EndpointSIPSectionOption.key == 'username',
-                )
-            )
-            .as_scalar()
-        )
 
     @hybrid_property
     def password(self):
