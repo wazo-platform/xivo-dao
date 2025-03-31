@@ -1,9 +1,35 @@
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from contextlib import contextmanager
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import daosession
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.expression import ClauseElement, Executable, _literal_as_text
+
+
+class Explain(Executable, ClauseElement):
+    '''
+    Helper to run an SQL Explain [Analyze] on a query
+
+    typical usage in-code:
+
+    `result = self.session.execute(Explain(some_query, analyze=True)).fetchall()`
+    '''
+
+    def __init__(self, stmt, analyze=False):
+        self.statement = _literal_as_text(stmt)
+        self.analyze = analyze
+
+
+@compiles(Explain, "postgresql")
+def _pg_explain(element, compiler, **kw):
+    text = "EXPLAIN "
+    if element.analyze:
+        text += "ANALYZE "
+    text += compiler.process(element.statement, **kw)
+
+    return text
 
 
 @contextmanager
