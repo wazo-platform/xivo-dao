@@ -10,7 +10,12 @@ config = SearchConfig(
     columns={
         'number': BlocklistNumber.number,
         'label': BlocklistNumber.label,
+        'user_uuid': BlocklistNumber.user_uuid,
     },
+    search=[
+        'number',
+        'label',
+    ],
     default_sort='number',
 )
 
