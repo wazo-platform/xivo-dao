@@ -21,7 +21,10 @@ from .userfeatures import UserFeatures
 
 class Blocklist(Base):
     __tablename__ = 'blocklist'
-    __table_args__ = (PrimaryKeyConstraint('uuid'),)
+    __table_args__ = (
+        PrimaryKeyConstraint('uuid'),
+        Index('blocklist__idx__tenant_uuid', 'tenant_uuid'),
+    )
 
     uuid = Column(UUID(as_uuid=False), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(
@@ -50,7 +53,12 @@ class BlocklistNumber(Base):
     __tablename__ = 'blocklist_number'
     __table_args__ = (
         PrimaryKeyConstraint('uuid'),
-        UniqueConstraint('number', 'blocklist_uuid'),
+        # NOTE: unique constraint also serves as index on number and blocklist_uuid
+        UniqueConstraint(
+            'number',
+            'blocklist_uuid',
+            name='blocklist_number_number_blocklist_uuid_key',
+        ),
     )
 
     uuid = Column(UUID(as_uuid=False), server_default=text('uuid_generate_v4()'))
