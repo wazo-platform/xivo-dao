@@ -1,9 +1,11 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload, selectinload
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip_section import AuthSection
+from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.helpers import errors, generators
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.line.fixes import LineFixes
@@ -20,9 +22,20 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
         self.tenant_uuids = tenant_uuids
 
     def _find_query(self, criteria):
+        if 'password' in criteria:
+            raise NotImplementedError()
+
+        query = self.session.query(EndpointSIP)
+        if 'username' in criteria:
+            query = (
+                query.join(AuthSection)
+                .join(EndpointSIPSectionOption)
+                .filter(EndpointSIPSectionOption.key == 'username')
+                .filter(EndpointSIPSectionOption.value == criteria.pop('username'))
+            )
+
         query = (
-            self.session.query(EndpointSIP)
-            .options(selectinload('transport'))
+            query.options(selectinload('transport'))
             .options(selectinload('template_relations').selectinload('parent'))
             .options(selectinload('_aor_section'))
             .options(selectinload('_auth_section'))

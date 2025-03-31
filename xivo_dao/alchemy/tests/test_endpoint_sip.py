@@ -117,20 +117,6 @@ class TestEndpointSIP(DAOTestCase):
         endpoint = self.add_endpoint_sip()
         assert_that(endpoint.username, none())
 
-    def test_username_expression(self):
-        self.add_endpoint_sip(auth_section_options=[['username', 'my-username']])
-        self.add_endpoint_sip()
-        endpoint_3 = self.add_endpoint_sip(
-            auth_section_options=[['username', 'other-username']],
-        )
-
-        result = (
-            self.session.query(EndpointSIP.uuid)
-            .filter(EndpointSIP.username == 'other-username')
-            .scalar()
-        )
-        assert_that(result, equal_to(endpoint_3.uuid))
-
     def test_password(self):
         endpoint = self.add_endpoint_sip(
             auth_section_options=[['password', 'my-password']],
@@ -139,20 +125,6 @@ class TestEndpointSIP(DAOTestCase):
 
         endpoint = self.add_endpoint_sip()
         assert_that(endpoint.password, none())
-
-    def test_password_expression(self):
-        self.add_endpoint_sip(auth_section_options=[['password', 'my-password']])
-        self.add_endpoint_sip(auth_section_options=[['username', 'my-password']])
-        endpoint_3 = self.add_endpoint_sip(
-            auth_section_options=[['password', 'other-password']],
-        )
-
-        result = (
-            self.session.query(EndpointSIP.uuid)
-            .filter(EndpointSIP.password == 'other-password')
-            .scalar()
-        )
-        assert_that(result, equal_to(endpoint_3.uuid))
 
 
 class TestAORSectionOptions(DAOTestCase):
