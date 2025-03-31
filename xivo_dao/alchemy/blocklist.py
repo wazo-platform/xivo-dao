@@ -1,9 +1,10 @@
 # Copyright 2024-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import (
     Column,
     PrimaryKeyConstraint,
@@ -63,7 +64,18 @@ class BlocklistNumber(Base):
 
     blocklist = relationship(Blocklist, lazy='joined', uselist=False)
 
-    user_uuid = association_proxy('blocklist', 'user_uuid')
+    @hybrid_property
+    def user_uuid(self):
+        return self.blocklist.user_uuid
+
+    @user_uuid.expression
+    def user_uuid(cls):
+        query = (
+            select([BlocklistUser.user_uuid])
+            .where(BlocklistUser.blocklist_uuid == cls.blocklist_uuid)
+            .label('user_uuid')
+        )
+        return query
 
 
 class BlocklistUser(Base):

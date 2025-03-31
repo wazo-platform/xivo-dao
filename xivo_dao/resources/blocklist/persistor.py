@@ -27,7 +27,7 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
 
     def _find_query(self, criteria):
         query = self.session.query(BlocklistNumber).options(
-            joinedload(BlocklistNumber.blocklist).joinedload(Blocklist.user),
+            joinedload(BlocklistNumber.blocklist).joinedload(Blocklist._user_link),
         )
         if self.tenant_uuids is not None:
             query = query.filter(
@@ -44,7 +44,7 @@ class Persistor(CriteriaBuilderMixin, BasePersistor):
 
     def _search_query(self):
         return self.session.query(BlocklistNumber).options(
-            joinedload(BlocklistNumber.blocklist).joinedload(Blocklist.user)
+            joinedload(BlocklistNumber.blocklist).joinedload(Blocklist._user_link)
         )
 
 
@@ -53,7 +53,7 @@ class BlocklistPersistor(Persistor):
 
     def _find_query(self, criteria):
         query = self.session.query(Blocklist).options(
-            joinedload(Blocklist.user),
+            joinedload(Blocklist._user_link),
         )
         if self.tenant_uuids is not None:
             query = query.filter(Blocklist.tenant_uuid.in_(self.tenant_uuids))
@@ -62,4 +62,4 @@ class BlocklistPersistor(Persistor):
         return query
 
     def _search_query(self):
-        return self.session.query(Blocklist).options(joinedload(Blocklist.user))
+        return self.session.query(Blocklist).options(joinedload(Blocklist._user_link))
