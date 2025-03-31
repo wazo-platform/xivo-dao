@@ -3,7 +3,7 @@
 
 import logging
 
-from sqlalchemy import and_, text, select, column, table
+from sqlalchemy import text, select, column, table
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -27,9 +27,7 @@ from .endpoint_sip_section import (
     OutboundAuthSection,
     RegistrationSection,
     RegistrationOutboundAuthSection,
-    EndpointSIPSection,
 )
-from .endpoint_sip_section_option import EndpointSIPSectionOption
 
 
 logger = logging.getLogger(__name__)
@@ -401,25 +399,9 @@ class EndpointSIP(Base):
     def username(self):
         return self._find_first_value(self._auth_section, 'username')
 
-    @hybrid_property
+    @property
     def password(self):
         return self._find_first_value(self._auth_section, 'password')
-
-    @password.expression
-    def password(cls):
-        return (
-            select([EndpointSIPSectionOption.value])
-            .where(
-                and_(
-                    cls.uuid == EndpointSIPSection.endpoint_sip_uuid,
-                    EndpointSIPSection.type == 'auth',
-                    EndpointSIPSectionOption.endpoint_sip_section_uuid
-                    == EndpointSIPSection.uuid,
-                    EndpointSIPSectionOption.key == 'password',
-                )
-            )
-            .as_scalar()
-        )
 
     def _find_first_value(self, section, key):
         if not section:

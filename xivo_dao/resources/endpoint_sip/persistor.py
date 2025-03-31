@@ -22,6 +22,9 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
         self.tenant_uuids = tenant_uuids
 
     def _find_query(self, criteria):
+        if 'password' in criteria:
+            raise NotImplementedError()
+
         query = self.session.query(EndpointSIP)
         if 'username' in criteria:
             query = (

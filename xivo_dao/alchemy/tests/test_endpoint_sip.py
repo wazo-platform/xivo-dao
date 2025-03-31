@@ -126,20 +126,6 @@ class TestEndpointSIP(DAOTestCase):
         endpoint = self.add_endpoint_sip()
         assert_that(endpoint.password, none())
 
-    def test_password_expression(self):
-        self.add_endpoint_sip(auth_section_options=[['password', 'my-password']])
-        self.add_endpoint_sip(auth_section_options=[['username', 'my-password']])
-        endpoint_3 = self.add_endpoint_sip(
-            auth_section_options=[['password', 'other-password']],
-        )
-
-        result = (
-            self.session.query(EndpointSIP.uuid)
-            .filter(EndpointSIP.password == 'other-password')
-            .scalar()
-        )
-        assert_that(result, equal_to(endpoint_3.uuid))
-
 
 class TestAORSectionOptions(DAOTestCase):
     def test_delete_all(self):
