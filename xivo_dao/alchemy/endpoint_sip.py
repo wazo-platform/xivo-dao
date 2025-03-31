@@ -84,7 +84,8 @@ class EndpointSIP(Base):
         select([column('options')])
         .where(column('root') == uuid)
         .select_from(table('endpoint_sip_options_view'))
-        .as_scalar()
+        .as_scalar(),
+        deferred=True,
     )
     _aor_section = relationship(
         'AORSection',
