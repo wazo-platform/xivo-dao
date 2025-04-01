@@ -131,6 +131,8 @@ __all__ = [
     "AsteriskFileSection",
     "AsteriskFileVariable",
     "BlocklistNumber",
+    "Blocklist",
+    "BlocklistUser",
     "Callerid",
     "Callfilter",
     "Callfiltermember",
