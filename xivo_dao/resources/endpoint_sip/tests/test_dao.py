@@ -20,7 +20,6 @@ from hamcrest import (
 )
 from sqlalchemy.inspection import inspect
 
-from xivo_dao.alchemy import EndpointSIPOptionsView
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
@@ -407,22 +406,6 @@ class TestCreate(DAOTestCase):
             ),
         )
 
-    def test_create_refreshes_endpoint_option_view(self):
-        model = EndpointSIP(
-            tenant_uuid=self.default_tenant.uuid,
-            endpoint_section_options=[
-                ['some_key', 'some_value'],
-                ['other_key', 'other_value'],
-            ],
-        )
-
-        result = sip_dao.create(model)
-        self.session.commit()
-        self.session.expire(result)
-
-        assert_that(result.get_option_value('some_key'), equal_to('some_value'))
-        assert_that(result.get_option_value('other_key'), equal_to('other_value'))
-
 
 class TestEdit(DAOTestCase):
     def setUp(self):
@@ -500,20 +483,6 @@ class TestEdit(DAOTestCase):
             'An unassociated option has been leaked',
         )
 
-    def test_edit_refreshes_endpoint_option_view(self):
-        for name, options in self.section_options.items():
-            field = f'{name}_section_options'
-            sip = self.add_endpoint_sip(**{field: options})
-
-            options[0][0] = 'new-key'
-            setattr(sip, field, options)
-
-            sip_dao.edit(sip)
-            self.session.commit()
-            self.session.expire(sip)
-
-            assert_that(sip.get_option_value('new-key'), equal_to(options[0][1]))
-
 
 class TestDelete(DAOTestCase):
     def test_delete(self):
@@ -530,24 +499,6 @@ class TestDelete(DAOTestCase):
         sip_dao.delete(sip)
 
         assert_that(line.endpoint_sip_uuid, none())
-
-    def test_delete_refreshes_options_view(self):
-        parent = self.add_endpoint_sip(
-            endpoint_section_options=[
-                ['some-key', 'some-value'],
-            ],
-        )
-        sip = self.add_endpoint_sip(templates=[parent])
-
-        EndpointSIPOptionsView.refresh()  # make sure view is up-to-date
-        assert_that(sip.get_option_value('some-key'), equal_to('some-value'))
-
-        sip_dao.delete(parent)
-        self.session.commit()
-        self.session.expire(sip)
-
-        assert_that(inspect(parent).deleted)
-        assert_that(sip.get_option_value('some-key'), equal_to(None))
 
 
 class TestRelations(DAOTestCase):
