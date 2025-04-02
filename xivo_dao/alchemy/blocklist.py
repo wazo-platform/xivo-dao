@@ -28,7 +28,7 @@ class Blocklist(Base):
 
     uuid = Column(UUID(as_uuid=False), server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(
-        String(38),
+        String(36),
         ForeignKey(Tenant.uuid, ondelete='CASCADE'),
         nullable=False,
     )
@@ -91,7 +91,7 @@ class BlocklistUser(Base):
     __table_args__ = (PrimaryKeyConstraint('user_uuid', 'blocklist_uuid'),)
 
     user_uuid = Column(
-        String(38),
+        String(36),
         ForeignKey(
             UserFeatures.uuid, ondelete='CASCADE', name='blocklist_user_user_uuid_fkey'
         ),
