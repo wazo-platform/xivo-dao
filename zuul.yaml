@@ -2,6 +2,7 @@
     name: wazo-tox-xivo-dao-py39
     parent: wazo-tox-py39
     run: zuul.d/run.yaml
+    post-run: zuul.d/fetch-logs.yaml
 
 - project:
     templates:

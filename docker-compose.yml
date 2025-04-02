@@ -10,3 +10,4 @@ services:
      - LC_ALL=C.UTF-8
     volumes:
       - "./contribs/docker/db/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql"
+    command: "-c 'log_min_duration_statement=0'"

@@ -18,7 +18,7 @@ class TestView(DAOTestCase):
 
         assert_that(sip.get_option_value('key'), equal_to(None))
 
-        self.session.commit()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
         self.session.expire(sip)
 
         assert_that(sip.get_option_value('key'), equal_to('value'))
@@ -84,7 +84,7 @@ class TestView(DAOTestCase):
         # view should not be updated, because no commit occurred
         assert_that(sip.get_option_value('test'), equal_to('old_value'))
 
-        self.session.commit()
+        EndpointSIPOptionsView.refresh()  # Simulate a database commit
         self.session.expire(sip)
 
         # view is only updated when a EndpointSIPOption object is updated
