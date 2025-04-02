@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -12,6 +12,7 @@ from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
+from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -131,6 +132,9 @@ __all__ = [
     "AsteriskFile",
     "AsteriskFileSection",
     "AsteriskFileVariable",
+    "Blocklist",
+    "BlocklistNumber",
+    "BlocklistUser",
     "Callerid",
     "Callfilter",
     "Callfiltermember",
