@@ -3,56 +3,49 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple
 from collections import defaultdict
+from typing import NamedTuple
 
 from sqlalchemy import bindparam
-from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import (
-    and_,
-    cast,
-    func,
-    literal,
-    or_,
-    true,
-)
 from sqlalchemy.ext import baked
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import and_, cast, func, literal, or_, true
 from sqlalchemy.types import Integer
 
-from xivo_dao.alchemy.feature_extension import FeatureExtension
-from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.line_extension import LineExtension
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.pickup import Pickup
-from xivo_dao.alchemy.pickupmember import PickupMember
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
-from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.sccpdevice import SCCPDevice
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
+from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.features import Features
-from xivo_dao.alchemy.staticiax import StaticIAX
-from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
-from xivo_dao.alchemy.meeting import Meeting
-from xivo_dao.alchemy.queueskillrule import QueueSkillRule
-from xivo_dao.alchemy.staticqueue import StaticQueue
-from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.pickup import Pickup
+from xivo_dao.alchemy.pickupmember import PickupMember
+from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.queueskill import QueueSkill
+from xivo_dao.alchemy.queueskillrule import QueueSkillRule
+from xivo_dao.alchemy.sccpdevice import SCCPDevice
+from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.staticiax import StaticIAX
+from xivo_dao.alchemy.staticqueue import StaticQueue
+from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.useriax import UserIAX
+from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.helpers.db_manager import daosession
 
 
 class Member(NamedTuple):

@@ -1,4 +1,4 @@
-# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -21,20 +21,20 @@ from hamcrest import (
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.func_key import FuncKey
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
-from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import InputError, NotFoundError
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.resources.user import dao as user_dao
 from xivo_dao.resources.user.model import UserDirectory, UserSummary
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
 class TestUser(DAOTestCase, FuncKeyHelper):

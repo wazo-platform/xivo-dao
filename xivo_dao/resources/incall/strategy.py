@@ -1,10 +1,10 @@
-# Copyright 2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
-from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.dialaction import Dialaction
 
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.incall import Incall
 
 incall_preload_relationships = (
     joinedload(Incall.caller_id),

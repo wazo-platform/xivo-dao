@@ -1,13 +1,8 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from hamcrest import (
-    assert_that,
-    contains_inanyorder,
-    equal_to,
-    none,
-)
+from hamcrest import assert_that, contains_inanyorder, equal_to, none
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.tests.test_dao import DAOTestCase

@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -6,8 +6,8 @@ from hamcrest import (
     all_of,
     assert_that,
     contains_exactly,
-    equal_to,
     empty,
+    equal_to,
     has_items,
     has_key,
     has_properties,
@@ -18,10 +18,10 @@ from hamcrest import (
 )
 from sqlalchemy.inspection import inspect
 
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfilter import Callfilter as CallFilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember as CallFilterMember
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 

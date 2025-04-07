@@ -1,12 +1,13 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 from unittest.mock import Mock
+
 from hamcrest import assert_that, equal_to
 
-from xivo_dao.resources.utils.view import ViewSelector, View, ModelView
 from xivo_dao.helpers.exception import InputError
+from xivo_dao.resources.utils.view import ModelView, View, ViewSelector
 
 
 class TestViewSelector(unittest.TestCase):

@@ -1,21 +1,20 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql import func, cast
+from sqlalchemy.sql import cast, func
 from sqlalchemy.sql.expression import and_, literal_column
 from sqlalchemy.types import String
 
-from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.helpers.db_manager import Session
-
+from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.db_manager import Session
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.query_options import QueryOptionsMixin
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin, SearchResult
 
 
 class UserPersistor(QueryOptionsMixin, CriteriaBuilderMixin, BasePersistor):

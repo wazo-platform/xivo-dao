@@ -1,8 +1,8 @@
-# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import ForeignKey, Index
 from sqlalchemy.types import String, Text
 

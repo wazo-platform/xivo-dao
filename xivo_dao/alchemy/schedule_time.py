@@ -1,14 +1,14 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String, Enum
-
+from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
+from sqlalchemy.types import Enum, Integer, String
 from xivo import dialaction
-from xivo_dao.helpers.db_manager import Base, IntAsString
+
 from xivo_dao.alchemy import enum
+from xivo_dao.helpers.db_manager import Base, IntAsString
 
 
 class ScheduleTime(Base):

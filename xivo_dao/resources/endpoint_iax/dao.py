@@ -1,8 +1,8 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import flush_session
 
 from .persistor import IAXPersistor
 from .search import iax_search

@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -26,13 +26,13 @@ from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
+from xivo_dao.alchemy.endpoint_sip_options_view import EndpointSIPOptionsView
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
-from xivo_dao.alchemy.endpoint_sip_options_view import EndpointSIPOptionsView
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.external_app import ExternalApp
-from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.feature_extension import FeatureExtension
+from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
@@ -62,9 +62,8 @@ from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
-from xivo_dao.alchemy.meeting import Meeting
+from xivo_dao.alchemy.meeting import Meeting, MeetingOwner
 from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
-from xivo_dao.alchemy.meeting import MeetingOwner
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.netiface import Netiface
 from xivo_dao.alchemy.outcall import Outcall

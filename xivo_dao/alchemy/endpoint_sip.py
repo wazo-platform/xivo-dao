@@ -3,19 +3,14 @@
 
 import logging
 
-from sqlalchemy import text, select, column, table
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy import column, select, table, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.types import (
-    Boolean,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -25,10 +20,9 @@ from .endpoint_sip_section import (
     EndpointSection,
     IdentifySection,
     OutboundAuthSection,
-    RegistrationSection,
     RegistrationOutboundAuthSection,
+    RegistrationSection,
 )
-
 
 logger = logging.getLogger(__name__)
 

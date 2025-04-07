@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
@@ -7,8 +7,6 @@ from sqlalchemy import text
 
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
@@ -27,18 +25,18 @@ from xivo_dao.alchemy.func_key_dest_parking import FuncKeyDestParking
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
-
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers import errors
-
 from xivo_dao.resources.extension.database import (
-    ForwardExtensionConverter,
     AgentActionExtensionConverter,
+    ForwardExtensionConverter,
     GroupMemberActionExtensionConverter,
 )
 from xivo_dao.resources.utils.search import SearchResult
 
-from .search import template_search
 from ...alchemy.feature_extension import FeatureExtension
+from .search import template_search
 
 
 def build_persistor(session, tenant_uuids=None):

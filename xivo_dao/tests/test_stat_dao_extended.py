@@ -1,22 +1,23 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
-from typing import Any, Iterator
+
 import itertools
 import pathlib
 from datetime import datetime as dt
+from typing import Any, Iterator
+
+from hamcrest import assert_that, equal_to
 from pytz import UTC
 
 from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
-from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
+from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
-
-from hamcrest import assert_that, equal_to
 
 
 def parse_fields(line):

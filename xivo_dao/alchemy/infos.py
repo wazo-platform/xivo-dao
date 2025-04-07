@@ -1,8 +1,8 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql.schema import PrimaryKeyConstraint, Column
-from sqlalchemy.types import String, Boolean
+from sqlalchemy.sql.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.types import Boolean, String
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid

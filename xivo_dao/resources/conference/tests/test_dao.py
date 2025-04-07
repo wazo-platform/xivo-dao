@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -15,15 +15,11 @@ from hamcrest import (
     not_,
 )
 
-
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.helpers.exception import (
-    NotFoundError,
-    InputError,
-)
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.conference import dao as conference_dao
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 
 

@@ -1,12 +1,12 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.user.fixes import UserFixes
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestUserFixes(DAOTestCase):

@@ -18,7 +18,7 @@ from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.incall import dao as incall_dao
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase

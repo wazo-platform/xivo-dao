@@ -1,9 +1,9 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base

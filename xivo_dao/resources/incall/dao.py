@@ -4,7 +4,6 @@
 from contextlib import contextmanager
 
 from xivo_dao.helpers.db_manager import Session
-
 from xivo_dao.resources.incall.persistor import IncallPersistor
 from xivo_dao.resources.incall.search import incall_search
 

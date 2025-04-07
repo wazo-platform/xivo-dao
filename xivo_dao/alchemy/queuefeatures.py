@@ -6,11 +6,6 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.sql import (
-    cast,
-    func,
-    select,
-)
 from sqlalchemy.schema import (
     Column,
     ForeignKey,
@@ -18,6 +13,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
+from sqlalchemy.sql import cast, func, select
 from sqlalchemy.types import Boolean, Integer, String
 
 from xivo_dao.helpers.db_manager import Base

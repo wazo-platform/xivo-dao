@@ -1,15 +1,16 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.expression import and_, cast, func
 from sqlalchemy.types import Integer
+
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.line_extension import LineExtension
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 
 
 @daosession

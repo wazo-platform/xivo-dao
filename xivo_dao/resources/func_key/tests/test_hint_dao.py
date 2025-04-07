@@ -1,22 +1,22 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
     contains_exactly,
     contains_inanyorder,
-    has_key,
-    has_properties,
-    has_entries,
     empty,
     equal_to,
+    has_entries,
+    has_key,
+    has_properties,
     not_,
 )
 
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.resources.func_key import hint_dao
 from xivo_dao.resources.func_key.model import Hint
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestProgfunckeyExtension(DAOTestCase):

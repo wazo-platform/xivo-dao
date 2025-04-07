@@ -4,21 +4,9 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import (
-    Column,
-    ForeignKey,
-    Index,
-    PrimaryKeyConstraint,
-)
-from sqlalchemy.sql import (
-    cast,
-    select,
-)
-from sqlalchemy.types import (
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
+from sqlalchemy.sql import cast, select
+from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction

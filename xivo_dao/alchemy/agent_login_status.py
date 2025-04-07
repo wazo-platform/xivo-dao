@@ -1,10 +1,10 @@
-# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index, UniqueConstraint
-from sqlalchemy.types import Integer, String, DateTime, Boolean
+from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.types import Boolean, DateTime, Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 

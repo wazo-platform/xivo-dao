@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -7,9 +7,9 @@ from hamcrest import (
     contains_inanyorder,
     empty,
     equal_to,
-    is_not,
     has_key,
     has_properties,
+    is_not,
     none,
     not_none,
 )
@@ -23,9 +23,9 @@ from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
 from ..queuemember import QueueMember
-from ..userfeatures import UserFeatures
 from ..schedule import Schedule
 from ..schedulepath import SchedulePath
+from ..userfeatures import UserFeatures
 
 
 class TestCallerId(DAOTestCase):

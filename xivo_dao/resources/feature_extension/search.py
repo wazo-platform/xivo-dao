@@ -1,10 +1,8 @@
-# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.feature_extension import FeatureExtension
-from xivo_dao.resources.utils.search import SearchSystem
-from xivo_dao.resources.utils.search import SearchConfig
-
+from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 
 config = SearchConfig(
     table=FeatureExtension,

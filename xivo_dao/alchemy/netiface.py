@@ -1,11 +1,11 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer, String, Text, Enum
+from sqlalchemy.types import Enum, Integer, String, Text
 
-from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+from xivo_dao.helpers.db_manager import Base
 
 
 class Netiface(Base):

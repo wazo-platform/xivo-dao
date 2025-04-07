@@ -1,13 +1,10 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
-from hamcrest import (
-    assert_that,
-    equal_to,
-    has_properties,
-)
+from hamcrest import assert_that, equal_to, has_properties
+
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.tests.test_dao import DAOTestCase
 

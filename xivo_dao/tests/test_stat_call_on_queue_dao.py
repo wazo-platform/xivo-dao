@@ -1,18 +1,17 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
 from datetime import timedelta
-from pytz import UTC
 
-from hamcrest import assert_that
-from hamcrest import contains_exactly
+from hamcrest import assert_that, contains_exactly
+from pytz import UTC
 from sqlalchemy import func
 
 from xivo_dao import stat_call_on_queue_dao
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.tests.test_dao import DAOTestCase
 
 

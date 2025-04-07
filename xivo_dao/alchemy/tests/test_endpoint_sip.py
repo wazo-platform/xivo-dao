@@ -10,11 +10,12 @@ from hamcrest import (
     has_properties,
     none,
 )
+
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..endpoint_sip import EndpointSIP, EndpointSIPTemplate
-from ..endpoint_sip_section import EndpointSIPSection
 from ..endpoint_sip_options_view import EndpointSIPOptionsView
+from ..endpoint_sip_section import EndpointSIPSection
 
 
 class TestEndpointSIP(DAOTestCase):

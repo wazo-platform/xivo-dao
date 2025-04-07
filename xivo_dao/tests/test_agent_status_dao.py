@@ -1,14 +1,15 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, contains_exactly, empty, has_properties, none
+from sqlalchemy import and_
+
 from xivo_dao import agent_status_dao
-from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from sqlalchemy import and_
+from xivo_dao.tests.test_dao import UNKNOWN_UUID, DAOTestCase
 
 
 class TestAgentStatusDao(DAOTestCase):

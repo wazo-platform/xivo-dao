@@ -1,16 +1,16 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
-    Index,
     ForeignKey,
+    Index,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.types import Integer, String, Text, Enum
+from sqlalchemy.types import Enum, Integer, String, Text
 
 from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
 from xivo_dao.helpers.db_manager import Base

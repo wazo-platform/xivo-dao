@@ -1,16 +1,9 @@
-# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
 
-from hamcrest import (
-    assert_that,
-    equal_to,
-    has_properties,
-    is_,
-    is_not,
-    none,
-)
+from hamcrest import assert_that, equal_to, has_properties, is_, is_not, none
 
 from xivo_dao.tests.test_dao import DAOTestCase
 

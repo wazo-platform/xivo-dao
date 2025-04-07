@@ -1,19 +1,21 @@
-# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
 
 from datetime import datetime
 from typing import NamedTuple, Union
-from sqlalchemy.sql.expression import case, true, false
+
+from sqlalchemy.sql.expression import case, false, true
+
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import flush_session
 
 
 class _Queue(NamedTuple):

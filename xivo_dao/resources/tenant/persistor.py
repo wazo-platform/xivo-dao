@@ -1,10 +1,10 @@
-# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 
-from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.alchemy.tenant import Tenant
+from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 

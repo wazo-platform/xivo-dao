@@ -1,12 +1,11 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
-import pytz
-
-from datetime import datetime as t
 import pathlib
+from datetime import datetime as t
 
+import pytz
 from hamcrest import (
     assert_that,
     contains_exactly,
@@ -14,11 +13,9 @@ from hamcrest import (
     equal_to,
     has_properties,
 )
-
 from sqlalchemy import func
 
-from xivo_dao import stat_dao
-from xivo_dao import stat_call_on_queue_dao
+from xivo_dao import stat_call_on_queue_dao, stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue

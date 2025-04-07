@@ -1,13 +1,15 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
-from xivo_dao import stat_queue_dao
-from sqlalchemy import func, between, literal, literal_column
-from sqlalchemy.sql import text
-from sqlalchemy.sql.expression import extract, cast
-from sqlalchemy.types import Integer
 from datetime import timedelta
+
+from sqlalchemy import between, func, literal, literal_column
+from sqlalchemy.sql import text
+from sqlalchemy.sql.expression import cast, extract
+from sqlalchemy.types import Integer
+
+from xivo_dao import stat_queue_dao
+from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 
 
 def _add_call(session, callid, time, queue_name, event, waittime=None):

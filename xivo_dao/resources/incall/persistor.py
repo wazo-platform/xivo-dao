@@ -3,7 +3,6 @@
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
-
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.query_options import QueryOptionsMixin
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin

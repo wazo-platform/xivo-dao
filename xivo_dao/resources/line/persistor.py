@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -6,14 +6,14 @@ import random
 from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.persistor import BasePersistor
-from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 from xivo_dao.resources.line.search import line_search
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
 class LinePersistor(CriteriaBuilderMixin, BasePersistor):

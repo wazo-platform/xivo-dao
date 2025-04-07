@@ -1,30 +1,29 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 from hamcrest import (
     all_of,
     assert_that,
+    contains_exactly,
     contains_inanyorder,
     equal_to,
-    is_not,
-    none,
+    has_items,
     has_length,
-    contains_exactly,
     has_properties,
     has_property,
-    has_items,
+    is_not,
+    none,
     not_,
 )
 
-
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.helpers.exception import InputError, NotFoundError, ResourceError
 from xivo_dao.resources.line import dao as line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.helpers.exception import NotFoundError, InputError, ResourceError
 
 
 class TestFindBy(DAOTestCase):
