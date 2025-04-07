@@ -1,14 +1,13 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.helpers import errors
 from xivo_dao.resources.extension.fixes import ExtensionFixes
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.line_extension import dao as line_extension_dao
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
-
-from xivo_dao.helpers import errors
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.queuemember import QueueMember
 
 
 class Persistor(CriteriaBuilderMixin):

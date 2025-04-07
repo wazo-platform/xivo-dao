@@ -1,9 +1,9 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
-    assert_that,
     any_of,
+    assert_that,
     contains_exactly,
     equal_to,
     has_properties,
@@ -11,11 +11,10 @@ from hamcrest import (
     none,
 )
 
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.line_extension import dao
-
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.helpers.exception import InputError
+from xivo_dao.resources.line_extension import dao
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestLineExtensionDAO(DAOTestCase):

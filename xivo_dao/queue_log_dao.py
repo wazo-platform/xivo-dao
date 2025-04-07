@@ -1,14 +1,15 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
-from sqlalchemy import between, distinct, literal_column
+from datetime import timedelta
+
+from sqlalchemy import between, distinct, func, literal_column
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import min
+
 from xivo_dao.alchemy.queue_log import QueueLog
-from sqlalchemy import func
-from datetime import timedelta
 from xivo_dao.helpers.db_manager import daosession
 
 logger = logging.getLogger(__name__)

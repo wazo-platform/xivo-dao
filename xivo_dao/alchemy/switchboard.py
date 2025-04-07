@@ -1,15 +1,15 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String
 from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.types import Integer, String
 
-from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
+from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid
 
 

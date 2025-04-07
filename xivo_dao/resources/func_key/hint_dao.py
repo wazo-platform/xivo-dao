@@ -1,23 +1,12 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import defaultdict
 
-from sqlalchemy import (
-    and_,
-    bindparam,
-    Integer,
-    Unicode,
-    literal_column,
-    sql,
-)
-from sqlalchemy.orm import (
-    aliased,
-    joinedload,
-)
+from sqlalchemy import Integer, Unicode, and_, bindparam, literal_column, sql
 from sqlalchemy.ext import baked
+from sqlalchemy.orm import aliased, joinedload
 from sqlalchemy.sql.expression import true
-
 from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.alchemy.callfilter import Callfilter

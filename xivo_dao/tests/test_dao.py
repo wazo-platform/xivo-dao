@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -7,15 +7,14 @@ import itertools
 import logging
 import os
 import random
-import unittest
 import string
+import unittest
 import uuid
 
-from sqlalchemy.engine import create_engine
-from sqlalchemy.pool import StaticPool
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
-
+from sqlalchemy.engine import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from xivo.debug import trace_duration
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -41,8 +40,8 @@ from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.external_app import ExternalApp
-from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.feature_extension import FeatureExtension
+from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -55,23 +54,24 @@ from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.ingress_http import IngressHTTP
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
-from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.meeting_authorization import MeetingAuthorization
 from xivo_dao.alchemy.moh import MOH
+from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.phone_number import PhoneNumber
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
+from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
-from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import (
     RightCallMember as CallPermissionAssociation,
@@ -80,15 +80,14 @@ from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.schedule_time import ScheduleTime
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.tenant import Tenant
-from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_external_app import UserExternalApp
 from xivo_dao.alchemy.user_line import UserLine

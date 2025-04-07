@@ -1,26 +1,30 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 import unittest
+from unittest.mock import Mock
+from unittest.mock import sentinel as s
 
-from unittest.mock import Mock, sentinel as s
-from hamcrest import assert_that
-from hamcrest import calling
-from hamcrest import equal_to
-from hamcrest import contains_exactly
-from hamcrest import contains_inanyorder
-from hamcrest import has_length
-from hamcrest import is_in
-from hamcrest import raises
-
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.utils.search import SearchConfig
-from xivo_dao.resources.utils.search import SearchSystem
-from xivo_dao.resources.utils.search import CriteriaBuilderMixin
-from xivo_dao.helpers.exception import InputError
+from hamcrest import (
+    assert_that,
+    calling,
+    contains_exactly,
+    contains_inanyorder,
+    equal_to,
+    has_length,
+    is_in,
+    raises,
+)
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.helpers.exception import InputError
+from xivo_dao.resources.utils.search import (
+    CriteriaBuilderMixin,
+    SearchConfig,
+    SearchSystem,
+)
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCriteriaBuilderMixin(unittest.TestCase):

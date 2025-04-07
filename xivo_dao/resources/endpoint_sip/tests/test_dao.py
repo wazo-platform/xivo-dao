@@ -21,10 +21,9 @@ from hamcrest import (
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
-from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
-from xivo_dao.helpers.exception import InputError
-from xivo_dao.helpers.exception import NotFoundError
+from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 

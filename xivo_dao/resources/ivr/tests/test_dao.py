@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -15,7 +15,6 @@ from hamcrest import (
     none,
     not_,
 )
-
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.dialaction import Dialaction

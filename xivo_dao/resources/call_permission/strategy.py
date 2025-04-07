@@ -1,9 +1,9 @@
-# Copyright 2023-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import selectinload
-from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 
+from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 
 preload_relationships = (
     selectinload(CallPermission.rightcall_groups)

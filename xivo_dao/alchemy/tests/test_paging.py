@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -13,13 +13,12 @@ from hamcrest import (
     not_,
 )
 
-
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
-from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestUsersMember(DAOTestCase):

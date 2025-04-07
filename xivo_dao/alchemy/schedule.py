@@ -1,4 +1,4 @@
-# Copyright 2007-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -7,9 +7,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.types import Integer, String, Text, Boolean
-
+from sqlalchemy.types import Boolean, Integer, String, Text
 from xivo import dialaction
+
 from xivo_dao.helpers.db_manager import Base, IntAsString
 
 from . import enum

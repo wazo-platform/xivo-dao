@@ -1,11 +1,11 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
 
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.useriax import UserIAX
 
 
 class TrunkFixes:

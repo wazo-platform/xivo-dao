@@ -1,13 +1,8 @@
-# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from hamcrest import (
-    assert_that,
-    equal_to,
-    has_properties,
-    none,
-)
+from hamcrest import assert_that, equal_to, has_properties, none
 
 from xivo_dao.alchemy.staticiax import StaticIAX as RegisterIAX
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures

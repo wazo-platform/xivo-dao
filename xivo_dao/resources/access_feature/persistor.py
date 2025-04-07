@@ -1,9 +1,9 @@
-# Copyright 2019-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2019-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.helpers.persistor import BasePersistor
-from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin, SearchResult
 
 
 class AccessFeaturesPersistor(CriteriaBuilderMixin, BasePersistor):

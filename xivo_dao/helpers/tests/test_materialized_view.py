@@ -1,25 +1,19 @@
-# Copyright 2021-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
 
-from collections.abc import Sequence, Callable
+from collections.abc import Callable, Sequence
 
-from hamcrest import (
-    assert_that,
-    calling,
-    not_,
-    raises,
-    equal_to,
-)
-from sqlalchemy import select, Table, Column, Integer, Index, MetaData
+from hamcrest import assert_that, calling, equal_to, not_, raises
+from sqlalchemy import Column, Index, Integer, MetaData, Table, select
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.sql import Select
 from sqlalchemy_utils import create_materialized_view
 
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.db_views import MaterializedView
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 def _create_materialized_view_class(

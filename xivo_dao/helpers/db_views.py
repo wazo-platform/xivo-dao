@@ -6,7 +6,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from sqlalchemy import Table
-from sqlalchemy.event import listens_for, contains
+from sqlalchemy.event import contains, listens_for
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm.unitofwork import UOWTransaction
 from sqlalchemy_utils.view import refresh_materialized_view

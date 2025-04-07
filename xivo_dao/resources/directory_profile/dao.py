@@ -4,11 +4,11 @@
 from sqlalchemy import Integer
 from sqlalchemy.sql import cast
 
-from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession

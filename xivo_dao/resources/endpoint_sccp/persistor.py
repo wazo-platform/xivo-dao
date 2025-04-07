@@ -1,7 +1,8 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
+
 from sqlalchemy import text
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP

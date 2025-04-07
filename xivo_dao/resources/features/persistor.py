@@ -1,14 +1,11 @@
-# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.expression import and_, not_, or_
 
 from xivo_dao.alchemy.features import Features
 
-from .search import (
-    FUNC_KEY_FEATUREMAP_FOREIGN_KEY,
-    FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY,
-)
+from .search import FUNC_KEY_APPLICATIONMAP_FOREIGN_KEY, FUNC_KEY_FEATUREMAP_FOREIGN_KEY
 
 
 class FeaturesPersistor:

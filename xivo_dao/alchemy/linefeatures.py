@@ -1,35 +1,30 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
 
-from sqlalchemy import sql, func, ForeignKeyConstraint
+from sqlalchemy import ForeignKeyConstraint, func, sql
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import bindparam, select
-from sqlalchemy.types import (
-    Integer,
-    String,
-    Text,
-)
 from sqlalchemy.schema import (
     CheckConstraint,
     Column,
-    Index,
     ForeignKey,
+    Index,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.expression import bindparam, select
+from sqlalchemy.types import Integer, String, Text
 
-from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.exception import InputError
 
-from .sccpline import SCCPLine
-from .endpoint_sip_options_view import EndpointSIPOptionsView
 from .context import Context
-
+from .endpoint_sip_options_view import EndpointSIPOptionsView
+from .sccpline import SCCPLine
 
 caller_id_regex = re.compile(
     r'''

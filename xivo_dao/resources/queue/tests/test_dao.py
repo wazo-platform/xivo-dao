@@ -2,28 +2,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains_exactly,
-    equal_to,
     empty,
+    equal_to,
     has_items,
     has_properties,
     has_property,
     none,
-    not_none,
-    all_of,
     not_,
+    not_none,
 )
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
-
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 

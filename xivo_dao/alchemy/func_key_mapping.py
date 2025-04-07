@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -11,7 +11,7 @@ from sqlalchemy.schema import (
     ForeignKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.types import Integer, Boolean, String
+from sqlalchemy.types import Boolean, Integer, String
 
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate

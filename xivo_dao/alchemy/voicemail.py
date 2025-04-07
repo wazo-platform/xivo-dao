@@ -1,27 +1,17 @@
-# Copyright 2012-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import sql, Boolean, ForeignKeyConstraint
+from sqlalchemy import Boolean, ForeignKeyConstraint, sql
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.attributes import get_history
-from sqlalchemy.schema import (
-    Column,
-    Index,
-    PrimaryKeyConstraint,
-    UniqueConstraint,
-)
-from sqlalchemy.sql import (
-    cast,
-    not_,
-)
-from sqlalchemy.types import (
-    Integer,
-    String,
-)
+from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.sql import cast, not_
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
+
 from .context import Context
 
 

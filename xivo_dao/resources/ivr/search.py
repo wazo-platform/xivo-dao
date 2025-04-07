@@ -1,13 +1,13 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql.expression import and_, cast
 from sqlalchemy.sql.sqltypes import String
-from xivo_dao.alchemy.ivr import IVR
-from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.resources.utils.search import SearchSystem, SearchConfig
 
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.ivr import IVR
+from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 
 config = SearchConfig(
     table=IVR,

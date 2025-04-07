@@ -1,17 +1,10 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from uuid import uuid4
 
-from hamcrest import assert_that, none, equal_to, calling, raises
+from hamcrest import assert_that, calling, equal_to, none, raises
 
-from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.helpers.exception import InputError
-
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
-
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
@@ -24,6 +17,9 @@ from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
+from xivo_dao.alchemy.func_key_dest_paging import (
+    FuncKeyDestPaging as FuncKeyDestPagingSchema,
+)
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 from xivo_dao.alchemy.func_key_dest_parking import FuncKeyDestParking
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
@@ -31,11 +27,11 @@ from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.func_key_dest_paging import (
-    FuncKeyDestPaging as FuncKeyDestPagingSchema,
-)
-
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.helpers.exception import InputError, NotFoundError
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.tests.test_dao import DAOTestCase
 
 from .. import dao
 

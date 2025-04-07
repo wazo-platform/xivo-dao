@@ -1,15 +1,15 @@
-# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import select, join, cast, literal, func, String, Index, text
+from sqlalchemy import Index, String, cast, func, join, literal, select, text
 from sqlalchemy.dialects.postgresql import JSONB, aggregate_order_by
 from sqlalchemy_utils import create_materialized_view
 
+from ..helpers.db_manager import Base
+from ..helpers.db_views import MaterializedView
 from .endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from .endpoint_sip_section import EndpointSIPSection
 from .endpoint_sip_section_option import EndpointSIPSectionOption
-from ..helpers.db_manager import Base
-from ..helpers.db_views import MaterializedView
 
 
 def _generate_selectable():

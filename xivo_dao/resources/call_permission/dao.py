@@ -1,9 +1,10 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
 
 from contextlib import contextmanager
+
 from sqlalchemy.orm.strategy_options import Load, loader_option
 
 from xivo_dao.helpers.db_manager import daosession

@@ -3,8 +3,9 @@
 
 
 import warnings
-
 from contextlib import contextmanager
+from unittest.mock import patch
+
 from hamcrest import (
     all_of,
     assert_that,
@@ -17,13 +18,12 @@ from hamcrest import (
     has_properties,
     not_,
 )
-
-from unittest.mock import patch
 from wazo_test_helpers.hamcrest.uuid_ import uuid_
+
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
-from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.tests.test_dao import DAOTestCase
 
 

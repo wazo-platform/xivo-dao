@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import relationship, column_property
+from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import (
@@ -19,14 +19,8 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.sql import func, cast, not_
-from sqlalchemy.types import (
-    Boolean,
-    DateTime,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy.sql import cast, func, not_
+from sqlalchemy.types import Boolean, DateTime, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid

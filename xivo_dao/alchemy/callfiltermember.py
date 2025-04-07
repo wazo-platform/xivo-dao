@@ -1,16 +1,16 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql.elements import and_
-from sqlalchemy.sql.expression import select
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, relationship
-from sqlalchemy.schema import Column, UniqueConstraint, CheckConstraint
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.schema import CheckConstraint, Column, UniqueConstraint
+from sqlalchemy.sql.elements import and_
+from sqlalchemy.sql.expression import select
+from sqlalchemy.types import Enum, Integer, String
 
 from xivo_dao.alchemy import enum
-from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.helpers.db_manager import Base
 
 
 class Callfiltermember(Base):

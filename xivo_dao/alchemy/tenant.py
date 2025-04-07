@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
-from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
-from sqlalchemy.types import String, Boolean, Text
+from sqlalchemy.types import Boolean, String, Text
+
 from xivo_dao.helpers.db_manager import Base
 
 

@@ -1,15 +1,17 @@
-# Copyright 2020-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
-    equal_to,
-    has_properties,
     contains_exactly,
     contains_inanyorder,
+    equal_to,
+    has_properties,
 )
 from sqlalchemy import func
+
 from xivo_dao.tests.test_dao import DAOTestCase
+
 from ..pjsip_transport import PJSIPTransport
 from ..pjsip_transport_option import PJSIPTransportOption
 

@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -12,23 +12,14 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.sql import (
-    cast,
-    func,
-    not_,
-)
-from sqlalchemy.types import (
-    Boolean,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy.sql import cast, func, not_
+from sqlalchemy.types import Boolean, Integer, String, Text
 
-from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.helpers.db_manager import Base
 
 
 class Outcall(Base):

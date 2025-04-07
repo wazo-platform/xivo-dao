@@ -1,15 +1,15 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
-
 from datetime import datetime, timedelta
-from hamcrest import assert_that, has_length, empty, contains_inanyorder
+
+from hamcrest import assert_that, contains_inanyorder, empty, has_length
 from pytz import UTC
 
 from xivo_dao import queue_log_dao
-from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.queue_log import QueueLog
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 

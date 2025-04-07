@@ -1,18 +1,18 @@
-# Copyright 2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2024-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import (
+    CheckConstraint,
     Column,
     ForeignKeyConstraint,
     Index,
     PrimaryKeyConstraint,
     UniqueConstraint,
-    CheckConstraint,
 )
 from sqlalchemy.sql import text
 from sqlalchemy.types import Boolean, String, Text
-from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
 

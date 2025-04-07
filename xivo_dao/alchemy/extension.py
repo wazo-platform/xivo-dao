@@ -1,23 +1,23 @@
-# Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.schema import (
-    Column,
-    UniqueConstraint,
-    Index,
-    PrimaryKeyConstraint,
-    ForeignKeyConstraint,
-)
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.attributes import get_history
-from sqlalchemy.types import Integer, String, Boolean
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.sql import cast, not_, select, func
+from sqlalchemy.schema import (
+    Column,
+    ForeignKeyConstraint,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.sql import cast, func, not_, select
+from sqlalchemy.types import Boolean, Integer, String
 
-from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.context import Context
+from xivo_dao.helpers.db_manager import Base, IntAsString
 
 
 class Extension(Base):

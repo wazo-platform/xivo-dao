@@ -1,18 +1,16 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
 
+import unicodedata
 from typing import Any, NamedTuple
 
-from unidecode import unidecode
-
-import unicodedata
 import sqlalchemy as sa
-
 from sqlalchemy import sql
 from sqlalchemy.sql.functions import ReturnTypeFromArgs
 from sqlalchemy.types import Integer
+from unidecode import unidecode
 
 from xivo_dao.helpers import errors
 

@@ -1,15 +1,9 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
-from hamcrest import (
-    assert_that,
-    contains_exactly,
-    equal_to,
-    empty,
-    none,
-)
+from hamcrest import assert_that, contains_exactly, empty, equal_to, none
 
 from xivo_dao.tests.test_dao import DAOTestCase
 

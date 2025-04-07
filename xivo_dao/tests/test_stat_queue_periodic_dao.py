@@ -1,15 +1,15 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
 from datetime import timedelta
-from pytz import UTC
 
+from pytz import UTC
 from sqlalchemy import func
 
 from xivo_dao import stat_queue_periodic_dao
-from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 

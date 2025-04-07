@@ -1,17 +1,15 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import and_, or_
 
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.resources.utils.search import SearchSystem
-from xivo_dao.resources.utils.search import SearchConfig
-
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 
 config = SearchConfig(
     table=UserFeatures,

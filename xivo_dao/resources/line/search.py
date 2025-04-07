@@ -1,13 +1,12 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from sqlalchemy.sql.elements import and_
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.line_extension import LineExtension
-from sqlalchemy.sql.elements import and_
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.resources.utils.search import SearchSystem
-from xivo_dao.resources.utils.search import SearchConfig
-
+from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 
 config = SearchConfig(
     table=LineFeatures,
