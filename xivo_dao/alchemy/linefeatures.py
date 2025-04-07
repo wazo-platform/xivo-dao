@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -27,7 +27,7 @@ from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 
 from .sccpline import SCCPLine
-from .endpoint_sip_options_view import EndpointSIPOptionsView
+from .endpoint_sip import EndpointSIP
 from .context import Context
 
 
@@ -185,7 +185,7 @@ class LineFeatures(Base):
             [
                 (
                     cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('callerid', regex_filter=regex),
+                    cls._sip_query_option('caller_id', regex),
                 ),
                 (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
             ],
@@ -252,7 +252,7 @@ class LineFeatures(Base):
             [
                 (
                     cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('callerid', regex_filter=regex),
+                    cls._sip_query_option('caller_id', regex),
                 ),
                 (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
             ]
@@ -383,19 +383,16 @@ class LineFeatures(Base):
 
     @classmethod
     def _sip_query_option(cls, option, regex_filter=None):
-        attr = EndpointSIPOptionsView.get_option_value(option)
+        if option not in dir(EndpointSIP):
+            return None
+
+        op = getattr(EndpointSIP, option)
         if regex_filter:
-            attr = func.unnest(
-                func.regexp_matches(
-                    attr, bindparam('regexp', regex_filter, unique=True)
-                )
+            op = func.unnest(
+                func.regexp_matches(op, bindparam('regex', regex_filter, unique=True))
             )
 
-        return (
-            select([attr])
-            .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
-            .as_scalar()
-        )
+        return op.select().where(EndpointSIP.uuid == cls.endpoint_sip_uuid).as_scalar()
 
     @classmethod
     def _sccp_query_option(cls, option):
