@@ -5,17 +5,15 @@ from sqlalchemy import ForeignKey, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.schema import (
-    Column,
-    PrimaryKeyConstraint,
-)
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.sql import text
 from sqlalchemy.sql.schema import Index, UniqueConstraint
-from sqlalchemy.types import Text, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.types import String, Text
 
 from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.helpers.db_manager import Base
+
 from .userfeatures import UserFeatures
 
 

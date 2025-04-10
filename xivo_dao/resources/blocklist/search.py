@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.blocklist import BlocklistNumber
-from xivo_dao.resources.utils.search import SearchSystem, SearchConfig
-
+from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 
 config = SearchConfig(
     table=BlocklistNumber,

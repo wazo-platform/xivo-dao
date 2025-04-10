@@ -10,17 +10,15 @@ from hamcrest import (
     none,
     raises,
 )
-
 from sqlalchemy.exc import IntegrityError
 
 from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DEFAULT_TENANT, DAOTestCase
 
 from .. import dao
-
 
 UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 SAMPLE_NUMBER = '+15551234567'
