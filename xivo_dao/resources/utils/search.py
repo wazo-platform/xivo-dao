@@ -13,6 +13,7 @@ from sqlalchemy.types import Integer
 from unidecode import unidecode
 
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.sequence_utils import split_by
 
 
 class SearchResult(NamedTuple):
@@ -24,7 +25,31 @@ class unaccent(ReturnTypeFromArgs):
     pass
 
 
+def separate_criteria(
+    criteria: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """
+    Separate a mapping of filtering criteria
+    between bulk(ending in `_in`) and non-bulk criteria
+    for use by the appropriate build method
+    """
+    bulk_criteria, single_criteria = split_by(
+        criteria.items(), lambda x: x[0].endswith('_in')
+    )
+    return dict(bulk_criteria), dict(single_criteria)
+
+
 class CriteriaBuilderMixin:
+    _search_table: type[sa.Table]
+
+    def build_bulk_criteria(self, query, bulk_criteria):
+        for key, value in bulk_criteria.items():
+            assert key.endswith('_in')
+            column_name = key[:-3]
+            column = self._get_column(column_name)
+            query = query.filter(column.in_(value))
+        return query
+
     def build_criteria(self, query, criteria):
         for name, value in criteria.items():
             column = self._get_column(name)
