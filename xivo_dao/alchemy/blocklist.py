@@ -68,6 +68,11 @@ class BlocklistNumber(Base):
         nullable=False,
     )
 
+    tenant_uuid = association_proxy(
+        'blocklist',
+        'tenant_uuid',
+    )
+
     blocklist = relationship(Blocklist, lazy='joined', uselist=False)
 
     @hybrid_property
