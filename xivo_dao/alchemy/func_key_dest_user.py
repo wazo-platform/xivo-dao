@@ -23,7 +23,9 @@ class FuncKeyDestUser(Base):
     )
 
     func_key_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('userfeatures.id'), primary_key=True)
+    user_id = Column(
+        Integer, ForeignKey('userfeatures.id', ondelete='CASCADE'), primary_key=True
+    )
     destination_type_id = Column(
         Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}"
     )
