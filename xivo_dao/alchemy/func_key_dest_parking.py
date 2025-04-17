@@ -33,7 +33,7 @@ class FuncKeyDestParking(Base):
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
     parking_lot_id = Column(
         Integer,
-        ForeignKey('parking_lot.id'),
+        ForeignKey('parking_lot.id', ondelete='CASCADE'),
         nullable=False,
         unique=True,
     )
