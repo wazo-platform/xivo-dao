@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -34,7 +34,7 @@ class FuncKeyDestFeatures(Base):
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    features_id = Column(Integer, ForeignKey('features.id'))
+    features_id = Column(Integer, ForeignKey('features.id', ondelete='CASCADE'))
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     features = relationship(Features)

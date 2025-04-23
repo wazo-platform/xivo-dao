@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -33,7 +33,7 @@ class FuncKeyDestPaging(Base):
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    paging_id = Column(Integer, ForeignKey('paging.id'))
+    paging_id = Column(Integer, ForeignKey('paging.id', ondelete='CASCADE'))
 
     type = 'paging'
 

@@ -39,9 +39,13 @@ class FuncKeyDestGroupMember(Base):
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default=f"{DESTINATION_TYPE_ID}")
-    group_id = Column(Integer, ForeignKey('groupfeatures.id'), nullable=False)
+    group_id = Column(
+        Integer, ForeignKey('groupfeatures.id', ondelete='CASCADE'), nullable=False
+    )
     feature_extension_uuid = Column(
-        UUID(as_uuid=True), ForeignKey('feature_extension.uuid'), nullable=False
+        UUID(as_uuid=True),
+        ForeignKey('feature_extension.uuid', ondelete='CASCADE'),
+        nullable=False,
     )
 
     type = 'groupmember'

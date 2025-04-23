@@ -26,7 +26,9 @@ class FuncKeyDestQueue(Base):
     destination_type_id = Column(
         Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}"
     )
-    queue_id = Column(Integer, ForeignKey('queuefeatures.id'), primary_key=True)
+    queue_id = Column(
+        Integer, ForeignKey('queuefeatures.id', ondelete='CASCADE'), primary_key=True
+    )
 
     type = 'queue'
 

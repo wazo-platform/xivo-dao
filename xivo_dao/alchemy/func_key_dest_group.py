@@ -26,7 +26,9 @@ class FuncKeyDestGroup(Base):
     destination_type_id = Column(
         Integer, primary_key=True, server_default=f"{DESTINATION_TYPE_ID}"
     )
-    group_id = Column(Integer, ForeignKey('groupfeatures.id'), primary_key=True)
+    group_id = Column(
+        Integer, ForeignKey('groupfeatures.id', ondelete='CASCADE'), primary_key=True
+    )
 
     type = 'group'
 
