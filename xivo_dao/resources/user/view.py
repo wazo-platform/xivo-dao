@@ -80,6 +80,7 @@ class SummaryView(View):
             Line.protocol.label('protocol'),
             Extension.exten.label('extension'),
             Extension.context.label('context'),
+            User.subscription_type.label('subscription_type'),
         )
         return query
 
@@ -95,6 +96,7 @@ class SummaryView(View):
             protocol=row.protocol,
             extension=row.extension,
             context=row.context,
+            subscription_type=row.subscription_type,
         )
 
 

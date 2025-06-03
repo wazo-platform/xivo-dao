@@ -50,6 +50,7 @@ class UserSummary:
         protocol,
         extension,
         context,
+        subscription_type,
     ):
         self.id = id
         self.uuid = uuid
@@ -61,6 +62,7 @@ class UserSummary:
         self.protocol = protocol
         self.extension = extension
         self.context = context
+        self.subscription_type = subscription_type
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
