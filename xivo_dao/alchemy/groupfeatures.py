@@ -43,7 +43,7 @@ class GroupFeatures(Base):
     transfer_call = Column(Integer, nullable=False, server_default='0')
     write_caller = Column(Integer, nullable=False, server_default='0')
     write_calling = Column(Integer, nullable=False, server_default='0')
-    ignore_forward = Column(Integer, nullable=False, server_default='1')
+    ignore_forward = Column(Integer, nullable=False, server_default='0')
     timeout = Column(Integer)
     preprocess_subroutine = Column(String(79))
     mark_answered_elsewhere = Column(Integer, nullable=False, server_default='0')
