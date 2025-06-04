@@ -443,6 +443,7 @@ class TestSimpleSearch(TestSearch):
                     context=None,
                     provisioning_code=None,
                     protocol=None,
+                    subscription_type=0,
                 )
             ],
         )
@@ -458,6 +459,7 @@ class TestSimpleSearch(TestSearch):
             lastname='rôgers',
             endpoint_sip_uuid=sip.uuid,
             email='dany.rogers@example.com',
+            subscription_type=1,
         )
 
         expected = SearchResult(
@@ -474,6 +476,7 @@ class TestSimpleSearch(TestSearch):
                     context=user_line.extension.context,
                     provisioning_code=user_line.linefeatures.provisioning_code,
                     protocol='sip',
+                    subscription_type=1,
                 )
             ],
         )
@@ -504,6 +507,7 @@ class TestSimpleSearch(TestSearch):
                     context=user_line.extension.context,
                     provisioning_code=None,
                     protocol='custom',
+                    subscription_type=0,
                 )
             ],
         )

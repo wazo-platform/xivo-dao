@@ -34,6 +34,7 @@ config = SearchConfig(
         'context': Extension.context,
         'username': UserFeatures.loginclient,
         'enabled': UserFeatures.enabled,
+        'subscription_type': UserFeatures.subscription_type,
     },
     search=[
         'fullname',
@@ -47,6 +48,7 @@ config = SearchConfig(
         'exten',
         'username',
         'provisioning_code',
+        'subscription_type',
     ],
     default_sort='lastname',
 )

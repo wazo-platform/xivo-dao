@@ -144,6 +144,7 @@ class ItemInserter:
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
+        kwargs.setdefault('subscription_type', 0)
         kwargs.setdefault('email', None)
         kwargs.setdefault('callerid', f'"{kwargs["firstname"]} {kwargs["lastname"]}"')
         kwargs.setdefault('exten', f'{random.randint(1000, 1999)}')
@@ -171,6 +172,7 @@ class ItemInserter:
         user = self.add_user(
             firstname=kwargs['firstname'],
             lastname=kwargs['lastname'],
+            subscription_type=kwargs['subscription_type'],
             email=kwargs['email'],
             callerid=kwargs['callerid'],
             voicemailid=kwargs['voicemail_id'],
