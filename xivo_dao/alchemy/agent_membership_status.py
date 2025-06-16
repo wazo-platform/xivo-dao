@@ -18,6 +18,8 @@ class AgentMembershipStatus(Base):
     agent_id = Column(
         Integer, ForeignKey('agentfeatures.id', ondelete='CASCADE'), autoincrement=False
     )
-    queue_id = Column(Integer, autoincrement=False)
+    queue_id = Column(
+        Integer, ForeignKey('queuefeatures.id', ondelete='CASCADE'), autoincrement=False
+    )
     queue_name = Column(String(128), nullable=False)
     penalty = Column(Integer, nullable=False, server_default='0')
