@@ -633,13 +633,15 @@ class TestAgentStatusDao(DAOTestCase):
         assert_that(memberships, empty())
 
     def test_remove_all_agents_from_queue(self):
+        agent_1 = self.add_agent()
+        agent_2 = self.add_agent()
         queue1_id = 42
         queue1_name = 'queue1'
         queue2_id = 43
         queue2_name = 'queue2'
-        self._insert_agent_membership(1, queue1_id, queue1_name)
-        self._insert_agent_membership(2, queue1_id, queue1_name)
-        self._insert_agent_membership(1, queue2_id, queue2_name)
+        self._insert_agent_membership(agent_1.id, queue1_id, queue1_name)
+        self._insert_agent_membership(agent_2.id, queue1_id, queue1_name)
+        self._insert_agent_membership(agent_1.id, queue2_id, queue2_name)
 
         agent_status_dao.remove_all_agents_from_queue(queue1_id)
 
@@ -652,7 +654,8 @@ class TestAgentStatusDao(DAOTestCase):
         )
 
     def test_update_penalty(self):
-        agent_id = 42
+        agent = self.add_agent()
+        agent_id = agent.id
         queue_id = 42
         queue_name = '42'
         queue_penalty_before = 42
