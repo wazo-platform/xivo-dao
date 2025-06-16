@@ -14,7 +14,7 @@ from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
-from xivo_dao.alchemy.base_queue import Queue
+from xivo_dao.alchemy.base_queue import BaseQueue
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.extension import Extension
@@ -1180,10 +1180,10 @@ def find_queue_general_settings(session):
 @daosession
 def find_queue_settings(session):
     rows = (
-        session.query(Queue)
+        session.query(BaseQueue)
         .options(joinedload('groupfeatures'))
         .options(joinedload('queuefeatures'))
-        .filter(Queue.commented == 0)
+        .filter(BaseQueue.commented == 0)
         .all()
     )
 

@@ -18,7 +18,7 @@ from sqlalchemy.types import Boolean, Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
-from .base_queue import Queue
+from .base_queue import BaseQueue
 from .callerid import Callerid
 from .extension import Extension
 from .schedulepath import SchedulePath
@@ -91,18 +91,18 @@ class QueueFeatures(Base):
     waitratio = Column(DOUBLE_PRECISION)
     mark_answered_elsewhere = Column(Integer, nullable=False, server_default='1')
 
-    _queue = relationship(
-        'Queue',
-        primaryjoin="""and_(Queue.category == 'queue',
-                            Queue.name == QueueFeatures.name)""",
-        foreign_keys='Queue.name',
+    base_queue = relationship(
+        'BaseQueue',
+        primaryjoin="""and_(BaseQueue.category == 'queue',
+                            BaseQueue.name == QueueFeatures.name)""",
+        foreign_keys='BaseQueue.name',
         cascade='all, delete-orphan',
         uselist=False,
         passive_updates=False,
     )
-    enabled = association_proxy('_queue', 'enabled')
-    options = association_proxy('_queue', 'options')
-    music_on_hold = association_proxy('_queue', 'musicclass')
+    enabled = association_proxy('base_queue', 'enabled')
+    options = association_proxy('base_queue', 'options')
+    music_on_hold = association_proxy('base_queue', 'musicclass')
 
     caller_id = relationship(
         'Callerid',
@@ -186,8 +186,8 @@ class QueueFeatures(Base):
         enabled = kwargs.pop('enabled', True)
         music_on_hold = kwargs.pop('music_on_hold', None)
         super().__init__(**kwargs)
-        if not self._queue:
-            self._queue = Queue(
+        if not self.base_queue:
+            self.base_queue = BaseQueue(
                 # 'name' is set by the relationship foreign_key
                 category='queue',
                 enabled=enabled,

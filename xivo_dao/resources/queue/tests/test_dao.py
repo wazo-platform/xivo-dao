@@ -17,7 +17,7 @@ from hamcrest import (
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.base_queue import Queue
+from xivo_dao.alchemy.base_queue import BaseQueue
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -521,14 +521,14 @@ class TestEdit(DAOTestCase):
         )
         self.session.expunge_all()
 
-        meta_queue = self.session.query(Queue).first()
+        meta_queue = self.session.query(BaseQueue).first()
         assert_that(meta_queue.name, equal_to('MyQueue'))
 
         queue = self.session.query(QueueFeatures).first()
         queue.name = 'OtherName'
         queue_dao.edit(queue)
 
-        meta_queue = self.session.query(Queue).first()
+        meta_queue = self.session.query(BaseQueue).first()
         assert_that(meta_queue.name, equal_to('OtherName'))
 
 

@@ -26,7 +26,7 @@ from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
-from xivo_dao.alchemy.base_queue import Queue
+from xivo_dao.alchemy.base_queue import BaseQueue
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -609,12 +609,12 @@ class ItemInserter:
         self.add_me(conference)
         return conference
 
-    def add_queue(self, **kwargs):
+    def add_base_queue(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('category', random.choice(['group', 'queue']))
-        queue = Queue(**kwargs)
-        self.add_me(queue)
-        return queue
+        base_queue = BaseQueue(**kwargs)
+        self.add_me(base_queue)
+        return base_queue
 
     def add_agent_queue_skill(self, **kwargs):
         kwargs.setdefault('skillid', self._generate_int())
