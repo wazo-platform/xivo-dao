@@ -17,13 +17,13 @@ from hamcrest import (
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from ..base_queue import Queue
 from ..callerid import Callerid
 from ..dialaction import Dialaction
 from ..func_key_dest_group import FuncKeyDestGroup
 from ..func_key_dest_group_member import FuncKeyDestGroupMember
 from ..groupfeatures import GroupFeatures as Group
 from ..pickupmember import PickupMember as CallPickupMember
-from ..queue import Queue
 from ..queuemember import QueueMember
 from ..schedule import Schedule
 from ..schedulepath import SchedulePath

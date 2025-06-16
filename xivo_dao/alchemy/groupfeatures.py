@@ -13,9 +13,9 @@ from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
+from .base_queue import Queue
 from .callerid import Callerid
 from .extension import Extension
-from .queue import Queue
 from .rightcallmember import RightCallMember
 from .schedulepath import SchedulePath
 

@@ -18,9 +18,9 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..agentfeatures import AgentFeatures
+from ..base_queue import Queue
 from ..dialaction import Dialaction
 from ..func_key_dest_queue import FuncKeyDestQueue
-from ..queue import Queue
 from ..queuefeatures import QueueFeatures
 from ..queuemember import QueueMember
 from ..schedule import Schedule

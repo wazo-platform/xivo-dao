@@ -14,6 +14,7 @@ from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
+from xivo_dao.alchemy.base_queue import Queue
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.extension import Extension
@@ -28,7 +29,6 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
-from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill

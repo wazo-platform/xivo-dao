@@ -17,8 +17,8 @@ from hamcrest import (
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.base_queue import Queue
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures

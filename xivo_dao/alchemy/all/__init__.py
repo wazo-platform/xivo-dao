@@ -12,6 +12,7 @@ from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
+from xivo_dao.alchemy.base_queue import Queue
 from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -78,7 +79,6 @@ from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.pjsip_transport_option import PJSIPTransportOption
 from xivo_dao.alchemy.provisioning import Provisioning
-from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember

@@ -18,9 +18,9 @@ from sqlalchemy.types import Boolean, Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
+from .base_queue import Queue
 from .callerid import Callerid
 from .extension import Extension
-from .queue import Queue
 from .schedulepath import SchedulePath
 
 DEFAULT_QUEUE_OPTIONS = {
