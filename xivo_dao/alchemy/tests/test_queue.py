@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from uuid import uuid4
@@ -19,11 +19,11 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestOptions(DAOTestCase):
     def test_getter(self):
-        queue = self.add_queue(timeout=5)
+        queue = self.add_base_queue(timeout=5)
         assert_that(queue.options, has_item(has_items('timeout', '5')))
 
     def test_getter_default_values(self):
-        queue = self.add_queue()
+        queue = self.add_base_queue()
 
         assert_that(
             queue.options,
@@ -46,7 +46,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_getter_exclude_columns(self):
-        queue = self.add_queue(
+        queue = self.add_base_queue(
             name='name',
             category='queue',
             commented='1',
@@ -64,7 +64,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_getter_custom_columns(self):
-        queue = self.add_queue()
+        queue = self.add_base_queue()
 
         assert_that(
             queue.options,
@@ -75,7 +75,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_getter_integer_values(self):
-        queue = self.add_queue()
+        queue = self.add_base_queue()
         assert_that(
             queue.options,
             has_items(
@@ -91,7 +91,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_setter(self):
-        queue = self.add_queue(defaultrule='111')
+        queue = self.add_base_queue(defaultrule='111')
 
         queue.options = [['defaultrule', '222']]
         self.session.flush()
@@ -100,7 +100,7 @@ class TestOptions(DAOTestCase):
         assert_that(queue.defaultrule, equal_to('222'))
 
     def test_setter_default_values(self):
-        queue = self.add_queue(
+        queue = self.add_base_queue(
             timeout=10,
             ringinuse=10,
             reportholdtime=1,
@@ -142,7 +142,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_setter_exclude_columns(self):
-        queue = self.add_queue(
+        queue = self.add_base_queue(
             name='name',
             category='queue',
             commented=0,
@@ -169,7 +169,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_setter_custom_columns(self):
-        queue = self.add_queue(enabled=True, ring_in_use=False)
+        queue = self.add_base_queue(enabled=True, ring_in_use=False)
         queue.options = [
             ['enabled', 'False'],
             ['ring_in_use', 'True'],
@@ -186,7 +186,7 @@ class TestOptions(DAOTestCase):
         )
 
     def test_setter_integer_values(self):
-        queue = self.add_queue()
+        queue = self.add_base_queue()
         queue.options = [
             ['ringinuse', 'yes'],
             ['reportholdtime', 'yes'],
@@ -222,7 +222,7 @@ class TestOptions(DAOTestCase):
 
         self.session.expire_all()
         assert_that(
-            group.queue,
+            group.base_queue,
             has_properties(
                 name=name,
                 label='mylabel',
@@ -235,7 +235,7 @@ class TestOptions(DAOTestCase):
 
         self.session.expire_all()
         assert_that(
-            queuefeatures._queue,
+            queuefeatures.base_queue,
             has_properties(
                 name='name',
                 label='mylabel',
@@ -243,19 +243,19 @@ class TestOptions(DAOTestCase):
         )
 
     def test_label_no_group_no_queue(self):
-        queue = self.add_queue(category='group')
+        queue = self.add_base_queue(category='group')
         self.session.flush()
 
         self.session.expire_all()
         assert_that(queue, has_properties(label='unknown'))
 
-        queue = self.add_queue(category='queue')
+        queue = self.add_base_queue(category='queue')
         self.session.flush()
 
         self.session.expire_all()
         assert_that(queue, has_properties(label='unknown'))
 
-        queue = self.add_queue()
+        queue = self.add_base_queue()
         self.session.flush()
 
         self.session.expire_all()

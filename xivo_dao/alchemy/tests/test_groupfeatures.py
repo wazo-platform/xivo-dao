@@ -17,13 +17,13 @@ from hamcrest import (
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from ..base_queue import BaseQueue
 from ..callerid import Callerid
 from ..dialaction import Dialaction
 from ..func_key_dest_group import FuncKeyDestGroup
 from ..func_key_dest_group_member import FuncKeyDestGroupMember
 from ..groupfeatures import GroupFeatures as Group
 from ..pickupmember import PickupMember as CallPickupMember
-from ..queue import Queue
 from ..queuemember import QueueMember
 from ..schedule import Schedule
 from ..schedulepath import SchedulePath
@@ -360,7 +360,7 @@ class TestCreate(DAOTestCase):
         self.session.flush()
 
         assert_that(
-            group.queue,
+            group.base_queue,
             has_properties(
                 name='groupname',
                 retry=5,
@@ -409,7 +409,7 @@ class TestCreate(DAOTestCase):
         self.session.flush()
 
         assert_that(
-            group.queue,
+            group.base_queue,
             has_properties(
                 name='groupname',
                 retry=6,
@@ -475,7 +475,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.delete(group)
         self.session.flush()
 
-        row = self.session.query(Queue).first()
+        row = self.session.query(BaseQueue).first()
         assert_that(row, none())
 
     def test_caller_id_is_deleted(self):

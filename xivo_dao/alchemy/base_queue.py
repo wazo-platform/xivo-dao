@@ -11,7 +11,7 @@ from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
 from xivo_dao.helpers.db_manager import Base
 
 
-class Queue(Base, AsteriskOptionsMixin):
+class BaseQueue(Base, AsteriskOptionsMixin):
     EXCLUDE_OPTIONS = {
         'name',
         'category',
@@ -34,7 +34,7 @@ class Queue(Base, AsteriskOptionsMixin):
     # This should eventually be a column to set arbitrary asterisk options
     _options = []
 
-    __tablename__ = 'queue'
+    __tablename__ = 'base_queue'
     __table_args__ = (
         PrimaryKeyConstraint('name'),
         Index('queue__idx__category', 'category'),
@@ -104,17 +104,17 @@ class Queue(Base, AsteriskOptionsMixin):
 
     groupfeatures = relationship(
         'GroupFeatures',
-        primaryjoin="""and_(Queue.category == 'group',
-                            Queue.name == GroupFeatures.name)""",
-        foreign_keys='Queue.name',
+        primaryjoin="""and_(BaseQueue.category == 'group',
+                            BaseQueue.name == GroupFeatures.name)""",
+        foreign_keys='BaseQueue.name',
         uselist=False,
     )
 
     queuefeatures = relationship(
         'QueueFeatures',
-        primaryjoin="""and_(Queue.category == 'queue',
-                            Queue.name == QueueFeatures.name)""",
-        foreign_keys='Queue.name',
+        primaryjoin="""and_(BaseQueue.category == 'queue',
+                            BaseQueue.name == QueueFeatures.name)""",
+        foreign_keys='BaseQueue.name',
         uselist=False,
     )
 

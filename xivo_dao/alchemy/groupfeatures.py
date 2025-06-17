@@ -13,9 +13,9 @@ from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
+from .base_queue import BaseQueue
 from .callerid import Callerid
 from .extension import Extension
-from .queue import Queue
 from .rightcallmember import RightCallMember
 from .schedulepath import SchedulePath
 
@@ -115,11 +115,11 @@ class GroupFeatures(Base):
         passive_updates=False,
     )
 
-    queue = relationship(
-        'Queue',
-        primaryjoin="""and_(Queue.category == 'group',
-                            Queue.name == GroupFeatures.name)""",
-        foreign_keys='Queue.name',
+    base_queue = relationship(
+        'BaseQueue',
+        primaryjoin="""and_(BaseQueue.category == 'group',
+                            BaseQueue.name == GroupFeatures.name)""",
+        foreign_keys='BaseQueue.name',
         cascade='all, delete-orphan',
         uselist=False,
         passive_updates=False,
@@ -133,13 +133,13 @@ class GroupFeatures(Base):
         cascade='all, delete-orphan',
     )
 
-    enabled = association_proxy('queue', 'enabled')
-    music_on_hold = association_proxy('queue', 'musicclass')
-    retry_delay = association_proxy('queue', 'retry')
-    ring_in_use = association_proxy('queue', 'ring_in_use')
-    ring_strategy = association_proxy('queue', 'strategy')
-    user_timeout = association_proxy('queue', 'timeout')
-    max_calls = association_proxy('queue', 'maxlen')
+    enabled = association_proxy('base_queue', 'enabled')
+    music_on_hold = association_proxy('base_queue', 'musicclass')
+    retry_delay = association_proxy('base_queue', 'retry')
+    ring_in_use = association_proxy('base_queue', 'ring_in_use')
+    ring_strategy = association_proxy('base_queue', 'strategy')
+    user_timeout = association_proxy('base_queue', 'timeout')
+    max_calls = association_proxy('base_queue', 'maxlen')
 
     func_keys_group = relationship(
         'FuncKeyDestGroup',
@@ -229,8 +229,8 @@ class GroupFeatures(Base):
         enabled = kwargs.pop('enabled', True)
         max_calls = kwargs.pop('max_calls', 0)
         super().__init__(**kwargs)
-        if not self.queue:
-            self.queue = Queue(
+        if not self.base_queue:
+            self.base_queue = BaseQueue(
                 retry=retry,
                 ring_in_use=ring_in_use,
                 strategy=strategy,
