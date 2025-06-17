@@ -521,15 +521,15 @@ class TestEdit(DAOTestCase):
         )
         self.session.expunge_all()
 
-        meta_queue = self.session.query(BaseQueue).first()
-        assert_that(meta_queue.name, equal_to('MyQueue'))
+        base_queue = self.session.query(BaseQueue).first()
+        assert_that(base_queue.name, equal_to('MyQueue'))
 
         queue = self.session.query(QueueFeatures).first()
         queue.name = 'OtherName'
         queue_dao.edit(queue)
 
-        meta_queue = self.session.query(BaseQueue).first()
-        assert_that(meta_queue.name, equal_to('OtherName'))
+        base_queue = self.session.query(BaseQueue).first()
+        assert_that(base_queue.name, equal_to('OtherName'))
 
 
 class TestDelete(DAOTestCase):
