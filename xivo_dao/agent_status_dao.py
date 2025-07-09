@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import NamedTuple, Union
 
+from sqlalchemy import text
 from sqlalchemy.sql.expression import case, false, true
 
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
@@ -146,24 +147,79 @@ def get_agent_id_from_extension(session, extension, context):
 
 @daosession
 def get_statuses(session, tenant_uuids=None):
-    query = session.query(
-        AgentFeatures.id.label('agent_id'),
-        AgentFeatures.tenant_uuid.label('tenant_uuid'),
-        AgentFeatures.number.label('agent_number'),
-        AgentLoginStatus.extension.label('extension'),
-        AgentLoginStatus.context.label('context'),
-        AgentLoginStatus.state_interface.label('state_interface'),
-        AgentLoginStatus.paused.label('paused'),
-        AgentLoginStatus.paused_reason.label('paused_reason'),
-        case([(AgentLoginStatus.agent_id.is_(None), false())], else_=true()).label(
-            'logged'
-        ),  # noqa
-    ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
+    query = (
+        session.query(
+            AgentFeatures.id.label('agent_id'),
+            AgentFeatures.tenant_uuid,
+            AgentFeatures.number,
+            AgentMembershipStatus.queue_id,
+            QueueFeatures.name.label('name'),
+            QueueFeatures.displayname.label('displayname'),
+            AgentLoginStatus.extension.label('extension'),
+            AgentLoginStatus.context.label('context'),
+            AgentLoginStatus.state_interface.label('state_interface'),
+            AgentLoginStatus.paused.label('paused'),
+            AgentLoginStatus.paused_reason.label('paused_reason'),
+            case(
+                [
+                    (AgentLoginStatus.agent_id.is_(None), false()),
+                ],
+                else_=true(),
+            ).label('logged'),
+        )
+        .outerjoin(
+            AgentMembershipStatus,
+            AgentMembershipStatus.agent_id == AgentFeatures.id,
+        )
+        .outerjoin(
+            QueueFeatures,
+            QueueFeatures.id == AgentMembershipStatus.queue_id,
+        )
+        .outerjoin(
+            AgentLoginStatus,
+            AgentLoginStatus.agent_id == AgentFeatures.id,
+        )
+    )
 
     if tenant_uuids is not None:
-        query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+        if not tenant_uuids:
+            query = query.filter(text('false'))
+        else:
+            query = query.filter(
+                AgentFeatures.tenant_uuid.in_(tenant_uuids),
+            )
 
-    return query.all()
+    agents = {}
+    for row in query.all():
+        agent_info = {
+            'id': row.agent_id,
+            'tenant_uuid': row.tenant_uuid,
+            'number': row.number,
+            'extension': row.extension,
+            'context': row.context,
+            'state_interface': row.state_interface,
+            'queues': [],
+        }
+        queue_status = {
+            'logged': row.logged,
+            'paused': row.paused or False,
+            'paused_reason': row.paused_reason or '',
+        }
+        if row.agent_id not in agents:
+            agents[row.agent_id] = agent_info
+            # Deprecated in Wazo 25.10
+            agent_info.update(queue_status)
+
+        if row.queue_id:
+            queue_info = dict(
+                id=row.queue_id,
+                name=row.name,
+                display_name=row.displayname,
+                **queue_status,
+            )
+            agents[row.agent_id]['queues'].append(queue_info)
+
+    return list(agents.values())
 
 
 @daosession

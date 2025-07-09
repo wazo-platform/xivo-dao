@@ -361,19 +361,15 @@ class TestAgentStatusDao(DAOTestCase):
 
         statuses = agent_status_dao.get_statuses()
 
-        assert_that(
-            statuses,
-            contains_exactly(
-                has_properties(
-                    agent_id=agent.id,
-                    agent_number=agent.number,
-                    logged=False,
-                    extension=None,
-                    context=None,
-                    state_interface=None,
-                )
-            ),
-        )
+        assert len(statuses) == 1
+        assert statuses[0]['id'] == agent.id
+        assert statuses[0]['tenant_uuid'] == agent.tenant_uuid
+        assert statuses[0]['number'] == agent.number
+        assert statuses[0]['logged'] is False  # Deprecated
+        assert statuses[0]['extension'] is None
+        assert statuses[0]['context'] is None
+        assert statuses[0]['state_interface'] is None
+        assert len(statuses[0]['queues']) == 0
 
     def test_get_statuses_of_logged_agent(self):
         agent = self.add_agent()
@@ -381,19 +377,15 @@ class TestAgentStatusDao(DAOTestCase):
 
         statuses = agent_status_dao.get_statuses()
 
-        assert_that(
-            statuses,
-            contains_exactly(
-                has_properties(
-                    agent_id=agent.id,
-                    agent_number=agent.number,
-                    logged=True,
-                    extension=agent_login_status.extension,
-                    context=agent_login_status.context,
-                    state_interface=agent_login_status.state_interface,
-                )
-            ),
-        )
+        assert len(statuses) == 1
+        assert statuses[0]['id'] == agent.id
+        assert statuses[0]['tenant_uuid'] == agent.tenant_uuid
+        assert statuses[0]['number'] == agent.number
+        assert statuses[0]['logged'] is True  # Deprecated
+        assert statuses[0]['extension'] == agent_login_status.extension
+        assert statuses[0]['context'] == agent_login_status.context
+        assert statuses[0]['state_interface'] == agent_login_status.state_interface
+        assert len(statuses[0]['queues']) == 0
 
     def test_get_statuses_of_logged_agent_multi_tenant(self):
         tenant = self.add_tenant()
@@ -403,19 +395,14 @@ class TestAgentStatusDao(DAOTestCase):
         statuses = agent_status_dao.get_statuses(tenant_uuids=[tenant.uuid])
 
         assert len(statuses) == 1
-        assert statuses[0].agent_id == agent.id
-        assert statuses[0].tenant_uuid == tenant.uuid
-        assert_that(
-            statuses,
-            contains_exactly(
-                has_properties(agent_id=agent.id, tenant_uuid=tenant.uuid)
-            ),
-        )
+        assert statuses[0]['id'] == agent.id
+        assert statuses[0]['tenant_uuid'] == tenant.uuid
 
         statuses = agent_status_dao.get_statuses(
             tenant_uuids=[self.default_tenant.uuid]
         )
-        assert_that(statuses, empty())
+
+        assert len(statuses) == 0
 
     def test_get_statuses_of_logged_for_queue(self):
         agent = self.add_agent()
