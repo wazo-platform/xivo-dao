@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import NamedTuple, Union
 
 from sqlalchemy import text
-from sqlalchemy.sql.expression import case, false, true
 
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -41,11 +40,12 @@ class _AgentStatus(NamedTuple):
 
 @daosession
 def get_status(session, agent_id, tenant_uuids=None):
-    login_status = _get_login_status_by_id(session, agent_id, tenant_uuids=tenant_uuids)
-    if not login_status:
+    statuses = _get_statuses(session, tenant_uuids=tenant_uuids, agent_id=agent_id)
+
+    if not statuses:
         return None
 
-    return _to_agent_status(login_status, _get_queues_for_agent(session, agent_id))
+    return statuses[0]
 
 
 @daosession
@@ -145,27 +145,17 @@ def get_agent_id_from_extension(session, extension, context):
     return login_status.agent_id
 
 
-@daosession
-def get_statuses(session, tenant_uuids=None):
+def _get_statuses(session, tenant_uuids=None, **kwargs):
     query = (
         session.query(
             AgentFeatures.id.label('agent_id'),
             AgentFeatures.tenant_uuid,
             AgentFeatures.number,
             AgentMembershipStatus.queue_id,
+            AgentMembershipStatus.penalty,
             QueueFeatures.name.label('name'),
             QueueFeatures.displayname.label('displayname'),
-            AgentLoginStatus.extension.label('extension'),
-            AgentLoginStatus.context.label('context'),
-            AgentLoginStatus.state_interface.label('state_interface'),
-            AgentLoginStatus.paused.label('paused'),
-            AgentLoginStatus.paused_reason.label('paused_reason'),
-            case(
-                [
-                    (AgentLoginStatus.agent_id.is_(None), false()),
-                ],
-                else_=true(),
-            ).label('logged'),
+            AgentLoginStatus,
         )
         .outerjoin(
             AgentMembershipStatus,
@@ -181,6 +171,9 @@ def get_statuses(session, tenant_uuids=None):
         )
     )
 
+    if agent_id := kwargs.get('agent_id'):
+        query = query.filter(AgentFeatures.id == agent_id)
+
     if tenant_uuids is not None:
         if not tenant_uuids:
             query = query.filter(text('false'))
@@ -195,15 +188,27 @@ def get_statuses(session, tenant_uuids=None):
             'id': row.agent_id,
             'tenant_uuid': row.tenant_uuid,
             'number': row.number,
-            'extension': row.extension,
-            'context': row.context,
-            'state_interface': row.state_interface,
+            'extension': row.AgentLoginStatus.extension
+            if row.AgentLoginStatus
+            else None,
+            'context': row.AgentLoginStatus.context if row.AgentLoginStatus else None,
+            'state_interface': row.AgentLoginStatus.state_interface
+            if row.AgentLoginStatus
+            else None,
+            'interface': row.AgentLoginStatus.interface
+            if row.AgentLoginStatus
+            else None,
             'queues': [],
+            'user_ids': [user.id for user in row.AgentLoginStatus.agent.users]
+            if row.AgentLoginStatus
+            else [],
         }
         queue_status = {
-            'logged': row.logged,
-            'paused': row.paused or False,
-            'paused_reason': row.paused_reason or '',
+            'logged': True if row.AgentLoginStatus else False,
+            'paused': row.AgentLoginStatus.paused if row.AgentLoginStatus else False,
+            'paused_reason': row.AgentLoginStatus.paused_reason
+            if row.AgentLoginStatus
+            else None,
         }
         if row.agent_id not in agents:
             agents[row.agent_id] = agent_info
@@ -215,11 +220,17 @@ def get_statuses(session, tenant_uuids=None):
                 id=row.queue_id,
                 name=row.name,
                 display_name=row.displayname,
+                penalty=row.penalty,
                 **queue_status,
             )
             agents[row.agent_id]['queues'].append(queue_info)
 
     return list(agents.values())
+
+
+@daosession
+def get_statuses(session, tenant_uuids=None):
+    return _get_statuses(session, tenant_uuids=tenant_uuids)
 
 
 @daosession
