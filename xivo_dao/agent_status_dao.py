@@ -52,7 +52,11 @@ def get_status(session, agent_id, tenant_uuids=None):
     if not statuses:
         return None
 
-    return statuses[0]
+    status = statuses[0]
+    if not status.logged:
+        return None
+
+    return status
 
 
 @daosession
@@ -90,6 +94,10 @@ def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
     )
 
     if not statuses:
+        return None
+
+    status = statuses[0]
+    if not status.logged:
         return None
 
     return statuses[0]
