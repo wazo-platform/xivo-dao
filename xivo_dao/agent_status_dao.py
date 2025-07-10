@@ -77,17 +77,6 @@ def get_status_by_user(session, user_uuid, tenant_uuids=None):
     return statuses[0]
 
 
-def _get_login_status_by_id(session, agent_id, tenant_uuids=None):
-    login_status = (
-        session.query(AgentLoginStatus)
-        .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
-        .filter(AgentLoginStatus.agent_id == agent_id)
-    )
-    if tenant_uuids is not None:
-        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-    return login_status.first()
-
-
 def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
     statuses = _get_statuses(
         session, tenant_uuids=tenant_uuids, agent_number=agent_number
@@ -101,27 +90,6 @@ def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
         return None
 
     return statuses[0]
-
-
-def _get_login_status_by_user(session, user_uuid, tenant_uuids=None):
-    login_status = (
-        session.query(AgentLoginStatus)
-        .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
-        .join((UserFeatures, AgentFeatures.id == UserFeatures.agentid))
-        .filter(UserFeatures.uuid == user_uuid)
-    )
-    if tenant_uuids is not None:
-        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-    return login_status.first()
-
-
-def _get_queues_for_agent(session, agent_id):
-    statuses = _get_statuses(session, agent_id=agent_id)
-
-    if not statuses:
-        return []
-
-    return statuses[0].queues
 
 
 @daosession
