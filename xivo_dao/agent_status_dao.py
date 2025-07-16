@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import NamedTuple, Union
 
-from sqlalchemy.sql.expression import case, false, true
+from sqlalchemy import text
 
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -21,16 +21,23 @@ from xivo_dao.helpers.db_utils import flush_session
 class _Queue(NamedTuple):
     id: int
     name: str
+    display_name: str
     penalty: int
+    logged: bool
+    paused: bool
+    paused_reason: Union[str, None]
+    login_at: datetime
 
 
 class _AgentStatus(NamedTuple):
     agent_id: int
+    tenant_uuid: str
     agent_number: str
     extension: str
     context: str
     interface: str
     state_interface: str
+    logged: bool
     login_at: datetime
     paused: bool
     paused_reason: Union[str, None]
@@ -40,81 +47,49 @@ class _AgentStatus(NamedTuple):
 
 @daosession
 def get_status(session, agent_id, tenant_uuids=None):
-    login_status = _get_login_status_by_id(session, agent_id, tenant_uuids=tenant_uuids)
-    if not login_status:
+    statuses = _get_statuses(session, tenant_uuids=tenant_uuids, agent_id=agent_id)
+
+    if not statuses:
         return None
 
-    return _to_agent_status(login_status, _get_queues_for_agent(session, agent_id))
+    status = statuses[0]
+    if not status.logged:
+        return None
+
+    return status
 
 
 @daosession
 def get_status_by_number(session, agent_number, tenant_uuids=None):
-    login_status = _get_login_status_by_number(
-        session, agent_number, tenant_uuids=tenant_uuids
-    )
-    if not login_status:
-        return None
-
-    return _to_agent_status(
-        login_status, _get_queues_for_agent(session, login_status.agent_id)
-    )
+    return _get_login_status_by_number(session, agent_number, tenant_uuids=tenant_uuids)
 
 
 @daosession
 def get_status_by_user(session, user_uuid, tenant_uuids=None):
-    login_status = _get_login_status_by_user(
-        session, user_uuid, tenant_uuids=tenant_uuids
-    )
-    if not login_status:
+    statuses = _get_statuses(session, tenant_uuids=tenant_uuids, user_uuid=user_uuid)
+
+    if not statuses:
         return None
 
-    return _to_agent_status(
-        login_status, _get_queues_for_agent(session, login_status.agent_id)
-    )
+    if not statuses[0].logged:
+        return None
 
-
-def _get_login_status_by_id(session, agent_id, tenant_uuids=None):
-    login_status = (
-        session.query(AgentLoginStatus)
-        .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
-        .filter(AgentLoginStatus.agent_id == agent_id)
-    )
-    if tenant_uuids is not None:
-        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-    return login_status.first()
+    return statuses[0]
 
 
 def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
-    login_status = (
-        session.query(AgentLoginStatus)
-        .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
-        .filter(AgentLoginStatus.agent_number == agent_number)
+    statuses = _get_statuses(
+        session, tenant_uuids=tenant_uuids, agent_number=agent_number
     )
-    if tenant_uuids is not None:
-        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-    return login_status.first()
 
+    if not statuses:
+        return None
 
-def _get_login_status_by_user(session, user_uuid, tenant_uuids=None):
-    login_status = (
-        session.query(AgentLoginStatus)
-        .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
-        .join((UserFeatures, AgentFeatures.id == UserFeatures.agentid))
-        .filter(UserFeatures.uuid == user_uuid)
-    )
-    if tenant_uuids is not None:
-        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-    return login_status.first()
+    status = statuses[0]
+    if not status.logged:
+        return None
 
-
-def _get_queues_for_agent(session, agent_id):
-    query = session.query(
-        AgentMembershipStatus.queue_id.label('queue_id'),
-        AgentMembershipStatus.queue_name.label('queue_name'),
-        AgentMembershipStatus.penalty.label('penalty'),
-    ).filter(AgentMembershipStatus.agent_id == agent_id)
-
-    return [_Queue(q.queue_id, q.queue_name, q.penalty) for q in query]
+    return statuses[0]
 
 
 @daosession
@@ -144,43 +119,110 @@ def get_agent_id_from_extension(session, extension, context):
     return login_status.agent_id
 
 
+def _get_statuses(session, tenant_uuids=None, **kwargs):
+    query = (
+        session.query(
+            AgentFeatures.id.label('agent_id'),
+            AgentFeatures.tenant_uuid,
+            AgentFeatures.number,
+            AgentMembershipStatus.queue_id,
+            AgentMembershipStatus.penalty,
+            QueueFeatures.name.label('name'),
+            QueueFeatures.displayname.label('displayname'),
+            AgentLoginStatus,
+        )
+        .outerjoin(
+            AgentMembershipStatus,
+            AgentMembershipStatus.agent_id == AgentFeatures.id,
+        )
+        .outerjoin(
+            QueueFeatures,
+            QueueFeatures.id == AgentMembershipStatus.queue_id,
+        )
+        .outerjoin(
+            AgentLoginStatus,
+            AgentLoginStatus.agent_id == AgentFeatures.id,
+        )
+    )
+
+    if agent_id := kwargs.get('agent_id'):
+        query = query.filter(AgentFeatures.id == agent_id)
+    if agent_number := kwargs.get('agent_number'):
+        query = query.filter(AgentFeatures.number == agent_number)
+    if user_uuid := kwargs.get('user_uuid'):
+        query = query.join(UserFeatures, AgentFeatures.id == UserFeatures.agentid)
+        query = query.filter(UserFeatures.uuid == user_uuid)
+    if queue_id := kwargs.get('queue_id'):
+        query = query.filter(AgentMembershipStatus.queue_id == queue_id)
+    if tenant_uuids is not None:
+        if not tenant_uuids:
+            query = query.filter(text('false'))
+        else:
+            query = query.filter(
+                AgentFeatures.tenant_uuid.in_(tenant_uuids),
+            )
+
+    agents = {}
+    for row in query.all():
+        if row.agent_id not in agents:
+            status_kwargs = {
+                'agent_id': row.agent_id,
+                'tenant_uuid': row.tenant_uuid,
+                'agent_number': row.number,
+                'queues': [],
+                'extension': None,
+                'context': None,
+                'state_interface': None,
+                'interface': None,
+                'logged': False,
+                'paused': False,
+                'paused_reason': None,
+                'user_ids': [],
+                'login_at': None,
+            }
+            if row.AgentLoginStatus:
+                status_kwargs['logged'] = True
+                status_kwargs['extension'] = row.AgentLoginStatus.extension
+                status_kwargs['context'] = row.AgentLoginStatus.context
+                status_kwargs['interface'] = row.AgentLoginStatus.interface
+                status_kwargs['state_interface'] = row.AgentLoginStatus.state_interface
+                status_kwargs['paused'] = row.AgentLoginStatus.paused
+                status_kwargs['paused_reason'] = row.AgentLoginStatus.paused_reason
+                status_kwargs['login_at'] = row.AgentLoginStatus.login_at
+                status_kwargs['user_ids'] = [
+                    user.id for user in row.AgentLoginStatus.agent.users
+                ]
+            agents[row.agent_id] = _AgentStatus(**status_kwargs)
+
+        agent_info = agents[row.agent_id]
+        if row.queue_id:
+            queue_kwargs = {
+                'id': row.queue_id,
+                'name': row.name,
+                'display_name': row.displayname,
+                'penalty': row.penalty,
+                'logged': False,
+                'paused': False,
+                'paused_reason': None,
+                'login_at': None,
+            }
+            if row.AgentLoginStatus:
+                queue_kwargs['logged'] = True
+                queue_kwargs['paused'] = row.AgentLoginStatus.paused
+                queue_kwargs['paused_reason'] = row.AgentLoginStatus.paused_reason
+                queue_kwargs['login_at'] = row.AgentLoginStatus.login_at
+            agent_info.queues.append(_Queue(**queue_kwargs))
+    return list(agents.values())
+
+
 @daosession
 def get_statuses(session, tenant_uuids=None):
-    query = session.query(
-        AgentFeatures.id.label('agent_id'),
-        AgentFeatures.tenant_uuid.label('tenant_uuid'),
-        AgentFeatures.number.label('agent_number'),
-        AgentLoginStatus.extension.label('extension'),
-        AgentLoginStatus.context.label('context'),
-        AgentLoginStatus.state_interface.label('state_interface'),
-        AgentLoginStatus.paused.label('paused'),
-        AgentLoginStatus.paused_reason.label('paused_reason'),
-        case([(AgentLoginStatus.agent_id.is_(None), false())], else_=true()).label(
-            'logged'
-        ),  # noqa
-    ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
-
-    if tenant_uuids is not None:
-        query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-
-    return query.all()
+    return _get_statuses(session, tenant_uuids=tenant_uuids)
 
 
 @daosession
 def get_statuses_for_queue(session, queue_id):
-    session = session
-
-    subquery = (
-        session.query(QueueMember.userid)
-        .filter(QueueFeatures.name == QueueMember.queue_name)
-        .filter(QueueFeatures.id == queue_id)
-        .filter(QueueMember.usertype == 'agent')
-    )
-    query = session.query(AgentLoginStatus).filter(
-        AgentLoginStatus.agent_id.in_(subquery)
-    )
-
-    return [_to_agent_status(q, None) for q in query]
+    return _get_statuses(session, queue_id=queue_id)
 
 
 @daosession
@@ -237,17 +279,19 @@ def _to_agent_status(agent_login_status, queues):
     agent = agent_login_status.agent
     user_ids = [user.id for user in agent.users] if agent else []
     return _AgentStatus(
-        agent_login_status.agent_id,
-        agent_login_status.agent_number,
-        agent_login_status.extension,
-        agent_login_status.context,
-        agent_login_status.interface,
-        agent_login_status.state_interface,
-        agent_login_status.login_at,
-        agent_login_status.paused,
-        agent_login_status.paused_reason,
-        queues,
-        user_ids,
+        agent_id=agent_login_status.agent_id,
+        tenant_uuid=agent_login_status.agent.tenant_uuid,
+        agent_number=agent_login_status.agent_number,
+        extension=agent_login_status.extension,
+        context=agent_login_status.context,
+        interface=agent_login_status.interface,
+        state_interface=agent_login_status.state_interface,
+        login_at=agent_login_status.login_at,
+        paused=agent_login_status.paused,
+        paused_reason=agent_login_status.paused_reason,
+        queues=queues,
+        user_ids=user_ids,
+        logged=True,
     )
 
 
