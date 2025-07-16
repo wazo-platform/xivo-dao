@@ -164,7 +164,6 @@ def _get_statuses(session, tenant_uuids=None, **kwargs):
 
     agents = {}
     for row in query.all():
-        print(row)
         if row.agent_id not in agents:
             status_kwargs = {
                 'agent_id': row.agent_id,
