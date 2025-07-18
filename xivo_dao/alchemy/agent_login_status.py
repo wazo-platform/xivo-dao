@@ -18,7 +18,7 @@ class AgentLoginStatus(Base):
         Index('agent_login_status__idx__agent_id', 'agent_id'),
     )
 
-    agent_id = Column(Integer, autoincrement=False)
+    agent_id = Column(Integer, autoincrement=False, foreign_keys='agent_features.id')
     agent_number = Column(String(40), nullable=False)
     extension = Column(String(80), nullable=False)
     context = Column(String(79), nullable=False)
