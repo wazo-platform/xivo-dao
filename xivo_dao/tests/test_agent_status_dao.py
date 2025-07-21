@@ -729,6 +729,22 @@ class TestAgentStatusDao(DAOTestCase):
             has_properties(agent_id=agent.id, paused=True, paused_reason=None),
         )
 
+    def test_get_agent_login_status_by_id_for_logoff(self):
+        agent = self.add_agent()
+        self._insert_agent_login_status(agent.id, agent.number)
+
+        agent_login_status = agent_status_dao.get_agent_login_status_by_id_for_logoff(
+            agent.id
+        )
+        assert_that(agent_login_status, has_properties(agent_id=agent.id))
+
+        agent_status_dao.log_off_agent(agent.id)
+
+        agent_login_status = agent_status_dao.get_agent_login_status_by_id_for_logoff(
+            agent.id
+        )
+        assert_that(agent_login_status, none())
+
     def _insert_agent_login_status(
         self,
         agent_id,
