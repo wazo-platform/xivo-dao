@@ -93,6 +93,40 @@ def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
 
 
 @daosession
+def get_agent_login_status_by_id_for_logoff(session, agent_id):
+    # NOTE(clanglois): Used for cleanup
+    status = (
+        session.query(AgentLoginStatus)
+        .filter(AgentLoginStatus.agent_id == agent_id)
+        .first()
+    )
+    if not status:
+        return None
+    queues = (
+        session.query(QueueFeatures)
+        .join(AgentMembershipStatus, AgentMembershipStatus.queue_id == QueueFeatures.id)
+        .filter(AgentMembershipStatus.agent_id == agent_id)
+        .all()
+    )
+    return _to_agent_status(
+        status,
+        [
+            _Queue(
+                id=queue.id,
+                name=queue.name,
+                display_name=queue.displayname,
+                penalty=queue.penalty,
+                logged=status.logged,
+                paused=status.paused,
+                paused_reason=status.paused_reason,
+                login_at=status.login_at,
+            )
+            for queue in queues
+        ],
+    )
+
+
+@daosession
 def get_extension_from_agent_id(session, agent_id):
     login_status_row = (
         session.query(AgentLoginStatus.extension, AgentLoginStatus.context)
