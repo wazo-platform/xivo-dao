@@ -93,7 +93,9 @@ def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
 
 
 @daosession
-def get_agent_login_status_by_id_for_logoff(session, agent_id):
+def get_agent_login_status_by_id_for_logoff(
+    session, agent_id: int
+) -> _AgentStatus | None:
     # NOTE(clanglois): Used for cleanup
     status = (
         session.query(AgentLoginStatus)
@@ -108,21 +110,22 @@ def get_agent_login_status_by_id_for_logoff(session, agent_id):
         .filter(AgentMembershipStatus.agent_id == agent_id)
         .all()
     )
-    return _to_agent_status(
-        status,
-        [
-            _Queue(
-                id=queue.id,
-                name=queue.name,
-                display_name=queue.displayname,
-                penalty=queue.penalty,
-                logged=status.logged,
-                paused=status.paused,
-                paused_reason=status.paused_reason,
-                login_at=status.login_at,
-            )
-            for queue in queues
-        ],
+    agent = status.agent
+    user_ids = [user.id for user in agent.users] if agent else []
+    return _AgentStatus(
+        agent_id=status.agent_id,
+        tenant_uuid="",
+        agent_number=status.agent_number,
+        extension=status.extension,
+        context=status.context,
+        interface=status.interface,
+        state_interface=status.state_interface,
+        login_at=status.login_at,
+        paused=status.paused,
+        paused_reason=status.paused_reason,
+        queues=queues,
+        user_ids=user_ids,
+        logged=True,
     )
 
 
