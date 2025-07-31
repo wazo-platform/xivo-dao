@@ -27,6 +27,7 @@ class _Queue(NamedTuple):
     tenant_uuid: str
     name: str
     penalty: int
+    label: str
 
 
 @daosession
@@ -84,6 +85,7 @@ def _add_queues_to_agent(session, agent):
         [
             QueueFeatures.id,
             QueueFeatures.tenant_uuid,
+            QueueFeatures.displayname,
             QueueMember.queue_name,
             QueueMember.penalty,
         ],
@@ -95,7 +97,13 @@ def _add_queues_to_agent(session, agent):
     )
 
     for row in session.execute(query):
-        queue = _Queue(row['id'], row['tenant_uuid'], row['queue_name'], row['penalty'])
+        queue = _Queue(
+            row['id'],
+            row['tenant_uuid'],
+            row['queue_name'],
+            row['penalty'],
+            row['displayname'],
+        )
         agent.queues.append(queue)
 
 
