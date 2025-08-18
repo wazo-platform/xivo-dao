@@ -38,7 +38,7 @@ class QueuePersistor(CriteriaBuilderMixin, BasePersistor):
     def _joinedload_query(self):
         return (
             self.session.query(Queue)
-            .options(joinedload('_queue'))
+            .options(joinedload('base_queue'))
             .options(joinedload('extensions'))
             .options(joinedload('caller_id'))
             .options(joinedload('queue_dialactions'))

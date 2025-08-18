@@ -18,9 +18,9 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..agentfeatures import AgentFeatures
+from ..base_queue import BaseQueue
 from ..dialaction import Dialaction
 from ..func_key_dest_queue import FuncKeyDestQueue
-from ..queue import Queue
 from ..queuefeatures import QueueFeatures
 from ..queuemember import QueueMember
 from ..schedule import Schedule
@@ -513,7 +513,7 @@ class TestCreate(DAOTestCase):
 
         self.session.expire_all()
         assert_that(
-            queue._queue,
+            queue.base_queue,
             has_properties(
                 name='queuename',
                 category='queue',
@@ -556,7 +556,7 @@ class TestCreate(DAOTestCase):
         self.session.flush()
 
         assert_that(
-            queue._queue,
+            queue.base_queue,
             has_properties(
                 name='queuename',
                 enabled=False,
@@ -606,7 +606,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.delete(queue)
         self.session.flush()
 
-        row = self.session.query(Queue).first()
+        row = self.session.query(BaseQueue).first()
         assert_that(row, none())
 
     def test_funckeys_are_deleted(self):
