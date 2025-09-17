@@ -26,7 +26,7 @@ You need the test database `asterisktest` installed (see above).
 ```sh
 apt-get install libpq-dev libyaml-dev python3-dev
 pip install tox
-tox --recreate -e py39
+tox --recreate -e py311
 ```
 
 To execute tests slightly faster, you can avoid recreating all the tables in the
