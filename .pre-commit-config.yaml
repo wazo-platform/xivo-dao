@@ -19,3 +19,9 @@ repos:
     rev: 1.1.3
     hooks:
     - id: wazo-copyright-check
+  # Automatically update to modern python (as modern as allowed by your Python version)
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args: [--py311-plus]

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import NamedTuple, Union
+from typing import NamedTuple
 
 from sqlalchemy import text
 
@@ -25,7 +25,7 @@ class _Queue(NamedTuple):
     penalty: int
     logged: bool
     paused: bool
-    paused_reason: Union[str, None]
+    paused_reason: str | None
     login_at: datetime
 
 
@@ -40,7 +40,7 @@ class _AgentStatus(NamedTuple):
     logged: bool
     login_at: datetime
     paused: bool
-    paused_reason: Union[str, None]
+    paused_reason: str | None
     queues: list[_Queue]
     user_ids: list[int]
 
