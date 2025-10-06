@@ -714,7 +714,9 @@ class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
         self._tenants_settings = tenants_settings
 
     def _default_endpoint_section(self):
-        options = super()._default_endpoint_section()
+        options = super()._default_endpoint_section() + [
+            ('set_var', 'WAZO_PAI_FORMAT='),
+        ]
 
         if self._trunk.context:
             options.append(('context', self._trunk.context))

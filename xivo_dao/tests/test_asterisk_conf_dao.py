@@ -2444,6 +2444,23 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             ),
         )
 
+    def test_that_the_tenant_pai_format_var_is_set(self):
+        tenant = self.add_tenant()
+        endpoint = self.add_endpoint_sip(template=False, tenant_uuid=tenant.uuid)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', 'WAZO_PAI_FORMAT='],
+                    ),
+                )
+            ),
+        )
+
     def test_that_doubles_are_removed(self):
         template = self.add_endpoint_sip(
             template=True, endpoint_section_options=[['webrtc', 'true']]
@@ -2471,6 +2488,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
                         contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
+                        contains_exactly('set_var', 'WAZO_PAI_FORMAT='),
                     )
                 )
             ),
