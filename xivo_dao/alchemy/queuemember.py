@@ -68,6 +68,11 @@ class QueueMember(Base):
         primaryjoin="""and_(QueueMember.category == 'group',
                             QueueMember.queue_name == GroupFeatures.name)""",
         foreign_keys='QueueMember.queue_name',
+        overlaps=(
+            'agent_queue_members,'
+            'extension_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
     users_from_call_pickup_group_interceptor_user_targets = association_proxy(
         'group', 'users_from_call_pickup_user_targets'

@@ -166,6 +166,11 @@ class QueueFeatures(Base):
         foreign_keys='QueueMember.queue_name',
         order_by='QueueMember.position',
         cascade='all, delete-orphan',
+        overlaps=(
+            'agent_queue_members,'
+            'extension_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
 
     agent_queue_members = relationship(
@@ -176,6 +181,10 @@ class QueueFeatures(Base):
         foreign_keys='QueueMember.queue_name',
         order_by='QueueMember.position',
         cascade='all, delete-orphan',
+        overlaps=(
+            'extension_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
 
     schedule_paths = relationship(

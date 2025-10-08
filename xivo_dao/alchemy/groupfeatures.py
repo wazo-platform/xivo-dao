@@ -111,6 +111,11 @@ class GroupFeatures(Base):
         foreign_keys='QueueMember.queue_name',
         cascade='all, delete-orphan',
         passive_updates=False,
+        overlaps=(
+            'agent_queue_members,'
+            'extension_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
     users = association_proxy('user_queue_members', 'user')
 
@@ -123,6 +128,10 @@ class GroupFeatures(Base):
         foreign_keys='QueueMember.queue_name',
         cascade='all, delete-orphan',
         passive_updates=False,
+        overlaps=(
+            'agent_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
 
     queue = relationship(
