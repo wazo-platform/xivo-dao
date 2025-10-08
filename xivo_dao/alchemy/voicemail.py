@@ -46,7 +46,7 @@ class Voicemail(Base):
 
     users = relationship('UserFeatures', back_populates='voicemail')
 
-    dialaction_actions = relationship(
+    _dialaction_actions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.action == 'voicemail',
                             Dialaction.actionarg1 == cast(Voicemail.id, String))""",
