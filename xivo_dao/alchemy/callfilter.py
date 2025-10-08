@@ -67,6 +67,15 @@ class Callfilter(Base):
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
         foreign_keys='Dialaction.categoryval',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     caller_id = relationship(

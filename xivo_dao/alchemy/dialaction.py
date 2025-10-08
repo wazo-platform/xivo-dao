@@ -86,6 +86,15 @@ class Dialaction(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='delete',
         back_populates='dialaction',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     switchboard = relationship(

@@ -137,6 +137,15 @@ class QueueFeatures(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'ivr_choice",'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     _dialaction_actions = relationship(

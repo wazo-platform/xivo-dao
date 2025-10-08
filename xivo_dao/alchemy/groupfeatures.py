@@ -90,6 +90,15 @@ class GroupFeatures(Base):
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
         foreign_keys='Dialaction.categoryval',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'ivr_choice",'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     user_queue_members = relationship(

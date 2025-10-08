@@ -61,6 +61,16 @@ class Incall(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         uselist=False,
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'ivr_choice,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     extensions = relationship(
