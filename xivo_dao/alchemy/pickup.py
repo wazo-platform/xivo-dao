@@ -41,6 +41,13 @@ class Pickup(Base):
         )""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan',
+        overlaps=(
+            'pickupmember_group_interceptors,'
+            'pickupmember_group_targets,'
+            'pickupmember_queue_interceptors,'
+            'pickupmember_queue_targets,'
+            'pickupmember_user_interceptors,'
+        ),
     )
     user_targets = association_proxy(
         'pickupmember_user_targets',
@@ -59,6 +66,13 @@ class Pickup(Base):
         )""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan',
+        overlaps=(
+            'pickupmember_group_interceptors,'
+            'pickupmember_queue_interceptors,'
+            'pickupmember_queue_targets,'
+            'pickupmember_user_interceptors,'
+            'pickupmember_user_targets,'
+        ),
     )
     group_targets = association_proxy(
         'pickupmember_group_targets',
@@ -80,6 +94,13 @@ class Pickup(Base):
         )""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan',
+        overlaps=(
+            'pickupmember_group_interceptors,'
+            'pickupmember_group_targets,'
+            'pickupmember_queue_interceptors,'
+            'pickupmember_queue_targets,'
+            'pickupmember_user_targets,'
+        ),
     )
     user_interceptors = association_proxy(
         'pickupmember_user_interceptors',
@@ -98,6 +119,13 @@ class Pickup(Base):
         )""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan',
+        overlaps=(
+            'pickupmember_group_targets,'
+            'pickupmember_queue_interceptors,'
+            'pickupmember_queue_targets,'
+            'pickupmember_user_interceptors,'
+            'pickupmember_user_targets,'
+        ),
     )
     group_interceptors = association_proxy(
         'pickupmember_group_interceptors',
@@ -116,6 +144,13 @@ class Pickup(Base):
         )""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan',
+        overlaps=(
+            'pickupmember_group_interceptors,'
+            'pickupmember_group_targets,'
+            'pickupmember_queue_interceptors,'
+            'pickupmember_user_interceptors,'
+            'pickupmember_user_targets,'
+        ),
     )
 
     pickupmember_queue_interceptors = relationship(
@@ -127,6 +162,13 @@ class Pickup(Base):
         )""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan',
+        overlaps=(
+            'pickupmember_group_interceptors,'
+            'pickupmember_group_targets,'
+            'pickupmember_queue_targets,'
+            'pickupmember_user_interceptors,'
+            'pickupmember_user_targets,'
+        ),
     )
 
     @hybrid_property
