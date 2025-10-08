@@ -125,6 +125,7 @@ class Context(Base):
         primaryjoin='ContextInclude.include == Context.name',
         foreign_keys='ContextInclude.include',
         cascade='all, delete-orphan',
+        back_populates='included_context',
     )
 
     context_include_parents = relationship(
