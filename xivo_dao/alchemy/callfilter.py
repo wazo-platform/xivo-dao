@@ -111,6 +111,7 @@ class Callfilter(Base):
         order_by='Callfiltermember.priority',
         collection_class=ordering_list('priority', reorder_on_append=True),
         cascade='all, delete-orphan',
+        overlaps='surrogates',
     )
 
     surrogates = relationship(
@@ -123,6 +124,7 @@ class Callfilter(Base):
         order_by='Callfiltermember.priority',
         collection_class=ordering_list('priority', reorder_on_append=True),
         cascade='all, delete-orphan',
+        overlaps='recipients',
     )
 
     @property
