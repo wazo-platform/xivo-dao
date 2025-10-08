@@ -297,6 +297,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='Callfiltermember.typeval',
         cascade='delete, delete-orphan',
+        overlaps='call_filter_surrogates,user',
     )
     call_filter_surrogates = relationship(
         'Callfiltermember',
@@ -307,6 +308,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='Callfiltermember.typeval',
         cascade='delete, delete-orphan',
+        overlaps='call_filter_recipients,user',
     )
 
     call_pickup_interceptors = relationship(

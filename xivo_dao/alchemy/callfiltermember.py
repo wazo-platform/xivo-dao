@@ -46,6 +46,7 @@ class Callfiltermember(Base):
         primaryjoin="""and_(Callfiltermember.type == 'user',
                             Callfiltermember.typeval == cast(UserFeatures.id, String))""",
         foreign_keys='Callfiltermember.typeval',
+        overlaps='call_filter_recipients,call_filter_surrogates',
     )
 
     @hybrid_property
