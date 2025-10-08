@@ -52,6 +52,12 @@ class Context(Base):
             ContextNumbers.context == Context.name)""",
         foreign_keys='ContextNumbers.context',
         cascade='all, delete-orphan',
+        overlaps=(
+            'context_numbers_group,'
+            'context_numbers_queue,'
+            'context_numbers_meetme,'
+            'context_numbers_incall,'
+        ),
     )
 
     context_numbers_group = relationship(
@@ -61,6 +67,12 @@ class Context(Base):
             ContextNumbers.context == Context.name)""",
         foreign_keys='ContextNumbers.context',
         cascade='all, delete-orphan',
+        overlaps=(
+            'context_numbers_user,'
+            'context_numbers_queue,'
+            'context_numbers_meetme,'
+            'context_numbers_incall,'
+        ),
     )
 
     context_numbers_queue = relationship(
@@ -70,6 +82,12 @@ class Context(Base):
             ContextNumbers.context == Context.name)""",
         foreign_keys='ContextNumbers.context',
         cascade='all, delete-orphan',
+        overlaps=(
+            'context_numbers_user,'
+            'context_numbers_group,'
+            'context_numbers_meetme,'
+            'context_numbers_incall,'
+        ),
     )
 
     context_numbers_meetme = relationship(
@@ -79,6 +97,12 @@ class Context(Base):
             ContextNumbers.context == Context.name)""",
         foreign_keys='ContextNumbers.context',
         cascade='all, delete-orphan',
+        overlaps=(
+            'context_numbers_user,'
+            'context_numbers_group,'
+            'context_numbers_queue,'
+            'context_numbers_incall,'
+        ),
     )
 
     context_numbers_incall = relationship(
@@ -88,6 +112,12 @@ class Context(Base):
             ContextNumbers.context == Context.name)""",
         foreign_keys='ContextNumbers.context',
         cascade='all, delete-orphan',
+        overlaps=(
+            'context_numbers_user,'
+            'context_numbers_group,'
+            'context_numbers_queue,'
+            'context_numbers_meetme,'
+        ),
     )
 
     context_includes_children = relationship(
