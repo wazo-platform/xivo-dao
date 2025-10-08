@@ -111,6 +111,7 @@ class QueueFeatures(Base):
         foreign_keys='Callerid.typeval',
         cascade='all, delete-orphan',
         uselist=False,
+        overlaps='caller_id',
     )
 
     caller_id_mode = association_proxy(
