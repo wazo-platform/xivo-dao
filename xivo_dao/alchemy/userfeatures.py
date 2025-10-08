@@ -320,6 +320,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='PickupMember.memberid',
         cascade='delete, delete-orphan',
+        overlaps='call_pickup_targets,call_pickup_interceptors,user,group',
     )
     call_pickup_targets = relationship(
         'PickupMember',
@@ -330,6 +331,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='PickupMember.memberid',
         cascade='delete, delete-orphan',
+        overlaps='call_pickup_targets,call_pickup_interceptors,user,group',
     )
 
     rightcall_members = relationship(
