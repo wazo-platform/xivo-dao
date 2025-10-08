@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -20,10 +20,12 @@ class AgentQueueSkill(Base):
         'AgentFeatures',
         primaryjoin='AgentQueueSkill.agentid == AgentFeatures.id',
         foreign_keys='AgentQueueSkill.agentid',
+        back_populates='agent_queue_skills',
     )
 
     skill = relationship(
         'QueueSkill',
         primaryjoin='AgentQueueSkill.skillid == QueueSkill.id',
         foreign_keys='AgentQueueSkill.skillid',
+        back_populates='agent_queue_skills',
     )

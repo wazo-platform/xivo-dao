@@ -3,6 +3,7 @@
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures as Agent
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.db_manager import Session
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin, SearchResult
 
@@ -37,8 +38,9 @@ class AgentPersistor(CriteriaBuilderMixin, BasePersistor):
         return SearchResult(total, rows)
 
     def associate_agent_skill(self, agent, agent_skill):
-        if agent_skill not in agent.agent_queue_skills:
-            agent.agent_queue_skills.append(agent_skill)
+        with Session.no_autoflush:
+            if agent_skill not in agent.agent_queue_skills:
+                agent.agent_queue_skills.append(agent_skill)
         self.session.flush()
 
     def dissociate_agent_skill(self, agent, agent_skill):
