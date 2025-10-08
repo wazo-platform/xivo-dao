@@ -53,6 +53,7 @@ class Paging(Base):
             PagingUser.caller == 0
         )""",
         cascade='all, delete-orphan',
+        overlaps='paging,paging_callers',
     )
 
     users_member = association_proxy(
@@ -68,6 +69,7 @@ class Paging(Base):
             PagingUser.caller == 1
         )""",
         cascade='all, delete-orphan',
+        overlaps='paging,paging_members',
     )
 
     users_caller = association_proxy(

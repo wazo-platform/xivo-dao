@@ -253,7 +253,11 @@ class UserFeatures(Base):
     )
     queues = association_proxy('queue_members', 'queue')
 
-    paging_users = relationship('PagingUser', cascade='all, delete-orphan')
+    paging_users = relationship(
+        'PagingUser',
+        cascade='all, delete-orphan',
+        back_populates='user',
+    )
 
     switchboard_member_users = relationship(
         'SwitchboardMemberUser', cascade='all, delete-orphan'
