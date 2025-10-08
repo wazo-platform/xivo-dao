@@ -38,7 +38,7 @@ class FuncKeyDestPaging(Base):
     type = 'paging'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    paging = relationship(Paging)
+    paging = relationship(Paging, viewonly=True)
 
     def to_tuple(self):
         return (('paging_id', self.paging_id),)

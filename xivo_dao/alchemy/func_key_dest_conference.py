@@ -33,7 +33,7 @@ class FuncKeyDestConference(Base):
     type = 'conference'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    conference = relationship(Conference)
+    conference = relationship(Conference, viewonly=True)
 
     def to_tuple(self):
         return (('conference_id', self.conference_id),)

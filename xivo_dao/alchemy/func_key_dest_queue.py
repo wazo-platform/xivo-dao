@@ -33,7 +33,7 @@ class FuncKeyDestQueue(Base):
     type = 'queue'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    queue = relationship(QueueFeatures)
+    queue = relationship(QueueFeatures, viewonly=True)
 
     def to_tuple(self):
         return (('queue_id', self.queue_id),)
