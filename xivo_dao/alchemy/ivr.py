@@ -78,6 +78,7 @@ class IVR(Base):
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     @property

@@ -66,6 +66,7 @@ class Conference(Base):
                             Dialaction.actionarg1 == cast(Conference.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     func_keys_conference = relationship(

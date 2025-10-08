@@ -52,6 +52,7 @@ class Voicemail(Base):
                             Dialaction.actionarg1 == cast(Voicemail.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     context_rel = relationship(

@@ -154,6 +154,7 @@ class QueueFeatures(Base):
                             Dialaction.actionarg1 == cast(QueueFeatures.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     user_queue_members = relationship(

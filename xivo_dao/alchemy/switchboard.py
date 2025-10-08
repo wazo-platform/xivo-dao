@@ -78,6 +78,7 @@ class Switchboard(Base):
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     switchboard_member_users = relationship(

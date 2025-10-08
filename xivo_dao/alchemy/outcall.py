@@ -74,6 +74,7 @@ class Outcall(Base):
                             Dialaction.actionarg1 == cast(Outcall.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     schedule_paths = relationship(

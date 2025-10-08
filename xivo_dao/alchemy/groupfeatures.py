@@ -140,6 +140,7 @@ class GroupFeatures(Base):
                             Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     enabled = association_proxy('queue', 'enabled')

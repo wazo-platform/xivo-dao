@@ -268,6 +268,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     schedule_paths = relationship(
