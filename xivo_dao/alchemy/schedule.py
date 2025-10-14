@@ -45,7 +45,11 @@ class Schedule(Base):
         cascade='all, delete-orphan',
     )
 
-    schedule_paths = relationship('SchedulePath', cascade='all, delete-orphan')
+    schedule_paths = relationship(
+        'SchedulePath',
+        cascade='all, delete-orphan',
+        back_populates='schedule',
+    )
 
     schedule_incalls = relationship(
         'SchedulePath',

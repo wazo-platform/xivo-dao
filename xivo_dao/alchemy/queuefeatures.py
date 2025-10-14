@@ -193,6 +193,7 @@ class QueueFeatures(Base):
                             SchedulePath.pathid == QueueFeatures.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
+        overlaps='schedule_paths',
     )
     schedules = association_proxy(
         'schedule_paths',
