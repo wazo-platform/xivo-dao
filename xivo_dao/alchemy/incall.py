@@ -135,7 +135,7 @@ class Incall(Base):
             .where(Dialaction.action == 'user')
             .where(Dialaction.category == 'incall')
             .where(Dialaction.categoryval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )
 
     @hybrid_property
@@ -150,5 +150,5 @@ class Incall(Base):
             select([Extension.exten])
             .where(Extension.type == 'incall')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

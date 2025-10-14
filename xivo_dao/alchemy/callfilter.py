@@ -55,7 +55,7 @@ class Callfilter(Base):
             )
         )
         .correlate_except(FeatureExtension)
-        .as_scalar()
+        .scalar_subquery()
     )
 
     callfilter_dialactions = relationship(

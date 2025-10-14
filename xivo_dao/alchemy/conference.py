@@ -86,5 +86,5 @@ class Conference(Base):
             select([Extension.exten])
             .where(Extension.type == 'conference')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

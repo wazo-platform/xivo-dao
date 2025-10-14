@@ -329,5 +329,5 @@ class GroupFeatures(Base):
             select([Extension.exten])
             .where(Extension.type == 'group')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

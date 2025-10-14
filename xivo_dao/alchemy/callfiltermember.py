@@ -36,7 +36,7 @@ class Callfiltermember(Base):
         select([Callfilter.exten])
         .where(and_(Callfilter.id == callfilterid, bstype == 'secretary'))
         .correlate_except(Callfilter)
-        .as_scalar()
+        .scalar_subquery()
     )
 
     func_keys = relationship('FuncKeyDestBSFilter', cascade='all, delete-orphan')

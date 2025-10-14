@@ -75,7 +75,7 @@ class ParkingLot(Base):
             select([Extension.exten])
             .where(Extension.type == 'parking')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )
 
     @hybrid_property
@@ -90,5 +90,5 @@ class ParkingLot(Base):
             select([Extension.context])
             .where(Extension.type == 'parking')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

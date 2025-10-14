@@ -389,7 +389,7 @@ class LineFeatures(Base):
         return (
             select([attr])
             .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
-            .as_scalar()
+            .scalar_subquery()
         )
 
     @classmethod
@@ -400,5 +400,5 @@ class LineFeatures(Base):
         return (
             select([getattr(SCCPLine, option)])
             .where(SCCPLine.id == cls.endpoint_sccp_id)
-            .as_scalar()
+            .scalar_subquery()
         )

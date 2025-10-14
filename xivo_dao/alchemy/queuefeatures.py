@@ -416,5 +416,5 @@ class QueueFeatures(Base):
             select([Extension.exten])
             .where(Extension.type == 'queue')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )
