@@ -32,6 +32,6 @@ class StatAgent(Base):
     @number.expression
     def number(cls):
         return case(
-            [(func.substr(cls.name, 0, 7) == 'Agent/', func.substr(cls.name, 7))],
+            (func.substr(cls.name, 0, 7) == 'Agent/', func.substr(cls.name, 7)),
             else_=None,
         )

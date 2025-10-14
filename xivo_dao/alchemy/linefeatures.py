@@ -140,11 +140,9 @@ class LineFeatures(Base):
     @protocol.expression
     def protocol(cls):
         return sql.case(
-            [
-                (cls.endpoint_sip_uuid.isnot(None), 'sip'),
-                (cls.endpoint_sccp_id.isnot(None), 'sccp'),
-                (cls.endpoint_custom_id.isnot(None), 'custom'),
-            ],
+            (cls.endpoint_sip_uuid.isnot(None), 'sip'),
+            (cls.endpoint_sccp_id.isnot(None), 'sccp'),
+            (cls.endpoint_custom_id.isnot(None), 'custom'),
             else_=None,
         )
 

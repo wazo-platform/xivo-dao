@@ -145,11 +145,9 @@ class TrunkFeatures(Base):
             .scalar_subquery()
         )
         return case(
-            [
-                (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
-                (cls.endpoint_iax_id.isnot(None), endpoint_iax_query),
-                (cls.endpoint_custom_id.isnot(None), endpoint_custom_query),
-            ],
+            (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
+            (cls.endpoint_iax_id.isnot(None), endpoint_iax_query),
+            (cls.endpoint_custom_id.isnot(None), endpoint_custom_query),
             else_=None,
         )
 
