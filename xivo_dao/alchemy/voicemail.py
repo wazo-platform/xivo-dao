@@ -167,7 +167,7 @@ class Voicemail(Base):
     @tenant_uuid.expression
     def tenant_uuid(cls):
         return (
-            sql.select([Context.tenant_uuid])
+            sql.select(Context.tenant_uuid)
             .where(
                 Context.name == cls.context,
             )

@@ -88,7 +88,7 @@ class BlocklistNumber(Base):
     @user_uuid.expression
     def user_uuid(cls):
         query = (
-            select([BlocklistUser.user_uuid])
+            select(BlocklistUser.user_uuid)
             .where(BlocklistUser.blocklist_uuid == cls.blocklist_uuid)
             .label('user_uuid')
         )

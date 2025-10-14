@@ -83,7 +83,7 @@ class Conference(Base):
     @exten.expression
     def exten(cls):
         return (
-            select([Extension.exten])
+            select(Extension.exten)
             .where(Extension.type == 'conference')
             .where(Extension.typeval == cast(cls.id, String))
             .scalar_subquery()

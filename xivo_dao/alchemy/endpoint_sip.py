@@ -75,7 +75,7 @@ class EndpointSIP(Base):
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
     _options = column_property(
-        select([column('options')])
+        select(column('options'))
         .where(column('root') == uuid)
         .select_from(table('endpoint_sip_options_view'))
         .scalar_subquery(),

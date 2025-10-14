@@ -333,7 +333,7 @@ class LineFeatures(Base):
     @tenant_uuid.expression
     def tenant_uuid(cls):
         return (
-            sql.select([Context.tenant_uuid])
+            sql.select(Context.tenant_uuid)
             .where(
                 Context.name == cls.context,
             )
@@ -387,7 +387,7 @@ class LineFeatures(Base):
             )
 
         return (
-            select([attr])
+            select(attr)
             .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
             .scalar_subquery()
         )
@@ -398,7 +398,7 @@ class LineFeatures(Base):
             return
 
         return (
-            select([getattr(SCCPLine, option)])
+            select(getattr(SCCPLine, option))
             .where(SCCPLine.id == cls.endpoint_sccp_id)
             .scalar_subquery()
         )

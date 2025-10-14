@@ -131,7 +131,7 @@ class Incall(Base):
     @user_id.expression
     def user_id(cls):
         return (
-            select([cast(Dialaction.actionarg1, Integer)])
+            select(cast(Dialaction.actionarg1, Integer))
             .where(Dialaction.action == 'user')
             .where(Dialaction.category == 'incall')
             .where(Dialaction.categoryval == cast(cls.id, String))
@@ -147,7 +147,7 @@ class Incall(Base):
     @exten.expression
     def exten(cls):
         return (
-            select([Extension.exten])
+            select(Extension.exten)
             .where(Extension.type == 'incall')
             .where(Extension.typeval == cast(cls.id, String))
             .scalar_subquery()

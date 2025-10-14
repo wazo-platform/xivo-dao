@@ -47,7 +47,7 @@ class Callfilter(Base):
     description = Column(Text)
 
     exten = column_property(
-        select([FeatureExtension.exten])
+        select(FeatureExtension.exten)
         .where(
             and_(
                 FeatureExtension.feature == 'bsfilter',

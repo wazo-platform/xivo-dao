@@ -33,7 +33,7 @@ class Callfiltermember(Base):
     active = Column(Integer, nullable=False, server_default='0')
 
     callfilter_exten = column_property(
-        select([Callfilter.exten])
+        select(Callfilter.exten)
         .where(and_(Callfilter.id == callfilterid, bstype == 'secretary'))
         .correlate_except(Callfilter)
         .scalar_subquery()

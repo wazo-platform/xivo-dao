@@ -413,7 +413,7 @@ class QueueFeatures(Base):
     @exten.expression
     def exten(cls):
         return (
-            select([Extension.exten])
+            select(Extension.exten)
             .where(Extension.type == 'queue')
             .where(Extension.typeval == cast(cls.id, String))
             .scalar_subquery()
