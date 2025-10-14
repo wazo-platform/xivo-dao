@@ -12,7 +12,9 @@ from hamcrest import (
 )
 from sqlalchemy.exc import IntegrityError
 
-from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
+from xivo_dao.alchemy.blocklist import Blocklist
+from xivo_dao.alchemy.blocklist_number import BlocklistNumber
+from xivo_dao.alchemy.blocklist_user import BlocklistUser
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
