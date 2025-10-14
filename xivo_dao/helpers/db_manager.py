@@ -45,6 +45,7 @@ class IntAsString(TypeDecorator):
     """
 
     impl = String
+    cache_ok = True
 
     def process_bind_param(self, value, dialect):
         if value is not None:
@@ -54,6 +55,7 @@ class IntAsString(TypeDecorator):
 
 class UUIDAsString(TypeDecorator):
     impl = String
+    cache_ok = True
 
     def process_bind_param(self, value, dialect):
         if value is not None:
