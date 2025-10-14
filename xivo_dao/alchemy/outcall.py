@@ -50,6 +50,7 @@ class Outcall(Base):
                             DialPattern.typeid == Outcall.id)""",
         foreign_keys='DialPattern.typeid',
         cascade='all, delete-orphan',
+        overlaps='outcall',
     )
 
     extensions = association_proxy('dialpatterns', 'extension')
