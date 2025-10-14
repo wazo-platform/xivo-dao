@@ -25,8 +25,12 @@ class LineExtension(Base):
     main_extension = Column(Boolean, nullable=False)
 
     main_extension_rel = relationship(
-        "Extension",
-        primaryjoin="and_(LineExtension.extension_id == Extension.id, LineExtension.main_extension == True)",
+        'Extension',
+        primaryjoin="""and_(
+            LineExtension.extension_id == Extension.id,
+            LineExtension.main_extension == True
+        )""",
+        viewonly=True,
     )
 
     line = relationship('LineFeatures', back_populates='line_extensions')
