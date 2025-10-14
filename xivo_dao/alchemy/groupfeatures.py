@@ -134,7 +134,7 @@ class GroupFeatures(Base):
         ),  # fmt: skip
     )
 
-    queue = relationship(
+    _queue = relationship(
         'Queue',
         primaryjoin="""and_(Queue.category == 'group',
                             Queue.name == GroupFeatures.name)""",
@@ -142,6 +142,7 @@ class GroupFeatures(Base):
         cascade='all, delete-orphan',
         uselist=False,
         passive_updates=False,
+        overlaps='_queue',
     )
 
     _dialaction_actions = relationship(
@@ -153,13 +154,13 @@ class GroupFeatures(Base):
         overlaps='_dialaction_actions',
     )
 
-    enabled = association_proxy('queue', 'enabled')
-    music_on_hold = association_proxy('queue', 'musicclass')
-    retry_delay = association_proxy('queue', 'retry')
-    ring_in_use = association_proxy('queue', 'ring_in_use')
-    ring_strategy = association_proxy('queue', 'strategy')
-    user_timeout = association_proxy('queue', 'timeout')
-    max_calls = association_proxy('queue', 'maxlen')
+    enabled = association_proxy('_queue', 'enabled')
+    music_on_hold = association_proxy('_queue', 'musicclass')
+    retry_delay = association_proxy('_queue', 'retry')
+    ring_in_use = association_proxy('_queue', 'ring_in_use')
+    ring_strategy = association_proxy('_queue', 'strategy')
+    user_timeout = association_proxy('_queue', 'timeout')
+    max_calls = association_proxy('_queue', 'maxlen')
 
     func_keys_group = relationship(
         'FuncKeyDestGroup',
@@ -252,8 +253,8 @@ class GroupFeatures(Base):
         enabled = kwargs.pop('enabled', True)
         max_calls = kwargs.pop('max_calls', 0)
         super().__init__(**kwargs)
-        if not self.queue:
-            self.queue = Queue(
+        if not self._queue:
+            self._queue = Queue(
                 retry=retry,
                 ring_in_use=ring_in_use,
                 strategy=strategy,

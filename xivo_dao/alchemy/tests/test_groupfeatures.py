@@ -360,7 +360,7 @@ class TestCreate(DAOTestCase):
         self.session.flush()
 
         assert_that(
-            group.queue,
+            group._queue,
             has_properties(
                 name='groupname',
                 retry=5,
@@ -409,7 +409,7 @@ class TestCreate(DAOTestCase):
         self.session.flush()
 
         assert_that(
-            group.queue,
+            group._queue,
             has_properties(
                 name='groupname',
                 retry=6,

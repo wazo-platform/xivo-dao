@@ -99,6 +99,7 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan',
         uselist=False,
         passive_updates=False,
+        overlaps='_queue',
     )
     enabled = association_proxy('_queue', 'enabled')
     options = association_proxy('_queue', 'options')
