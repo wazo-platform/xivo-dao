@@ -271,7 +271,7 @@ user_extensions_query = user_extensions_bakery(
     )
     .distinct()
     .join(
-        UserLine.userfeatures,
+        UserLine.user,
     )
     .join(
         LineExtension,
@@ -315,10 +315,10 @@ user_arguments_query = user_arguments_bakery(
         ).label('argument'),
     )
     .join(
-        UserLine.userfeatures,
+        UserLine.user,
     )
     .join(
-        UserLine.linefeatures,
+        UserLine.line,
     )
     .outerjoin(
         EndpointSIP,
