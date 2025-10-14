@@ -29,12 +29,14 @@ class UserLine(Base):
         "UserFeatures",
         primaryjoin="""and_(UserLine.user_id == UserFeatures.id,
                             UserLine.main_user == True)""",
+        viewonly=True,
     )
 
     main_line_rel = relationship(
         "LineFeatures",
         primaryjoin="""and_(UserLine.line_id == LineFeatures.id,
                             UserLine.main_line == True)""",
+        viewonly=True,
     )
 
     user = relationship('UserFeatures', back_populates='user_lines')

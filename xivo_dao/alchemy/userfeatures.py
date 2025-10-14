@@ -168,6 +168,7 @@ class UserFeatures(Base):
             UserFeatures.id == UserLine.user_id,
             UserLine.main_line == True
         )""",
+        viewonly=True,
     )
     agent = relationship(
         "AgentFeatures",
