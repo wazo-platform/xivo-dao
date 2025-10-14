@@ -232,6 +232,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='QueueMember.userid',
         cascade='all, delete-orphan',
+        overlaps='queue_members,queue_queue_members,user',
     )
     groups = association_proxy(
         'group_members',
@@ -250,6 +251,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='QueueMember.userid',
         cascade='all, delete-orphan',
+        overlaps='group_members,queue_queue_members,user',
     )
     queues = association_proxy('queue_members', 'queue')
 

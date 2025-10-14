@@ -39,6 +39,7 @@ class AgentFeatures(Base):
                             QueueMember.userid == AgentFeatures.id)""",
         foreign_keys='QueueMember.userid',
         cascade='all, delete-orphan',
+        overlaps='group_members,queue_members,agent,user',
     )
 
     agent_queue_skills = relationship(

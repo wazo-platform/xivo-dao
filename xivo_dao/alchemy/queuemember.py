@@ -54,6 +54,7 @@ class QueueMember(Base):
         primaryjoin="""and_(QueueMember.usertype == 'agent',
                             QueueMember.userid == AgentFeatures.id)""",
         foreign_keys='QueueMember.userid',
+        overlaps='queue_queue_members,group_members,queue_members,user',
     )
 
     user = relationship(
@@ -61,6 +62,7 @@ class QueueMember(Base):
         primaryjoin="""and_(QueueMember.usertype == 'user',
                             QueueMember.userid == UserFeatures.id)""",
         foreign_keys='QueueMember.userid',
+        overlaps='queue_queue_members,group_members,queue_members,agent',
     )
 
     group = relationship(
