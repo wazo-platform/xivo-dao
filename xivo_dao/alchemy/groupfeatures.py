@@ -194,6 +194,7 @@ class GroupFeatures(Base):
         RightCallMember.typeval == cast(GroupFeatures.id, String))""",
         foreign_keys='RightCallMember.typeval',
         cascade='all, delete-orphan',
+        overlaps='rightcall_members',
     )
     call_permissions = association_proxy(
         'rightcall_members',

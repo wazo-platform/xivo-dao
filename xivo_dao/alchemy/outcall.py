@@ -101,6 +101,7 @@ class Outcall(Base):
                             RightCallMember.typeval == cast(Outcall.id, String))""",
         foreign_keys='RightCallMember.typeval',
         cascade='all, delete-orphan',
+        overlaps='rightcall_members',
     )
     call_permissions = association_proxy(
         'rightcall_members',
