@@ -35,7 +35,7 @@ def does_secretary_filter_boss(session, boss_user_id, secretary_user_id):
 def get(session, callfilter_id):
     return (
         session.query(Callfilter, Callfiltermember)
-        .join((Callfiltermember, Callfilter.id == Callfiltermember.callfilterid))
+        .join(Callfiltermember, Callfilter.id == Callfiltermember.callfilterid)
         .filter(Callfilter.id == callfilter_id)
         .all()
     )
