@@ -22,7 +22,7 @@ class SearchResult(NamedTuple):
 
 
 class unaccent(ReturnTypeFromArgs):
-    pass
+    inherit_cache = True
 
 
 def separate_criteria(
