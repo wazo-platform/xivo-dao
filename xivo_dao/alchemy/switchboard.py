@@ -85,6 +85,7 @@ class Switchboard(Base):
         'SwitchboardMemberUser',
         primaryjoin="""SwitchboardMemberUser.switchboard_uuid == Switchboard.uuid""",
         cascade='all, delete-orphan',
+        back_populates='switchboard',
     )
 
     user_members = association_proxy(

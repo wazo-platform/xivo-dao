@@ -27,5 +27,11 @@ class SwitchboardMemberUser(Base):
         nullable=False,
     )
 
-    switchboard = relationship('Switchboard')
-    user = relationship('UserFeatures')
+    switchboard = relationship(
+        'Switchboard',
+        back_populates='switchboard_member_users',
+    )
+    user = relationship(
+        'UserFeatures',
+        back_populates='switchboard_member_users',
+    )

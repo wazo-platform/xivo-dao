@@ -263,7 +263,9 @@ class UserFeatures(Base):
     )
 
     switchboard_member_users = relationship(
-        'SwitchboardMemberUser', cascade='all, delete-orphan'
+        'SwitchboardMemberUser',
+        cascade='all, delete-orphan',
+        back_populates='user',
     )
     switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
