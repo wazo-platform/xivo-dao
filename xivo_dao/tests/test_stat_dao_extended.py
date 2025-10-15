@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import itertools
 import pathlib
+from collections.abc import Iterator
 from datetime import datetime as dt
-from typing import Any, Iterator
+from typing import Any
 
 from hamcrest import assert_that, equal_to
 from pytz import UTC
@@ -69,7 +70,7 @@ class TestStatDAO(DAOTestCase):
         queue_logs = self._insert_queue_log_data(queue_log_data)
         assert_that(self.session.query(QueueLog).count(), equal_to(10))
 
-        queues = set(log.queuename for log in queue_logs)
+        queues = {log.queuename for log in queue_logs}
         for queue in queues:
             self._insert_queue(queue)
 
@@ -123,7 +124,7 @@ class TestStatDAO(DAOTestCase):
         queue_logs = self._insert_queue_log_data(queue_log_data)
         assert_that(self.session.query(QueueLog).count(), equal_to(15))
 
-        queues = set(log.queuename for log in queue_logs)
+        queues = {log.queuename for log in queue_logs}
         for queue in queues:
             self._insert_queue(queue)
 
