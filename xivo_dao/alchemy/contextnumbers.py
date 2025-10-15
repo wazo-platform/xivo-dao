@@ -53,7 +53,7 @@ class ContextNumbers(Base):
 
     @end.expression
     def end(cls):
-        return case([(cls.numberend == '', cls.numberbeg)], else_=cls.numberend)
+        return case((cls.numberend == '', cls.numberbeg), else_=cls.numberend)
 
     @end.setter
     def end(self, value):

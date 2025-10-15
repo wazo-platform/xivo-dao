@@ -46,12 +46,13 @@ class Voicemail(Base):
 
     users = relationship('UserFeatures', back_populates='voicemail')
 
-    dialaction_actions = relationship(
+    _dialaction_actions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.action == 'voicemail',
                             Dialaction.actionarg1 == cast(Voicemail.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     context_rel = relationship(
@@ -166,7 +167,7 @@ class Voicemail(Base):
     @tenant_uuid.expression
     def tenant_uuid(cls):
         return (
-            sql.select([Context.tenant_uuid])
+            sql.select(Context.tenant_uuid)
             .where(
                 Context.name == cls.context,
             )

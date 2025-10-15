@@ -1,7 +1,7 @@
 # Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql.expression import and_, cast, func
+from sqlalchemy.sql.expression import and_, cast, func, select
 from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -15,18 +15,17 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def does_secretary_filter_boss(session, boss_user_id, secretary_user_id):
-    subquery = (
-        session.query(Callfiltermember.callfilterid)
-        .filter(Callfiltermember.bstype == 'boss')
-        .filter(Callfiltermember.typeval == str(boss_user_id))
-        .subquery()
+    boss_members = (
+        select(Callfiltermember.callfilterid)
+        .where(Callfiltermember.bstype == 'boss')
+        .where(Callfiltermember.typeval == str(boss_user_id))
     )
 
     query = (
         session.query(Callfiltermember.id)
         .filter(Callfiltermember.typeval == str(secretary_user_id))
         .filter(Callfiltermember.bstype == 'secretary')
-        .filter(Callfiltermember.callfilterid.in_(subquery))
+        .filter(Callfiltermember.callfilterid.in_(boss_members))
     )
 
     return query.count()
@@ -36,7 +35,7 @@ def does_secretary_filter_boss(session, boss_user_id, secretary_user_id):
 def get(session, callfilter_id):
     return (
         session.query(Callfilter, Callfiltermember)
-        .join((Callfiltermember, Callfilter.id == Callfiltermember.callfilterid))
+        .join(Callfiltermember, Callfilter.id == Callfiltermember.callfilterid)
         .filter(Callfilter.id == callfilter_id)
         .all()
     )

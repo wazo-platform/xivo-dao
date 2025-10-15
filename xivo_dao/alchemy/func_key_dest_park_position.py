@@ -44,7 +44,7 @@ class FuncKeyDestParkPosition(Base):
     type = 'park_position'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    parking_lot = relationship(ParkingLot)
+    parking_lot = relationship(ParkingLot, viewonly=True)
 
     def to_tuple(self):
         return (

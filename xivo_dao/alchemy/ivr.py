@@ -1,4 +1,4 @@
-# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -41,6 +41,15 @@ class IVR(Base):
         foreign_keys='Dialaction.categoryval',
         collection_class=attribute_mapped_collection('event'),
         cascade='all, delete-orphan',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'group_dialactions,'
+            'ivr_choice,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     choices = relationship(
@@ -69,6 +78,7 @@ class IVR(Base):
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     @property

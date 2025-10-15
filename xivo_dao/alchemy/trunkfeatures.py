@@ -130,26 +130,24 @@ class TrunkFeatures(Base):
     @name.expression
     def name(cls):
         endpoint_sip_query = (
-            select([EndpointSIP.name])
+            select(EndpointSIP.name)
             .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
-            .as_scalar()
+            .scalar_subquery()
         )
         endpoint_iax_query = (
-            select([UserIAX.name])
+            select(UserIAX.name)
             .where(UserIAX.id == cls.endpoint_iax_id)
-            .as_scalar()
+            .scalar_subquery()
         )  # fmt: skip
         endpoint_custom_query = (
-            select([UserCustom.interface])
+            select(UserCustom.interface)
             .where(UserCustom.id == cls.endpoint_custom_id)
-            .as_scalar()
+            .scalar_subquery()
         )
         return case(
-            [
-                (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
-                (cls.endpoint_iax_id.isnot(None), endpoint_iax_query),
-                (cls.endpoint_custom_id.isnot(None), endpoint_custom_query),
-            ],
+            (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
+            (cls.endpoint_iax_id.isnot(None), endpoint_iax_query),
+            (cls.endpoint_custom_id.isnot(None), endpoint_custom_query),
             else_=None,
         )
 
@@ -162,9 +160,9 @@ class TrunkFeatures(Base):
     @label.expression
     def label(cls):
         endpoint_sip_query = (
-            select([EndpointSIP.label])
+            select(EndpointSIP.label)
             .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
-            .as_scalar()
+            .scalar_subquery()
         )
         return case(
             [

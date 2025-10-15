@@ -57,4 +57,4 @@ class SchedulePath(Base):
         foreign_keys='SchedulePath.pathid',
         viewonly=True,
     )
-    schedule = relationship('Schedule')
+    schedule = relationship('Schedule', back_populates='schedule_paths')

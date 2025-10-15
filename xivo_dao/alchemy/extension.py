@@ -65,7 +65,7 @@ class Extension(Base):
     @tenant_uuid.expression
     def tenant_uuid(cls):
         return func.coalesce(
-            select([Context.tenant_uuid])
+            select(Context.tenant_uuid)
             .where(Context.name == cls.context)
             .label('type'),
             None,
@@ -79,7 +79,7 @@ class Extension(Base):
     @context_type.expression
     def context_type(cls):
         return func.coalesce(
-            select([Context.contexttype])
+            select(Context.contexttype)
             .where(Context.name == cls.context)
             .label('type'),
             'internal',

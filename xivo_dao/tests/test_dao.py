@@ -111,21 +111,21 @@ UNKNOWN_ID = 999999999
 UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 
 
-def expensive_setup():
+def expensive_setup(bind):
     global _create_tables
     if _create_tables and (os.environ.get('CREATE_TABLES', '1') == '1'):
-        _init_tables()
+        _init_tables(bind=bind)
         _create_tables = False
 
 
 @trace_duration
-def _init_tables():
+def _init_tables(bind):
     logger.debug("Cleaning tables")
-    Base.metadata.reflect()
+    Base.metadata.reflect(bind=bind)
     logger.debug("drop all tables")
-    Base.metadata.drop_all()
+    Base.metadata.drop_all(bind=bind)
     logger.debug("create all tables")
-    Base.metadata.create_all()
+    Base.metadata.create_all(bind=bind)
     logger.debug("Tables cleaned")
 
 
@@ -1113,8 +1113,8 @@ class DAOTestCase(unittest.TestCase, ItemInserter):
         if not engine:
             engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=DB_ECHO)
 
-        cls.engine = Base.metadata.bind = engine
-        expensive_setup()
+        cls.engine = engine
+        expensive_setup(bind=engine)
 
     def setUp(self):
         self.connection = self.engine.connect()

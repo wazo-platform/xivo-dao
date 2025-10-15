@@ -47,7 +47,7 @@ class Callfilter(Base):
     description = Column(Text)
 
     exten = column_property(
-        select([FeatureExtension.exten])
+        select(FeatureExtension.exten)
         .where(
             and_(
                 FeatureExtension.feature == 'bsfilter',
@@ -55,7 +55,7 @@ class Callfilter(Base):
             )
         )
         .correlate_except(FeatureExtension)
-        .as_scalar()
+        .scalar_subquery()
     )
 
     callfilter_dialactions = relationship(
@@ -67,6 +67,15 @@ class Callfilter(Base):
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
         foreign_keys='Dialaction.categoryval',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     caller_id = relationship(
@@ -78,6 +87,7 @@ class Callfilter(Base):
         foreign_keys='Callerid.typeval',
         cascade='all, delete-orphan',
         uselist=False,
+        overlaps='caller_id',
     )
 
     caller_id_mode = association_proxy(
@@ -101,6 +111,7 @@ class Callfilter(Base):
         order_by='Callfiltermember.priority',
         collection_class=ordering_list('priority', reorder_on_append=True),
         cascade='all, delete-orphan',
+        overlaps='surrogates',
     )
 
     surrogates = relationship(
@@ -113,6 +124,7 @@ class Callfilter(Base):
         order_by='Callfiltermember.priority',
         collection_class=ordering_list('priority', reorder_on_append=True),
         cascade='all, delete-orphan',
+        overlaps='recipients',
     )
 
     @property

@@ -33,7 +33,7 @@ class FuncKeyDestUser(Base):
     type = 'user'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    userfeatures = relationship(UserFeatures)
+    userfeatures = relationship(UserFeatures, viewonly=True)
 
     @classmethod
     def for_user(cls, func_key, user):

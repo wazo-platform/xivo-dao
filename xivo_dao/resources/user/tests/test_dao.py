@@ -474,7 +474,7 @@ class TestSimpleSearch(TestSearch):
                     enabled=True,
                     extension=user_line.extension.exten,
                     context=user_line.extension.context,
-                    provisioning_code=user_line.linefeatures.provisioning_code,
+                    provisioning_code=user_line.line.provisioning_code,
                     protocol='sip',
                     subscription_type=1,
                 )

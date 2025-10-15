@@ -41,6 +41,7 @@ class Incall(Base):
         foreign_keys='Callerid.typeval',
         cascade='all, delete-orphan',
         uselist=False,
+        overlaps='caller_id',
     )
 
     caller_id_mode = association_proxy(
@@ -61,6 +62,16 @@ class Incall(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         uselist=False,
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'ivr_choice,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     extensions = relationship(
@@ -77,6 +88,7 @@ class Incall(Base):
                             SchedulePath.pathid == Incall.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
+        overlaps='schedule_paths',
     )
 
     schedules = association_proxy(
@@ -119,11 +131,11 @@ class Incall(Base):
     @user_id.expression
     def user_id(cls):
         return (
-            select([cast(Dialaction.actionarg1, Integer)])
+            select(cast(Dialaction.actionarg1, Integer))
             .where(Dialaction.action == 'user')
             .where(Dialaction.category == 'incall')
             .where(Dialaction.categoryval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )
 
     @hybrid_property
@@ -135,8 +147,8 @@ class Incall(Base):
     @exten.expression
     def exten(cls):
         return (
-            select([Extension.exten])
+            select(Extension.exten)
             .where(Extension.type == 'incall')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

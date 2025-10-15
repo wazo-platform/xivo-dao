@@ -51,7 +51,7 @@ class FuncKeyDestGroupMember(Base):
     type = 'groupmember'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    group = relationship(GroupFeatures)
+    group = relationship(GroupFeatures, viewonly=True)
 
     feature_extension = relationship(FeatureExtension, viewonly=True)
     feature_extension_feature = association_proxy(

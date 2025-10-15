@@ -108,6 +108,7 @@ class Queue(Base, AsteriskOptionsMixin):
                             Queue.name == GroupFeatures.name)""",
         foreign_keys='Queue.name',
         uselist=False,
+        viewonly=True,
     )
 
     queuefeatures = relationship(
@@ -116,6 +117,7 @@ class Queue(Base, AsteriskOptionsMixin):
                             Queue.name == QueueFeatures.name)""",
         foreign_keys='Queue.name',
         uselist=False,
+        viewonly=True,
     )
 
     @hybrid_property

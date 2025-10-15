@@ -66,6 +66,7 @@ class Conference(Base):
                             Dialaction.actionarg1 == cast(Conference.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     func_keys_conference = relationship(
@@ -82,8 +83,8 @@ class Conference(Base):
     @exten.expression
     def exten(cls):
         return (
-            select([Extension.exten])
+            select(Extension.exten)
             .where(Extension.type == 'conference')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

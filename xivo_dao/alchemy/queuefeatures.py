@@ -99,6 +99,7 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan',
         uselist=False,
         passive_updates=False,
+        overlaps='_queue',
     )
     enabled = association_proxy('_queue', 'enabled')
     options = association_proxy('_queue', 'options')
@@ -111,6 +112,7 @@ class QueueFeatures(Base):
         foreign_keys='Callerid.typeval',
         cascade='all, delete-orphan',
         uselist=False,
+        overlaps='caller_id',
     )
 
     caller_id_mode = association_proxy(
@@ -137,6 +139,15 @@ class QueueFeatures(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'ivr_choice",'
+            'switchboard_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     _dialaction_actions = relationship(
@@ -145,6 +156,7 @@ class QueueFeatures(Base):
                             Dialaction.actionarg1 == cast(QueueFeatures.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     user_queue_members = relationship(
@@ -155,6 +167,11 @@ class QueueFeatures(Base):
         foreign_keys='QueueMember.queue_name',
         order_by='QueueMember.position',
         cascade='all, delete-orphan',
+        overlaps=(
+            'agent_queue_members,'
+            'extension_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
 
     agent_queue_members = relationship(
@@ -165,6 +182,10 @@ class QueueFeatures(Base):
         foreign_keys='QueueMember.queue_name',
         order_by='QueueMember.position',
         cascade='all, delete-orphan',
+        overlaps=(
+            'extension_queue_members,'
+            'user_queue_members,'
+        ),  # fmt: skip
     )
 
     schedule_paths = relationship(
@@ -173,6 +194,7 @@ class QueueFeatures(Base):
                             SchedulePath.pathid == QueueFeatures.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
+        overlaps='schedule_paths',
     )
     schedules = association_proxy(
         'schedule_paths',
@@ -391,8 +413,8 @@ class QueueFeatures(Base):
     @exten.expression
     def exten(cls):
         return (
-            select([Extension.exten])
+            select(Extension.exten)
             .where(Extension.type == 'queue')
             .where(Extension.typeval == cast(cls.id, String))
-            .as_scalar()
+            .scalar_subquery()
         )

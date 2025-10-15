@@ -37,7 +37,7 @@ class FuncKeyDestFeatures(Base):
     features_id = Column(Integer, ForeignKey('features.id', ondelete='CASCADE'))
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    features = relationship(Features)
+    features = relationship(Features, viewonly=True)
 
     @hybrid_property
     def feature_id(self):

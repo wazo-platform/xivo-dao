@@ -37,14 +37,14 @@ class TestMaterializedView(DAOTestCase):
     def test_view_init_table(self):
         assert_that(
             calling(_create_materialized_view_class).with_args(
-                create_materialized_view, name='view-init-table', selectable=select([1])
+                create_materialized_view, name='view-init-table', selectable=select(1)
             ),
             not_(raises(InvalidRequestError)),
         )
 
     def test_view_class_creation(self):
         view = _create_materialized_view_class(
-            create_materialized_view, 'view-class-creation', select([1])
+            create_materialized_view, 'view-class-creation', select(1)
         )
         assert_that(issubclass(view, MaterializedView), equal_to(True))
 
@@ -60,7 +60,7 @@ class TestMaterializedView(DAOTestCase):
 
         assert_that(
             calling(_create_materialized_view_class).with_args(
-                some_func, 'view-without-helper-function', select([1])
+                some_func, 'view-without-helper-function', select(1)
             ),
             raises(InvalidRequestError),
         )
@@ -87,13 +87,13 @@ class TestMaterializedView(DAOTestCase):
         view = _create_materialized_view_class(
             create_materialized_view,
             'view-deps-event-found',
-            select([1]),
+            select(1),
             dependencies=(MockModel,),
         )
         assert_that(view.autorefresh, equal_to(True))
 
     def test_view_dependencies_no_event_bound(self):
         view = _create_materialized_view_class(
-            create_materialized_view, 'view-deps-no-event-found', select([1])
+            create_materialized_view, 'view-deps-no-event-found', select(1)
         )
         assert_that(view.autorefresh, equal_to(False))

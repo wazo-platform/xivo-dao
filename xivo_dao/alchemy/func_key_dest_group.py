@@ -33,7 +33,7 @@ class FuncKeyDestGroup(Base):
     type = 'group'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    groupfeatures = relationship(GroupFeatures)
+    groupfeatures = relationship(GroupFeatures, viewonly=True)
 
     def to_tuple(self):
         return (('group_id', self.group_id),)

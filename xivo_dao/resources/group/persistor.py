@@ -39,7 +39,7 @@ class GroupPersistor(CriteriaBuilderMixin, BasePersistor):
             .options(joinedload('incall_dialactions').joinedload('incall'))
             .options(joinedload('group_dialactions'))
             .options(joinedload('user_queue_members').joinedload('user'))
-            .options(joinedload('queue'))
+            .options(joinedload('_queue'))
             .options(joinedload('schedule_paths').joinedload('schedule'))
             .options(joinedload('rightcall_members').joinedload('rightcall'))
         )

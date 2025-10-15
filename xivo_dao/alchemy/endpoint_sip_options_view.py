@@ -14,31 +14,27 @@ from .endpoint_sip_section_option import EndpointSIPSectionOption
 
 def _generate_selectable():
     cte = select(
-        [
-            EndpointSIP.uuid.label('uuid'),
-            literal(0).label('level'),
-            literal('0', String).label('path'),
-            EndpointSIP.uuid.label('root'),
-        ]
+        EndpointSIP.uuid.label('uuid'),
+        literal(0).label('level'),
+        literal('0', String).label('path'),
+        EndpointSIP.uuid.label('root'),
     ).cte(recursive=True)
 
     endpoints = cte.union_all(
         select(
-            [
-                EndpointSIPTemplate.parent_uuid.label('uuid'),
-                (cte.c.level + 1).label('level'),
-                (
-                    cte.c.path
-                    + cast(
-                        func.row_number().over(
-                            partition_by='level',
-                            order_by=EndpointSIPTemplate.priority,
-                        ),
-                        String,
-                    )
-                ).label('path'),
-                (cte.c.root),
-            ]
+            EndpointSIPTemplate.parent_uuid.label('uuid'),
+            (cte.c.level + 1).label('level'),
+            (
+                cte.c.path
+                + cast(
+                    func.row_number().over(
+                        partition_by='level',
+                        order_by=EndpointSIPTemplate.priority,
+                    ),
+                    String,
+                )
+            ).label('path'),
+            (cte.c.root),
         ).select_from(
             join(cte, EndpointSIPTemplate, cte.c.uuid == EndpointSIPTemplate.child_uuid)
         )
@@ -46,26 +42,24 @@ def _generate_selectable():
 
     return (
         select(
-            [
-                endpoints.c.root,
-                cast(
-                    func.jsonb_object(
-                        func.array_agg(
-                            aggregate_order_by(
-                                EndpointSIPSectionOption.key,
-                                endpoints.c.path.desc(),
-                            )
-                        ),
-                        func.array_agg(
-                            aggregate_order_by(
-                                EndpointSIPSectionOption.value,
-                                endpoints.c.path.desc(),
-                            )
-                        ),
+            endpoints.c.root,
+            cast(
+                func.jsonb_object(
+                    func.array_agg(
+                        aggregate_order_by(
+                            EndpointSIPSectionOption.key,
+                            endpoints.c.path.desc(),
+                        )
                     ),
-                    JSONB,
-                ).label('options'),
-            ]
+                    func.array_agg(
+                        aggregate_order_by(
+                            EndpointSIPSectionOption.value,
+                            endpoints.c.path.desc(),
+                        )
+                    ),
+                ),
+                JSONB,
+            ).label('options'),
         )
         .select_from(
             join(

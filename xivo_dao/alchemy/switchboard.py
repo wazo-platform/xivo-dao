@@ -59,6 +59,15 @@ class Switchboard(Base):
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
         foreign_keys='Dialaction.categoryval',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'ivr_choice,'
+            'queue_dialactions,'
+            'user_dialactions,'
+        ),
     )
 
     _dialaction_actions = relationship(
@@ -69,12 +78,14 @@ class Switchboard(Base):
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     switchboard_member_users = relationship(
         'SwitchboardMemberUser',
         primaryjoin="""SwitchboardMemberUser.switchboard_uuid == Switchboard.uuid""",
         cascade='all, delete-orphan',
+        back_populates='switchboard',
     )
 
     user_members = association_proxy(

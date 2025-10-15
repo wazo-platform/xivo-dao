@@ -35,6 +35,7 @@ class PickupMember(Base):
         primaryjoin="""and_(PickupMember.membertype == 'user',
             PickupMember.memberid == UserFeatures.id)""",
         foreign_keys='PickupMember.memberid',
+        overlaps='call_pickup_targets,call_pickup_interceptors,group',
     )
 
     group = relationship(
@@ -42,6 +43,7 @@ class PickupMember(Base):
         primaryjoin="""and_(PickupMember.membertype == 'group',
             PickupMember.memberid == GroupFeatures.id)""",
         foreign_keys='PickupMember.memberid',
+        overlaps='call_pickup_targets,call_pickup_interceptors,user',
     )
 
     users_from_group = association_proxy('group', 'users')

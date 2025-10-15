@@ -140,11 +140,9 @@ class LineFeatures(Base):
     @protocol.expression
     def protocol(cls):
         return sql.case(
-            [
-                (cls.endpoint_sip_uuid.isnot(None), 'sip'),
-                (cls.endpoint_sccp_id.isnot(None), 'sccp'),
-                (cls.endpoint_custom_id.isnot(None), 'custom'),
-            ],
+            (cls.endpoint_sip_uuid.isnot(None), 'sip'),
+            (cls.endpoint_sccp_id.isnot(None), 'sccp'),
+            (cls.endpoint_custom_id.isnot(None), 'custom'),
             else_=None,
         )
 
@@ -333,7 +331,7 @@ class LineFeatures(Base):
     @tenant_uuid.expression
     def tenant_uuid(cls):
         return (
-            sql.select([Context.tenant_uuid])
+            sql.select(Context.tenant_uuid)
             .where(
                 Context.name == cls.context,
             )
@@ -387,9 +385,9 @@ class LineFeatures(Base):
             )
 
         return (
-            select([attr])
+            select(attr)
             .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
-            .as_scalar()
+            .scalar_subquery()
         )
 
     @classmethod
@@ -398,7 +396,7 @@ class LineFeatures(Base):
             return
 
         return (
-            select([getattr(SCCPLine, option)])
+            select(getattr(SCCPLine, option))
             .where(SCCPLine.id == cls.endpoint_sccp_id)
-            .as_scalar()
+            .scalar_subquery()
         )

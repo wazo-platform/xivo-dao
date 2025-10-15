@@ -25,21 +25,19 @@ class UserLine(Base):
     main_user = Column(Boolean, nullable=False)
     main_line = Column(Boolean, nullable=False)
 
-    linefeatures = relationship("LineFeatures")
-    userfeatures = relationship("UserFeatures")
-
     main_user_rel = relationship(
         "UserFeatures",
         primaryjoin="""and_(UserLine.user_id == UserFeatures.id,
                             UserLine.main_user == True)""",
+        viewonly=True,
     )
 
     main_line_rel = relationship(
         "LineFeatures",
         primaryjoin="""and_(UserLine.line_id == LineFeatures.id,
                             UserLine.main_line == True)""",
+        viewonly=True,
     )
 
     user = relationship('UserFeatures', back_populates='user_lines')
-
     line = relationship('LineFeatures', back_populates='user_lines')

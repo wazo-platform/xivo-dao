@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -39,7 +39,7 @@ class FuncKeyDestBSFilter(Base):
     type = 'bsfilter'
 
     func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
-    filtermember = relationship(Callfiltermember)
+    filtermember = relationship(Callfiltermember, viewonly=True)
 
     def to_tuple(self):
         return (('filter_member_id', self.filtermember_id),)

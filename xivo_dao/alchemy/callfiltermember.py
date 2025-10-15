@@ -33,10 +33,10 @@ class Callfiltermember(Base):
     active = Column(Integer, nullable=False, server_default='0')
 
     callfilter_exten = column_property(
-        select([Callfilter.exten])
+        select(Callfilter.exten)
         .where(and_(Callfilter.id == callfilterid, bstype == 'secretary'))
         .correlate_except(Callfilter)
-        .as_scalar()
+        .scalar_subquery()
     )
 
     func_keys = relationship('FuncKeyDestBSFilter', cascade='all, delete-orphan')
@@ -46,6 +46,7 @@ class Callfiltermember(Base):
         primaryjoin="""and_(Callfiltermember.type == 'user',
                             Callfiltermember.typeval == cast(UserFeatures.id, String))""",
         foreign_keys='Callfiltermember.typeval',
+        overlaps='call_filter_recipients,call_filter_surrogates',
     )
 
     @hybrid_property

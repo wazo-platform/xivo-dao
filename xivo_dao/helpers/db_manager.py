@@ -5,8 +5,7 @@ import logging
 from functools import wraps
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 from sqlalchemy.types import String, TypeDecorator
 from xivo.config_helper import ConfigParser, ErrorHandler
 
@@ -45,6 +44,7 @@ class IntAsString(TypeDecorator):
     """
 
     impl = String
+    cache_ok = True
 
     def process_bind_param(self, value, dialect):
         if value is not None:
@@ -54,6 +54,7 @@ class IntAsString(TypeDecorator):
 
 class UUIDAsString(TypeDecorator):
     impl = String
+    cache_ok = True
 
     def process_bind_param(self, value, dialect):
         if value is not None:

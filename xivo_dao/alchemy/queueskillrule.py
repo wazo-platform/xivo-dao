@@ -31,7 +31,8 @@ class QueueSkillRule(Base):
     @rules.expression
     def rules(cls):
         return case(
-            [(cls.rule.is_(None), [])], else_=func.string_to_array(cls.rule, ';')
+            (cls.rule.is_(None), []),
+            else_=func.string_to_array(cls.rule, ';'),
         )
 
     @rules.setter

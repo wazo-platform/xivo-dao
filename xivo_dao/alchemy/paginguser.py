@@ -20,8 +20,14 @@ class PagingUser(Base):
     userfeaturesid = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
     caller = Column(Integer, nullable=False, autoincrement=False)
 
-    paging = relationship('Paging')
-    user = relationship('UserFeatures')
+    paging = relationship(
+        'Paging',
+        overlaps='paging,paging_callers,paging_members',
+    )
+    user = relationship(
+        'UserFeatures',
+        back_populates='paging_users',
+    )
 
     @hybrid_property
     def paging_id(self):

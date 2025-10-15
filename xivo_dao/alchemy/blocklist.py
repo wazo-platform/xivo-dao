@@ -32,11 +32,12 @@ class Blocklist(Base):
     )
 
     tenant = relationship(Tenant, uselist=False)
-    numbers = relationship(lambda: BlocklistNumber)
+    numbers = relationship(lambda: BlocklistNumber, back_populates='blocklist')
     user = relationship(
         UserFeatures,
         secondary=lambda: BlocklistUser.__table__,
         uselist=False,
+        viewonly=True,
     )
     _user_link = relationship(lambda: BlocklistUser, lazy='joined', uselist=False)
 
@@ -73,7 +74,12 @@ class BlocklistNumber(Base):
         'tenant_uuid',
     )
 
-    blocklist = relationship(Blocklist, lazy='joined', uselist=False)
+    blocklist = relationship(
+        Blocklist,
+        lazy='joined',
+        uselist=False,
+        back_populates='numbers',
+    )
 
     @hybrid_property
     def user_uuid(self):
@@ -82,7 +88,7 @@ class BlocklistNumber(Base):
     @user_uuid.expression
     def user_uuid(cls):
         query = (
-            select([BlocklistUser.user_uuid])
+            select(BlocklistUser.user_uuid)
             .where(BlocklistUser.blocklist_uuid == cls.blocklist_uuid)
             .label('user_uuid')
         )

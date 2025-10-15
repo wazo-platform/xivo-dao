@@ -168,6 +168,7 @@ class UserFeatures(Base):
             UserFeatures.id == UserLine.user_id,
             UserLine.main_line == True
         )""",
+        viewonly=True,
     )
     agent = relationship(
         "AgentFeatures",
@@ -212,6 +213,15 @@ class UserFeatures(Base):
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
         foreign_keys='Dialaction.categoryval',
+        overlaps=(
+            'callfilter_dialactions,'
+            'dialaction,'
+            'dialactions,'
+            'group_dialactions,'
+            'ivr_choice,'
+            'queue_dialactions,'
+            'switchboard_dialactions,'
+        ),
     )
 
     group_members = relationship(
@@ -223,6 +233,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='QueueMember.userid',
         cascade='all, delete-orphan',
+        overlaps='queue_members,queue_queue_members,user',
     )
     groups = association_proxy(
         'group_members',
@@ -241,13 +252,20 @@ class UserFeatures(Base):
         )""",
         foreign_keys='QueueMember.userid',
         cascade='all, delete-orphan',
+        overlaps='group_members,queue_queue_members,user',
     )
     queues = association_proxy('queue_members', 'queue')
 
-    paging_users = relationship('PagingUser', cascade='all, delete-orphan')
+    paging_users = relationship(
+        'PagingUser',
+        cascade='all, delete-orphan',
+        back_populates='user',
+    )
 
     switchboard_member_users = relationship(
-        'SwitchboardMemberUser', cascade='all, delete-orphan'
+        'SwitchboardMemberUser',
+        cascade='all, delete-orphan',
+        back_populates='user',
     )
     switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
@@ -259,6 +277,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+        overlaps='_dialaction_actions',
     )
 
     schedule_paths = relationship(
@@ -269,6 +288,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
+        overlaps='schedule_paths',
     )
     schedules = association_proxy(
         'schedule_paths',
@@ -287,6 +307,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='Callfiltermember.typeval',
         cascade='delete, delete-orphan',
+        overlaps='call_filter_surrogates,user',
     )
     call_filter_surrogates = relationship(
         'Callfiltermember',
@@ -297,6 +318,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='Callfiltermember.typeval',
         cascade='delete, delete-orphan',
+        overlaps='call_filter_recipients,user',
     )
 
     call_pickup_interceptors = relationship(
@@ -308,6 +330,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='PickupMember.memberid',
         cascade='delete, delete-orphan',
+        overlaps='call_pickup_targets,call_pickup_interceptors,user,group',
     )
     call_pickup_targets = relationship(
         'PickupMember',
@@ -318,6 +341,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='PickupMember.memberid',
         cascade='delete, delete-orphan',
+        overlaps='call_pickup_targets,call_pickup_interceptors,user,group',
     )
 
     rightcall_members = relationship(
@@ -328,6 +352,7 @@ class UserFeatures(Base):
         )""",
         foreign_keys='RightCallMember.typeval',
         cascade='all, delete-orphan',
+        overlaps='rightcall_members',
     )
 
     call_permissions = association_proxy('rightcall_members', 'rightcall')
