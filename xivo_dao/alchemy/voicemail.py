@@ -21,6 +21,13 @@ class Voicemail(Base):
         PrimaryKeyConstraint('uniqueid'),
         UniqueConstraint('mailbox', 'context'),
         Index('voicemail__idx__context', 'context'),
+        Index(
+            'voicemail_shared_tenant_unique_key',
+            'shared',
+            'context',
+            unique=True,
+            postgresql_where=('shared'),
+        ),
         ForeignKeyConstraint(
             ('context',),
             ('context.name',),
@@ -43,6 +50,7 @@ class Voicemail(Base):
     skipcheckpass = Column(Integer, nullable=False, server_default='0')
     options = Column(ARRAY(String, dimensions=2), nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
+    shared = Column(Boolean, nullable=False, server_default='false')
 
     users = relationship('UserFeatures', back_populates='voicemail')
 
