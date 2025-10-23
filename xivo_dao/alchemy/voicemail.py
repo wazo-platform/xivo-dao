@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.attributes import get_history
 from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.sql import cast, not_
+from sqlalchemy.sql import cast, not_, text
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,7 +26,7 @@ class Voicemail(Base):
             'shared',
             'context',
             unique=True,
-            postgresql_where=('shared'),
+            postgresql_where=(text('shared is true')),
         ),
         ForeignKeyConstraint(
             ('context',),
@@ -50,7 +50,7 @@ class Voicemail(Base):
     skipcheckpass = Column(Integer, nullable=False, server_default='0')
     options = Column(ARRAY(String, dimensions=2), nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
-    shared = Column(Boolean, nullable=False, server_default='false')
+    shared = Column(Boolean, nullable=False, server_default=text('false'))
 
     users = relationship('UserFeatures', back_populates='voicemail')
 
