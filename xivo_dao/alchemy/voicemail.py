@@ -22,7 +22,7 @@ class Voicemail(Base):
         UniqueConstraint('mailbox', 'context'),
         Index('voicemail__idx__context', 'context'),
         Index(
-            'voicemail_shared_tenant_unique_key',
+            'voicemail__idx__unique_shared_per_context',
             'shared',
             'context',
             unique=True,
