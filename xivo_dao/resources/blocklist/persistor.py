@@ -3,7 +3,8 @@
 
 from sqlalchemy.orm import joinedload
 
-from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber
+from xivo_dao.alchemy.blocklist import Blocklist
+from xivo_dao.alchemy.blocklist_number import BlocklistNumber
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin, separate_criteria
 

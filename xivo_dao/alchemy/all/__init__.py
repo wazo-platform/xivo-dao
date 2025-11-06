@@ -12,7 +12,9 @@ from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
-from xivo_dao.alchemy.blocklist import Blocklist, BlocklistNumber, BlocklistUser
+from xivo_dao.alchemy.blocklist import Blocklist
+from xivo_dao.alchemy.blocklist_number import BlocklistNumber
+from xivo_dao.alchemy.blocklist_user import BlocklistUser
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
