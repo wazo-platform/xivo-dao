@@ -20,8 +20,11 @@ Session = scoped_session(sessionmaker())
 
 class BaseMixin:
     def __repr__(self):
+        # TODO(rbienvenu): The "global" check is to be removed once voicemail isn't using it anymore
         attrs = {
             col.name: getattr(self, col.name)
+            if col.name != 'global'
+            else getattr(self, "global_")
             for col in self.__table__.columns
             if col.primary_key
         }
@@ -67,6 +70,7 @@ def todict(self, exclude=None):
     d = {}
     for c in self.__table__.columns:
         name = c.name.replace('-', '_')
+        name = "global_" if name == "global" else name
         if name not in exclude:
             value = getattr(self, name)
             d[c.name] = value
