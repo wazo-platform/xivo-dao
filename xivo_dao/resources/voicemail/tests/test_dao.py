@@ -206,6 +206,22 @@ class TestFindAllBy(DAOTestCase):
             voicemails, all_of(has_items(voicemail1), not_(has_items(voicemail2)))
         )
 
+    def test_find_all_by_access_type(self):
+        global1 = self.add_voicemail(accesstype='global')
+        personal1 = self.add_voicemail(accesstype='personal')
+        personal2 = self.add_voicemail()
+
+        voicemails = voicemail_dao.find_all_by(accesstype='global')
+        assert_that(
+            voicemails,
+            all_of(has_items(global1), not_(has_items(personal1, personal2))),
+        )
+        voicemails = voicemail_dao.find_all_by(accesstype='personal')
+        assert_that(
+            voicemails,
+            all_of(has_items(personal1, personal2), not_(has_items(global1))),
+        )
+
 
 class TestSearch(DAOTestCase):
     def assert_search_returns_result(self, search_result, **parameters):
@@ -384,6 +400,7 @@ class TestCreate(DAOTestCase):
             delete_messages=True,
             ask_password=False,
             enabled=False,
+            accesstype='personal',
         )
 
         created_voicemail = voicemail_dao.create(voicemail)
@@ -418,6 +435,7 @@ class TestCreate(DAOTestCase):
                     skipcheckpass=True,
                     enabled=False,
                     commented=True,
+                    accesstype='personal',
                 ),
             ),
         )
@@ -442,6 +460,7 @@ class TestEdit(DAOTestCase):
                 delete_messages=True,
                 ask_password=False,
                 enabled=False,
+                accesstype='global',
             )
         )
 
@@ -461,6 +480,7 @@ class TestEdit(DAOTestCase):
         voicemail.delete_messages = False
         voicemail.ask_password = True
         voicemail.enabled = True
+        voicemail.accesstype = 'personal'
 
         row = self.session.query(Voicemail).first()
 
@@ -491,6 +511,7 @@ class TestEdit(DAOTestCase):
                 skipcheckpass=False,
                 enabled=True,
                 commented=False,
+                accesstype='personal',
             ),
         )
 

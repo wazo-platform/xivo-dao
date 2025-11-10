@@ -14,7 +14,7 @@ config = SearchConfig(
         'language': Voicemail.language,
         'timezone': Voicemail.tz,
         'pager': Voicemail.pager,
-        'shared': Voicemail.shared,
+        'accesstype': Voicemail.accesstype,
     },
     search=['name', 'number', 'email', 'pager'],
     default_sort='number',
