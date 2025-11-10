@@ -112,3 +112,7 @@ valid_trunk_protocols = [
 trunk_protocol = Enum(
     *valid_trunk_protocols, name='trunk_protocol', metadata=Base.metadata
 )
+
+voicemail_accesstype = Enum(
+    'personal', 'global', name='voicemail_accesstype', metadata=Base.metadata
+)

@@ -12,6 +12,7 @@ from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
+from . import enum
 from .context import Context
 
 
@@ -22,11 +23,11 @@ class Voicemail(Base):
         UniqueConstraint('mailbox', 'context'),
         Index('voicemail__idx__context', 'context'),
         Index(
-            'voicemail__idx__unique_shared_per_context',
-            'shared',
+            'voicemail__idx__unique_global_per_context',
+            'accesstype',
             'context',
             unique=True,
-            postgresql_where=(text('shared is true')),
+            postgresql_where=(text("accesstype = 'global'")),
         ),
         ForeignKeyConstraint(
             ('context',),
@@ -50,7 +51,9 @@ class Voicemail(Base):
     skipcheckpass = Column(Integer, nullable=False, server_default='0')
     options = Column(ARRAY(String, dimensions=2), nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
-    shared = Column(Boolean, nullable=False, server_default=text('false'))
+    accesstype = Column(
+        enum.voicemail_accesstype, nullable=False, server_default=text("'personal'")
+    )
 
     users = relationship('UserFeatures', back_populates='voicemail')
 
