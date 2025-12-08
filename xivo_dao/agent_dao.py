@@ -80,18 +80,21 @@ def _get_agent(session, whereclause, tenant_uuids=None):
 
 
 def _add_queues_to_agent(session, agent):
-    query = select(
-        [
+    query = (
+        select(
             QueueFeatures.id,
             QueueFeatures.tenant_uuid,
             QueueMember.queue_name,
             QueueMember.penalty,
-        ],
-        and_(
-            QueueMember.usertype == 'agent',
-            QueueMember.userid == agent.id,
-            QueueMember.queue_name == QueueFeatures.name,
-        ),
+        )
+        .select_from(QueueMember)
+        .join(QueueFeatures, QueueMember.queue_name == QueueFeatures.name)
+        .where(
+            and_(
+                QueueMember.usertype == 'agent',
+                QueueMember.userid == agent.id,
+            )
+        )
     )
 
     for row in session.execute(query):
