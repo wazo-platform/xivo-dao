@@ -74,7 +74,7 @@ class SummaryView(View):
             func.nullif(User.email, '').label('email'),
             User.enabled.label('enabled'),
             case(
-                [(Line.endpoint_custom_id.is_(None), Line.provisioning_code)],
+                (Line.endpoint_custom_id.is_(None), Line.provisioning_code),
                 else_=None,
             ).label('provisioning_code'),
             Line.protocol.label('protocol'),

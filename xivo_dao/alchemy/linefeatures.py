@@ -175,13 +175,11 @@ class LineFeatures(Base):
         regex = '"([^"]+)"\\s+'
 
         return sql.case(
-            [
-                (
-                    cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('callerid', regex_filter=regex),
-                ),
-                (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
-            ],
+            (
+                cls.endpoint_sip_uuid.isnot(None),
+                cls._sip_query_option('callerid', regex_filter=regex),
+            ),
+            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
             else_=None,
         )
 
@@ -242,13 +240,11 @@ class LineFeatures(Base):
         regex = '<([0-9A-Z]+)?>'
 
         return sql.case(
-            [
-                (
-                    cls.endpoint_sip_uuid.isnot(None),
-                    cls._sip_query_option('callerid', regex_filter=regex),
-                ),
-                (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
-            ]
+            (
+                cls.endpoint_sip_uuid.isnot(None),
+                cls._sip_query_option('callerid', regex_filter=regex),
+            ),
+            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
         )
 
     @caller_id_num.setter

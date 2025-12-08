@@ -165,8 +165,6 @@ class TrunkFeatures(Base):
             .scalar_subquery()
         )
         return case(
-            [
-                (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
-            ],
+            (cls.endpoint_sip_uuid.isnot(None), endpoint_sip_query),
             else_=None,
         )
