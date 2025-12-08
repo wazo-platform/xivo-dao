@@ -98,7 +98,12 @@ def _add_queues_to_agent(session, agent):
     )
 
     for row in session.execute(query):
-        queue = _Queue(row['id'], row['tenant_uuid'], row['queue_name'], row['penalty'])
+        queue = _Queue(
+            id=row.id,
+            tenant_uuid=row.tenant_uuid,
+            name=row.queue_name,
+            penalty=row.penalty,
+        )
         agent.queues.append(queue)
 
 
