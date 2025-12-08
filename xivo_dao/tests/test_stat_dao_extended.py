@@ -11,6 +11,8 @@ from typing import Any
 
 from hamcrest import assert_that, equal_to
 from pytz import UTC
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -396,18 +398,20 @@ class TestStatDAO(DAOTestCase):
         return q.name, q.id
 
     @classmethod
-    def _create_functions(cls, con):
+    def _create_functions(cls, con: Engine):
         # ## WARNING: These functions should always be the same as the one in baseconfig
         fill_simple_calls_fn = (
             pathlib.Path(__file__)
             .parent.joinpath('helpers/fill_simple_calls.sql')
             .read_text()
         )
-        con.execute(fill_simple_calls_fn)
+        with con.begin() as connection:
+            connection.execute(text(fill_simple_calls_fn))
 
         fill_leaveempty_calls_fn = (
             pathlib.Path(__file__)
             .parent.joinpath('helpers/fill_leaveempty_calls.sql')
             .read_text()
         )
-        con.execute(fill_leaveempty_calls_fn)
+        with con.begin() as connection:
+            connection.execute(text(fill_leaveempty_calls_fn))
