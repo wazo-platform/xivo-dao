@@ -52,7 +52,7 @@ class BlocklistDAOTestCase(DAOTestCase):
 
     def add_blocklist_number(self, **kwargs):
         if blocklist_uuid := kwargs.pop('blocklist_uuid', None):
-            blocklist = self.session.query(Blocklist).get(blocklist_uuid)
+            blocklist = self.session.get(Blocklist, blocklist_uuid)
         else:
             blocklist = self.add_blocklist(
                 numbers=[],

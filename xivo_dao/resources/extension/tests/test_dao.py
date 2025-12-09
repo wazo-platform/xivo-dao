@@ -475,7 +475,7 @@ class TestEdit(TestExtension):
 
         extension_dao.edit(extension)
 
-        row = self.session.query(Extension).get(extension.id)
+        row = self.session.get(Extension, extension.id)
 
         assert_that(row.id, equal_to(extension.id))
         assert_that(row.exten, equal_to(exten))

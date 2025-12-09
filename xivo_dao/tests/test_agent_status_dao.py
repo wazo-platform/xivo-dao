@@ -86,7 +86,7 @@ class TestAgentStatusDao(DAOTestCase):
 
         agent_status_dao.log_off_agent(agent_id)
 
-        agent_status = self.session.query(AgentLoginStatus).get(agent_id)
+        agent_status = self.session.get(AgentLoginStatus, agent_id)
         assert_that(agent_status, none())
 
     def test_get_extension_from_agent_id(self):

@@ -903,7 +903,7 @@ class TestDelete(TestDao):
 
         dao.delete(template)
 
-        result = self.session.query(FuncKeyTemplate).get(template.id)
+        result = self.session.get(FuncKeyTemplate, template.id)
 
         assert_that(result, none())
 
@@ -1306,7 +1306,7 @@ class TestEdit(TestDao):
 
         dao.edit(template)
 
-        template_row = self.session.query(FuncKeyTemplate).get(template.id)
+        template_row = self.session.get(FuncKeyTemplate, template.id)
         assert_that(template_row.name, equal_to('newfoobar'))
 
     def test_given_func_key_modified_when_editing_then_updates_func_key(self):
