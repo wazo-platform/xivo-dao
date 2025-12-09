@@ -1134,6 +1134,7 @@ class DAOTestCase(unittest.TestCase, ItemInserter):
                 session.begin_nested()
 
     def tearDown(self):
+        self.trans.rollback()
         self.session.close()
         self.session.remove()
-        self.trans.rollback()
+        self.connection.close()
