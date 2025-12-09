@@ -107,6 +107,99 @@ class TestLineFeaturesDAO(DAOTestCase):
             'fijsifjsif',
         )
 
+    def test_get_interfaces_from_exten_and_context_sip(self):
+        name = 'abcdef'
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=name, endpoint_sip_uuid=sip.uuid)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        interfaces = line_dao.get_interfaces_from_exten_and_context(
+            EXTEN, self.context.name
+        )
+
+        assert ['PJSIP/abcdef'] == interfaces
+
+    def test_get_interfaces_from_exten_and_context_sccp(self):
+        name = '1001'
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
+        sccp = self.add_sccpline()
+        line = self.add_line(name=name, endpoint_sccp_id=sccp.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        interfaces = line_dao.get_interfaces_from_exten_and_context(
+            EXTEN, self.context.name
+        )
+
+        assert ['SCCP/1001'] == interfaces
+
+    def test_get_interfaces_from_exten_and_context_custom(self):
+        name = 'custom/g1/12345'
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
+        custom = self.add_usercustom()
+        line = self.add_line(name=name, endpoint_custom_id=custom.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        interfaces = line_dao.get_interfaces_from_exten_and_context(
+            EXTEN, self.context.name
+        )
+
+        assert ['custom/g1/12345'] == interfaces
+
+    def test_get_interfaces_from_exten_and_context_multiple_lines(self):
+        main_exten = '1234'
+        main_name = 'iddqd'
+        second_exten = '5555'
+        second_name = 'idbehold'
+        user = self.add_user()
+
+        extension = self.add_extension(exten=main_exten, context=self.context.name)
+        sip = self.add_endpoint_sip()
+        line1 = self.add_line(name=main_name, endpoint_sip_uuid=sip.uuid)
+        self.add_line_extension(line_id=line1.id, extension_id=extension.id)
+        self.add_user_line(user_id=user.id, main_line=True, line_id=line1.id)
+
+        extension2 = self.add_extension(exten=second_exten, context=self.context.name)
+        sip2 = self.add_endpoint_sip()
+        line2 = self.add_line(name=second_name, endpoint_sip_uuid=sip2.uuid)
+        self.add_line_extension(line_id=line2.id, extension_id=extension2.id)
+        self.add_user_line(user_id=user.id, main_line=False, line_id=line2.id)
+
+        interfaces = line_dao.get_interfaces_from_exten_and_context(
+            second_exten, self.context.name
+        )
+
+        assert ['PJSIP/idbehold'] == interfaces
+
+    def test_get_interfaces_from_exten_and_context_multiple_lines_same_exten(self):
+        user = self.add_user()
+        extension = self.add_extension(exten=EXTEN, context=self.context.name)
+
+        sip1 = self.add_endpoint_sip()
+        line1 = self.add_line(endpoint_sip_uuid=sip1.uuid)
+        self.add_line_extension(line_id=line1.id, extension_id=extension.id)
+        self.add_user_line(user_id=user.id, main_line=True, line_id=line1.id)
+
+        sip2 = self.add_endpoint_sip()
+        line2 = self.add_line(endpoint_sip_uuid=sip2.uuid)
+        self.add_line_extension(line_id=line2.id, extension_id=extension.id)
+        self.add_user_line(user_id=user.id, main_line=False, line_id=line2.id)
+
+        interfaces = line_dao.get_interfaces_from_exten_and_context(
+            EXTEN, self.context.name
+        )
+
+        expected = [f'PJSIP/{line1.name}', f'PJSIP/{line2.name}']
+        assert expected == interfaces
+
+    def test_get_interfaces_no_matching_exten(self):
+        self.assertRaises(
+            LookupError,
+            line_dao.get_interfaces_from_exten_and_context,
+            '555',
+            'fijsifjsif',
+        )
+
     def test_get_interface_from_line_id(self):
         line_name = 'sdofiuwoe'
         sip = self.add_endpoint_sip()
