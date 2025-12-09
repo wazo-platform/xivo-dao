@@ -426,7 +426,7 @@ def user_hints(session):
 @daosession
 def user_shared_hints(session):
     query = session.query(UserFeatures).options(
-        joinedload('user_lines').joinedload('line')
+        joinedload(UserFeatures.user_lines).joinedload(UserLine.line)
     )
     hints = []
     for user in query.all():

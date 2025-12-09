@@ -7,8 +7,10 @@ from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.persistor import BasePersistor
@@ -32,14 +34,20 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
     def _search_query(self):
         return (
             self.session.query(Line)
-            .options(joinedload('context_rel'))
-            .options(joinedload('endpoint_sccp'))
-            .options(joinedload('endpoint_sip'))
-            .options(joinedload('endpoint_sip').joinedload('_auth_section'))
-            .options(joinedload('endpoint_sip').joinedload('_endpoint_section'))
-            .options(joinedload('endpoint_custom'))
-            .options(joinedload('line_extensions').joinedload('extension'))
-            .options(joinedload('user_lines').joinedload('user'))
+            .options(joinedload(Line.context_rel))
+            .options(joinedload(Line.endpoint_sccp))
+            .options(joinedload(Line.endpoint_sip))
+            .options(
+                joinedload(Line.endpoint_sip).joinedload(EndpointSIP._auth_section)
+            )
+            .options(
+                joinedload(Line.endpoint_sip).joinedload(EndpointSIP._endpoint_section)
+            )
+            .options(joinedload(Line.endpoint_custom))
+            .options(
+                joinedload(Line.line_extensions).joinedload(LineExtension.extension)
+            )
+            .options(joinedload(Line.user_lines).joinedload(UserLine.user))
         )
 
     def get(self, line_id):
@@ -54,8 +62,8 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
     def query(self):
         query = (
             self.session.query(Line)
-            .options(joinedload('endpoint_sccp'))
-            .options(joinedload('endpoint_sip'))
+            .options(joinedload(Line.endpoint_sccp))
+            .options(joinedload(Line.endpoint_sip))
         )
         query = self._filter_tenant_uuid(query)
         return query

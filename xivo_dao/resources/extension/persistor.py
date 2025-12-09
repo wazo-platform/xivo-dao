@@ -4,7 +4,9 @@
 from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
+from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.helpers.persistor import BasePersistor
 from xivo_dao.resources.extension.search import extension_search
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
@@ -27,14 +29,16 @@ class ExtensionPersistor(CriteriaBuilderMixin, BasePersistor):
     def _search_query(self):
         return (
             self.session.query(Extension)
-            .options(joinedload('conference'))
-            .options(joinedload('dialpattern').joinedload('outcall'))
-            .options(joinedload('group'))
-            .options(joinedload('context_rel'))
-            .options(joinedload('queue'))
-            .options(joinedload('incall'))
-            .options(joinedload('line_extensions').joinedload('line'))
-            .options(joinedload('parking_lot'))
+            .options(joinedload(Extension.conference))
+            .options(joinedload(Extension.dialpattern).joinedload(DialPattern.outcall))
+            .options(joinedload(Extension.group))
+            .options(joinedload(Extension.context_rel))
+            .options(joinedload(Extension.queue))
+            .options(joinedload(Extension.incall))
+            .options(
+                joinedload(Extension.line_extensions).joinedload(LineExtension.line)
+            )
+            .options(joinedload(Extension.parking_lot))
         )
 
     def create(self, extension):

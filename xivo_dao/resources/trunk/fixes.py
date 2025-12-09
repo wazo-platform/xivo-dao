@@ -24,9 +24,11 @@ class TrunkFixes:
             .outerjoin(TrunkFeatures.endpoint_iax)
             .outerjoin(TrunkFeatures.endpoint_custom)
             .options(
-                Load(TrunkFeatures).load_only("id", "context"),
-                Load(UserIAX).load_only("id", "category", "context"),
-                Load(UserCustom).load_only("id", "category", "context"),
+                Load(TrunkFeatures).load_only(TrunkFeatures.id, TrunkFeatures.context),
+                Load(UserIAX).load_only(UserIAX.id, UserIAX.category, UserIAX.context),
+                Load(UserCustom).load_only(
+                    UserCustom.id, UserCustom.category, UserCustom.context
+                ),
             )
             .filter(TrunkFeatures.id == trunk_id)
         )

@@ -16,6 +16,7 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.features import Features
@@ -846,35 +847,45 @@ def find_sip_meeting_guests_settings(session):
             Meeting,
         )
         .options(
-            joinedload('guest_endpoint_sip')
-            .joinedload('template_relations')
-            .joinedload('parent'),
+            joinedload(Meeting.guest_endpoint_sip)
+            .joinedload(EndpointSIP.template_relations)
+            .joinedload(EndpointSIPTemplate.parent),
         )
         .options(
-            joinedload('guest_endpoint_sip').joinedload('_aor_section'),
+            joinedload(Meeting.guest_endpoint_sip).joinedload(EndpointSIP._aor_section),
         )
         .options(
-            joinedload('guest_endpoint_sip').joinedload('_auth_section'),
-        )
-        .options(
-            joinedload('guest_endpoint_sip').joinedload('_endpoint_section'),
-        )
-        .options(
-            joinedload('guest_endpoint_sip').joinedload('_registration_section'),
-        )
-        .options(
-            joinedload('guest_endpoint_sip').joinedload(
-                '_registration_outbound_auth_section'
+            joinedload(Meeting.guest_endpoint_sip).joinedload(
+                EndpointSIP._auth_section
             ),
         )
         .options(
-            joinedload('guest_endpoint_sip').joinedload('_identify_section'),
+            joinedload(Meeting.guest_endpoint_sip).joinedload(
+                EndpointSIP._endpoint_section
+            ),
         )
         .options(
-            joinedload('guest_endpoint_sip').joinedload('_outbound_auth_section'),
+            joinedload(Meeting.guest_endpoint_sip).joinedload(
+                EndpointSIP._registration_section
+            ),
         )
         .options(
-            joinedload('guest_endpoint_sip').joinedload('transport'),
+            joinedload(Meeting.guest_endpoint_sip).joinedload(
+                EndpointSIP._registration_outbound_auth_section
+            ),
+        )
+        .options(
+            joinedload(Meeting.guest_endpoint_sip).joinedload(
+                EndpointSIP._identify_section
+            ),
+        )
+        .options(
+            joinedload(Meeting.guest_endpoint_sip).joinedload(
+                EndpointSIP._outbound_auth_section
+            ),
+        )
+        .options(
+            joinedload(Meeting.guest_endpoint_sip).joinedload(EndpointSIP.transport),
         )
         .filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
     )
@@ -893,41 +904,53 @@ def find_sip_user_settings(session):
             LineFeatures,
         )
         .options(
-            joinedload('endpoint_sip')
-            .joinedload('template_relations')
-            .joinedload('parent'),
+            joinedload(LineFeatures.endpoint_sip)
+            .joinedload(EndpointSIP.template_relations)
+            .joinedload(EndpointSIPTemplate.parent),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_aor_section'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(EndpointSIP._aor_section),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_auth_section'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(EndpointSIP._auth_section),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_endpoint_section'),
-        )
-        .options(
-            joinedload('endpoint_sip').joinedload('_registration_section'),
-        )
-        .options(
-            joinedload('endpoint_sip').joinedload(
-                '_registration_outbound_auth_section'
+            joinedload(LineFeatures.endpoint_sip).joinedload(
+                EndpointSIP._endpoint_section
             ),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_identify_section'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(
+                EndpointSIP._registration_section
+            ),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(
+                EndpointSIP._registration_outbound_auth_section
+            ),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('transport'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(
+                EndpointSIP._identify_section
+            ),
         )
         .options(
-            joinedload('user_lines').joinedload('user').joinedload('voicemail'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(
+                EndpointSIP._outbound_auth_section
+            ),
         )
         .options(
-            joinedload('line_extensions').joinedload('extension'),
+            joinedload(LineFeatures.endpoint_sip).joinedload(EndpointSIP.transport),
+        )
+        .options(
+            joinedload(LineFeatures.user_lines)
+            .joinedload(UserLine.user)
+            .joinedload(UserFeatures.voicemail),
+        )
+        .options(
+            joinedload(LineFeatures.line_extensions).joinedload(
+                LineExtension.extension
+            ),
         )
         .filter(
             LineFeatures.endpoint_sip_uuid.isnot(None),
@@ -951,35 +974,45 @@ def find_sip_trunk_settings(session):
             TrunkFeatures,
         )
         .options(
-            joinedload('endpoint_sip')
-            .joinedload('template_relations')
-            .joinedload('parent'),
+            joinedload(TrunkFeatures.endpoint_sip)
+            .joinedload(EndpointSIP.template_relations)
+            .joinedload(EndpointSIPTemplate.parent),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_aor_section'),
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(EndpointSIP._aor_section),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_auth_section'),
-        )
-        .options(
-            joinedload('endpoint_sip').joinedload('_endpoint_section'),
-        )
-        .options(
-            joinedload('endpoint_sip').joinedload('_registration_section'),
-        )
-        .options(
-            joinedload('endpoint_sip').joinedload(
-                '_registration_outbound_auth_section'
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(
+                EndpointSIP._auth_section
             ),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_identify_section'),
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(
+                EndpointSIP._endpoint_section
+            ),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(
+                EndpointSIP._registration_section
+            ),
         )
         .options(
-            joinedload('endpoint_sip').joinedload('transport'),
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(
+                EndpointSIP._registration_outbound_auth_section
+            ),
+        )
+        .options(
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(
+                EndpointSIP._identify_section
+            ),
+        )
+        .options(
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(
+                EndpointSIP._outbound_auth_section
+            ),
+        )
+        .options(
+            joinedload(TrunkFeatures.endpoint_sip).joinedload(EndpointSIP.transport),
         )
         .filter(
             TrunkFeatures.endpoint_sip_uuid.isnot(None),
@@ -1183,8 +1216,8 @@ def find_queue_general_settings(session):
 def find_queue_settings(session):
     rows = (
         session.query(Queue)
-        .options(joinedload('groupfeatures'))
-        .options(joinedload('queuefeatures'))
+        .options(joinedload(Queue.groupfeatures))
+        .options(joinedload(Queue.queuefeatures))
         .filter(Queue.commented == 0)
         .all()
     )

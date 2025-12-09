@@ -1,4 +1,4 @@
-# Copyright 2015-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -54,17 +54,31 @@ class LineFixes:
             .outerjoin(LineFeatures.line_extensions)
             .outerjoin(LineExtension.main_extension_rel)
             .options(
-                Load(LineFeatures).load_only("id", "name", "number", "context"),
-                Load(EndpointSIP).load_only("uuid", "name"),
+                Load(LineFeatures).load_only(
+                    LineFeatures.id,
+                    LineFeatures.name,
+                    LineFeatures.number,
+                    LineFeatures.context,
+                ),
+                Load(EndpointSIP).load_only(EndpointSIP.uuid, EndpointSIP.name),
                 Load(SCCPLine).load_only(
-                    "id", "name", "context", "cid_name", "cid_num"
+                    SCCPLine.id,
+                    SCCPLine.name,
+                    SCCPLine.context,
+                    SCCPLine.cid_name,
+                    SCCPLine.cid_num,
                 ),
-                Load(SCCPDevice).load_only("id", "line"),
+                Load(SCCPDevice).load_only(SCCPDevice.id, SCCPDevice.line),
                 Load(UserFeatures).load_only(
-                    "id", "firstname", "webi_lastname", "callerid"
+                    UserFeatures.id,
+                    UserFeatures.firstname,
+                    UserFeatures.webi_lastname,
+                    UserFeatures.callerid,
                 ),
-                Load(UserCustom).load_only("id", "context"),
-                Load(Extension).load_only("id", "exten", "context"),
+                Load(UserCustom).load_only(UserCustom.id, UserCustom.context),
+                Load(Extension).load_only(
+                    Extension.id, Extension.exten, Extension.context
+                ),
             )
             .filter(LineFeatures.id == line_id)
         )
