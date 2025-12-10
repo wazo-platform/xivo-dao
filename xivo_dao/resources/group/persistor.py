@@ -3,7 +3,11 @@
 
 from sqlalchemy.orm import joinedload
 
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import Session
 from xivo_dao.helpers.persistor import BasePersistor
@@ -34,14 +38,18 @@ class GroupPersistor(CriteriaBuilderMixin, BasePersistor):
     def _search_query(self):
         return (
             self.session.query(Group)
-            .options(joinedload('caller_id'))
-            .options(joinedload('extensions'))
-            .options(joinedload('incall_dialactions').joinedload('incall'))
-            .options(joinedload('group_dialactions'))
-            .options(joinedload('user_queue_members').joinedload('user'))
-            .options(joinedload('_queue'))
-            .options(joinedload('schedule_paths').joinedload('schedule'))
-            .options(joinedload('rightcall_members').joinedload('rightcall'))
+            .options(joinedload(Group.caller_id))
+            .options(joinedload(Group.extensions))
+            .options(joinedload(Group.incall_dialactions).joinedload(Dialaction.incall))
+            .options(joinedload(Group.group_dialactions))
+            .options(joinedload(Group.user_queue_members).joinedload(QueueMember.user))
+            .options(joinedload(Group._queue))
+            .options(joinedload(Group.schedule_paths).joinedload(SchedulePath.schedule))
+            .options(
+                joinedload(Group.rightcall_members).joinedload(
+                    RightCallMember.rightcall
+                )
+            )
         )
 
     def delete(self, group):

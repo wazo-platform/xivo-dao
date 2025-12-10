@@ -179,7 +179,7 @@ class TestWaitTimeDestination(DAOTestCase):
         self.session.expire_all()
         assert_that(queue.wait_time_destination, equal_to(None))
 
-        result = self.session.query(Dialaction).get(('qwaittime', 'queue', queue.id))
+        result = self.session.get(Dialaction, ('qwaittime', 'queue', queue.id))
         assert_that(result, equal_to(None))
 
 
@@ -214,7 +214,7 @@ class TestWaitRatioDestination(DAOTestCase):
         self.session.expire_all()
         assert_that(queue.wait_ratio_destination, equal_to(None))
 
-        result = self.session.query(Dialaction).get(('qwaitratio', 'queue', queue.id))
+        result = self.session.get(Dialaction, ('qwaitratio', 'queue', queue.id))
         assert_that(result, equal_to(None))
 
 

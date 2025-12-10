@@ -248,7 +248,7 @@ class TestEdit(TestExtension):
 
         feature_extension_dao.edit(extension)
 
-        row = self.session.query(FeatureExtension).get(extension.uuid)
+        row = self.session.get(FeatureExtension, extension.uuid)
 
         assert_that(row.uuid, equal_to(extension.uuid))
         assert_that(row.exten, equal_to(exten))

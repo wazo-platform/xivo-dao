@@ -13,7 +13,7 @@ from hamcrest import (
     equal_to,
     has_properties,
 )
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 from xivo_dao import stat_call_on_queue_dao, stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -281,7 +281,7 @@ class TestFillSimpleCall(DAOTestCase):
             .parent.joinpath('helpers/fill_simple_calls.sql')
             .read_text()
         )
-        self.session.execute(fill_simple_calls_fn)
+        self.session.execute(text(fill_simple_calls_fn))
 
 
 class TestFillLeaveEmptyCall(DAOTestCase):
@@ -358,7 +358,7 @@ class TestFillLeaveEmptyCall(DAOTestCase):
             .parent.joinpath('helpers/fill_leaveempty_calls.sql')
             .read_text()
         )
-        self.session.execute(fill_leaveempty_calls_fn)
+        self.session.execute(text(fill_leaveempty_calls_fn))
 
 
 class TestStatDAO(DAOTestCase):

@@ -52,7 +52,7 @@ class BlocklistNumber(Base):
         from .blocklist_user import BlocklistUser
 
         query = (
-            select([BlocklistUser.user_uuid])
+            select(BlocklistUser.user_uuid)
             .where(BlocklistUser.blocklist_uuid == cls.blocklist_uuid)
             .label('user_uuid')
         )

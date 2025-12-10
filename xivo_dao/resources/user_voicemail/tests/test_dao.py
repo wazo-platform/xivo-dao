@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -43,7 +43,7 @@ class TestAssociateUserVoicemail(TestUserVoicemail):
         )
 
     def assert_user_was_associated_with_voicemail(self, user_id, voicemail_id, enabled):
-        result_user_row = self.session.query(UserFeatures).get(user_id)
+        result_user_row = self.session.get(UserFeatures, user_id)
 
         assert_that(result_user_row.voicemailid, equal_to(voicemail_id))
         assert_that(result_user_row.enablevoicemail, equal_to(int(enabled)))
@@ -175,7 +175,7 @@ class TestDissociateUserVoicemail(TestUserVoicemail):
 
         user_voicemail_dao.dissociate(user_row, voicemail_row)
 
-        result = self.session.query(UserFeatures).get(user_row.id)
+        result = self.session.get(UserFeatures, user_row.id)
         assert_that(result.voicemailid, none())
         assert_that(result.enablevoicemail, equal_to(0))
 
@@ -187,6 +187,6 @@ class TestDissociateUserVoicemail(TestUserVoicemail):
 
         user_voicemail_dao.dissociate(user, voicemail2)
 
-        result = self.session.query(UserFeatures).get(user.id)
+        result = self.session.get(UserFeatures, user.id)
         assert_that(result.voicemailid, voicemail1.uniqueid)
         assert_that(result.enablevoicemail, equal_to(1))

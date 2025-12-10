@@ -296,20 +296,18 @@ user_arguments_query = user_arguments_bakery(
         UserFeatures.id.label('user_id'),
         sql.func.string_agg(
             sql.case(
-                [
-                    (
-                        LineFeatures.endpoint_sip_uuid.isnot(None),
-                        literal_column("'PJSIP/'") + EndpointSIP.name,
-                    ),
-                    (
-                        LineFeatures.endpoint_sccp_id.isnot(None),
-                        literal_column("'SCCP/'") + SCCPLine.name,
-                    ),
-                    (
-                        LineFeatures.endpoint_custom_id.isnot(None),
-                        UserCustom.interface,
-                    ),
-                ]
+                (
+                    LineFeatures.endpoint_sip_uuid.isnot(None),
+                    literal_column("'PJSIP/'") + EndpointSIP.name,
+                ),
+                (
+                    LineFeatures.endpoint_sccp_id.isnot(None),
+                    literal_column("'SCCP/'") + SCCPLine.name,
+                ),
+                (
+                    LineFeatures.endpoint_custom_id.isnot(None),
+                    UserCustom.interface,
+                ),
             ),
             literal_column("'&'"),
         ).label('argument'),
@@ -428,7 +426,7 @@ def user_hints(session):
 @daosession
 def user_shared_hints(session):
     query = session.query(UserFeatures).options(
-        joinedload('user_lines').joinedload('line')
+        joinedload(UserFeatures.user_lines).joinedload(UserLine.line)
     )
     hints = []
     for user in query.all():

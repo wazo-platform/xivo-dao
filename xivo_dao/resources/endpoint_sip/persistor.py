@@ -3,7 +3,7 @@
 
 from sqlalchemy.orm import joinedload, selectinload
 
-from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.endpoint_sip_section import AuthSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.helpers import errors, generators
@@ -35,17 +35,21 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
             )
 
         query = (
-            query.options(selectinload('transport'))
-            .options(selectinload('template_relations').selectinload('parent'))
-            .options(selectinload('_aor_section'))
-            .options(selectinload('_auth_section'))
-            .options(selectinload('_endpoint_section'))
-            .options(selectinload('_registration_section'))
-            .options(selectinload('_registration_outbound_auth_section'))
-            .options(selectinload('_identify_section'))
-            .options(selectinload('_outbound_auth_section'))
-            .options(selectinload('line'))
-            .options(selectinload('trunk'))
+            query.options(selectinload(EndpointSIP.transport))
+            .options(
+                selectinload(EndpointSIP.template_relations).selectinload(
+                    EndpointSIPTemplate.parent
+                )
+            )
+            .options(selectinload(EndpointSIP._aor_section))
+            .options(selectinload(EndpointSIP._auth_section))
+            .options(selectinload(EndpointSIP._endpoint_section))
+            .options(selectinload(EndpointSIP._registration_section))
+            .options(selectinload(EndpointSIP._registration_outbound_auth_section))
+            .options(selectinload(EndpointSIP._identify_section))
+            .options(selectinload(EndpointSIP._outbound_auth_section))
+            .options(selectinload(EndpointSIP.line))
+            .options(selectinload(EndpointSIP.trunk))
         )
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
@@ -63,17 +67,21 @@ class SipPersistor(CriteriaBuilderMixin, BasePersistor):
     def _search_query(self):
         return (
             self.session.query(self.search_system.config.table)
-            .options(joinedload('transport'))
-            .options(joinedload('template_relations').joinedload('parent'))
-            .options(joinedload('_aor_section'))
-            .options(joinedload('_auth_section'))
-            .options(joinedload('_endpoint_section'))
-            .options(joinedload('_registration_section'))
-            .options(joinedload('_registration_outbound_auth_section'))
-            .options(joinedload('_identify_section'))
-            .options(joinedload('_outbound_auth_section'))
-            .options(joinedload('line'))
-            .options(joinedload('trunk'))
+            .options(joinedload(EndpointSIP.transport))
+            .options(
+                joinedload(EndpointSIP.template_relations).joinedload(
+                    EndpointSIPTemplate.parent
+                )
+            )
+            .options(joinedload(EndpointSIP._aor_section))
+            .options(joinedload(EndpointSIP._auth_section))
+            .options(joinedload(EndpointSIP._endpoint_section))
+            .options(joinedload(EndpointSIP._registration_section))
+            .options(joinedload(EndpointSIP._registration_outbound_auth_section))
+            .options(joinedload(EndpointSIP._identify_section))
+            .options(joinedload(EndpointSIP._outbound_auth_section))
+            .options(joinedload(EndpointSIP.line))
+            .options(joinedload(EndpointSIP.trunk))
         )
 
     def create(self, sip):

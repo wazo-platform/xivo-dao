@@ -3,47 +3,73 @@
 
 from sqlalchemy.orm import joinedload, lazyload, selectinload
 
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.pickup import Pickup
+from xivo_dao.alchemy.pickupmember import PickupMember
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.userfeatures import UserFeatures
+
 user_unpaginated_strategy = (
-    joinedload('agent'),
-    joinedload('rightcall_members').selectinload('rightcall'),
-    joinedload('group_members')
-    .selectinload('group')
-    .selectinload('call_pickup_interceptor_pickups')
+    joinedload(UserFeatures.agent),
+    joinedload(UserFeatures.rightcall_members).selectinload(RightCallMember.rightcall),
+    joinedload(UserFeatures.group_members)
+    .selectinload(QueueMember.group)
+    .selectinload(GroupFeatures.call_pickup_interceptor_pickups)
     .options(
-        selectinload('pickupmember_user_targets').selectinload('user'),
-        selectinload('pickupmember_group_targets')
-        .selectinload('group')
-        .selectinload('user_queue_members')
-        .selectinload('user'),
+        selectinload(Pickup.pickupmember_user_targets).selectinload(PickupMember.user),
+        selectinload(Pickup.pickupmember_group_targets)
+        .selectinload(PickupMember.group)
+        .selectinload(GroupFeatures.user_queue_members)
+        .selectinload(QueueMember.user),
     ),
-    joinedload('call_pickup_interceptor_pickups').options(
-        selectinload('pickupmember_user_targets').selectinload('user'),
-        selectinload('pickupmember_group_targets')
-        .selectinload('group')
-        .selectinload('user_queue_members')
-        .selectinload('user'),
+    joinedload(UserFeatures.call_pickup_interceptor_pickups).options(
+        selectinload(Pickup.pickupmember_user_targets).selectinload(PickupMember.user),
+        selectinload(Pickup.pickupmember_group_targets)
+        .selectinload(PickupMember.group)
+        .selectinload(GroupFeatures.user_queue_members)
+        .selectinload(QueueMember.user),
     ),
-    joinedload('user_dialactions').selectinload('user'),
-    joinedload('incall_dialactions').selectinload('incall').selectinload('extensions'),
-    joinedload('user_lines').options(
-        selectinload('line').options(
-            selectinload('application'),
-            selectinload('context_rel'),
-            selectinload('endpoint_sip').options(
-                selectinload('_endpoint_section').selectinload('_options'),
-                selectinload('_auth_section').selectinload('_options'),
+    joinedload(UserFeatures.user_dialactions).selectinload(Dialaction.user),
+    joinedload(UserFeatures.incall_dialactions)
+    .selectinload(Dialaction.incall)
+    .selectinload(Incall.extensions),
+    joinedload(UserFeatures.user_lines).options(
+        selectinload(UserLine.line).options(
+            selectinload(LineFeatures.application),
+            selectinload(LineFeatures.context_rel),
+            selectinload(LineFeatures.endpoint_sip).options(
+                selectinload(EndpointSIP._endpoint_section).selectinload(
+                    EndpointSIPSection._options
+                ),
+                selectinload(EndpointSIP._auth_section).selectinload(
+                    EndpointSIPSection._options
+                ),
             ),
-            selectinload('endpoint_sccp'),
-            selectinload('endpoint_custom'),
-            selectinload('line_extensions').selectinload('extension'),
-            selectinload('user_lines').selectinload('user'),
+            selectinload(LineFeatures.endpoint_sccp),
+            selectinload(LineFeatures.endpoint_custom),
+            selectinload(LineFeatures.line_extensions).selectinload(
+                LineExtension.extension
+            ),
+            selectinload(LineFeatures.user_lines).selectinload(UserLine.user),
         ),
     ),
-    joinedload('queue_members'),
-    joinedload('schedule_paths').selectinload('schedule'),
-    joinedload('switchboard_member_users').selectinload('switchboard'),
-    joinedload('tenant'),
-    joinedload('voicemail'),
+    joinedload(UserFeatures.queue_members),
+    joinedload(UserFeatures.schedule_paths).selectinload(SchedulePath.schedule),
+    joinedload(UserFeatures.switchboard_member_users).selectinload(
+        SwitchboardMemberUser.switchboard
+    ),
+    joinedload(UserFeatures.tenant),
+    joinedload(UserFeatures.voicemail),
     lazyload('*'),
 )
 

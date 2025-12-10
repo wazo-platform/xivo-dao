@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures as Queue
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import Session
 from xivo_dao.helpers.persistor import BasePersistor
@@ -38,11 +39,11 @@ class QueuePersistor(CriteriaBuilderMixin, BasePersistor):
     def _joinedload_query(self):
         return (
             self.session.query(Queue)
-            .options(joinedload('_queue'))
-            .options(joinedload('extensions'))
-            .options(joinedload('caller_id'))
-            .options(joinedload('queue_dialactions'))
-            .options(joinedload('schedule_paths').joinedload('schedule'))
+            .options(joinedload(Queue._queue))
+            .options(joinedload(Queue.extensions))
+            .options(joinedload(Queue.caller_id))
+            .options(joinedload(Queue.queue_dialactions))
+            .options(joinedload(Queue.schedule_paths).joinedload(SchedulePath.schedule))
         )
 
     def delete(self, queue):

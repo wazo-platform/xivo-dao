@@ -199,7 +199,7 @@ class TestEdit(DAOTestCase):
 
         line_dao.edit(line)
 
-        edited_line = self.session.query(Line).get(line_row.id)
+        edited_line = self.session.get(Line, line_row.id)
         assert_that(
             edited_line,
             has_properties(
@@ -221,7 +221,7 @@ class TestEdit(DAOTestCase):
 
         line_dao.edit(line)
 
-        edited_line = self.session.query(Line).get(line_row.id)
+        edited_line = self.session.get(Line, line_row.id)
         assert_that(
             edited_line,
             has_properties(
@@ -263,7 +263,7 @@ class TestEdit(DAOTestCase):
 
         line_dao.edit(line)
 
-        edited_endpoint = self.session.query(EndpointSIP).get(endpoint_sip_row.uuid)
+        edited_endpoint = self.session.get(EndpointSIP, endpoint_sip_row.uuid)
         assert_that(edited_endpoint.caller_id, equal_to('"Rôger Rabbit" <2000>'))
 
     def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(
@@ -287,7 +287,7 @@ class TestEdit(DAOTestCase):
 
         line_dao.edit(line)
 
-        edited_sccpline = self.session.query(SCCPLine).get(sccpline_row.id)
+        edited_sccpline = self.session.get(SCCPLine, sccpline_row.id)
         assert_that(edited_sccpline.cid_name, equal_to("Rôger Rabbit"))
 
     def test_given_line_has_sccp_endpoint_when_setting_caller_id_to_null_then_raises_error(
@@ -317,7 +317,7 @@ class TestEdit(DAOTestCase):
         line_dao.associate_endpoint_sip(line, endpoint_sip_row)
         line_dao.edit(line)
 
-        edited_linefeatures = self.session.query(Line).get(line_row.id)
+        edited_linefeatures = self.session.get(Line, line_row.id)
         assert_that(edited_linefeatures.name, equal_to(endpoint_sip_row.name))
 
     def test_linefeatures_name_updated_after_sccp_endpoint_association(self):
@@ -328,7 +328,7 @@ class TestEdit(DAOTestCase):
         line_dao.associate_endpoint_sccp(line, sccpline_row)
         line_dao.edit(line)
 
-        edited_linefeatures = self.session.query(Line).get(line_row.id)
+        edited_linefeatures = self.session.get(Line, line_row.id)
         assert_that(edited_linefeatures.name, equal_to(sccpline_row.name))
 
     def test_linefeatures_name_updated_after_custom_endpoint_association(self):
@@ -339,7 +339,7 @@ class TestEdit(DAOTestCase):
         line_dao.associate_endpoint_custom(line, usercustom_row)
         line_dao.edit(line)
 
-        edited_linefeatures = self.session.query(Line).get(line_row.id)
+        edited_linefeatures = self.session.get(Line, line_row.id)
         assert_that(edited_linefeatures.name, equal_to(usercustom_row.interface))
 
 
@@ -418,7 +418,7 @@ class TestDelete(DAOTestCase):
 
         line_dao.delete(line_row)
 
-        deleted_line = self.session.query(Line).get(line_row.id)
+        deleted_line = self.session.get(Line, line_row.id)
         assert_that(deleted_line, none())
 
     def test_given_line_has_sip_endpoint_when_deleting_then_sip_endpoint_deleted(self):
@@ -427,7 +427,7 @@ class TestDelete(DAOTestCase):
 
         line_dao.delete(line_row)
 
-        deleted_endpoint_sip = self.session.query(EndpointSIP).get(endpoint_sip.uuid)
+        deleted_endpoint_sip = self.session.get(EndpointSIP, endpoint_sip.uuid)
         assert_that(deleted_endpoint_sip, none())
 
     def test_given_line_has_sccp_endpoint_when_deleting_then_sccp_endpoint_deleted(
@@ -438,7 +438,7 @@ class TestDelete(DAOTestCase):
 
         line_dao.delete(line_row)
 
-        deleted_sccp = self.session.query(SCCPLine).get(sccpline_row.id)
+        deleted_sccp = self.session.get(SCCPLine, sccpline_row.id)
         assert_that(deleted_sccp, none())
 
     def test_given_line_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(
@@ -449,7 +449,7 @@ class TestDelete(DAOTestCase):
 
         line_dao.delete(line_row)
 
-        deleted_custom = self.session.query(UserCustom).get(custom_row.id)
+        deleted_custom = self.session.get(UserCustom, custom_row.id)
         assert_that(deleted_custom, none())
 
 
