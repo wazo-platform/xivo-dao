@@ -1,6 +1,8 @@
 # Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections import namedtuple
+
 from hamcrest import assert_that, contains_exactly, empty, has_properties, none
 from sqlalchemy import and_
 
@@ -767,6 +769,78 @@ class TestAgentStatusDao(DAOTestCase):
             agent.id
         )
         assert_that(agent_login_status, none())
+
+    def test_agent_subscribe_to_queue(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+
+        QueueSubscription = namedtuple('QueueSubscription', ('id', 'name', 'penalty'))
+
+        def assert_queue_logged_status(agent_id, logged: bool):
+            status = agent_status_dao.get_status(agent_id)
+            print(status)
+            assert_that(
+                status,
+                has_properties(
+                    agent_id=agent.id,
+                    agent_number=agent.number,
+                    extension=agent_login_status.extension,
+                    interface=agent_login_status.interface,
+                    state_interface=agent_login_status.state_interface,
+                    queues=contains_exactly(
+                        has_properties(
+                            id=queue.id,
+                            name=queue.name,
+                            penalty=64 if logged else 0,
+                            logged=logged,
+                        ),
+                    ),
+                ),
+            )
+
+        assert_queue_logged_status(agent.id, False)
+
+        subscriptions = [QueueSubscription(queue.id, queue.name, 64)]
+        agent_status_dao.add_agent_to_queues(agent.id, subscriptions)
+
+        assert_queue_logged_status(agent.id, True)
+
+    def test_agent_unsubscribe_from_queue(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+        self._insert_agent_membership(agent.id, queue.id, queue.name, 64)
+
+        def assert_queue_logged_status(agent_id, logged: bool):
+            status = agent_status_dao.get_status(agent_id)
+
+            assert_that(
+                status,
+                has_properties(
+                    agent_id=agent.id,
+                    agent_number=agent.number,
+                    extension=agent_login_status.extension,
+                    interface=agent_login_status.interface,
+                    state_interface=agent_login_status.state_interface,
+                    queues=contains_exactly(
+                        has_properties(
+                            id=queue.id,
+                            name=queue.name,
+                            penalty=64 if logged else 0,
+                            logged=logged,
+                        ),
+                    ),
+                ),
+            )
+
+        assert_queue_logged_status(agent.id, True)
+
+        agent_status_dao.remove_agent_from_queues(agent.id, [queue.id])
+
+        assert_queue_logged_status(agent.id, False)
 
     def _insert_agent_login_status(
         self,
