@@ -6,7 +6,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import NamedTuple
 
-from sqlalchemy import text
+from sqlalchemy import and_, text
+from sqlalchemy.sql import func, select
 
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -157,25 +158,45 @@ def get_agent_id_from_extension(session, extension, context):
 
 
 def _get_statuses(session, tenant_uuids=None, **kwargs):
+    available_queues = (
+        select(
+            QueueMember.userid.label('agent_id'),
+            QueueFeatures.id.label('queue_id'),
+            func.coalesce(AgentMembershipStatus.penalty, 0).label('queue_penalty'),
+            QueueFeatures.name.label('queue_name'),
+            QueueFeatures.displayname.label('queue_displayname'),
+            AgentMembershipStatus.queue_id.is_not(None).label('queue_active'),
+        )
+        .join(
+            QueueMember,
+            and_(
+                QueueMember.usertype == 'agent',
+                QueueMember.queue_name == QueueFeatures.name,
+            ),
+        )
+        .outerjoin(
+            AgentMembershipStatus,
+            and_(
+                AgentMembershipStatus.queue_id == QueueFeatures.id,
+                AgentMembershipStatus.agent_id == QueueMember.userid,
+            ),
+        )
+        .subquery()
+    )
+
     query = (
         session.query(
             AgentFeatures.id.label('agent_id'),
             AgentFeatures.tenant_uuid,
             AgentFeatures.number,
-            AgentMembershipStatus.queue_id,
-            AgentMembershipStatus.penalty,
-            QueueFeatures.name.label('name'),
-            QueueFeatures.displayname.label('displayname'),
+            available_queues.c.queue_id,
+            available_queues.c.queue_penalty,
+            available_queues.c.queue_name,
+            available_queues.c.queue_displayname,
+            available_queues.c.queue_active,
             AgentLoginStatus,
         )
-        .outerjoin(
-            AgentMembershipStatus,
-            AgentMembershipStatus.agent_id == AgentFeatures.id,
-        )
-        .outerjoin(
-            QueueFeatures,
-            QueueFeatures.id == AgentMembershipStatus.queue_id,
-        )
+        .outerjoin(available_queues, available_queues.c.agent_id == AgentFeatures.id)
         .outerjoin(
             AgentLoginStatus,
             AgentLoginStatus.agent_id == AgentFeatures.id,
@@ -190,7 +211,7 @@ def _get_statuses(session, tenant_uuids=None, **kwargs):
         query = query.join(UserFeatures, AgentFeatures.id == UserFeatures.agentid)
         query = query.filter(UserFeatures.uuid == user_uuid)
     if queue_id := kwargs.get('queue_id'):
-        query = query.filter(AgentMembershipStatus.queue_id == queue_id)
+        query = query.filter(available_queues.c.queue_id == queue_id)
     if tenant_uuids is not None:
         if not tenant_uuids:
             query = query.filter(text('false'))
@@ -235,16 +256,16 @@ def _get_statuses(session, tenant_uuids=None, **kwargs):
         if row.queue_id:
             queue_kwargs = {
                 'id': row.queue_id,
-                'name': row.name,
-                'display_name': row.displayname,
-                'penalty': row.penalty,
+                'name': row.queue_name,
+                'display_name': row.queue_displayname,
+                'penalty': row.queue_penalty,
                 'logged': False,
                 'paused': False,
                 'paused_reason': None,
                 'login_at': None,
             }
             if row.AgentLoginStatus:
-                queue_kwargs['logged'] = True
+                queue_kwargs['logged'] = row.queue_active
                 queue_kwargs['paused'] = row.AgentLoginStatus.paused
                 queue_kwargs['paused_reason'] = row.AgentLoginStatus.paused_reason
                 queue_kwargs['login_at'] = row.AgentLoginStatus.login_at
