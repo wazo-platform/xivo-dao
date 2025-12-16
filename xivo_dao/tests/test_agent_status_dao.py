@@ -780,7 +780,6 @@ class TestAgentStatusDao(DAOTestCase):
 
         def assert_queue_logged_status(agent_id, logged: bool):
             status = agent_status_dao.get_status(agent_id)
-            print(status)
             assert_that(
                 status,
                 has_properties(
