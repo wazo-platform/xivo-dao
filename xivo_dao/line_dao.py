@@ -49,7 +49,6 @@ def get_interfaces_from_exten_and_context(session, extension, context):
         )
         .join(LineExtension, LineExtension.line_id == LineFeatures.id)
         .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
-        .outerjoin(UserLine, UserLine.line_id == LineFeatures.id)
         .filter(ExtensionTable.exten == extension)
         .filter(ExtensionTable.context == context)
     )
