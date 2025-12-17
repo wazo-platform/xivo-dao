@@ -39,6 +39,30 @@ def get_interface_from_exten_and_context(session, extension, context):
 
 
 @daosession
+def get_interfaces_from_exten_and_context(session, extension, context):
+    res = (
+        session.query(
+            LineFeatures.endpoint_sip_uuid,
+            LineFeatures.endpoint_sccp_id,
+            LineFeatures.endpoint_custom_id,
+            LineFeatures.name,
+        )
+        .join(LineExtension, LineExtension.line_id == LineFeatures.id)
+        .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
+        .filter(ExtensionTable.exten == extension)
+        .filter(ExtensionTable.context == context)
+        .order_by(LineFeatures.id)
+    )
+
+    interfaces = [_format_interface(row) for row in res.all()]
+
+    if not interfaces:
+        raise LookupError(f'no line with extension {extension} and context {context}')
+
+    return interfaces
+
+
+@daosession
 def get_interface_from_line_id(session, line_id):
     query = session.query(
         LineFeatures.endpoint_sip_uuid,
