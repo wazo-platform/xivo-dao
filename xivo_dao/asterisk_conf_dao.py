@@ -623,16 +623,15 @@ class _SIPEndpointResolver:
             ('set_var', f'__WAZO_TENANT_UUID={self._endpoint_config.tenant_uuid}'),
         ]
 
-    def _add_mixmonitor_options(self, tenant, options):
-        mixmonitor_options = "p"
+    def _inject_recording_announcements(self, tenant, options):
         if start_announce := tenant['record_start_announcement']:
-            mixmonitor_options += f"({start_announce})"
+            options.append(
+                ('set_var', f'__WAZO_RECORDING_START_SOUND={start_announce}')
+            )
 
-        mixmonitor_options += "P"
         if stop_announce := tenant['record_stop_announcement']:
-            mixmonitor_options += f"({stop_announce})"
+            options.append(('set_var', f'__WAZO_RECORDING_STOP_SOUND={stop_announce}'))
 
-        options.append(('set_var', f'__WAZO_MIXMONITOR_OPTIONS={mixmonitor_options}'))
         return options
 
     def _iterover_parents(self):
@@ -702,7 +701,7 @@ class _EndpointSIPMeetingResolver(_SIPEndpointResolver):
             ('set_var', f'WAZO_MEETING_UUID={self._meeting.uuid}'),
             ('set_var', f'WAZO_MEETING_NAME={self._meeting.name}'),
         ]
-        options = self._add_mixmonitor_options(
+        options = self._inject_recording_announcements(
             self._tenants_settings[self._endpoint_config.tenant_uuid], options
         )
         return options
@@ -722,7 +721,7 @@ class _EndpointSIPTrunkResolver(_SIPEndpointResolver):
         if self._trunk.context:
             options.append(('context', self._trunk.context))
 
-        options = self._add_mixmonitor_options(
+        options = self._inject_recording_announcements(
             self._tenants_settings[self._endpoint_config.tenant_uuid], options
         )
         return options
@@ -790,7 +789,7 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
                 )
                 break
 
-        options = self._add_mixmonitor_options(
+        options = self._inject_recording_announcements(
             self._tenants_settings[self._endpoint_config.tenant_uuid], options
         )
 

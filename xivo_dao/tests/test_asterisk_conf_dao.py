@@ -1351,7 +1351,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P'],
+                        ['set_var', '__WAZO_RECORDING_START_SOUND=tt-monkeys'],
                     ),
                 )
             ),
@@ -1368,7 +1368,7 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=pP(tt-monkeys)'],
+                        ['set_var', '__WAZO_RECORDING_STOP_SOUND=tt-monkeys'],
                     ),
                 )
             ),
@@ -1387,7 +1387,8 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P(beep)'],
+                        ['set_var', '__WAZO_RECORDING_START_SOUND=tt-monkeys'],
+                        ['set_var', '__WAZO_RECORDING_STOP_SOUND=beep'],
                     ),
                 )
             ),
@@ -1458,7 +1459,6 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
                         contains_exactly(
                             'set_var', f'WAZO_MEETING_NAME={meeting.name}'
                         ),
-                        contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
                         contains_exactly('context', self.context.name),
                     )
                 )
@@ -1846,7 +1846,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P'],
+                        ['set_var', '__WAZO_RECORDING_START_SOUND=tt-monkeys'],
                     ),
                 )
             ),
@@ -1863,7 +1863,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=pP(tt-monkeys)'],
+                        ['set_var', '__WAZO_RECORDING_STOP_SOUND=tt-monkeys'],
                     ),
                 )
             ),
@@ -1882,7 +1882,8 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P(beep)'],
+                        ['set_var', '__WAZO_RECORDING_START_SOUND=tt-monkeys'],
+                        ['set_var', '__WAZO_RECORDING_STOP_SOUND=beep'],
                     ),
                 )
             ),
@@ -2028,7 +2029,6 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         ),
                         contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
                         contains_exactly('set_var', f'WAZO_LINE_ID={line.id}'),
-                        contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
                         contains_exactly('context', self.context.name),
                         contains_exactly(
                             'set_var', f'TRANSFER_CONTEXT={self.context.name}'
@@ -2402,7 +2402,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P'],
+                        ['set_var', '__WAZO_RECORDING_START_SOUND=tt-monkeys'],
                     ),
                 )
             ),
@@ -2419,7 +2419,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=pP(tt-monkeys)'],
+                        ['set_var', '__WAZO_RECORDING_STOP_SOUND=tt-monkeys'],
                     ),
                 )
             ),
@@ -2438,7 +2438,8 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             contains_exactly(
                 has_entries(
                     endpoint_section_options=has_items(
-                        ['set_var', '__WAZO_MIXMONITOR_OPTIONS=p(tt-monkeys)P(beep)'],
+                        ['set_var', '__WAZO_RECORDING_START_SOUND=tt-monkeys'],
+                        ['set_var', '__WAZO_RECORDING_STOP_SOUND=beep'],
                     ),
                 )
             ),
@@ -2487,7 +2488,6 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                         contains_exactly(
                             'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
                         ),
-                        contains_exactly('set_var', '__WAZO_MIXMONITOR_OPTIONS=pP'),
                         contains_exactly('set_var', 'WAZO_PAI_FORMAT='),
                     )
                 )
