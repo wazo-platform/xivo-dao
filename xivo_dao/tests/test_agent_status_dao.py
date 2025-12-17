@@ -1,6 +1,8 @@
 # Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections import namedtuple
+
 from hamcrest import assert_that, contains_exactly, empty, has_properties, none
 from sqlalchemy import and_
 
@@ -159,6 +161,7 @@ class TestAgentStatusDao(DAOTestCase):
     def test_get_status_with_logged_agent_returns_an_agent(self):
         agent = self.add_agent()
         queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
         agent_membership = self._insert_agent_membership(
             agent.id, queue.id, queue.name, 64
@@ -189,7 +192,10 @@ class TestAgentStatusDao(DAOTestCase):
         agent = self.add_agent(tenant_uuid=tenant.uuid)
         self._insert_agent_login_status(agent.id, agent.number)
         queue = self.add_queuefeatures(name='queue1', tenant_uuid=tenant.uuid)
-        agent_membership = self._insert_agent_membership(agent.id, 1, queue.name, 64)
+        self._insert_agent_queue_member(agent.id, queue.name)
+        agent_membership = self._insert_agent_membership(
+            agent.id, queue.id, queue.name, 64
+        )
 
         result = agent_status_dao.get_status(agent.id, tenant_uuids=[tenant.uuid])
         assert_that(
@@ -214,6 +220,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent = self.add_agent()
         user = self.add_user(agentid=agent.id)
         queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
         agent_membership = self._insert_agent_membership(agent.id, queue.id, queue.name)
 
@@ -241,6 +248,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent = self.add_agent()
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
         queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
         agent_membership = self._insert_agent_membership(agent.id, queue.id, queue.name)
 
         result = agent_status_dao.get_status_by_number(agent.number)
@@ -266,8 +274,12 @@ class TestAgentStatusDao(DAOTestCase):
     def test_get_status_by_number_with_logged_agent_multi_tenant(self):
         tenant = self.add_tenant()
         agent = self.add_agent(tenant_uuid=tenant.uuid)
+        queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
         self._insert_agent_login_status(agent.id, agent.number)
-        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1', 64)
+        agent_membership = self._insert_agent_membership(
+            agent.id, queue.id, queue.name, 64
+        )
 
         result = agent_status_dao.get_status_by_number(
             agent.number, tenant_uuids=[tenant.uuid]
@@ -311,6 +323,7 @@ class TestAgentStatusDao(DAOTestCase):
         user = self.add_user(agentid=agent.id)
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
         queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
         agent_membership = self._insert_agent_membership(agent.id, queue.id, queue.name)
 
         result = agent_status_dao.get_status_by_user(user.uuid)
@@ -337,8 +350,12 @@ class TestAgentStatusDao(DAOTestCase):
         tenant = self.add_tenant()
         agent = self.add_agent(tenant_uuid=tenant.uuid)
         user = self.add_user(agentid=agent.id, tenant_uuid=tenant.uuid)
+        queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
         self._insert_agent_login_status(agent.id, agent.number)
-        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1', 64)
+        agent_membership = self._insert_agent_membership(
+            agent.id, queue.id, queue.name, 64
+        )
 
         result = agent_status_dao.get_status_by_user(
             user.uuid, tenant_uuids=[tenant.uuid]
@@ -415,11 +432,11 @@ class TestAgentStatusDao(DAOTestCase):
     def test_get_statuses_of_logged_for_queue(self):
         agent = self.add_agent()
         queue = self.add_queuefeatures(name='queue1', number='3000')
-        self._insert_agent_membership(agent.id, queue.id, queue.name)
+        self._insert_agent_queue_member(agent.id, queue.name)
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+        self._insert_agent_membership(agent.id, queue.id, queue.name)
 
         statuses = agent_status_dao.get_statuses_for_queue(queue.id)
-
         assert_that(
             statuses,
             contains_exactly(
@@ -578,6 +595,10 @@ class TestAgentStatusDao(DAOTestCase):
         )
         queue_1 = self.add_queuefeatures(name='queue1')
         queue_2 = self.add_queuefeatures(name='queue2')
+        self._insert_agent_queue_member(agent1.id, queue_1.name)
+        self._insert_agent_queue_member(agent1.id, queue_2.name)
+        self._insert_agent_queue_member(agent2.id, queue_1.name)
+        self._insert_agent_queue_member(agent2.id, queue_2.name)
 
         queues = [
             agent_status_dao._Queue(
@@ -611,14 +632,18 @@ class TestAgentStatusDao(DAOTestCase):
         assert len(agent1_status.queues) == 2
         assert agent1_status.queues[0].id == queue_1.id
         assert agent1_status.queues[0].name == queue_1.name
+        assert agent1_status.queues[0].logged is True
         assert agent1_status.queues[1].id == queue_2.id
         assert agent1_status.queues[1].name == queue_2.name
+        assert agent1_status.queues[1].logged is True
 
         assert len(agent2_status.queues) == 2
         assert agent2_status.queues[0].id == queue_1.id
         assert agent2_status.queues[0].name == queue_1.name
+        assert agent2_status.queues[0].logged is True
         assert agent2_status.queues[1].id == queue_2.id
         assert agent2_status.queues[1].name == queue_2.name
+        assert agent2_status.queues[1].logged is True
 
     def test_remove_agent_from_queues_one_queue(self):
         agent = self.add_agent()
@@ -744,6 +769,77 @@ class TestAgentStatusDao(DAOTestCase):
             agent.id
         )
         assert_that(agent_login_status, none())
+
+    def test_agent_subscribe_to_queue(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+
+        QueueSubscription = namedtuple('QueueSubscription', ('id', 'name', 'penalty'))
+
+        def assert_queue_logged_status(agent_id, logged: bool):
+            status = agent_status_dao.get_status(agent_id)
+            assert_that(
+                status,
+                has_properties(
+                    agent_id=agent.id,
+                    agent_number=agent.number,
+                    extension=agent_login_status.extension,
+                    interface=agent_login_status.interface,
+                    state_interface=agent_login_status.state_interface,
+                    queues=contains_exactly(
+                        has_properties(
+                            id=queue.id,
+                            name=queue.name,
+                            penalty=64 if logged else 0,
+                            logged=logged,
+                        ),
+                    ),
+                ),
+            )
+
+        assert_queue_logged_status(agent.id, False)
+
+        subscriptions = [QueueSubscription(queue.id, queue.name, 64)]
+        agent_status_dao.add_agent_to_queues(agent.id, subscriptions)
+
+        assert_queue_logged_status(agent.id, True)
+
+    def test_agent_unsubscribe_from_queue(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures(name='queue1')
+        self._insert_agent_queue_member(agent.id, queue.name)
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+        self._insert_agent_membership(agent.id, queue.id, queue.name, 64)
+
+        def assert_queue_logged_status(agent_id, logged: bool):
+            status = agent_status_dao.get_status(agent_id)
+
+            assert_that(
+                status,
+                has_properties(
+                    agent_id=agent.id,
+                    agent_number=agent.number,
+                    extension=agent_login_status.extension,
+                    interface=agent_login_status.interface,
+                    state_interface=agent_login_status.state_interface,
+                    queues=contains_exactly(
+                        has_properties(
+                            id=queue.id,
+                            name=queue.name,
+                            penalty=64 if logged else 0,
+                            logged=logged,
+                        ),
+                    ),
+                ),
+            )
+
+        assert_queue_logged_status(agent.id, True)
+
+        agent_status_dao.remove_agent_from_queues(agent.id, [queue.id])
+
+        assert_queue_logged_status(agent.id, False)
 
     def _insert_agent_login_status(
         self,
