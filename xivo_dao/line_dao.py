@@ -51,6 +51,7 @@ def get_interfaces_from_exten_and_context(session, extension, context):
         .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
         .filter(ExtensionTable.exten == extension)
         .filter(ExtensionTable.context == context)
+        .order_by(LineFeatures.id)
     )
 
     interfaces = [_format_interface(row) for row in res.all()]
