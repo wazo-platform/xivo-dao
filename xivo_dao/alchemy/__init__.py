@@ -17,7 +17,6 @@ from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
-from xivo_dao.alchemy.endpoint_sip_options_view import EndpointSIPOptionsView
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.extension import Extension
@@ -87,7 +86,6 @@ __all__ = [
     'EndpointSIPTemplate',
     'EndpointSIPSection',
     'EndpointSIPSectionOption',
-    'EndpointSIPOptionsView',
     'Extension',
     'FuncKeyDestAgent',
     'FuncKeyDestBSFilter',
