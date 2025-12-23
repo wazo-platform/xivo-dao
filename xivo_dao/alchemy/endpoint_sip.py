@@ -2,15 +2,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+from operator import attrgetter
 
-from sqlalchemy import column, select, table, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import select, text
+from sqlalchemy.dialects.postgresql import ARRAY, UUID, array
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.orm import aliased, join, relationship
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import Boolean, Integer, String, Text
+from sqlalchemy.sql import and_
+from sqlalchemy.sql import cast as sql_cast
+from sqlalchemy.sql import func as sql_func
+from sqlalchemy.sql import literal
+from sqlalchemy.sql import true as sql_true
+from sqlalchemy.types import BigInteger, Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -18,11 +24,13 @@ from .endpoint_sip_section import (
     AORSection,
     AuthSection,
     EndpointSection,
+    EndpointSIPSection,
     IdentifySection,
     OutboundAuthSection,
     RegistrationOutboundAuthSection,
     RegistrationSection,
 )
+from .endpoint_sip_section_option import EndpointSIPSectionOption
 
 logger = logging.getLogger(__name__)
 
@@ -74,12 +82,9 @@ class EndpointSIP(Base):
         'parent',
         creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
-    _options = column_property(
-        select(column('options'))
-        .where(column('root') == uuid)
-        .select_from(table('endpoint_sip_options_view'))
-        .scalar_subquery(),
-        deferred=True,
+    _all_sections = relationship(
+        'EndpointSIPSection',
+        viewonly=True,
     )
     _aor_section = relationship(
         'AORSection',
@@ -361,16 +366,11 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def caller_id(self):
-        if not self._endpoint_section:
-            return
-
-        matching_options = self._endpoint_section.find('callerid')
-        for key, value in matching_options:
-            return value
+        return self._get_sip_option('callerid', 'endpoint')
 
     @caller_id.expression
     def caller_id(cls):
-        return cls._query_option_value('callerid')
+        return cls._get_sip_option_expression('callerid', 'endpoint')
 
     @caller_id.setter
     def caller_id(self, caller_id):
@@ -405,14 +405,86 @@ class EndpointSIP(Base):
         for _, value in matching_options:
             return value
 
-    def get_option_value(self, option):
-        if not self._options:
-            return None
-        return self._options.get(option, None)
+    def _get_sip_option(self, option: str, section: str | None = None):
+        def walk(endpoint: EndpointSIP):
+            for endpoint_section in endpoint._all_sections:
+                if section and section != endpoint_section.type:
+                    continue
+
+                for endpoint_option in endpoint_section._options:
+                    if endpoint_option.key == option:
+                        return endpoint_option.value
+
+            templates = sorted(endpoint.template_relations, key=attrgetter('priority'))
+            ancestors = [template.parent for template in templates]
+            for ancestor in ancestors:
+                if found := walk(ancestor):
+                    return found
+
+        return walk(self)
 
     @classmethod
-    def _query_option_value(cls, option):
-        if option is None:
-            return None
+    def _get_sip_option_expression(cls, option: str, section: str | None = None):
+        '''
+        Returns a scalar subquery to find an option within all its options. Inherited options are
+        resolved using a depth-first algorithm
+        '''
 
-        return cls._options.remote_attr[option].astext
+        template = aliased(EndpointSIPTemplate)
+        endpoint_section = aliased(EndpointSIPSection)
+        endpoint_option = aliased(EndpointSIPSectionOption)
+
+        base_endpoint = select(
+            cls.uuid.label('root'),
+            cls.uuid.label('uuid'),
+            literal(0).label('level'),
+            sql_cast(array([0]), ARRAY(BigInteger)).label('path'),
+        ).cte(recursive=True)
+
+        ancestors = select(
+            base_endpoint.c.root.label('root'),
+            template.parent_uuid.label('uuid'),
+            (base_endpoint.c.level + 1).label('level'),
+            base_endpoint.c.path.op('||')(
+                array(
+                    [
+                        sql_func.row_number().over(
+                            partition_by='level', order_by=template.priority
+                        )
+                    ]
+                )
+            ).label('path'),
+        ).select_from(
+            join(base_endpoint, template, base_endpoint.c.uuid == template.child_uuid)
+        )
+
+        tree = (
+            base_endpoint.union(ancestors)
+            .select()
+            .order_by(base_endpoint.c.root, base_endpoint.c.path.asc())
+            .alias()
+        )
+
+        return (
+            select(endpoint_option.value)
+            .select_from(
+                join(
+                    tree,
+                    endpoint_section,
+                    and_(
+                        endpoint_section.endpoint_sip_uuid == tree.c.uuid,
+                        endpoint_section.type == section if section else sql_true,
+                    ),
+                ).join(
+                    endpoint_option,
+                    and_(
+                        endpoint_option.endpoint_sip_section_uuid
+                        == endpoint_section.uuid,
+                        endpoint_option.key == option if option else sql_true,
+                    ),
+                )
+            )
+            .where(tree.c.root == cls.uuid)
+            .distinct(tree.c.root, endpoint_option.key)
+            .scalar_subquery()
+        )

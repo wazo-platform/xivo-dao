@@ -23,7 +23,7 @@ from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.exception import InputError
 
 from .context import Context
-from .endpoint_sip_options_view import EndpointSIPOptionsView
+from .endpoint_sip import EndpointSIP
 from .sccpline import SCCPLine
 
 caller_id_regex = re.compile(
@@ -177,7 +177,7 @@ class LineFeatures(Base):
         return sql.case(
             (
                 cls.endpoint_sip_uuid.isnot(None),
-                cls._sip_query_option('callerid', regex_filter=regex),
+                cls._sip_query_option('callerid', 'endpoint', regex_filter=regex),
             ),
             (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
             else_=None,
@@ -242,7 +242,7 @@ class LineFeatures(Base):
         return sql.case(
             (
                 cls.endpoint_sip_uuid.isnot(None),
-                cls._sip_query_option('callerid', regex_filter=regex),
+                cls._sip_query_option('callerid', 'endpoint', regex_filter=regex),
             ),
             (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
         )
@@ -371,8 +371,8 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_query_option(cls, option, regex_filter=None):
-        attr = EndpointSIPOptionsView.get_option_value(option)
+    def _sip_query_option(cls, option, section=None, regex_filter=None):
+        attr = EndpointSIP._get_sip_option_expression(option, section)
         if regex_filter:
             attr = func.unnest(
                 func.regexp_matches(
@@ -382,7 +382,7 @@ class LineFeatures(Base):
 
         return (
             select(attr)
-            .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
+            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
             .scalar_subquery()
         )
 
