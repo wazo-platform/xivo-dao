@@ -14,7 +14,6 @@ from hamcrest import (
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..endpoint_sip import EndpointSIP, EndpointSIPTemplate
-from ..endpoint_sip_options_view import EndpointSIPOptionsView
 from ..endpoint_sip_section import EndpointSIPSection
 
 
@@ -344,61 +343,167 @@ class TestCombinedOptions(DAOTestCase):
         )
 
 
-class TestOptionValue(DAOTestCase):
-    def setUp(self):
-        super().setUp()
-        self.sip = self.add_endpoint_sip()
-        self.sip.endpoint_section_options = [('test', 'value')]
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+class TestGetSIPOption(DAOTestCase):
+    def test_get_by_value(self):
+        sip_1 = self.add_endpoint_sip(
+            endpoint_section_options=[('some-key', 'some-value1')]
+        )
 
-    def test_get_value(self):
-        assert_that(self.sip.get_option_value('test'), equal_to('value'))
+        results = (
+            self.session.query(
+                EndpointSIP._get_sip_option_expression('some-key', 'endpoint')
+            )
+            .filter(EndpointSIP.uuid == sip_1.uuid)
+            .scalar()
+        )
+        assert results == 'some-value1'
+        assert sip_1._get_sip_option('some-key', 'endpoint') == 'some-value1'
 
-    def test_get_value_invalid_option(self):
-        assert_that(self.sip.get_option_value('invalid'), equal_to(None))
+    def test_get_by_value_inherited(self):
+        sip_1 = self.add_endpoint_sip(
+            endpoint_section_options=[('some-key', 'some-value2')]
+        )
+        sip_2 = self.add_endpoint_sip(templates=[sip_1])
 
-    def test_get_value_no_option_values(self):
-        sip = self.add_endpoint_sip()
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        results = (
+            self.session.query(
+                EndpointSIP._get_sip_option_expression('some-key', 'endpoint')
+            )
+            .filter(EndpointSIP.uuid == sip_2.uuid)
+            .scalar()
+        )
+        assert results == 'some-value2'
+        assert sip_2._get_sip_option('some-key', 'endpoint') == 'some-value2'
 
-        assert_that(sip.get_option_value('somevalue'), equal_to(None))
+    def test_get_by_value_inherited_depth_first(self):
+        sip_1 = self.add_endpoint_sip(
+            endpoint_section_options=[('nested', 'ancestor1')]
+        )
+        sip_2 = self.add_endpoint_sip(
+            endpoint_section_options=[('nested', 'ancestor2')]
+        )
+        sip_3 = self.add_endpoint_sip(templates=[sip_1])
+        sip_4 = self.add_endpoint_sip(templates=[sip_3, sip_2])
+
+        results = self.session.query(EndpointSIP).filter(
+            EndpointSIP._get_sip_option_expression('nested', 'endpoint') == 'ancestor1'
+        )
+        assert_that(results, contains_exactly(sip_1, sip_3, sip_4))
+
+        results = self.session.query(EndpointSIP).filter(
+            EndpointSIP._get_sip_option_expression('nested', 'endpoint') == 'ancestor2'
+        )
+        assert_that(results, contains_exactly(sip_2))
+
+    def test_get_by_value_inherited_template_respects_priority(self):
+        sip_1 = self.add_endpoint_sip(
+            template=True, endpoint_section_options=[('template', '1')]
+        )
+        sip_2 = self.add_endpoint_sip(
+            template=True, endpoint_section_options=[('template', '2')]
+        )
+
+        sip_3 = self.add_endpoint_sip(templates=[sip_1, sip_2])
+
+        (template_1, template_2) = sip_3.template_relations
+        template_1.priority = 2
+        template_2.priority = 1
+
+        result = (
+            self.session.query(
+                EndpointSIP._get_sip_option_expression('template', 'endpoint')
+            )
+            .filter(EndpointSIP.uuid == sip_3.uuid)
+            .scalar()
+        )
+        assert result == '2'
+        assert sip_3._get_sip_option('template', 'endpoint') == '2'
+
+    def test_get_by_value_by_section(self):
+        sip_1 = self.add_endpoint_sip(
+            endpoint_section_options=[('some-key', 'some-value')]
+        )
+        sip_2 = self.add_endpoint_sip(
+            auth_section_options=[('some-key', 'some-value')],
+        )
+
+        results = (
+            self.session.query(EndpointSIP)
+            .filter(
+                EndpointSIP._get_sip_option_expression('some-key', 'endpoint').is_not(
+                    None
+                )
+            )
+            .all()
+        )
+        assert_that(results, contains_exactly(sip_1))
+
+        results = (
+            self.session.query(EndpointSIP)
+            .filter(
+                EndpointSIP._get_sip_option_expression('some-key', 'auth').is_not(None)
+            )
+            .all()
+        )
+        assert_that(results, contains_exactly(sip_2))
 
 
 class TestCallerId(DAOTestCase):
     def test_get_callerid_nearest_value(self):
-        template1 = self.add_endpoint_sip(caller_id='template1')
-        template2 = self.add_endpoint_sip(caller_id='template2')
-        sip = self.add_endpoint_sip(
-            templates=[template1, template2], caller_id='template3'
-        )
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        template_1 = self.add_endpoint_sip(template=True, caller_id='template1')
+        template_2 = self.add_endpoint_sip(template=True, caller_id='template2')
+        sip = self.add_endpoint_sip(caller_id='sip', templates=[template_1, template_2])
 
-        result = sip.get_option_value('callerid')
-        assert_that(result, equal_to('template3'))
+        assert template_1.caller_id == 'template1'
+        assert template_2.caller_id == 'template2'
+        assert sip.caller_id == 'sip'
+
+        results = (
+            self.session.query(EndpointSIP).filter(EndpointSIP.caller_id == 'sip').all()
+        )
+        assert_that(results, contains_exactly(sip))
 
     def test_get_callerid_inherited(self):
-        template1 = self.add_endpoint_sip(caller_id='template1')
-        template2 = self.add_endpoint_sip(caller_id='template2')
-        sip = self.add_endpoint_sip(templates=[template1, template2])
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        template_1 = self.add_endpoint_sip(template=True, caller_id='template1')
+        template_2 = self.add_endpoint_sip(template=True, caller_id='template2')
+        sip = self.add_endpoint_sip(templates=[template_2, template_1])
 
-        result = sip.get_option_value('callerid')
-        assert_that(result, equal_to('template1'))
+        result = (
+            self.session.query(EndpointSIP)
+            .filter(EndpointSIP.caller_id == 'template2')
+            .all()
+        )
+        assert_that(result, contains_exactly(template_2, sip))
+        assert sip.caller_id == 'template2'
 
     def test_get_callerid_inherited_depth_first(self):
-        template0 = self.add_endpoint_sip(caller_id='template0')
-        template1 = self.add_endpoint_sip(templates=[template0])
-        template2 = self.add_endpoint_sip(caller_id='template2')
-        sip = self.add_endpoint_sip(templates=[template1, template2])
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+        template_1 = self.add_endpoint_sip(template=True, caller_id='template1')
+        template_2 = self.add_endpoint_sip(template=True, caller_id='template2')
+        template_3 = self.add_endpoint_sip(template=True, templates=[template_1])
+        sip = self.add_endpoint_sip(templates=[template_3, template_2])
 
-        result = sip.get_option_value('callerid')
-        assert_that(result, equal_to('template0'))
+        result = (
+            self.session.query(EndpointSIP.caller_id)
+            .filter(EndpointSIP.uuid == sip.uuid)
+            .scalar()
+        )
+        assert result == 'template1'
+        assert sip.caller_id == 'template1'
 
-    def test_callerid_inheritance(self):
-        template1 = self.add_endpoint_sip(caller_id='template1')
-        sip = self.add_endpoint_sip(templates=[template1])
-        EndpointSIPOptionsView.refresh()  # Simulate a database commit
+    def test_get_callerid_inherited_respects_priority(self):
+        template_1 = self.add_endpoint_sip(template=True, caller_id='template1')
+        template_2 = self.add_endpoint_sip(template=True, caller_id='template2')
+        template_3 = self.add_endpoint_sip(template=True, templates=[template_1])
+        sip = self.add_endpoint_sip(templates=[template_3, template_2])
 
-        assert_that(sip.get_option_value('callerid'), equal_to('template1'))
-        assert_that(template1.get_option_value('callerid'), equal_to('template1'))
+        (t1, t2) = sip.template_relations
+        t1.priority = 1
+        t2.priority = 0
+
+        result = (
+            self.session.query(EndpointSIP.caller_id)
+            .filter(EndpointSIP.uuid == sip.uuid)
+            .scalar()
+        )
+        assert result == 'template2'
+        assert sip.caller_id == 'template2'
