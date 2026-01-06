@@ -146,7 +146,7 @@ def list_agent_enabled_queues(session, agent_id, tenant_uuids=None):
         .where(QueueMember.usertype == 'agent', QueueMember.userid == agent_id)
     )
 
-    if tenant_uuids:
+    if tenant_uuids is not None:
         query = query.where(QueueFeatures.tenant_uuid.in_(tenant_uuids))
 
     return [
