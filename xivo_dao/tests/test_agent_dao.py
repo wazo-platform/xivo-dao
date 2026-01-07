@@ -1,9 +1,10 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, contains_exactly, empty, equal_to, has_properties
 
 from xivo_dao import agent_dao
+from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import UNKNOWN_UUID, DAOTestCase
 
@@ -231,6 +232,74 @@ class TestAgentDAO(DAOTestCase):
         result = agent_dao.all(tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
         assert_that(result, equal_to(expected_all))
 
+    def test_list_agent_enabled_queues(self):
+        agent = self.add_agent(number=self.agent1_number)
+        queue_member1 = self._insert_queue_member('Q1', 'Agent/1', agent.id)
+        queue_member2 = self._insert_queue_member('Q2', 'Agent/1', agent.id)
+        queue1 = self.add_queuefeatures(id=1, name=queue_member1.queue_name)
+        _ = self.add_queuefeatures(id=2, name=queue_member2.queue_name)
+        self._insert_agent_membership(agent.id, queue1.id, queue1.name, 0)
+
+        result = agent_dao.list_agent_enabled_queues(agent.id)
+        assert_that(
+            result,
+            contains_exactly(
+                has_properties(
+                    id=queue1.id,
+                    name=queue1.name,
+                )
+            ),
+        )
+
+    def test_list_agent_enabled_queues_multitenant(self):
+        tenant = self.add_tenant()
+
+        agent1 = self.add_agent(
+            number=self.agent1_number, tenant_uuid=self.default_tenant.uuid
+        )
+        agent2 = self.add_agent(number=self.agent2_number, tenant_uuid=tenant.uuid)
+
+        queue1 = self.add_queuefeatures(id=1, name='Q1')
+        queue2 = self.add_queuefeatures(id=2, name='Q2')
+
+        self._insert_queue_member(queue1.name, 'Agent/1', agent1.id)
+        self._insert_queue_member(queue2.name, 'Agent/1', agent1.id)
+        self._insert_queue_member(queue1.name, 'Agent/2', agent2.id)
+        self._insert_queue_member(queue2.name, 'Agent/2', agent2.id)
+
+        self._insert_agent_membership(agent1.id, queue1.id, queue1.name, 0)
+        self._insert_agent_membership(agent2.id, queue2.id, queue2.name, 1)
+
+        result = agent_dao.list_agent_enabled_queues(
+            agent1.id, tenant_uuids=[self.default_tenant.uuid]
+        )
+        assert_that(
+            result,
+            contains_exactly(
+                has_properties(id=queue1.id, name=queue1.name),
+            ),
+        )
+
+        result = agent_dao.list_agent_enabled_queues(
+            agent1.id, tenant_uuids=[tenant.uuid]
+        )
+        assert_that(result, empty())
+
+        result = agent_dao.list_agent_enabled_queues(
+            agent2.id, tenant_uuids=[self.default_tenant.uuid]
+        )
+        assert_that(result, empty())
+
+        result = agent_dao.list_agent_enabled_queues(
+            agent2.id, tenant_uuids=[tenant.uuid]
+        )
+        assert_that(
+            result,
+            contains_exactly(
+                has_properties(id=queue2.id, name=queue2.name),
+            ),
+        )
+
     def _insert_queue_member(self, queue_name, member_name, agent_id=1, penalty=0):
         queue_member = QueueMember()
         queue_member.queue_name = queue_name
@@ -245,3 +314,14 @@ class TestAgentDAO(DAOTestCase):
         self.add_me(queue_member)
 
         return queue_member
+
+    def _insert_agent_membership(self, agent_id, queue_id, queue_name, queue_penalty=0):
+        agent_membership = AgentMembershipStatus(
+            agent_id=agent_id,
+            queue_id=queue_id,
+            queue_name=queue_name,
+            penalty=queue_penalty,
+        )
+        self.add_me(agent_membership)
+
+        return agent_membership
