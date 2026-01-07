@@ -147,7 +147,8 @@ def list_agent_enabled_queues(session, agent_id, tenant_uuids=None):
     )
 
     if tenant_uuids is not None:
-        query = query.where(QueueFeatures.tenant_uuid.in_(tenant_uuids))
+        query = query.join(AgentFeatures, AgentFeatures.id == QueueMember.userid)
+        query = query.where(AgentFeatures.tenant_uuid.in_(tenant_uuids))
 
     return [
         _Queue(row.id, row.tenant_uuid, row.name, row.penalty)
