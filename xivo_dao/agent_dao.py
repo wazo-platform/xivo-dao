@@ -1,4 +1,4 @@
-# Copyright 2007-2026 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -7,7 +7,6 @@ from typing import NamedTuple
 
 from sqlalchemy.sql import and_, select
 
-from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -122,35 +121,3 @@ def all(session, tenant_uuids=None):
     if tenant_uuids is not None:
         query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
     return query.all()
-
-
-@daosession
-def list_agent_enabled_queues(session, agent_id, tenant_uuids=None):
-    query = (
-        select(
-            QueueFeatures.id,
-            QueueFeatures.tenant_uuid,
-            QueueFeatures.name,
-            QueueMember.penalty,
-        )
-        .join_from(
-            QueueMember, QueueFeatures, QueueMember.queue_name == QueueFeatures.name
-        )
-        .join(
-            AgentMembershipStatus,
-            and_(
-                AgentMembershipStatus.queue_id == QueueFeatures.id,
-                AgentMembershipStatus.agent_id == QueueMember.userid,
-            ),
-        )
-        .where(QueueMember.usertype == 'agent', QueueMember.userid == agent_id)
-    )
-
-    if tenant_uuids is not None:
-        query = query.join(AgentFeatures, AgentFeatures.id == QueueMember.userid)
-        query = query.where(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-
-    return [
-        _Queue(row.id, row.tenant_uuid, row.name, row.penalty)
-        for row in session.execute(query)
-    ]
