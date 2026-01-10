@@ -265,6 +265,12 @@ class TestEdit(DAOTestCase):
 
         edited_endpoint = self.session.get(EndpointSIP, endpoint_sip_row.uuid)
         assert_that(edited_endpoint.caller_id, equal_to('"Rôger Rabbit" <2000>'))
+        assert_that(
+            self.session.query(EndpointSIP)
+            .filter(EndpointSIP.caller_id == '"Rôger Rabbit" <2000>')
+            .scalar(),
+            edited_endpoint,
+        )
 
     def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(
         self,
@@ -567,6 +573,46 @@ class TestRelationship(DAOTestCase):
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
         assert_that(line.users, contains_exactly(user2_row, user1_row))
+
+    def test_search_callerid_name(self):
+        sip1 = self.add_endpoint_sip(caller_id='"Roger Rabbit" <1001>')
+        sip2 = self.add_endpoint_sip(caller_id='"Papa Frog" <1002>')
+        sip3 = self.add_endpoint_sip(caller_id='"Jessica Rabbit" <1003>')
+        line1 = self.add_line(endpoint_sip_uuid=sip1.uuid)
+        line2 = self.add_line(endpoint_sip_uuid=sip2.uuid)
+        line3 = self.add_line(endpoint_sip_uuid=sip3.uuid)
+
+        search_result = line_dao.search(search='Rabbit')
+        assert_that(
+            search_result,
+            has_properties(total=2, items=contains_inanyorder(line1, line3)),
+        )
+
+        search_result = line_dao.search(search='Frog')
+        assert_that(
+            search_result,
+            has_properties(total=1, items=contains_inanyorder(line2)),
+        )
+
+    def test_search_callerid_num(self):
+        sip1 = self.add_endpoint_sip(caller_id='"Roger Rabbit" <1001>')
+        sip2 = self.add_endpoint_sip(caller_id='"Papa Frog" <1002>')
+        sip3 = self.add_endpoint_sip(caller_id='"Jessica Rabbit" <1003>')
+        line1 = self.add_line(endpoint_sip_uuid=sip1.uuid)
+        line2 = self.add_line(endpoint_sip_uuid=sip2.uuid)
+        line3 = self.add_line(endpoint_sip_uuid=sip3.uuid)
+
+        search_result = line_dao.search(search='100')
+        assert_that(
+            search_result,
+            has_properties(total=3, items=contains_inanyorder(line1, line2, line3)),
+        )
+
+        search_result = line_dao.search(search='1003')
+        assert_that(
+            search_result,
+            has_properties(total=1, items=contains_inanyorder(line3)),
+        )
 
 
 class TestAssociateSchedule(DAOTestCase):
