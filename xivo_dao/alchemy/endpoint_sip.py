@@ -1,4 +1,4 @@
-# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -9,9 +9,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, UUID, array
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import aliased, join, relationship
+from sqlalchemy.orm import aliased, relationship
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.sql import and_
 from sqlalchemy.sql import cast as sql_cast
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.sql import literal
@@ -425,66 +424,54 @@ class EndpointSIP(Base):
 
     @classmethod
     def _get_sip_option_expression(cls, option: str, section: str | None = None):
-        '''
-        Returns a scalar subquery to find an option within all its options. Inherited options are
-        resolved using a depth-first algorithm
-        '''
+        subquery = cls.build_sip_option_subquery(option, section)
+        return (
+            select(subquery.c.value)
+            .where(subquery.c.root == cls.uuid)
+            .scalar_subquery()
+        )
 
-        template = aliased(EndpointSIPTemplate)
-        endpoint_section = aliased(EndpointSIPSection)
-        endpoint_option = aliased(EndpointSIPSectionOption)
+    @classmethod
+    def build_sip_option_subquery(cls, option: str, section: str | None = None):
+        template = aliased(EndpointSIPTemplate, flat=True)
+        ep_section = aliased(EndpointSIPSection, flat=True)
+        ep_option = aliased(EndpointSIPSectionOption, flat=True)
 
-        base_endpoint = select(
+        anchor = select(
+            cls.uuid,
             cls.uuid.label('root'),
-            cls.uuid.label('uuid'),
-            literal(0).label('level'),
+            literal(0).label('depth'),
             sql_cast(array([0]), ARRAY(BigInteger)).label('path'),
-        ).cte(recursive=True)
+        ).cte(recursive=True, nesting=False)
 
-        ancestors = select(
-            base_endpoint.c.root.label('root'),
+        recursive = select(
             template.parent_uuid.label('uuid'),
-            (base_endpoint.c.level + 1).label('level'),
-            base_endpoint.c.path.op('||')(
+            anchor.c.root,
+            anchor.c.depth + 1,
+            sql_func.array_cat(
+                anchor.c.path,
                 array(
                     [
                         sql_func.row_number().over(
-                            partition_by='level', order_by=template.priority
+                            partition_by=anchor.c.depth, order_by=template.priority
                         )
                     ]
-                )
-            ).label('path'),
-        ).select_from(
-            join(base_endpoint, template, base_endpoint.c.uuid == template.child_uuid)
-        )
+                ),
+            ),
+        ).where(template.child_uuid == anchor.c.uuid)
 
-        tree = (
-            base_endpoint.union(ancestors)
-            .select()
-            .order_by(base_endpoint.c.root, base_endpoint.c.path.asc())
-            .alias()
-        )
+        tree = anchor.union_all(recursive)
+        tree = tree.select().order_by(tree.c.path.asc()).alias()
 
         return (
-            select(endpoint_option.value)
-            .select_from(
-                join(
-                    tree,
-                    endpoint_section,
-                    and_(
-                        endpoint_section.endpoint_sip_uuid == tree.c.uuid,
-                        endpoint_section.type == section if section else sql_true,
-                    ),
-                ).join(
-                    endpoint_option,
-                    and_(
-                        endpoint_option.endpoint_sip_section_uuid
-                        == endpoint_section.uuid,
-                        endpoint_option.key == option if option else sql_true,
-                    ),
-                )
+            select(tree.c.root, ep_option.value)
+            .join_from(tree, ep_section, ep_section.endpoint_sip_uuid == tree.c.uuid)
+            .join(ep_option, ep_option.endpoint_sip_section_uuid == ep_section.uuid)
+            .where(
+                tree.c.root == cls.uuid,
+                ep_option.key == option,
+                ep_section.type == section if section else sql_true,
             )
-            .where(tree.c.root == cls.uuid)
-            .distinct(tree.c.root, endpoint_option.key)
-            .scalar_subquery()
+            .distinct(tree.c.root, ep_option.key)
+            .subquery()
         )
