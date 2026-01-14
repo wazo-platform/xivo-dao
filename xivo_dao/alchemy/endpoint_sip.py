@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+from collections import deque
 from operator import attrgetter
 
 from sqlalchemy import select, text
@@ -405,9 +406,13 @@ class EndpointSIP(Base):
             return value
 
     def _get_sip_option(self, option: str, section: str | None = None):
-        def walk(endpoint: EndpointSIP):
+        stack = deque([self])
+
+        while stack:
+            endpoint = stack.popleft()
+
             for endpoint_section in endpoint._all_sections:
-                if section and section != endpoint_section.type:
+                if section != endpoint_section.type:
                     continue
 
                 for endpoint_option in endpoint_section._options:
@@ -416,11 +421,10 @@ class EndpointSIP(Base):
 
             templates = sorted(endpoint.template_relations, key=attrgetter('priority'))
             ancestors = [template.parent for template in templates]
-            for ancestor in ancestors:
-                if found := walk(ancestor):
-                    return found
+            for ancestor in reversed(ancestors):
+                stack.appendleft(ancestor)
 
-        return walk(self)
+        return None
 
     @classmethod
     def _get_sip_option_expression(cls, option: str, section: str | None = None):
