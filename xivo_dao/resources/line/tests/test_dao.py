@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -511,6 +511,29 @@ class TestSearch(DAOTestCase):
                 items=contains_inanyorder(line2),
             ),
         )
+
+    def test_search_line_by_caller_id(self):
+        sip_1 = self.add_endpoint_sip(
+            endpoint_section_options=[('callerid', '"Pierre Durocher" <1000>')]
+        )
+        sip_2 = self.add_endpoint_sip(
+            endpoint_section_options=[('callerid', '"Big Ben" <1001>')]
+        )
+        sip_3 = self.add_endpoint_sip(
+            endpoint_section_options=[('callerid', '"Bigger Ben" <0999>')]
+        )
+
+        line_1 = self.add_line(endpoint_sip_uuid=sip_1.uuid)
+        line_2 = self.add_line(endpoint_sip_uuid=sip_2.uuid)
+        line_3 = self.add_line(endpoint_sip_uuid=sip_3.uuid)
+
+        results = line_dao.search(search='ben')
+        assert results.total == 2
+        assert_that(results.items, has_items(line_2, line_3))
+
+        results = line_dao.search(search='100')
+        assert results.total == 2
+        assert_that(results.items, has_items(line_1, line_2))
 
 
 class TestRelationship(DAOTestCase):
