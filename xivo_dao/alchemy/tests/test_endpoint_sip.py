@@ -390,7 +390,7 @@ class TestGetSIPOption(DAOTestCase):
             .scalar()
         )
         assert results is None
-        assert sip_1._get_sip_option('key1', 'auth') is None
+        assert sip_1._get_sip_option('key1', None) is None
 
         # key not in section
         results = (
