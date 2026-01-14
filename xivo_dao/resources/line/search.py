@@ -19,7 +19,7 @@ callerid_subquery = (
 )
 
 cid_name = LineFeatures.build_caller_id_expression(
-    sql.func.substring(callerid_subquery.c.value, '"([^"]+)"'), 'cid_name'
+    sql.func.substring(callerid_subquery.c.value, '"([^"]+)"\\s+'), 'cid_name'
 )
 
 cid_num = LineFeatures.build_caller_id_expression(
