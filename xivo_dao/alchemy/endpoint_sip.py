@@ -15,7 +15,6 @@ from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.sql import cast as sql_cast
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.sql import literal
-from sqlalchemy.sql import true as sql_true
 from sqlalchemy.types import BigInteger, Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -405,7 +404,7 @@ class EndpointSIP(Base):
         for _, value in matching_options:
             return value
 
-    def _get_sip_option(self, option: str, section: str | None = None):
+    def _get_sip_option(self, option: str, section: str):
         stack = deque([self])
 
         while stack:
@@ -427,7 +426,7 @@ class EndpointSIP(Base):
         return None
 
     @classmethod
-    def _get_sip_option_expression(cls, option: str, section: str | None = None):
+    def _get_sip_option_expression(cls, option: str, section: str):
         subquery = cls.build_sip_option_subquery(option, section)
         return (
             select(subquery.c.value)
@@ -436,7 +435,7 @@ class EndpointSIP(Base):
         )
 
     @classmethod
-    def build_sip_option_subquery(cls, option: str, section: str | None = None):
+    def build_sip_option_subquery(cls, option: str, section: str):
         template = aliased(EndpointSIPTemplate, flat=True)
         ep_section = aliased(EndpointSIPSection, flat=True)
         ep_option = aliased(EndpointSIPSectionOption, flat=True)
@@ -474,7 +473,7 @@ class EndpointSIP(Base):
             .where(
                 tree.c.root == cls.uuid,
                 ep_option.key == option,
-                ep_section.type == section if section else sql_true,
+                ep_section.type == section,
             )
             .distinct(tree.c.root, ep_option.key)
             .subquery()
