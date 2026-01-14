@@ -1,6 +1,7 @@
-# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import pytest
 from hamcrest import (
     assert_that,
     contains_exactly,
@@ -10,6 +11,7 @@ from hamcrest import (
     has_properties,
     none,
 )
+from sqlalchemy.exc import DataError
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -344,65 +346,164 @@ class TestCombinedOptions(DAOTestCase):
 
 
 class TestGetSIPOption(DAOTestCase):
-    def test_get_by_value(self):
-        sip_1 = self.add_endpoint_sip(
-            endpoint_section_options=[('some-key', 'some-value1')]
-        )
+    def test_get_sip_option_key_parameter(self):
+        sip_1 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'value1')])
 
+        # key is None
+        results = (
+            self.session.query(EndpointSIP._get_sip_option_expression(None, 'endpoint'))
+            .filter(EndpointSIP.uuid == sip_1.uuid)
+            .scalar()
+        )
+        assert results is None
+        assert sip_1._get_sip_option(None, 'endpoint') is None
+
+        # key doesnt exist
         results = (
             self.session.query(
-                EndpointSIP._get_sip_option_expression('some-key', 'endpoint')
+                EndpointSIP._get_sip_option_expression('wrong-key', 'endpoint')
             )
             .filter(EndpointSIP.uuid == sip_1.uuid)
             .scalar()
         )
-        assert results == 'some-value1'
-        assert sip_1._get_sip_option('some-key', 'endpoint') == 'some-value1'
+        assert results is None
+        assert sip_1._get_sip_option('wrong-key', 'endpoint') is None
 
-    def test_get_by_value_inherited(self):
-        sip_1 = self.add_endpoint_sip(
-            endpoint_section_options=[('some-key', 'some-value2')]
+        # key exists
+        results = (
+            self.session.query(
+                EndpointSIP._get_sip_option_expression('key1', 'endpoint')
+            )
+            .filter(EndpointSIP.uuid == sip_1.uuid)
+            .scalar()
         )
+        assert results == 'value1'
+        assert sip_1._get_sip_option('key1', 'endpoint') == 'value1'
+
+    def test_get_sip_option_section_parameter(self):
+        sip_1 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'value1')])
+
+        # section is None
+        results = (
+            self.session.query(EndpointSIP._get_sip_option_expression('key1', None))
+            .filter(EndpointSIP.uuid == sip_1.uuid)
+            .scalar()
+        )
+        assert results is None
+        assert sip_1._get_sip_option('key1', 'auth') is None
+
+        # key not in section
+        results = (
+            self.session.query(EndpointSIP._get_sip_option_expression('key1', 'auth'))
+            .filter(EndpointSIP.uuid == sip_1.uuid)
+            .scalar()
+        )
+        assert results is None
+        assert sip_1._get_sip_option('key1', 'auth') is None
+
+        # key in section
+        results = (
+            self.session.query(
+                EndpointSIP._get_sip_option_expression('key1', 'endpoint')
+            )
+            .filter(EndpointSIP.uuid == sip_1.uuid)
+            .scalar()
+        )
+        assert results == 'value1'
+        assert sip_1._get_sip_option('key1', 'endpoint') == 'value1'
+
+    def test_get_sip_option_as_filter_criteria(self):
+        sip_1 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'value1')])
+        sip_2 = self.add_endpoint_sip(
+            endpoint_section_options=[('key2', 'value2')], templates=[sip_1]
+        )
+        sip_3 = self.add_endpoint_sip(
+            endpoint_section_options=[('key1', 'value3')], templates=[sip_1]
+        )
+        sip_4 = self.add_endpoint_sip()
+
+        criteria = EndpointSIP._get_sip_option_expression('key1', 'endpoint')
+
+        # test key equality
+        results = self.session.query(EndpointSIP).filter(criteria == 'value1').all()
+        assert results == [sip_1, sip_2]
+
+        results = self.session.query(EndpointSIP).filter(criteria != 'value1').all()
+        assert results == [sip_3]
+
+        # test key in list of values
+        results = (
+            self.session.query(EndpointSIP)
+            .filter(criteria.in_(['value1', 'value3']))
+            .all()
+        )
+        assert results == [sip_1, sip_2, sip_3]
+
+        # test key exists
+        results = self.session.query(EndpointSIP).filter(criteria.isnot(None)).all()
+        assert results == [sip_1, sip_2, sip_3]
+
+        # test key doesnt exist
+        results = self.session.query(EndpointSIP).filter(criteria.is_(None)).all()
+        assert results == [sip_4]
+
+    def test_get_sip_option_scopes_key_per_section(self):
+        sip_1 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'value1')])
+        sip_2 = self.add_endpoint_sip(auth_section_options=[('key1', 'value2')])
+        sip_3 = self.add_endpoint_sip(templates=[sip_1, sip_2])
+
+        def execute_query(key, section):
+            return (
+                self.session.query(EndpointSIP._get_sip_option_expression(key, section))
+                .filter(EndpointSIP.uuid == sip_3.uuid)
+                .scalar()
+            )
+
+        assert execute_query('key1', 'aor') is None
+        assert execute_query('key1', 'auth') == 'value2'
+        assert execute_query('key1', 'endpoint') == 'value1'
+        assert execute_query('key1', 'identify') is None
+        assert execute_query('key1', 'outbound_auth') is None
+        assert execute_query('key1', 'registration_outbound_auth') is None
+        assert execute_query('key1', 'registration') is None
+        with pytest.raises(DataError, match='invalid input value'):
+            execute_query('key1', 'patate')
+
+    def test_get_sip_option_inherited_value(self):
+        sip_1 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'value1')])
         sip_2 = self.add_endpoint_sip(templates=[sip_1])
 
         results = (
             self.session.query(
-                EndpointSIP._get_sip_option_expression('some-key', 'endpoint')
+                EndpointSIP._get_sip_option_expression('key1', 'endpoint')
             )
             .filter(EndpointSIP.uuid == sip_2.uuid)
             .scalar()
         )
-        assert results == 'some-value2'
-        assert sip_2._get_sip_option('some-key', 'endpoint') == 'some-value2'
+        assert results == 'value1'
+        assert sip_2._get_sip_option('key1', 'endpoint') == 'value1'
 
-    def test_get_by_value_inherited_depth_first(self):
-        sip_1 = self.add_endpoint_sip(
-            endpoint_section_options=[('nested', 'ancestor1')]
-        )
-        sip_2 = self.add_endpoint_sip(
-            endpoint_section_options=[('nested', 'ancestor2')]
-        )
+    def test_get_sip_option_inherited_depth_first(self):
+        sip_1 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'ancestor1')])
+        sip_2 = self.add_endpoint_sip(endpoint_section_options=[('key1', 'ancestor2')])
         sip_3 = self.add_endpoint_sip(templates=[sip_1])
         sip_4 = self.add_endpoint_sip(templates=[sip_3, sip_2])
 
-        results = self.session.query(EndpointSIP).filter(
-            EndpointSIP._get_sip_option_expression('nested', 'endpoint') == 'ancestor1'
-        )
-        assert_that(results, contains_exactly(sip_1, sip_3, sip_4))
+        criteria = EndpointSIP._get_sip_option_expression('key1', 'endpoint')
 
-        results = self.session.query(EndpointSIP).filter(
-            EndpointSIP._get_sip_option_expression('nested', 'endpoint') == 'ancestor2'
-        )
-        assert_that(results, contains_exactly(sip_2))
+        results = self.session.query(EndpointSIP).filter(criteria == 'ancestor1').all()
+        assert results == [sip_1, sip_3, sip_4]
 
-    def test_get_by_value_inherited_template_respects_priority(self):
+        results = self.session.query(EndpointSIP).filter(criteria == 'ancestor2').all()
+        assert results == [sip_2]
+
+    def test_get_sip_option_inherited_respect_templates_priority(self):
         sip_1 = self.add_endpoint_sip(
             template=True, endpoint_section_options=[('template', '1')]
         )
         sip_2 = self.add_endpoint_sip(
             template=True, endpoint_section_options=[('template', '2')]
         )
-
         sip_3 = self.add_endpoint_sip(templates=[sip_1, sip_2])
 
         (template_1, template_2) = sip_3.template_relations
@@ -419,34 +520,6 @@ class TestGetSIPOption(DAOTestCase):
         assert result == '2'
         assert sip_3._get_sip_option('template', 'endpoint') == '2'
 
-    def test_get_by_value_by_section(self):
-        sip_1 = self.add_endpoint_sip(
-            endpoint_section_options=[('some-key', 'some-value')]
-        )
-        sip_2 = self.add_endpoint_sip(
-            auth_section_options=[('some-key', 'some-value')],
-        )
-
-        results = (
-            self.session.query(EndpointSIP)
-            .filter(
-                EndpointSIP._get_sip_option_expression('some-key', 'endpoint').is_not(
-                    None
-                )
-            )
-            .all()
-        )
-        assert_that(results, contains_exactly(sip_1))
-
-        results = (
-            self.session.query(EndpointSIP)
-            .filter(
-                EndpointSIP._get_sip_option_expression('some-key', 'auth').is_not(None)
-            )
-            .all()
-        )
-        assert_that(results, contains_exactly(sip_2))
-
 
 class TestCallerId(DAOTestCase):
     def test_get_callerid_nearest_value(self):
@@ -461,7 +534,7 @@ class TestCallerId(DAOTestCase):
         results = (
             self.session.query(EndpointSIP).filter(EndpointSIP.caller_id == 'sip').all()
         )
-        assert_that(results, contains_exactly(sip))
+        assert results == [sip]
 
     def test_get_callerid_inherited(self):
         template_1 = self.add_endpoint_sip(template=True, caller_id='template1')
@@ -473,7 +546,7 @@ class TestCallerId(DAOTestCase):
             .filter(EndpointSIP.caller_id == 'template2')
             .all()
         )
-        assert_that(result, contains_exactly(template_2, sip))
+        assert result == [template_2, sip]
         assert sip.caller_id == 'template2'
 
     def test_get_callerid_inherited_depth_first(self):
