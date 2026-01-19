@@ -49,14 +49,23 @@ config = SearchConfig(
 class LineSearchSystem(SearchSystem):
     def search_from_query(self, query, parameters):
         query = self._search_on_extension(query)
-        query = self._search_on_endpoints(query)
+        query = self._search_on_endpoint_options(query, parameters)
         return super().search_from_query(query, parameters)
 
-    def _search_on_endpoints(self, query):
-        query = query.outerjoin(
-            callerid_subquery,
-            callerid_subquery.c.root == LineFeatures.endpoint_sip_uuid,
-        )
+    def _search_on_endpoint_options(self, query, parameters):
+        # NOTE (jalie): Since the callerid subquery is expensive, only join if we explicitly
+        # must search on it
+        search_terms = ('search', 'caller_id_name', 'caller_id_num')
+        sort_terms = ('caller_id_name', 'caller_id_num')
+
+        is_search_term = any(term in parameters for term in search_terms)
+        is_sort_term = parameters.get('sort') in sort_terms
+
+        if is_search_term or is_sort_term:
+            query = query.outerjoin(
+                callerid_subquery,
+                callerid_subquery.c.root == LineFeatures.endpoint_sip_uuid,
+            )
 
         return query
 
