@@ -18,12 +18,14 @@ callerid_subquery = (
     EndpointSIP.build_sip_option_subquery('callerid', 'endpoint').select().cte()
 )
 
-cid_name = LineFeatures.build_caller_id_expression(
-    sql.func.substring(callerid_subquery.c.value, '"([^"]+)"\\s+'), 'cid_name'
+cid_name = LineFeatures.build_endpoint_query(
+    sql.func.substring(callerid_subquery.c.value, '"([^"]+)"\\s+'),
+    LineFeatures._sccp_query_option('cid_name'),
 )
 
-cid_num = LineFeatures.build_caller_id_expression(
-    sql.func.substring(callerid_subquery.c.value, '<([0-9A-Z]+)?>'), 'cid_num'
+cid_num = LineFeatures.build_endpoint_query(
+    sql.func.substring(callerid_subquery.c.value, '<([0-9A-Z]+)?>'),
+    LineFeatures._sccp_query_option('cid_num'),
 )
 
 

@@ -174,8 +174,9 @@ class LineFeatures(Base):
     def caller_id_name(cls):
         regex = '"([^"]+)"\\s+'
 
-        return cls.build_caller_id_expression(
-            cls._sip_query_option('callerid', 'endpoint', regex), 'cid_name'
+        return cls.build_endpoint_query(
+            cls._sip_query_option('callerid', 'endpoint', regex),
+            cls._sccp_query_option('cid_name'),
         )
 
     @caller_id_name.setter
@@ -234,8 +235,9 @@ class LineFeatures(Base):
     def caller_id_num(cls):
         regex = '<([0-9A-Z]+)?>'
 
-        return cls.build_caller_id_expression(
-            cls._sip_query_option('callerid', 'endpoint', regex), 'cid_num'
+        return cls.build_endpoint_query(
+            cls._sip_query_option('callerid', 'endpoint', regex),
+            cls._sccp_query_option('cid_num'),
         )
 
     @caller_id_num.setter
@@ -386,7 +388,7 @@ class LineFeatures(Base):
         )
 
     @classmethod
-    def build_caller_id_expression(cls, sip_subquery, sccp_option):
+    def build_endpoint_query(cls, sip_subquery, sccp_subquery):
         return sql.case(
             (
                 cls.endpoint_sip_uuid.isnot(None),
@@ -394,7 +396,7 @@ class LineFeatures(Base):
             ),
             (
                 cls.endpoint_sccp_id.isnot(None),
-                cls._sccp_query_option(sccp_option),
+                sccp_subquery,
             ),
             else_=None,
         )
