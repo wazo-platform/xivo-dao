@@ -41,6 +41,10 @@ caller_id_regex = re.compile(
     re.VERBOSE,
 )
 
+CALLER_ID_NAME_SQL_REGEX = r'"([^"]+)"\s+'
+
+CALLER_ID_NUM_SQL_REGEX = r'<([0-9A-Z]+)?>'
+
 
 class LineFeatures(Base):
     CALLER_ID = '"{name}" <{num}>'
@@ -170,7 +174,7 @@ class LineFeatures(Base):
 
     @caller_id_name.expression
     def caller_id_name(cls):
-        regex = '"([^"]+)"\\s+'
+        regex = CALLER_ID_NAME_SQL_REGEX
 
         return cls.build_endpoint_query(
             cls._sip_query_option('callerid', 'endpoint', regex),
@@ -229,7 +233,7 @@ class LineFeatures(Base):
 
     @caller_id_num.expression
     def caller_id_num(cls):
-        regex = '<([0-9A-Z]+)?>'
+        regex = CALLER_ID_NUM_SQL_REGEX
 
         return cls.build_endpoint_query(
             cls._sip_query_option('callerid', 'endpoint', regex),

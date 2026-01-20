@@ -7,7 +7,11 @@ from sqlalchemy.sql.elements import and_
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.line_extension import LineExtension
-from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.linefeatures import (
+    CALLER_ID_NAME_SQL_REGEX,
+    CALLER_ID_NUM_SQL_REGEX,
+    LineFeatures,
+)
 from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 
 # NOTE(jalie): The following variables replaces hybrid_properties for
@@ -19,12 +23,12 @@ callerid_subquery = (
 )
 
 cid_name = LineFeatures.build_endpoint_query(
-    sql.func.substring(callerid_subquery.c.value, '"([^"]+)"\\s+'),
+    sql.func.substring(callerid_subquery.c.value, CALLER_ID_NAME_SQL_REGEX),
     LineFeatures._sccp_query_option('cid_name'),
 )
 
 cid_num = LineFeatures.build_endpoint_query(
-    sql.func.substring(callerid_subquery.c.value, '<([0-9A-Z]+)?>'),
+    sql.func.substring(callerid_subquery.c.value, CALLER_ID_NUM_SQL_REGEX),
     LineFeatures._sccp_query_option('cid_num'),
 )
 
