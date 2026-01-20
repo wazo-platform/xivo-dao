@@ -157,15 +157,13 @@ class LineFeatures(Base):
         if not self.endpoint_sip:
             return None
 
-        for key, value in self.endpoint_sip.endpoint_section_options:
-            if key != 'callerid':
-                continue
+        if not (caller_id := self.endpoint_sip.caller_id):
+            return None
 
-            match = caller_id_regex.match(value)
-            if not match:
-                return None
+        if not (match := caller_id_regex.match(caller_id)):
+            return None
 
-            return match.group('name')
+        return match.group('name')
 
     def _sccp_caller_id_name(self):
         return self.endpoint_sccp.cid_name
@@ -218,15 +216,13 @@ class LineFeatures(Base):
         if not self.endpoint_sip_uuid:
             return None
 
-        for key, option in self.endpoint_sip.endpoint_section_options:
-            if key != 'callerid':
-                continue
+        if not (caller_id := self.endpoint_sip.caller_id):
+            return None
 
-            match = caller_id_regex.match(option)
-            if not match:
-                return None
+        if not (match := caller_id_regex.match(caller_id)):
+            return None
 
-            return match.group('num')
+        return match.group('num')
 
     def _sccp_caller_id_num(self):
         return self.endpoint_sccp.cid_num
