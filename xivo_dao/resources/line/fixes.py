@@ -1,4 +1,4 @@
-# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -49,8 +49,11 @@ class LineFixes:
             .outerjoin(LineFeatures.endpoint_sccp)
             .outerjoin(LineFeatures.endpoint_custom)
             .outerjoin(SCCPDevice, SCCPLine.name == SCCPDevice.line)
-            .outerjoin(LineFeatures.user_lines)
-            .outerjoin(UserLine.main_user_rel)
+            .outerjoin(
+                UserLine,
+                (LineFeatures.id == UserLine.line_id) & UserLine.main_user,
+            )
+            .outerjoin(UserLine.user)
             .outerjoin(LineFeatures.line_extensions)
             .outerjoin(LineExtension.main_extension_rel)
             .options(
