@@ -14,7 +14,6 @@ from sqlalchemy.orm import aliased, relationship
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.sql import cast as sql_cast
 from sqlalchemy.sql import func as sql_func
-from sqlalchemy.sql import literal
 from sqlalchemy.types import BigInteger, Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -443,38 +442,31 @@ class EndpointSIP(Base):
         anchor = select(
             cls.uuid,
             cls.uuid.label('root'),
-            literal(0).label('depth'),
             sql_cast(array([0]), ARRAY(BigInteger)).label('path'),
-        ).cte(recursive=True, nesting=False)
+        ).cte(name='endpoints', recursive=True)
 
         recursive = select(
             template.parent_uuid.label('uuid'),
-            anchor.c.root,
-            anchor.c.depth + 1,
-            sql_func.array_cat(
-                anchor.c.path,
-                array(
-                    [
-                        sql_func.row_number().over(
-                            partition_by=anchor.c.depth, order_by=template.priority
-                        )
-                    ]
-                ),
-            ),
-        ).where(template.child_uuid == anchor.c.uuid)
+            anchor.c.root.label('root'),
+            anchor.c.path.op('||')(
+                sql_func.row_number().over(
+                    partition_by=anchor.c.root, order_by=template.priority
+                )
+            ).label('path'),
+        ).where(anchor.c.uuid == template.child_uuid)
 
         tree = anchor.union_all(recursive)
-        tree = tree.select().order_by(tree.c.path.asc()).alias()
+        tree = tree.select().order_by(tree.c.root, tree.c.path).alias()
 
         return (
-            select(tree.c.root, ep_option.value)
-            .join_from(tree, ep_section, ep_section.endpoint_sip_uuid == tree.c.uuid)
-            .join(ep_option, ep_option.endpoint_sip_section_uuid == ep_section.uuid)
-            .where(
-                tree.c.root == cls.uuid,
-                ep_option.key == option,
-                ep_section.type == section,
+            select(
+                tree.c.root,
+                ep_option.value,
             )
-            .distinct(tree.c.root, ep_option.key)
+            .select_from(tree)
+            .join(ep_section, ep_section.endpoint_sip_uuid == tree.c.uuid)
+            .join(ep_option, ep_option.endpoint_sip_section_uuid == ep_section.uuid)
+            .where(ep_option.key == option, ep_section.type == section)
+            .distinct(tree.c.root)
             .subquery()
         )

@@ -18,9 +18,7 @@ from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 # searching by callerid's name and num because they trigger 2 full scans
 # This approach queries the callerid only once and then apply transformation
 # for searching
-callerid_subquery = (
-    EndpointSIP.build_sip_option_subquery('callerid', 'endpoint').select().cte()
-)
+callerid_subquery = EndpointSIP.build_sip_option_subquery('callerid', 'endpoint')
 
 cid_name = LineFeatures.build_endpoint_query(
     sql.func.substring(callerid_subquery.c.value, CALLER_ID_NAME_SQL_REGEX),
