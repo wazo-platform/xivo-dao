@@ -43,7 +43,7 @@ caller_id_regex = re.compile(
 
 CALLER_ID_NAME_SQL_REGEX = r'"([^"]+)"\s+'
 
-CALLER_ID_NUM_SQL_REGEX = r'<([0-9A-Z]+)?>'
+CALLER_ID_NUM_SQL_REGEX = r'<(\+?[0-9A-Z]+)?>'
 
 
 class LineFeatures(Base):
