@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
@@ -16,14 +16,14 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.sql.expression import bindparam, select
+from sqlalchemy.sql.expression import select
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.exception import InputError
 
 from .context import Context
-from .endpoint_sip_options_view import EndpointSIPOptionsView
+from .endpoint_sip import EndpointSIP
 from .sccpline import SCCPLine
 
 caller_id_regex = re.compile(
@@ -40,6 +40,10 @@ caller_id_regex = re.compile(
     ''',
     re.VERBOSE,
 )
+
+CALLER_ID_NAME_SQL_REGEX = r'"([^"]+)"\s+'
+
+CALLER_ID_NUM_SQL_REGEX = r'<(\+?[0-9A-Z]+)?>'
 
 
 class LineFeatures(Base):
@@ -157,30 +161,24 @@ class LineFeatures(Base):
         if not self.endpoint_sip:
             return None
 
-        for key, value in self.endpoint_sip.endpoint_section_options:
-            if key != 'callerid':
-                continue
+        if not (caller_id := self.endpoint_sip.caller_id):
+            return None
 
-            match = caller_id_regex.match(value)
-            if not match:
-                return None
+        if not (match := caller_id_regex.match(caller_id)):
+            return None
 
-            return match.group('name')
+        return match.group('name')
 
     def _sccp_caller_id_name(self):
         return self.endpoint_sccp.cid_name
 
     @caller_id_name.expression
     def caller_id_name(cls):
-        regex = '"([^"]+)"\\s+'
+        regex = CALLER_ID_NAME_SQL_REGEX
 
-        return sql.case(
-            (
-                cls.endpoint_sip_uuid.isnot(None),
-                cls._sip_query_option('callerid', regex_filter=regex),
-            ),
-            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_name')),
-            else_=None,
+        return cls.build_endpoint_query(
+            cls._sip_query_option('callerid', 'endpoint', regex),
+            cls._sccp_query_option('cid_name'),
         )
 
     @caller_id_name.setter
@@ -222,29 +220,24 @@ class LineFeatures(Base):
         if not self.endpoint_sip_uuid:
             return None
 
-        for key, option in self.endpoint_sip.endpoint_section_options:
-            if key != 'callerid':
-                continue
+        if not (caller_id := self.endpoint_sip.caller_id):
+            return None
 
-            match = caller_id_regex.match(option)
-            if not match:
-                return None
+        if not (match := caller_id_regex.match(caller_id)):
+            return None
 
-            return match.group('num')
+        return match.group('num')
 
     def _sccp_caller_id_num(self):
         return self.endpoint_sccp.cid_num
 
     @caller_id_num.expression
     def caller_id_num(cls):
-        regex = '<([0-9A-Z]+)?>'
+        regex = CALLER_ID_NUM_SQL_REGEX
 
-        return sql.case(
-            (
-                cls.endpoint_sip_uuid.isnot(None),
-                cls._sip_query_option('callerid', regex_filter=regex),
-            ),
-            (cls.endpoint_sccp_id.isnot(None), cls._sccp_query_option('cid_num')),
+        return cls.build_endpoint_query(
+            cls._sip_query_option('callerid', 'endpoint', regex),
+            cls._sccp_query_option('cid_num'),
         )
 
     @caller_id_num.setter
@@ -371,18 +364,15 @@ class LineFeatures(Base):
         self.device = ''
 
     @classmethod
-    def _sip_query_option(cls, option, regex_filter=None):
-        attr = EndpointSIPOptionsView.get_option_value(option)
+    def _sip_query_option(cls, option, section=None, regex_filter=None):
+        subquery = EndpointSIP._get_sip_option_expression(option, section)
+
         if regex_filter:
-            attr = func.unnest(
-                func.regexp_matches(
-                    attr, bindparam('regexp', regex_filter, unique=True)
-                )
-            )
+            subquery = func.substring(subquery, regex_filter)
 
         return (
-            select(attr)
-            .where(EndpointSIPOptionsView.root == cls.endpoint_sip_uuid)
+            select(subquery)
+            .where(EndpointSIP.uuid == cls.endpoint_sip_uuid)
             .scalar_subquery()
         )
 
@@ -395,4 +385,18 @@ class LineFeatures(Base):
             select(getattr(SCCPLine, option))
             .where(SCCPLine.id == cls.endpoint_sccp_id)
             .scalar_subquery()
+        )
+
+    @classmethod
+    def build_endpoint_query(cls, sip_subquery, sccp_subquery):
+        return sql.case(
+            (
+                cls.endpoint_sip_uuid.isnot(None),
+                sip_subquery,
+            ),
+            (
+                cls.endpoint_sccp_id.isnot(None),
+                sccp_subquery,
+            ),
+            else_=None,
         )
