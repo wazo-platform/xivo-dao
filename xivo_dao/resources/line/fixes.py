@@ -54,8 +54,12 @@ class LineFixes:
                 (LineFeatures.id == UserLine.line_id) & UserLine.main_user,
             )
             .outerjoin(UserLine.user)
-            .outerjoin(LineFeatures.line_extensions)
-            .outerjoin(LineExtension.main_extension_rel)
+            .outerjoin(
+                LineExtension,
+                (LineFeatures.id == LineExtension.line_id)
+                & LineExtension.main_extension,
+            )
+            .outerjoin(LineExtension.extension)
             .options(
                 Load(LineFeatures).load_only(
                     LineFeatures.id,
