@@ -523,7 +523,7 @@ class TestSearch(DAOTestCase):
             endpoint_section_options=[('callerid', '"Bigger Ben" <0999>')]
         )
 
-        # Explicit names to avoid random matches on search term 'ben'
+        # Explicit names to avoid random matches on search term
         line_1 = self.add_line(name='line1', endpoint_sip_uuid=sip_1.uuid)
         line_2 = self.add_line(name='line2', endpoint_sip_uuid=sip_2.uuid)
         line_3 = self.add_line(name='line3', endpoint_sip_uuid=sip_3.uuid)

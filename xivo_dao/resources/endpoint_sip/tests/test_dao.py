@@ -281,7 +281,7 @@ class TestSimpleSearch(TestSearch):
 class TestSearchMultiple(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
-        # Explicit names to avoid random matches on search terms ('eau', 'ton')
+        # Explicit names to avoid random matches on search terms
         self.sip1 = self.add_endpoint_sip(name='sip1', label='Ashton', asterisk_id='y')
         self.sip2 = self.add_endpoint_sip(
             name='sip2', label='Beaugarton', asterisk_id='x'
