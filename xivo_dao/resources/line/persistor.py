@@ -1,4 +1,4 @@
-# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -42,6 +42,9 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
             )
             .options(
                 joinedload(Line.endpoint_sip).joinedload(EndpointSIP._endpoint_section)
+            )
+            .options(
+                joinedload(Line.endpoint_sip).joinedload(EndpointSIP._all_sections)
             )
             .options(joinedload(Line.endpoint_custom))
             .options(
