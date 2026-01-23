@@ -1,4 +1,4 @@
-# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -366,3 +366,102 @@ class TestLineFixes(DAOTestCase):
         queue_member = self.session.query(QueueMember).first()
 
         assert_that(queue_member.interface, equal_to(f'Local/12345@{context.name}'))
+
+
+class TestGetRow(DAOTestCase):
+    """Tests for LineFixes.get_row() ensuring it always returns exactly one row.
+
+    These tests verify the query structure handles edge cases correctly,
+    particularly when lines have multiple users or extensions.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.fixes = LineFixes(self.session)
+        self.default_context = self.add_context(name='default')
+
+    def test_get_row_line_with_no_associations(self):
+        line = self.add_line()
+
+        row = self.fixes.get_row(line.id)
+
+        assert_that(row.LineFeatures.id, equal_to(line.id))
+        assert_that(row.EndpointSIP, none())
+        assert_that(row.SCCPLine, none())
+        assert_that(row.UserCustom, none())
+        assert_that(row.UserFeatures, none())
+        assert_that(row.Extension, none())
+
+    def test_get_row_line_with_multiple_users_returns_main_user_only(self):
+        line = self.add_line()
+        main_user = self.add_user(firstname='Main')
+        other_user = self.add_user(firstname='Other')
+        self.add_user_line(
+            user_id=main_user.id, line_id=line.id, main_user=True, main_line=True
+        )
+        self.add_user_line(
+            user_id=other_user.id, line_id=line.id, main_user=False, main_line=False
+        )
+
+        row = self.fixes.get_row(line.id)
+
+        assert_that(row.LineFeatures.id, equal_to(line.id))
+        assert_that(row.UserFeatures.id, equal_to(main_user.id))
+
+    def test_get_row_line_with_users_but_no_main_user(self):
+        line = self.add_line()
+        user = self.add_user()
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=False, main_line=True
+        )
+
+        row = self.fixes.get_row(line.id)
+
+        assert_that(row.LineFeatures.id, equal_to(line.id))
+        assert_that(row.UserFeatures, none())
+
+    def test_get_row_line_with_multiple_extensions_returns_main_extension_only(self):
+        line = self.add_line()
+        main_ext = self.add_extension(exten='1000', context=self.default_context.name)
+        other_ext = self.add_extension(exten='2000', context=self.default_context.name)
+        self.add_line_extension(
+            line_id=line.id, extension_id=main_ext.id, main_extension=True
+        )
+        self.add_line_extension(
+            line_id=line.id, extension_id=other_ext.id, main_extension=False
+        )
+
+        row = self.fixes.get_row(line.id)
+
+        assert_that(row.LineFeatures.id, equal_to(line.id))
+        assert_that(row.Extension.id, equal_to(main_ext.id))
+
+    def test_get_row_line_with_extensions_but_no_main_extension(self):
+        line = self.add_line()
+        ext = self.add_extension(exten='1000', context=self.default_context.name)
+        self.add_line_extension(
+            line_id=line.id, extension_id=ext.id, main_extension=False
+        )
+
+        row = self.fixes.get_row(line.id)
+
+        assert_that(row.LineFeatures.id, equal_to(line.id))
+        assert_that(row.Extension, none())
+
+    def test_get_row_line_with_multiple_non_main_associations(self):
+        line = self.add_line()
+        for i in range(3):
+            user = self.add_user(firstname=f'User{i}')
+            self.add_user_line(
+                user_id=user.id, line_id=line.id, main_user=False, main_line=False
+            )
+            ext = self.add_extension(exten=f'100{i}', context=self.default_context.name)
+            self.add_line_extension(
+                line_id=line.id, extension_id=ext.id, main_extension=False
+            )
+
+        row = self.fixes.get_row(line.id)
+
+        assert_that(row.LineFeatures.id, equal_to(line.id))
+        assert_that(row.UserFeatures, none())
+        assert_that(row.Extension, none())
