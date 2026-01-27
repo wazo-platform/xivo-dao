@@ -1,5 +1,7 @@
-# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+import logging
 
 from sqlalchemy.orm import Load
 
@@ -13,6 +15,9 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.helpers.errors import NotFoundError
+
+logger = logging.getLogger(__name__)
 
 
 class LineFixes:
@@ -34,8 +39,8 @@ class LineFixes:
         self.fix_name(row)
         self.session.flush()
 
-    def get_row(self, line_id):
-        query = (
+    def _get_row_query(self, line_id):
+        return (
             self.session.query(
                 LineFeatures,
                 EndpointSIP,
@@ -49,10 +54,17 @@ class LineFixes:
             .outerjoin(LineFeatures.endpoint_sccp)
             .outerjoin(LineFeatures.endpoint_custom)
             .outerjoin(SCCPDevice, SCCPLine.name == SCCPDevice.line)
-            .outerjoin(LineFeatures.user_lines)
-            .outerjoin(UserLine.main_user_rel)
-            .outerjoin(LineFeatures.line_extensions)
-            .outerjoin(LineExtension.main_extension_rel)
+            .outerjoin(
+                UserLine,
+                (LineFeatures.id == UserLine.line_id) & UserLine.main_user,
+            )
+            .outerjoin(UserLine.user)
+            .outerjoin(
+                LineExtension,
+                (LineFeatures.id == LineExtension.line_id)
+                & LineExtension.main_extension,
+            )
+            .outerjoin(LineExtension.extension)
             .options(
                 Load(LineFeatures).load_only(
                     LineFeatures.id,
@@ -81,9 +93,24 @@ class LineFixes:
                 ),
             )
             .filter(LineFeatures.id == line_id)
+            .order_by(LineFeatures.id)
         )
 
-        return query.first()
+    def get_row(self, line_id):
+        query = self._get_row_query(line_id)
+
+        result = query.all()
+        if not result:
+            raise NotFoundError(f'Line {line_id} not found', {'line_id': line_id})
+        elif len(result) == 1:
+            return result[0]
+        elif len(result) > 1:
+            logger.warning(
+                'LineFixes query returned multiple (%d) results for line id %s',
+                len(result),
+                line_id,
+            )
+            return result[0]
 
     def fix_protocol(self, row):
         if row.EndpointSIP:

@@ -1,4 +1,4 @@
-# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -281,10 +281,13 @@ class TestSimpleSearch(TestSearch):
 class TestSearchMultiple(TestSearch):
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.sip1 = self.add_endpoint_sip(label='Ashton', asterisk_id='y')
-        self.sip2 = self.add_endpoint_sip(label='Beaugarton', asterisk_id='x')
-        self.sip3 = self.add_endpoint_sip(label='Casa', asterisk_id='y')
-        self.sip4 = self.add_endpoint_sip(label='Dunkin', asterisk_id='y')
+        # Explicit names to avoid random matches on search terms
+        self.sip1 = self.add_endpoint_sip(name='sip1', label='Ashton', asterisk_id='y')
+        self.sip2 = self.add_endpoint_sip(
+            name='sip2', label='Beaugarton', asterisk_id='x'
+        )
+        self.sip3 = self.add_endpoint_sip(name='sip3', label='Casa', asterisk_id='y')
+        self.sip4 = self.add_endpoint_sip(name='sip4', label='Dunkin', asterisk_id='y')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.sip2])
