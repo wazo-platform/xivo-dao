@@ -287,6 +287,20 @@ class LineFeatures(Base):
             self.provisioningid = int(value)
 
     @hybrid_property
+    def is_webrtc(self):
+        if not self.endpoint_sip:
+            return False
+        return self.endpoint_sip.webrtc == 'yes'
+
+    @is_webrtc.expression
+    def is_webrtc(cls):
+        return sql.case(
+            (cls.endpoint_sip_uuid.isnot(None),
+            cls._sip_query_option('webrtc', 'endpoint') == 'yes'),
+            else_=False,
+        )
+
+    @hybrid_property
     def position(self):
         return self.num
 

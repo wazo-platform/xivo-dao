@@ -78,6 +78,10 @@ class SummaryView(View):
                 else_=None,
             ).label('provisioning_code'),
             Line.protocol.label('protocol'),
+            case(
+                (Line.endpoint_sip_uuid.is_(None), False),
+                else_=Line.is_webrtc == 'yes',
+            ).label('is_webrtc'),
             Extension.exten.label('extension'),
             Extension.context.label('context'),
             User.subscription_type.label('subscription_type'),
@@ -97,6 +101,7 @@ class SummaryView(View):
             extension=row.extension,
             context=row.context,
             subscription_type=row.subscription_type,
+            is_webrtc=row.is_webrtc,
         )
 
 
