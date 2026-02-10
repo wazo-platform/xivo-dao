@@ -51,6 +51,7 @@ class UserSummary:
         extension,
         context,
         subscription_type,
+        is_webrtc,
     ):
         self.id = id
         self.uuid = uuid
@@ -63,6 +64,7 @@ class UserSummary:
         self.extension = extension
         self.context = context
         self.subscription_type = subscription_type
+        self.is_webrtc = is_webrtc
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
