@@ -1,4 +1,4 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import case, func
@@ -80,7 +80,7 @@ class SummaryView(View):
             Line.protocol.label('protocol'),
             case(
                 (Line.endpoint_sip_uuid.is_(None), False),
-                else_=Line.is_webrtc == 'yes',
+                else_=Line.is_webrtc,
             ).label('is_webrtc'),
             Extension.exten.label('extension'),
             Extension.context.label('context'),
