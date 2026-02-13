@@ -290,13 +290,15 @@ class LineFeatures(Base):
     def is_webrtc(self):
         if not self.endpoint_sip:
             return False
-        return self.endpoint_sip.webrtc == 'yes'
+        return self.endpoint_sip._get_sip_option('webrtc', 'endpoint') == 'yes'
 
     @is_webrtc.expression
     def is_webrtc(cls):
         return sql.case(
-            (cls.endpoint_sip_uuid.isnot(None),
-            cls._sip_query_option('webrtc', 'endpoint') == 'yes'),
+            (
+                cls.endpoint_sip_uuid.isnot(None),
+                cls._sip_query_option('webrtc', 'endpoint') == 'yes',
+            ),
             else_=False,
         )
 
