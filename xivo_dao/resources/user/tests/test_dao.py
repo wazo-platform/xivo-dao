@@ -444,6 +444,7 @@ class TestSimpleSearch(TestSearch):
                     provisioning_code=None,
                     protocol=None,
                     subscription_type=0,
+                    is_webrtc=False,
                 )
             ],
         )
@@ -453,7 +454,7 @@ class TestSimpleSearch(TestSearch):
     def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(
         self,
     ):
-        sip = self.add_endpoint_sip()
+        sip = self.add_endpoint_sip(endpoint_section_options=[['webrtc', 'yes']])
         user_line = self.add_user_line_with_exten(
             firstname='dânny',
             lastname='rôgers',
@@ -477,6 +478,7 @@ class TestSimpleSearch(TestSearch):
                     provisioning_code=user_line.line.provisioning_code,
                     protocol='sip',
                     subscription_type=1,
+                    is_webrtc=True,
                 )
             ],
         )
@@ -508,6 +510,7 @@ class TestSimpleSearch(TestSearch):
                     provisioning_code=None,
                     protocol='custom',
                     subscription_type=0,
+                    is_webrtc=False,
                 )
             ],
         )
