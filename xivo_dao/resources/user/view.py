@@ -81,7 +81,15 @@ class SummaryView(View):
                 func.nullif(User.email, '').label('email'),
                 User.enabled.label('enabled'),
                 case(
-                    (Line.endpoint_custom_id.is_(None), Line.provisioning_code),
+                    (
+                        and_(
+                            Line.endpoint_custom_id.is_(None),
+                            func.coalesce(webrtc_subq.c.value == 'yes', False).is_(
+                                False
+                            ),
+                        ),
+                        Line.provisioning_code,
+                    ),
                     else_=None,
                 ).label('provisioning_code'),
                 Line.protocol.label('protocol'),
