@@ -377,7 +377,6 @@ class EndpointSIP(Base):
 
         self._endpoint_section.add_or_replace('callerid', caller_id)
 
-    @hybrid_property
     def update_caller_id(self, user, extension=None):
         # Copied from old table
         name, num = user.extrapolate_caller_id(extension)
