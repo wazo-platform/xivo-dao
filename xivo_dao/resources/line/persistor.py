@@ -71,10 +71,18 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
         return self.query().filter(Line.id == line_id).first()
 
     def query(self):
+        webrtc_subq = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
         query = (
             self.session.query(Line)
+            .outerjoin(webrtc_subq, Line.endpoint_sip_uuid == webrtc_subq.c.root)
             .options(joinedload(Line.endpoint_sccp))
             .options(joinedload(Line.endpoint_sip))
+            .options(
+                with_expression(
+                    Line.is_webrtc,
+                    sql.func.coalesce(webrtc_subq.c.value == 'yes', False),
+                )
+            )
         )
         query = self._filter_tenant_uuid(query)
         return query
