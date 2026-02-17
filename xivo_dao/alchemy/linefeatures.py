@@ -131,7 +131,7 @@ class LineFeatures(Base):
     )
 
     users = association_proxy('user_lines', 'user')
-    is_webrtc = query_expression()
+    is_webrtc = query_expression(sql.literal(False))
 
     @hybrid_property
     def protocol(self):
