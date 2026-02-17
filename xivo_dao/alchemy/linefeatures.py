@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKeyConstraint, func, sql
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import query_expression, relationship
 from sqlalchemy.schema import (
     CheckConstraint,
     Column,
@@ -131,6 +131,7 @@ class LineFeatures(Base):
     )
 
     users = association_proxy('user_lines', 'user')
+    is_webrtc = query_expression()
 
     @hybrid_property
     def protocol(self):
@@ -285,22 +286,6 @@ class LineFeatures(Base):
             self.provisioningid = None
         elif value.isdigit():
             self.provisioningid = int(value)
-
-    @hybrid_property
-    def is_webrtc(self):
-        if not self.endpoint_sip:
-            return False
-        return self.endpoint_sip._get_sip_option('webrtc', 'endpoint') == 'yes'
-
-    @is_webrtc.expression
-    def is_webrtc(cls):
-        return sql.case(
-            (
-                cls.endpoint_sip_uuid.isnot(None),
-                cls._sip_query_option('webrtc', 'endpoint') == 'yes',
-            ),
-            else_=False,
-        )
 
     @hybrid_property
     def position(self):
