@@ -1,8 +1,10 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql import case, func
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import and_, case, func
 
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.user_line import UserLine
@@ -66,22 +68,45 @@ class DirectoryView(View):
 
 class SummaryView(View):
     def query(self, session):
-        query = session.query(
-            User.id.label('id'),
-            User.uuid.label('uuid'),
-            User.firstname.label('firstname'),
-            func.nullif(User.lastname, '').label('lastname'),
-            func.nullif(User.email, '').label('email'),
-            User.enabled.label('enabled'),
-            case(
-                (Line.endpoint_custom_id.is_(None), Line.provisioning_code),
-                else_=None,
-            ).label('provisioning_code'),
-            Line.protocol.label('protocol'),
-            Extension.exten.label('extension'),
-            Extension.context.label('context'),
-            User.subscription_type.label('subscription_type'),
+        webrtc_subq = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
+        user_line = aliased(UserLine)
+        line = aliased(Line)
+
+        query = (
+            session.query(
+                User.id.label('id'),
+                User.uuid.label('uuid'),
+                User.firstname.label('firstname'),
+                func.nullif(User.lastname, '').label('lastname'),
+                func.nullif(User.email, '').label('email'),
+                User.enabled.label('enabled'),
+                case(
+                    (
+                        and_(
+                            Line.endpoint_custom_id.is_(None),
+                            func.coalesce(webrtc_subq.c.value == 'yes', False).is_(
+                                False
+                            ),
+                        ),
+                        Line.provisioning_code,
+                    ),
+                    else_=None,
+                ).label('provisioning_code'),
+                Line.protocol.label('protocol'),
+                func.coalesce(webrtc_subq.c.value == 'yes', False).label('is_webrtc'),
+                Extension.exten.label('extension'),
+                Extension.context.label('context'),
+                User.subscription_type.label('subscription_type'),
+            )
+            .select_from(User)
+            .outerjoin(
+                user_line,
+                and_(user_line.user_id == User.id, user_line.main_line.is_(True)),
+            )
+            .outerjoin(line, line.id == user_line.line_id)
+            .outerjoin(webrtc_subq, webrtc_subq.c.root == line.endpoint_sip_uuid)
         )
+
         return query
 
     def convert(self, row):
@@ -97,6 +122,7 @@ class SummaryView(View):
             extension=row.extension,
             context=row.context,
             subscription_type=row.subscription_type,
+            is_webrtc=row.is_webrtc,
         )
 
 

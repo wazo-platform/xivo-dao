@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKeyConstraint, func, sql
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import query_expression, relationship
 from sqlalchemy.schema import (
     CheckConstraint,
     Column,
@@ -131,6 +131,7 @@ class LineFeatures(Base):
     )
 
     users = association_proxy('user_lines', 'user')
+    is_webrtc = query_expression(sql.literal(False))
 
     @hybrid_property
     def protocol(self):

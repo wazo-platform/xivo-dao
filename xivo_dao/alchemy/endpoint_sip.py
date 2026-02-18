@@ -443,7 +443,7 @@ class EndpointSIP(Base):
             cls.uuid,
             cls.uuid.label('root'),
             sql_cast(array([0]), ARRAY(BigInteger)).label('path'),
-        ).cte(name='endpoints', recursive=True)
+        ).cte(recursive=True)
 
         recursive = select(
             template.parent_uuid.label('uuid'),

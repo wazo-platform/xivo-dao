@@ -3,8 +3,8 @@
 
 import random
 
-from sqlalchemy import text
-from sqlalchemy.orm import joinedload
+from sqlalchemy import sql, text
+from sqlalchemy.orm import joinedload, with_expression
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.line_extension import LineExtension
@@ -32,8 +32,10 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
         return self.build_criteria(query, criteria)
 
     def _search_query(self):
+        webrtc_subq = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
         return (
             self.session.query(Line)
+            .outerjoin(webrtc_subq, Line.endpoint_sip_uuid == webrtc_subq.c.root)
             .options(joinedload(Line.context_rel))
             .options(joinedload(Line.endpoint_sccp))
             .options(joinedload(Line.endpoint_sip))
@@ -51,6 +53,12 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
                 joinedload(Line.line_extensions).joinedload(LineExtension.extension)
             )
             .options(joinedload(Line.user_lines).joinedload(UserLine.user))
+            .options(
+                with_expression(
+                    Line.is_webrtc,
+                    sql.func.coalesce(webrtc_subq.c.value == 'yes', False),
+                )
+            )
         )
 
     def get(self, line_id):
@@ -63,10 +71,18 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
         return self.query().filter(Line.id == line_id).first()
 
     def query(self):
+        webrtc_subq = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
         query = (
             self.session.query(Line)
+            .outerjoin(webrtc_subq, Line.endpoint_sip_uuid == webrtc_subq.c.root)
             .options(joinedload(Line.endpoint_sccp))
             .options(joinedload(Line.endpoint_sip))
+            .options(
+                with_expression(
+                    Line.is_webrtc,
+                    sql.func.coalesce(webrtc_subq.c.value == 'yes', False),
+                )
+            )
         )
         query = self._filter_tenant_uuid(query)
         return query

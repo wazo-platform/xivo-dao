@@ -444,6 +444,7 @@ class TestSimpleSearch(TestSearch):
                     provisioning_code=None,
                     protocol=None,
                     subscription_type=0,
+                    is_webrtc=False,
                 )
             ],
         )
@@ -453,7 +454,7 @@ class TestSimpleSearch(TestSearch):
     def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(
         self,
     ):
-        sip = self.add_endpoint_sip()
+        sip = self.add_endpoint_sip(endpoint_section_options=[['webrtc', 'yes']])
         user_line = self.add_user_line_with_exten(
             firstname='dânny',
             lastname='rôgers',
@@ -474,9 +475,10 @@ class TestSimpleSearch(TestSearch):
                     enabled=True,
                     extension=user_line.extension.exten,
                     context=user_line.extension.context,
-                    provisioning_code=user_line.line.provisioning_code,
+                    provisioning_code=None,
                     protocol='sip',
                     subscription_type=1,
+                    is_webrtc=True,
                 )
             ],
         )
@@ -508,6 +510,39 @@ class TestSimpleSearch(TestSearch):
                     provisioning_code=None,
                     protocol='custom',
                     subscription_type=0,
+                    is_webrtc=False,
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='summary')
+
+    def test_given_user_with_multi_lines_and_webrtc_when_using_summary_view_then_returns_summary_one_result(
+        self,
+    ):
+        sip = self.add_endpoint_sip(endpoint_section_options=[['webrtc', 'yes']])
+        user_line = self.add_user_line_with_exten(
+            firstname='dânny', lastname='rôgers', endpoint_sip_uuid=sip.uuid
+        )
+        line = self.add_line()
+        self.add_user_line(user_id=user_line.user.id, line_id=line.id, main_line=False)
+
+        expected = SearchResult(
+            1,
+            [
+                UserSummary(
+                    id=user_line.user_id,
+                    uuid=user_line.user.uuid,
+                    firstname='dânny',
+                    lastname='rôgers',
+                    email=None,
+                    enabled=True,
+                    extension=user_line.extension.exten,
+                    context=user_line.extension.context,
+                    provisioning_code=None,
+                    protocol='sip',
+                    subscription_type=0,
+                    is_webrtc=True,
                 )
             ],
         )
