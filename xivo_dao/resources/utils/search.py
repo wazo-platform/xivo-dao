@@ -64,12 +64,21 @@ class CriteriaBuilderMixin:
 
 
 class SearchConfig:
-    def __init__(self, table, columns, default_sort, search=None, sort=None):
+    def __init__(
+        self,
+        table,
+        columns,
+        default_sort,
+        search=None,
+        sort=None,
+        sort_insensitive=None,
+    ):
         self.table = table
         self._columns = columns
         self._default_sort = default_sort
         self._search = search
         self._sort = sort
+        self.sort_insensitive = sort_insensitive or []
 
     def all_search_columns(self):
         if self._search:
@@ -131,11 +140,19 @@ class SearchSystem:
         return paginated_query.all(), sorted_query.count()
 
     def search_from_query_collated(self, query, parameters=None):
-        parameters, order, limit, offset, reverse = self._extract_search_params(
-            parameters
-        )
+        (
+            parameters,
+            order,
+            limit,
+            offset,
+            reverse,
+            insensitive,
+        ) = self._extract_pagination_params(parameters)
         rows, total = self.search_from_query(query, parameters)
-        return self._apply_search_params(rows, order, limit, offset, reverse), total
+        rows_filtered = self._apply_pagination_params(
+            rows, order, limit, offset, reverse, insensitive
+        )
+        return rows_filtered, total
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
@@ -200,7 +217,7 @@ class SearchSystem:
 
         return query
 
-    def _extract_search_params(self, parameters):
+    def _extract_pagination_params(self, parameters):
         parameters = self._populate_parameters(parameters)
         self._validate_parameters(parameters)
         self.config.column_for_sorting(parameters['order'])
@@ -209,15 +226,19 @@ class SearchSystem:
         limit = parameters.pop('limit', None)
         offset = parameters.pop('offset', 0)
         reverse = False if parameters.pop('direction', 'asc') == 'asc' else True
-        return parameters, order, limit, offset, reverse
+        insensitive = order in self.config.sort_insensitive
+        return parameters, order, limit, offset, reverse, insensitive
 
-    def _apply_search_params(self, rows, order, limit, offset, reverse):
+    def _apply_pagination_params(
+        self, rows, order, limit, offset, reverse, insensitive
+    ):
         def _get_sort_key(model):
             value = getattr(model, order, '')
             text = '' if value is None else str(value)
-            text_lowered = text.casefold()
-            is_empty = text_lowered == ''
-            normalized = unicodedata.normalize('NFKD', text_lowered)
+            if insensitive:
+                text = text.casefold()
+            is_empty = text == ''
+            normalized = unicodedata.normalize('NFKD', text)
             return (is_empty, normalized)
 
         if order:
