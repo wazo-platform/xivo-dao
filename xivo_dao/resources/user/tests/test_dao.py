@@ -1,4 +1,4 @@
-# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -616,8 +616,8 @@ class TestSearchGivenMultipleUsers(TestSearch):
             description='resto',
         )
         self.user5 = self.add_user(
-            firstname='Dunkin',
-            lastname='Donuts',
+            firstname='dunkin',
+            lastname='donuts',
             email='donuts@donuts.xyz',
             description='resto',
         )

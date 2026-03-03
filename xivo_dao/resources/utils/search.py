@@ -215,8 +215,9 @@ class SearchSystem:
         def _get_sort_key(model):
             value = getattr(model, order, '')
             text = '' if value is None else str(value)
-            is_empty = text == ''
-            normalized = unicodedata.normalize('NFKD', text)
+            text_lowered = text.casefold()
+            is_empty = text_lowered == ''
+            normalized = unicodedata.normalize('NFKD', text_lowered)
             return (is_empty, normalized)
 
         if order:
