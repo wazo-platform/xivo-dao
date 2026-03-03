@@ -1,4 +1,4 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -212,19 +212,15 @@ class SearchSystem:
         return parameters, order, limit, offset, reverse
 
     def _apply_search_params(self, rows, order, limit, offset, reverse):
-        def _get_attr(o):
-            a = getattr(o, order, '')
-            return str(a) if a is not None else ''
+        def _get_sort_key(model):
+            value = getattr(model, order, '')
+            text = '' if value is None else str(value)
+            is_empty = text == ''
+            normalized = unicodedata.normalize('NFKD', text)
+            return (is_empty, normalized)
 
         if order:
-            rows = sorted(
-                rows,
-                key=lambda x: (
-                    _get_attr(x) == '',
-                    unicodedata.normalize('NFKD', _get_attr(x)),
-                ),
-                reverse=reverse,
-            )
+            rows = sorted(rows, key=_get_sort_key, reverse=reverse)
         elif reverse:
             rows.reverse()
 
