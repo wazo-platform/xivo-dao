@@ -1,4 +1,4 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import and_, or_
@@ -51,6 +51,12 @@ config = SearchConfig(
         'subscription_type',
     ],
     default_sort='lastname',
+    sort_insensitive=[
+        'firstname',
+        'lastname',
+        'fullname',
+        'description',
+    ],
 )
 
 
