@@ -1,4 +1,4 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -79,6 +79,7 @@ class TestSearchSystem(DAOTestCase):
                 'userfield': UserFeatures.userfield,
             },
             default_sort='lastname',
+            sort_insensitive=['firstname'],
         )
         self.search = SearchSystem(self.config)
 
@@ -122,6 +123,26 @@ class TestSearchSystem(DAOTestCase):
 
         assert_that(total, equal_to(3))
         assert_that(rows, contains_exactly(user_row2, user_row3, user_row1))
+
+    def test_given_order_with_case_insenstive_then_sorts_rows_using_order(self):
+        user_row1 = self.add_user(firstname='B', lastname='B')
+        user_row2 = self.add_user(firstname='aa', lastname='aa')
+        user_row3 = self.add_user(firstname='Ab', lastname='Ab')
+
+        rows, total = self.search.search(self.session, {'order': 'firstname'})
+
+        assert_that(total, equal_to(3))
+        assert_that(rows, contains_exactly(user_row3, user_row1, user_row2))
+
+        rows, total = self.search.search_collated(self.session, {'order': 'firstname'})
+
+        assert_that(total, equal_to(3))
+        assert_that(rows, contains_exactly(user_row2, user_row3, user_row1))
+
+        rows, total = self.search.search_collated(self.session, {'order': 'lastname'})
+
+        assert_that(total, equal_to(3))
+        assert_that(rows, contains_exactly(user_row3, user_row1, user_row2))
 
     def test_given_direction_then_sorts_rows_using_direction(self):
         first_user_row = self.add_user(lastname='Abigale')

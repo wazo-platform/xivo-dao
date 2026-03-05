@@ -1,4 +1,4 @@
-# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -616,9 +616,9 @@ class TestSearchGivenMultipleUsers(TestSearch):
             description='resto',
         )
         self.user5 = self.add_user(
-            firstname='Dunkin',
-            lastname='Donuts',
-            email='donuts@donuts.xyz',
+            firstname='dunkin',
+            lastname='donuts',
+            email='Donuts@donuts.xyz',
             description='resto',
         )
         self.user6 = self.add_user(
@@ -779,8 +779,8 @@ class TestSearchGivenMultipleUsers(TestSearch):
         expected = SearchResult(
             7,
             [
-                self.user3,
                 self.user5,
+                self.user3,
                 self.user2,
                 self.user4,
                 self.user6,
@@ -791,8 +791,8 @@ class TestSearchGivenMultipleUsers(TestSearch):
         expected_collated = SearchResult(
             7,
             [
-                self.user3,
                 self.user5,
+                self.user3,
                 self.user2,
                 self.user4,
                 self.user6,
@@ -802,6 +802,22 @@ class TestSearchGivenMultipleUsers(TestSearch):
         )
 
         self.assert_search_returns_result(expected, order='email')
+        self.assert_search_collated_returns_result(expected_collated, order='email')
+
+    def test_when_ordering_by_sensitive_field_then_upper_return_first(self):
+        expected_collated = SearchResult(
+            7,
+            [
+                self.user5,
+                self.user3,
+                self.user2,
+                self.user4,
+                self.user6,
+                self.user1,
+                self.user7,
+            ],
+        )
+
         self.assert_search_collated_returns_result(expected_collated, order='email')
 
 
