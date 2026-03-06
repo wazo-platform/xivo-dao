@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -95,6 +95,7 @@ from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
+from xivo_dao.alchemy.voicemail_transcription_config import VoicemailTranscriptionConfig
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import Base
 
@@ -576,6 +577,12 @@ class ItemInserter:
         http_ingress = IngressHTTP(**kwargs)
         self.add_me(http_ingress)
         return http_ingress
+
+    def add_voicemail_transcription_config(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        config = VoicemailTranscriptionConfig(**kwargs)
+        self.add_me(config)
+        return config
 
     def add_meeting(self, **kwargs):
         kwargs.setdefault('name', self._random_name())

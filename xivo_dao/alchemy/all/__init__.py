@@ -1,4 +1,4 @@
-# Copyright 2016-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -119,6 +119,7 @@ from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.alchemy.voicemail_transcription_config import VoicemailTranscriptionConfig
 
 __all__ = [
     "AccessFeatures",
@@ -241,4 +242,5 @@ __all__ = [
     "UserFeatures",
     "UserIAX",
     "Voicemail",
+    "VoicemailTranscriptionConfig",
 ]

@@ -1,4 +1,4 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # explicitly import modules that are referenced in relationship to prevent
@@ -68,6 +68,7 @@ from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.alchemy.voicemail_transcription_config import VoicemailTranscriptionConfig
 
 __all__ = [
     'AgentFeatures',
@@ -137,4 +138,5 @@ __all__ = [
     'UserIAX',
     'UserLine',
     'Voicemail',
+    'VoicemailTranscriptionConfig',
 ]
