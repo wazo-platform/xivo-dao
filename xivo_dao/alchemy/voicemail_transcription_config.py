@@ -3,7 +3,7 @@
 
 from sqlalchemy import Boolean, Column, text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.schema import ForeignKey, Index
+from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import String
 
 from xivo_dao.helpers.db_manager import Base
@@ -11,9 +11,6 @@ from xivo_dao.helpers.db_manager import Base
 
 class VoicemailTranscriptionConfig(Base):
     __tablename__ = 'voicemail_transcription_config'
-    __table_args__ = (
-        Index('voicemail_transcription_config__idx__tenant_uuid', 'tenant_uuid'),
-    )
 
     uuid = Column(
         UUID(as_uuid=True),
