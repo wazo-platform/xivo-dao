@@ -1,9 +1,16 @@
-# Copyright 2020-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2020-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
 
-from hamcrest import assert_that, contains_exactly, equal_to, has_items, none
+from hamcrest import (
+    assert_that,
+    contains_exactly,
+    equal_to,
+    has_items,
+    has_properties,
+    none,
+)
 
 from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
@@ -143,3 +150,32 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [resource])
 
         self.assert_search_returns_result(expected, tenant_uuids=[resource.uuid])
+
+
+class TestVoicemailTranscriptionEnabled(DAOTestCase):
+    def test_default_value_is_false(self):
+        tenant = self.add_tenant()
+
+        result = dao.get(tenant.uuid)
+
+        assert_that(result, has_properties(voicemail_transcription_enabled=False))
+
+    def test_edit_voicemail_transcription_enabled(self):
+        tenant = self.add_tenant()
+
+        tenant.voicemail_transcription_enabled = True
+        dao.edit(tenant)
+
+        self.session.expire_all()
+        result = dao.get(tenant.uuid)
+        assert_that(result, has_properties(voicemail_transcription_enabled=True))
+
+    def test_edit_voicemail_transcription_enabled_disable(self):
+        tenant = self.add_tenant(voicemail_transcription_enabled=True)
+
+        tenant.voicemail_transcription_enabled = False
+        dao.edit(tenant)
+
+        self.session.expire_all()
+        result = dao.get(tenant.uuid)
+        assert_that(result, has_properties(voicemail_transcription_enabled=False))

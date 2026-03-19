@@ -1,4 +1,4 @@
-# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -81,6 +81,9 @@ class Tenant(Base):
     country = Column(String(2), nullable=True)
     record_start_announcement = Column(Text, nullable=True)
     record_stop_announcement = Column(Text, nullable=True)
+    voicemail_transcription_enabled = Column(
+        Boolean, nullable=False, server_default='false'
+    )
 
     global_sip_template = relationship(
         'EndpointSIP',
