@@ -1,4 +1,4 @@
-# Copyright 2023-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2023-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from uuid import uuid4
@@ -282,7 +282,6 @@ class TestFindAllServiceExtensions(DAOTestCase):
         ("*92", "vmuserpurge"),
         ("*10", "phonestatus"),
         ("*9", "recsnd"),
-        ("*34", "calllistening"),
         ("*36", "directoryaccess"),
         ("*20", "fwdundoall"),
         ("_*8.", "pickup"),
@@ -297,7 +296,6 @@ class TestFindAllServiceExtensions(DAOTestCase):
         ("*92", "vmuserpurge"),
         ("*10", "phonestatus"),
         ("*9", "recsnd"),
-        ("*34", "calllistening"),
         ("*36", "directoryaccess"),
         ("*20", "fwdundoall"),
         ("*8", "pickup"),
