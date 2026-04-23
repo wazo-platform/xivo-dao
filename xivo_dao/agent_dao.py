@@ -15,14 +15,6 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 
-class _Agent(NamedTuple):
-    id: int
-    tenant_uuid: str
-    number: str
-    queues: list[QueueFeatures]
-    user_ids: list[int]
-
-
 class _Queue(NamedTuple):
     id: int
     tenant_uuid: str
@@ -30,22 +22,30 @@ class _Queue(NamedTuple):
     penalty: int
 
 
+class _Agent(NamedTuple):
+    id: int
+    tenant_uuid: str
+    number: str
+    queues: list[_Queue]
+    user_ids: list[int]
+
+
 @daosession
-def agent_with_id(session, agent_id, tenant_uuids=None):
+def agent_with_id(session, agent_id, tenant_uuids=None) -> _Agent:
     agent = _get_agent(session, AgentFeatures.id == int(agent_id), tenant_uuids)
     _add_queues_to_agent(session, agent)
     return agent
 
 
 @daosession
-def agent_with_number(session, agent_number, tenant_uuids=None):
+def agent_with_number(session, agent_number, tenant_uuids=None) -> _Agent:
     agent = _get_agent(session, AgentFeatures.number == agent_number, tenant_uuids)
     _add_queues_to_agent(session, agent)
     return agent
 
 
 @daosession
-def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
+def agent_with_user_uuid(session, user_uuid, tenant_uuids=None) -> _Agent:
     query = (
         session.query(AgentFeatures)
         .join(UserFeatures, AgentFeatures.id == UserFeatures.agentid)
@@ -68,7 +68,7 @@ def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
     return agent
 
 
-def _get_agent(session, whereclause, tenant_uuids=None):
+def _get_agent(session, whereclause, tenant_uuids=None) -> _Agent:
     query = session.query(AgentFeatures).filter(whereclause)
     if tenant_uuids is not None:
         query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
@@ -80,7 +80,7 @@ def _get_agent(session, whereclause, tenant_uuids=None):
     )
 
 
-def _add_queues_to_agent(session, agent):
+def _add_queues_to_agent(session, agent) -> None:
     query = (
         select(
             QueueFeatures.id,
