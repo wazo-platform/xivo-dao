@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -130,6 +130,7 @@ class UserFeatures(Base):
     musiconhold = Column(String(128), nullable=False, server_default='')
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
+    mobile_fallback_enabled = Column(Boolean, nullable=False, server_default='false')
     bsfilter = Column(enum.generic_bsfilter, nullable=False, server_default='no')
     preprocess_subroutine = Column(String(79))
     timezone = Column(String(128))

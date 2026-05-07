@@ -874,6 +874,7 @@ class TestCreate(TestUser):
                 description=none(),
                 outgoing_caller_id=none(),
                 mobile_phone_number=none(),
+                mobile_fallback_enabled=False,
                 call_permission_password=none(),
                 enabled=True,
                 caller_id='"Jôhn"',
@@ -947,6 +948,7 @@ class TestCreate(TestUser):
             caller_id='"fîrstname lâstname" <1000>',
             outgoing_caller_id='ôutgoing_caller_id',
             mobile_phone_number='1234567890',
+            mobile_fallback_enabled=True,
             call_permission_password='1234',
             enabled=False,
             username='username',
@@ -994,6 +996,7 @@ class TestCreate(TestUser):
                 caller_id='"fîrstname lâstname" <1000>',
                 outgoing_caller_id='ôutgoing_caller_id',
                 mobile_phone_number='1234567890',
+                mobile_fallback_enabled=True,
                 call_permission_password='1234',
                 enabled=False,
                 username='username',
@@ -1094,6 +1097,7 @@ class TestEdit(TestUser):
         user.caller_id = '"John Sparrow"'
         user.outgoing_caller_id = 'outgoing_caller_id'
         user.mobile_phone_number = '1234567890'
+        user.mobile_fallback_enabled = True
         user.call_permission_password = '1234'
         user.enabled = False
         user.username = 'username'
@@ -1137,6 +1141,7 @@ class TestEdit(TestUser):
                 caller_id='"John Sparrow"',
                 outgoing_caller_id='outgoing_caller_id',
                 mobile_phone_number='1234567890',
+                mobile_fallback_enabled=True,
                 call_permission_password='1234',
                 enabled=False,
                 username='username',
