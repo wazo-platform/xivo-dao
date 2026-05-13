@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import literal_column, text
@@ -193,11 +193,11 @@ SELECT stat_agent.id AS agent,
     results = {}
 
     for row in rows.all():
-        agent_id = row.agent
-        if agent_id not in results:
-            results[agent_id] = []
+        key = (row.agent, None)
+        if key not in results:
+            results[key] = []
 
-        results[agent_id].append((row.pauseall, row.unpauseall))
+        results[key].append((row.pauseall, row.unpauseall))
 
     return results
 
@@ -211,13 +211,58 @@ def get_login_intervals_in_range(session, start, end):
         ongoing_logins,
     )
 
-    unique_result = {}
-
+    output = {}
     for agent, logins in results.items():
         logins = _pick_longest_with_same_end(logins)
-        unique_result[agent] = sorted(list(set(logins)))
+        output[(agent, None)] = sorted(list(set(logins)))
 
-    return unique_result
+    membership = _get_agent_queue_membership_intervals(session, start, end)
+    for key, intervals in membership.items():
+        output[key] = intervals
+
+    return output
+
+
+def _get_agent_queue_membership_intervals(session, start, end):
+    query = '''\
+SELECT
+    agent_id,
+    queue_name,
+    event_time,
+    event_type,
+    LEAD(event_time) OVER w AS next_event_time
+FROM (
+    SELECT
+        stat_agent.id AS agent_id,
+        queue_log.queuename AS queue_name,
+        queue_log.time AS event_time,
+        queue_log.event AS event_type
+    FROM queue_log
+    JOIN stat_agent ON stat_agent.name = queue_log.agent
+    WHERE queue_log.event IN ('ADDMEMBER', 'REMOVEMEMBER')
+    AND queue_log.time < :end
+) membership_events
+WINDOW w AS (PARTITION BY agent_id, queue_name ORDER BY event_time)
+ORDER BY agent_id, queue_name, event_time
+'''
+    formatted_start = start.strftime(_STR_TIME_FMT)
+    formatted_end = end.strftime(_STR_TIME_FMT)
+    rows = session.execute(
+        text(query),
+        {'start': formatted_start, 'end': formatted_end},
+    )
+
+    intervals = {}
+    for row in rows:
+        if row.event_type != 'ADDMEMBER':
+            continue
+        interval_start = max(row.event_time, start)
+        interval_end = min(row.next_event_time or end, end)
+        if interval_end <= interval_start:
+            continue
+        key = (row.agent_id, row.queue_name)
+        intervals.setdefault(key, []).append((interval_start, interval_end))
+    return intervals
 
 
 def _merge_agent_statistics(*args):

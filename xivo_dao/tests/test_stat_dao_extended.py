@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -324,7 +324,7 @@ class TestStatDAO(DAOTestCase):
             result[agent] = sorted(logins, key=lambda login: login[0])
 
         expected = {
-            agent_id_1: [
+            (agent_id_1, None): [
                 (
                     dt(2012, 7, 21, 9, 59, 9, 999999, tzinfo=UTC),
                     dt(2012, 7, 21, 10, 54, 9, 999999, tzinfo=UTC),
@@ -359,7 +359,7 @@ class TestStatDAO(DAOTestCase):
             result[agent] = sorted(logins, key=lambda login: login[0])
 
         expected = {
-            agent_id_1: [
+            (agent_id_1, None): [
                 (
                     dt(2012, 7, 21, 9, 54, 9, 999999, tzinfo=UTC),
                     dt(2012, 7, 21, 10, 54, 9, 999999, tzinfo=UTC),

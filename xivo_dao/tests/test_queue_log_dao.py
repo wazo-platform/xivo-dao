@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -162,12 +162,16 @@ class TestQueueLogDAO(DAOTestCase):
 
         expected = {
             datetime(2012, 10, 1, 6, tzinfo=UTC): {
-                agent_id_1: {'wrapup_time': timedelta(seconds=45)},
-                agent_id_2: {'wrapup_time': timedelta(seconds=30)},
+                (agent_id_1, None): {'wrapup_time': timedelta(seconds=45)},
+                (agent_id_1, 'NONE'): {'wrapup_time': timedelta(seconds=45)},
+                (agent_id_2, None): {'wrapup_time': timedelta(seconds=30)},
+                (agent_id_2, 'NONE'): {'wrapup_time': timedelta(seconds=30)},
             },
             datetime(2012, 10, 1, 7, tzinfo=UTC): {
-                agent_id_1: {'wrapup_time': timedelta(seconds=35)},
-                agent_id_2: {'wrapup_time': timedelta(seconds=20)},
+                (agent_id_1, None): {'wrapup_time': timedelta(seconds=35)},
+                (agent_id_1, 'NONE'): {'wrapup_time': timedelta(seconds=35)},
+                (agent_id_2, None): {'wrapup_time': timedelta(seconds=20)},
+                (agent_id_2, 'NONE'): {'wrapup_time': timedelta(seconds=20)},
             },
         }
 
