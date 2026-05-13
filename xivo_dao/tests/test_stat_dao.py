@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -402,7 +402,7 @@ class TestStatDAO(DAOTestCase):
             self.session, self.start, self.end
         )
 
-        expected = {self.aid1: sorted([(logins[0]['time'], self.end)])}
+        expected = {(self.aid1, None): sorted([(logins[0]['time'], self.end)])}
 
         assert expected == result
 
@@ -501,7 +501,7 @@ class TestStatDAO(DAOTestCase):
             self.session, self.start, self.end
         )
 
-        expected = {self.aid1: sorted([(logintime, logouttime)])}
+        expected = {(self.aid1, None): sorted([(logintime, logouttime)])}
 
         assert expected == result
 
@@ -557,7 +557,7 @@ class TestStatDAO(DAOTestCase):
             self.session, self.start, self.end
         )
 
-        expected = {self.aid1: sorted([(logintime, logouttime)])}
+        expected = {(self.aid1, None): sorted([(logintime, logouttime)])}
 
         assert expected == result
 
@@ -616,7 +616,7 @@ class TestStatDAO(DAOTestCase):
         )
 
         expected = {
-            self.aid1: sorted(
+            (self.aid1, None): sorted(
                 [
                     (cb_logins[0]['time'], cb_logoffs[0]['time']),
                     (cb_logins[1]['time'], cb_logoffs[1]['time']),
@@ -654,7 +654,7 @@ class TestStatDAO(DAOTestCase):
         )
 
         expected = {
-            self.aid1: [(self.start, self.end)],
+            (self.aid1, None): [(self.start, self.end)],
         }
 
         assert expected == result
