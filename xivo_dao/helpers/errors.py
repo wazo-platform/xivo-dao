@@ -1,4 +1,4 @@
-# Copyright 2015-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.exception import InputError, NotFoundError, ResourceError
@@ -94,6 +94,10 @@ resource_not_associated = FormattedError(ResourceError, "{} is not associated wi
 missing_association = FormattedError(ResourceError, "{} must be associated with a {}")
 forward_destination_null = FormattedError(
     ResourceError, "Forward must be disabled to remove destination"
+)
+mobile_fallback_number_null = FormattedError(
+    ResourceError,
+    "PSTN fallback must be disabled when mobile phone number is not set",
 )
 unhandled_context_type = FormattedError(
     ResourceError, "ContextType '{}' cannot be associated"
