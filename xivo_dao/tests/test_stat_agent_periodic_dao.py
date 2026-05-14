@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -10,6 +10,7 @@ from sqlalchemy import func
 from xivo_dao import stat_agent_periodic_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
+from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -26,35 +27,42 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
 
         return agent.name, agent.id
 
+    def _insert_queue_to_stat_queue(self, name='test_queue'):
+        queue = StatQueue()
+        queue.name = name
+        queue.tenant_uuid = self.default_tenant.uuid
+        self.add_me(queue)
+        return queue.name, queue.id
+
     def test_insert_periodic_stat(self):
         _, agent_id_1 = self._insert_agent_to_stat_agent()
         _, agent_id_2 = self._insert_agent_to_stat_agent()
         stats = {
             dt(2012, 1, 1, 1, 0, 0, tzinfo=UTC): {
-                agent_id_1: {
+                (agent_id_1, None): {
                     'login_time': timedelta(minutes=50),
                     'pause_time': timedelta(minutes=13),
                 },
-                agent_id_2: {
+                (agent_id_2, None): {
                     'login_time': ONE_HOUR,
                     'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 1, 2, 0, 0, tzinfo=UTC): {
-                agent_id_1: {
+                (agent_id_1, None): {
                     'login_time': timedelta(minutes=20),
                     'pause_time': timedelta(minutes=33),
                 },
-                agent_id_2: {
+                (agent_id_2, None): {
                     'login_time': ONE_HOUR,
                     'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 1, 3, 0, 0, tzinfo=UTC): {
-                agent_id_2: {'login_time': ONE_HOUR, 'pause_time': ONE_HOUR},
+                (agent_id_2, None): {'login_time': ONE_HOUR, 'pause_time': ONE_HOUR},
             },
             dt(2012, 1, 1, 4, 0, 0, tzinfo=UTC): {
-                agent_id_2: {'login_time': ONE_HOUR, 'pause_time': ONE_HOUR},
+                (agent_id_2, None): {'login_time': ONE_HOUR, 'pause_time': ONE_HOUR},
             },
         }
 
@@ -74,13 +82,56 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             )
 
             assert result.login_time == timedelta(minutes=50)
+            assert result.stat_queue_id is None
         except LookupError:
             self.fail('Should have found a row')
+
+    def test_insert_periodic_stat_with_per_queue_row(self):
+        _, agent_id = self._insert_agent_to_stat_agent()
+        _, queue_id = self._insert_queue_to_stat_queue()
+        period_start = dt(2012, 1, 1, 1, 0, 0, tzinfo=UTC)
+        stats = {
+            (agent_id, None): {
+                'login_time': ONE_HOUR,
+                'pause_time': timedelta(minutes=5),
+                'wrapup_time': timedelta(minutes=2),
+            },
+            (agent_id, queue_id): {
+                'login_time': timedelta(minutes=30),
+                'wrapup_time': timedelta(minutes=1),
+            },
+        }
+
+        with flush_session(self.session):
+            stat_agent_periodic_dao.insert_stats(self.session, stats, period_start)
+
+        rows = (
+            self.session.query(StatAgentPeriodic)
+            .filter(StatAgentPeriodic.time == period_start)
+            .filter(StatAgentPeriodic.stat_agent_id == agent_id)
+            .order_by(StatAgentPeriodic.stat_queue_id.nullsfirst())
+            .all()
+        )
+
+        assert len(rows) == 2
+
+        global_row, queue_row = rows
+        assert global_row.stat_queue_id is None
+        assert global_row.login_time == ONE_HOUR
+        assert global_row.pause_time == timedelta(minutes=5)
+
+        assert queue_row.stat_queue_id == queue_id
+        assert queue_row.login_time == timedelta(minutes=30)
+        assert queue_row.pause_time == timedelta(0)
+        assert queue_row.wrapup_time == timedelta(minutes=1)
 
     def test_clean_table(self):
         _, agent_id = self._insert_agent_to_stat_agent()
         stats = {
-            agent_id: {'login_time': timedelta(minutes=15), 'pause_time': ONE_HOUR},
+            (agent_id, None): {
+                'login_time': timedelta(minutes=15),
+                'pause_time': ONE_HOUR,
+            },
         }
 
         stat_agent_periodic_dao.insert_stats(
@@ -97,19 +148,19 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         _, agent_id = self._insert_agent_to_stat_agent()
         stats = {
             dt(2012, 1, 1, tzinfo=UTC): {
-                agent_id: {
+                (agent_id, None): {
                     'login_time': timedelta(minutes=15),
                     'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 2, tzinfo=UTC): {
-                agent_id: {
+                (agent_id, None): {
                     'login_time': timedelta(minutes=20),
                     'pause_time': timedelta(minutes=13),
                 },
             },
             dt(2012, 1, 3, tzinfo=UTC): {
-                agent_id: {
+                (agent_id, None): {
                     'login_time': timedelta(minutes=25),
                     'pause_time': timedelta(minutes=13),
                 },
