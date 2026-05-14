@@ -3,7 +3,7 @@
 
 from sqlalchemy.types import Enum
 
-import xivo_dao.alchemy  # noqa: F401 - load every model so all enums register
+import xivo_dao.alchemy.all  # noqa: F401 - load every model so all enums register
 from xivo_dao.helpers.db_manager import Base
 
 
