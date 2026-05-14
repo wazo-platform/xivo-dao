@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -7,6 +7,7 @@ from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
 from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Enum, Integer, String, Text
 
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
 from xivo_dao.helpers.db_manager import Base
 
@@ -77,10 +78,7 @@ class Queue(Base, AsteriskOptionsMixin):
     weight = Column(Integer)
     timeoutrestart = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
-    category = Column(
-        Enum('group', 'queue', name='queue_category', metadata=Base.metadata),
-        nullable=False,
-    )
+    category = Column(enum.queue_category, nullable=False)
     timeoutpriority = Column(String(10), nullable=False, server_default='app')
     autofill = Column(Integer, nullable=False, server_default='1')
     autopause = Column(String(3), nullable=False, server_default='no')
