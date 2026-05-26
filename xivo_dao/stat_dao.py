@@ -177,8 +177,8 @@ SELECT stat_agent.id AS agent,
   GROUP BY stat_agent.id, unpauseall
 '''
 
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
+    formatted_start = start.strftime(_STR_TIME_FMT)
+    formatted_end = end.strftime(_STR_TIME_FMT)
 
     rows = (
         session.query(
@@ -187,7 +187,7 @@ SELECT stat_agent.id AS agent,
             literal_column('unpauseall'),
         )
         .from_statement(text(pause_in_range))
-        .params(start=start, end=end)
+        .params(start=formatted_start, end=formatted_end)
     )
 
     results = {}
