@@ -191,6 +191,7 @@ SELECT stat_agent.id AS agent,
     )
 
     results = {}
+    pauseall_by_agent = {}
 
     for row in rows.all():
         key = (row.agent, None)
@@ -198,8 +199,73 @@ SELECT stat_agent.id AS agent,
             results[key] = []
 
         results[key].append((row.pauseall, row.unpauseall))
+        pauseall_by_agent.setdefault(row.agent, []).append(
+            (row.pauseall, row.unpauseall)
+        )
+
+    per_queue = _get_per_queue_pause_intervals(session, start, end)
+
+    membership = _get_agent_queue_membership_intervals(session, start, end)
+    for (agent_id, queue_name), member_intervals in membership.items():
+        for pa_start, pa_end in pauseall_by_agent.get(agent_id, []):
+            pa_end_eff = pa_end if pa_end is not None else end
+            for m_start, m_end in member_intervals:
+                overlap_start = max(pa_start, m_start)
+                overlap_end = min(pa_end_eff, m_end)
+                if overlap_end > overlap_start:
+                    per_queue.setdefault((agent_id, queue_name), []).append(
+                        (overlap_start, overlap_end)
+                    )
+
+    for key, intervals in per_queue.items():
+        if len(intervals) > 1:
+            results[key] = _filter_overlap(intervals)
+        else:
+            results[key] = intervals
 
     return results
+
+
+def _get_per_queue_pause_intervals(session, start, end):
+    query = '''\
+SELECT
+    agent_id,
+    queue_name,
+    event_time,
+    event_type,
+    LEAD(event_time) OVER w AS next_event_time
+FROM (
+    SELECT
+        stat_agent.id AS agent_id,
+        queue_log.queuename AS queue_name,
+        queue_log.time AS event_time,
+        queue_log.event AS event_type
+    FROM queue_log
+    JOIN stat_agent ON stat_agent.name = queue_log.agent
+    WHERE queue_log.event IN ('PAUSE', 'UNPAUSE')
+    AND queue_log.time < :end
+) pause_events
+WINDOW w AS (PARTITION BY agent_id, queue_name ORDER BY event_time)
+ORDER BY agent_id, queue_name, event_time
+'''
+    formatted_start = start.strftime(_STR_TIME_FMT)
+    formatted_end = end.strftime(_STR_TIME_FMT)
+    rows = session.execute(
+        text(query),
+        {'start': formatted_start, 'end': formatted_end},
+    )
+
+    intervals = {}
+    for row in rows:
+        if row.event_type != 'PAUSE':
+            continue
+        interval_start = max(row.event_time, start)
+        interval_end = min(row.next_event_time or end, end)
+        if interval_end <= interval_start:
+            continue
+        key = (row.agent_id, row.queue_name)
+        intervals.setdefault(key, []).append((interval_start, interval_end))
+    return intervals
 
 
 def get_login_intervals_in_range(session, start, end):

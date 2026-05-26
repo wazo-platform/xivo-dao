@@ -373,6 +373,97 @@ class TestStatDAO(DAOTestCase):
 
         assert result == expected
 
+    def test_get_pause_intervals_in_range_per_queue(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent   | event   | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 09:00:00.000000+00 | NONE   | queue_a   | Agent/1 | PAUSE   |       |       |       |       |       |
+| 2012-07-21 09:30:00.000000+00 | NONE   | queue_a   | Agent/1 | UNPAUSE |       |       |       |       |       |
+| 2012-07-22 10:00:00.000000+00 | NONE   | queue_b   | Agent/1 | PAUSE   |       |       |       |       |       |
+| 2012-07-22 10:15:00.000000+00 | NONE   | queue_b   | Agent/1 | UNPAUSE |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
+
+        expected = {
+            (agent_id_1, 'queue_a'): [
+                (
+                    dt(2012, 7, 21, 9, 0, 0, tzinfo=UTC),
+                    dt(2012, 7, 21, 9, 30, 0, tzinfo=UTC),
+                ),
+            ],
+            (agent_id_1, 'queue_b'): [
+                (
+                    dt(2012, 7, 22, 10, 0, 0, tzinfo=UTC),
+                    dt(2012, 7, 22, 10, 15, 0, tzinfo=UTC),
+                ),
+            ],
+        }
+
+        assert expected == result
+
+    def test_get_pause_intervals_in_range_pauseall_intersect_membership(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent   | event        | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/1 | ADDMEMBER    |       |       |       |       |       |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_b   | Agent/1 | ADDMEMBER    |       |       |       |       |       |
+| 2012-07-21 09:00:00.000000+00 | NONE   | NONE      | Agent/1 | PAUSEALL     |       |       |       |       |       |
+| 2012-07-21 09:30:00.000000+00 | NONE   | NONE      | Agent/1 | UNPAUSEALL   |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_b   | Agent/1 | REMOVEMEMBER |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
+        for key in result:
+            result[key] = sorted(result[key], key=lambda interval: interval[0])
+
+        pauseall_interval = (
+            dt(2012, 7, 21, 9, 0, 0, tzinfo=UTC),
+            dt(2012, 7, 21, 9, 30, 0, tzinfo=UTC),
+        )
+        expected = {
+            (agent_id_1, None): [pauseall_interval],
+            (agent_id_1, 'queue_a'): [pauseall_interval],
+            (agent_id_1, 'queue_b'): [pauseall_interval],
+        }
+
+        assert expected == result
+
+    def test_get_pause_intervals_in_range_merges_per_queue_and_pauseall(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/1 | ADDMEMBER  |       |       |       |       |       |
+| 2012-07-21 09:00:00.000000+00 | NONE   | queue_a   | Agent/1 | PAUSE      |       |       |       |       |       |
+| 2012-07-21 09:15:00.000000+00 | NONE   | NONE      | Agent/1 | PAUSEALL   |       |       |       |       |       |
+| 2012-07-21 09:45:00.000000+00 | NONE   | NONE      | Agent/1 | UNPAUSEALL |       |       |       |       |       |
+| 2012-07-21 10:00:00.000000+00 | NONE   | queue_a   | Agent/1 | UNPAUSE    |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_id_1, 'queue_a')] == [
+            (
+                dt(2012, 7, 21, 9, 0, 0, tzinfo=UTC),
+                dt(2012, 7, 21, 10, 0, 0, tzinfo=UTC),
+            ),
+        ]
+
     def _insert_queue_log_data(self, queue_log_data):
         with flush_session(self.session):
             logs = parse_table(queue_log_data)
