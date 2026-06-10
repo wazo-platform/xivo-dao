@@ -233,7 +233,6 @@ def _get_per_queue_pause_intervals(session, start, end):
         end,
         open_event='PAUSE',
         close_event='UNPAUSE',
-        agent_join=_AGENT_NAME_JOIN,
     )
 
 
@@ -260,14 +259,6 @@ def get_login_intervals_in_range(session, start, end):
     return output
 
 
-_AGENT_NAME_JOIN = 'stat_agent.name = queue_log.agent'
-_AGENT_NAME_OR_INTERFACE_JOIN = '''\
-stat_agent.name = queue_log.agent
-        OR stat_agent.agent_id = CAST(
-            substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
-        )'''
-
-
 def _get_agent_queue_membership_intervals(session, start, end):
     return _get_open_close_intervals_by_queue(
         session,
@@ -275,14 +266,11 @@ def _get_agent_queue_membership_intervals(session, start, end):
         end,
         open_event='ADDMEMBER',
         close_event='REMOVEMEMBER',
-        agent_join=_AGENT_NAME_OR_INTERFACE_JOIN,
     )
 
 
-def _get_open_close_intervals_by_queue(
-    session, start, end, open_event, close_event, agent_join
-):
-    open_at_start_query = f'''\
+def _get_open_close_intervals_by_queue(session, start, end, open_event, close_event):
+    open_at_start_query = '''\
 SELECT
     agent_id,
     queue_name,
@@ -296,14 +284,17 @@ FROM (
         queue_log.event AS event_type
     FROM queue_log
     JOIN stat_agent ON (
-        {agent_join}
+        stat_agent.name = queue_log.agent
+        OR stat_agent.agent_id = CAST(
+            substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
+        )
     )
     WHERE queue_log.event IN (:open_event, :close_event)
     AND queue_log.time < :start
 ) past_events
 GROUP BY agent_id, queue_name
 '''
-    in_range_query = f'''\
+    in_range_query = '''\
 SELECT
     stat_agent.id AS agent_id,
     queue_log.queuename AS queue_name,
@@ -311,7 +302,10 @@ SELECT
     queue_log.event AS event_type
 FROM queue_log
 JOIN stat_agent ON (
-    {agent_join}
+    stat_agent.name = queue_log.agent
+    OR stat_agent.agent_id = CAST(
+        substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
+    )
 )
 WHERE queue_log.event IN (:open_event, :close_event)
 AND queue_log.time >= :start

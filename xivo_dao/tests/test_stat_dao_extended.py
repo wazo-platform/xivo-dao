@@ -464,6 +464,30 @@ class TestStatDAO(DAOTestCase):
             ),
         ]
 
+    def test_get_pause_intervals_in_range_per_queue_via_interface(self):
+        # Depending on Asterisk's 'log_membername_as_agent' option, PAUSE and
+        # UNPAUSE can carry the channel interface instead of the agent name.
+        _, agent_pk = self._insert_agent('Agent/52', agent_id=61)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent                     | event   | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 09:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | PAUSE   |       |       |       |       |       |
+| 2012-07-21 09:30:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | UNPAUSE |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_pk, 'queue_a')] == [
+            (
+                dt(2012, 7, 21, 9, 0, 0, tzinfo=UTC),
+                dt(2012, 7, 21, 9, 30, 0, tzinfo=UTC),
+            ),
+        ]
+
     def test_get_login_intervals_in_range_per_queue_via_interface(self):
         # Asterisk logs ADDMEMBER/REMOVEMEMBER with the member *interface*
         # (Local/id-<agent.id>@agentcallback), not the membername (Agent/<number>).
