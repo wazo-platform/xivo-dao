@@ -321,13 +321,15 @@ ORDER BY stat_agent.id, queue_log.queuename, queue_log.time
 
     open_since = {}
     for row in session.execute(text(open_at_start_query), state_params):
-        if row.last_open is None:
+        if row.queue_name is None or row.last_open is None:
             continue
         if row.last_close is None or row.last_close < row.last_open:
             open_since[(row.agent_id, row.queue_name)] = start
 
     intervals = {}
     for row in session.execute(text(in_range_query), range_params):
+        if row.queue_name is None:
+            continue
         key = (row.agent_id, row.queue_name)
         if row.event_type == open_event:
             open_since.setdefault(key, row.event_time)

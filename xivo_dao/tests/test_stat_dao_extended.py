@@ -464,6 +464,40 @@ class TestStatDAO(DAOTestCase):
             ),
         ]
 
+    def test_get_pause_intervals_in_range_ignores_null_queuename(self):
+        # queue_log.queuename is nullable: a NULL queuename must not become a
+        # per-queue key that collides with the global (agent, None) entry.
+        _, agent_pk = self._insert_agent('Agent/1')
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 09:00:00.000000+00 | NONE   | NONE      | Agent/1 | PAUSEALL   |       |       |       |       |       |
+| 2012-07-21 09:30:00.000000+00 | NONE   | NONE      | Agent/1 | UNPAUSEALL |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+        with flush_session(self.session):
+            self.session.add(
+                QueueLog(
+                    time=dt(2012, 7, 21, 10, 0, 0, tzinfo=UTC),
+                    callid='NONE',
+                    queuename=None,
+                    agent='Agent/1',
+                    event='PAUSE',
+                )
+            )
+
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_pk, None)] == [
+            (
+                dt(2012, 7, 21, 9, 0, 0, tzinfo=UTC),
+                dt(2012, 7, 21, 9, 30, 0, tzinfo=UTC),
+            ),
+        ]
+
     def test_get_pause_intervals_in_range_per_queue_via_interface(self):
         # Depending on Asterisk's 'log_membername_as_agent' option, PAUSE and
         # UNPAUSE can carry the channel interface instead of the agent name.
