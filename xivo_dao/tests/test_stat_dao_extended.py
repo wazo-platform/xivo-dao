@@ -464,6 +464,54 @@ class TestStatDAO(DAOTestCase):
             ),
         ]
 
+    def test_get_login_intervals_in_range_per_queue_via_interface(self):
+        # Asterisk logs ADDMEMBER/REMOVEMEMBER with the member *interface*
+        # (Local/id-<agent.id>@agentcallback), not the membername (Agent/<number>).
+        # The per-queue login must still resolve to the right agent.
+        _, agent_pk = self._insert_agent('Agent/52', agent_id=61)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent                     | event        | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | ADDMEMBER    |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | REMOVEMEMBER |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_pk, 'queue_a')] == [
+            (
+                dt(2012, 7, 21, 8, 0, 0, tzinfo=UTC),
+                dt(2012, 7, 21, 12, 0, 0, tzinfo=UTC),
+            ),
+        ]
+
+    def test_get_login_intervals_in_range_per_queue_via_membername(self):
+        # Back-compat: events logged with the membername must still resolve.
+        _, agent_pk = self._insert_agent('Agent/52', agent_id=61)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent    | event        | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/52 | ADDMEMBER    |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Agent/52 | REMOVEMEMBER |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_pk, 'queue_a')] == [
+            (
+                dt(2012, 7, 21, 8, 0, 0, tzinfo=UTC),
+                dt(2012, 7, 21, 12, 0, 0, tzinfo=UTC),
+            ),
+        ]
+
     def _insert_queue_log_data(self, queue_log_data):
         with flush_session(self.session):
             logs = parse_table(queue_log_data)
@@ -472,9 +520,9 @@ class TestStatDAO(DAOTestCase):
         self.session.expire_all()
         return queue_logs
 
-    def _insert_agent(self, aname, tenant_uuid=None):
+    def _insert_agent(self, aname, tenant_uuid=None, agent_id=None):
         tenant_uuid = tenant_uuid or self.default_tenant.uuid
-        a = StatAgent(name=aname, tenant_uuid=tenant_uuid)
+        a = StatAgent(name=aname, tenant_uuid=tenant_uuid, agent_id=agent_id)
 
         self.add_me(a)
 

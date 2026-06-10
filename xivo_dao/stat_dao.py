@@ -304,7 +304,12 @@ FROM (
         queue_log.time AS event_time,
         queue_log.event AS event_type
     FROM queue_log
-    JOIN stat_agent ON stat_agent.name = queue_log.agent
+    JOIN stat_agent ON (
+        stat_agent.name = queue_log.agent
+        OR stat_agent.agent_id = CAST(
+            substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
+        )
+    )
     WHERE queue_log.event IN ('ADDMEMBER', 'REMOVEMEMBER')
     AND queue_log.time < :end
 ) membership_events
