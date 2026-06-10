@@ -473,9 +473,10 @@ class TestStatDAO(DAOTestCase):
         end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
-| time                          | callid | queuename | agent                     | event        | data1 | data2 | data3 | data4 | data5 |
-| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | ADDMEMBER    |       |       |       |       |       |
-| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | REMOVEMEMBER |       |       |       |       |       |
+| time                          | callid | queuename | agent                     | event              | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 07:55:00.000000+00 | NONE   | NONE      | Agent/52                  | AGENTCALLBACKLOGIN |       |       |       |       |       |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | ADDMEMBER          |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Local/id-61@agentcallback | REMOVEMEMBER       |       |       |       |       |       |
 '''
 
         self._insert_queue_log_data(queue_log_data)
@@ -496,9 +497,10 @@ class TestStatDAO(DAOTestCase):
         end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
 
         queue_log_data = '''\
-| time                          | callid | queuename | agent    | event        | data1 | data2 | data3 | data4 | data5 |
-| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/52 | ADDMEMBER    |       |       |       |       |       |
-| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Agent/52 | REMOVEMEMBER |       |       |       |       |       |
+| time                          | callid | queuename | agent    | event              | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 07:55:00.000000+00 | NONE   | NONE      | Agent/52 | AGENTCALLBACKLOGIN |       |       |       |       |       |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/52 | ADDMEMBER          |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Agent/52 | REMOVEMEMBER       |       |       |       |       |       |
 '''
 
         self._insert_queue_log_data(queue_log_data)
@@ -509,6 +511,100 @@ class TestStatDAO(DAOTestCase):
             (
                 dt(2012, 7, 21, 8, 0, 0, tzinfo=UTC),
                 dt(2012, 7, 21, 12, 0, 0, tzinfo=UTC),
+            ),
+        ]
+
+    def test_get_login_intervals_in_range_per_queue_without_global_login(self):
+        # Per-queue login is global login ∩ membership: membership events
+        # alone must not produce per-queue login time.
+        _, agent_pk = self._insert_agent('Agent/52', agent_id=61)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent    | event        | data1 | data2 | data3 | data4 | data5 |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/52 | ADDMEMBER    |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Agent/52 | REMOVEMEMBER |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, start, end)
+
+        assert (agent_pk, 'queue_a') not in result
+
+    def test_get_login_intervals_in_range_per_queue_clipped_by_global_logoff(self):
+        # A membership left open (missing REMOVEMEMBER) must not extend past
+        # the agent's global logoff.
+        _, agent_pk = self._insert_agent('Agent/52', agent_id=61)
+        context = self.add_context()
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = f'''\
+| time                          | callid | queuename | agent    | event               | data1               | data2 | data3 | data4 | data5 |
+| 2012-07-21 08:00:00.000000+00 | NONE   | NONE      | Agent/52 | AGENTCALLBACKLOGIN  | 1000@{context.name} |       |       |       |       |
+| 2012-07-21 08:00:00.000000+00 | NONE   | queue_a   | Agent/52 | ADDMEMBER           |                     |       |       |       |       |
+| 2012-07-21 10:00:00.000000+00 | NONE   | NONE      | Agent/52 | AGENTCALLBACKLOGOFF | 1000@{context.name} | 7200  |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_pk, 'queue_a')] == [
+            (
+                dt(2012, 7, 21, 8, 0, 0, tzinfo=UTC),
+                dt(2012, 7, 21, 10, 0, 0, tzinfo=UTC),
+            ),
+        ]
+
+    def test_get_login_intervals_in_range_per_queue_membership_open_at_start(self):
+        # An ADDMEMBER before the range with no RE-ADD in range must still
+        # count: the membership is open when the range starts.
+        _, agent_pk = self._insert_agent('Agent/52', agent_id=61)
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent    | event              | data1 | data2 | data3 | data4 | data5 |
+| 2012-06-30 07:55:00.000000+00 | NONE   | NONE      | Agent/52 | AGENTCALLBACKLOGIN |       |       |       |       |       |
+| 2012-06-30 08:00:00.000000+00 | NONE   | queue_a   | Agent/52 | ADDMEMBER          |       |       |       |       |       |
+| 2012-07-21 12:00:00.000000+00 | NONE   | queue_a   | Agent/52 | REMOVEMEMBER       |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_pk, 'queue_a')] == [
+            (
+                start,
+                dt(2012, 7, 21, 12, 0, 0, tzinfo=UTC),
+            ),
+        ]
+
+    def test_get_pause_intervals_in_range_per_queue_pause_open_at_start(self):
+        # A PAUSE before the range with the UNPAUSE in range must count from
+        # the range start.
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        start = dt(2012, 7, 1, tzinfo=UTC)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999, tzinfo=UTC)
+
+        queue_log_data = '''\
+| time                          | callid | queuename | agent   | event   | data1 | data2 | data3 | data4 | data5 |
+| 2012-06-30 09:00:00.000000+00 | NONE   | queue_a   | Agent/1 | PAUSE   |       |       |       |       |       |
+| 2012-07-21 10:00:00.000000+00 | NONE   | queue_a   | Agent/1 | UNPAUSE |       |       |       |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
+
+        assert result[(agent_id_1, 'queue_a')] == [
+            (
+                start,
+                dt(2012, 7, 21, 10, 0, 0, tzinfo=UTC),
             ),
         ]
 

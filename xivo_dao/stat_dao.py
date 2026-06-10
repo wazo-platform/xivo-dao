@@ -227,45 +227,14 @@ SELECT stat_agent.id AS agent,
 
 
 def _get_per_queue_pause_intervals(session, start, end):
-    query = '''\
-SELECT
-    agent_id,
-    queue_name,
-    event_time,
-    event_type,
-    LEAD(event_time) OVER w AS next_event_time
-FROM (
-    SELECT
-        stat_agent.id AS agent_id,
-        queue_log.queuename AS queue_name,
-        queue_log.time AS event_time,
-        queue_log.event AS event_type
-    FROM queue_log
-    JOIN stat_agent ON stat_agent.name = queue_log.agent
-    WHERE queue_log.event IN ('PAUSE', 'UNPAUSE')
-    AND queue_log.time < :end
-) pause_events
-WINDOW w AS (PARTITION BY agent_id, queue_name ORDER BY event_time)
-ORDER BY agent_id, queue_name, event_time
-'''
-    formatted_start = start.strftime(_STR_TIME_FMT)
-    formatted_end = end.strftime(_STR_TIME_FMT)
-    rows = session.execute(
-        text(query),
-        {'start': formatted_start, 'end': formatted_end},
+    return _get_open_close_intervals_by_queue(
+        session,
+        start,
+        end,
+        open_event='PAUSE',
+        close_event='UNPAUSE',
+        agent_join=_AGENT_NAME_JOIN,
     )
-
-    intervals = {}
-    for row in rows:
-        if row.event_type != 'PAUSE':
-            continue
-        interval_start = max(row.event_time, start)
-        interval_end = min(row.next_event_time or end, end)
-        if interval_end <= interval_start:
-            continue
-        key = (row.agent_id, row.queue_name)
-        intervals.setdefault(key, []).append((interval_start, interval_end))
-    return intervals
 
 
 def get_login_intervals_in_range(session, start, end):
@@ -283,20 +252,42 @@ def get_login_intervals_in_range(session, start, end):
         output[(agent, None)] = sorted(list(set(logins)))
 
     membership = _get_agent_queue_membership_intervals(session, start, end)
-    for key, intervals in membership.items():
-        output[key] = intervals
+    for (agent_id, queue_name), intervals in membership.items():
+        logged_in = _intersect_intervals(output.get((agent_id, None), []), intervals)
+        if logged_in:
+            output[(agent_id, queue_name)] = logged_in
 
     return output
 
 
+_AGENT_NAME_JOIN = 'stat_agent.name = queue_log.agent'
+_AGENT_NAME_OR_INTERFACE_JOIN = '''\
+stat_agent.name = queue_log.agent
+        OR stat_agent.agent_id = CAST(
+            substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
+        )'''
+
+
 def _get_agent_queue_membership_intervals(session, start, end):
-    query = '''\
+    return _get_open_close_intervals_by_queue(
+        session,
+        start,
+        end,
+        open_event='ADDMEMBER',
+        close_event='REMOVEMEMBER',
+        agent_join=_AGENT_NAME_OR_INTERFACE_JOIN,
+    )
+
+
+def _get_open_close_intervals_by_queue(
+    session, start, end, open_event, close_event, agent_join
+):
+    open_at_start_query = f'''\
 SELECT
     agent_id,
     queue_name,
-    event_time,
-    event_type,
-    LEAD(event_time) OVER w AS next_event_time
+    MAX(CASE WHEN event_type = :open_event THEN event_time END) AS last_open,
+    MAX(CASE WHEN event_type = :close_event THEN event_time END) AS last_close
 FROM (
     SELECT
         stat_agent.id AS agent_id,
@@ -305,34 +296,53 @@ FROM (
         queue_log.event AS event_type
     FROM queue_log
     JOIN stat_agent ON (
-        stat_agent.name = queue_log.agent
-        OR stat_agent.agent_id = CAST(
-            substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
-        )
+        {agent_join}
     )
-    WHERE queue_log.event IN ('ADDMEMBER', 'REMOVEMEMBER')
-    AND queue_log.time < :end
-) membership_events
-WINDOW w AS (PARTITION BY agent_id, queue_name ORDER BY event_time)
-ORDER BY agent_id, queue_name, event_time
+    WHERE queue_log.event IN (:open_event, :close_event)
+    AND queue_log.time < :start
+) past_events
+GROUP BY agent_id, queue_name
 '''
-    formatted_start = start.strftime(_STR_TIME_FMT)
-    formatted_end = end.strftime(_STR_TIME_FMT)
-    rows = session.execute(
-        text(query),
-        {'start': formatted_start, 'end': formatted_end},
-    )
+    in_range_query = f'''\
+SELECT
+    stat_agent.id AS agent_id,
+    queue_log.queuename AS queue_name,
+    queue_log.time AS event_time,
+    queue_log.event AS event_type
+FROM queue_log
+JOIN stat_agent ON (
+    {agent_join}
+)
+WHERE queue_log.event IN (:open_event, :close_event)
+AND queue_log.time >= :start
+AND queue_log.time < :end
+ORDER BY stat_agent.id, queue_log.queuename, queue_log.time
+'''
+    state_params = {
+        'start': start.strftime(_STR_TIME_FMT),
+        'open_event': open_event,
+        'close_event': close_event,
+    }
+    range_params = {**state_params, 'end': end.strftime(_STR_TIME_FMT)}
+
+    open_since = {}
+    for row in session.execute(text(open_at_start_query), state_params):
+        if row.last_open is None:
+            continue
+        if row.last_close is None or row.last_close < row.last_open:
+            open_since[(row.agent_id, row.queue_name)] = start
 
     intervals = {}
-    for row in rows:
-        if row.event_type != 'ADDMEMBER':
-            continue
-        interval_start = max(row.event_time, start)
-        interval_end = min(row.next_event_time or end, end)
-        if interval_end <= interval_start:
-            continue
+    for row in session.execute(text(in_range_query), range_params):
         key = (row.agent_id, row.queue_name)
-        intervals.setdefault(key, []).append((interval_start, interval_end))
+        if row.event_type == open_event:
+            open_since.setdefault(key, row.event_time)
+        elif key in open_since:
+            opened_at = open_since.pop(key)
+            if opened_at < row.event_time:
+                intervals.setdefault(key, []).append((opened_at, row.event_time))
+    for key, opened_at in open_since.items():
+        intervals.setdefault(key, []).append((opened_at, end))
     return intervals
 
 
@@ -379,6 +389,23 @@ def _filter_overlap(items):
             if not stack:
                 result.append((start, end))
 
+    return result
+
+
+def _intersect_intervals(first, second):
+    first = sorted(first)
+    second = sorted(second)
+    result = []
+    i = j = 0
+    while i < len(first) and j < len(second):
+        start = max(first[i][0], second[j][0])
+        end = min(first[i][1], second[j][1])
+        if start < end:
+            result.append((start, end))
+        if first[i][1] < second[j][1]:
+            i += 1
+        else:
+            j += 1
     return result
 
 
