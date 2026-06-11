@@ -58,7 +58,9 @@ AND
             row.start,
             row.end,
         )
-        keys = ((agent_id, None), (agent_id, queue_name))
+        # a set: when queue_name is NULL both keys collapse to (agent_id, None),
+        # which must only be accumulated once
+        keys = {(agent_id, None), (agent_id, queue_name)}
 
         starting_period = _find_including_period(periods, wstart)
         ending_period = _find_including_period(periods, wend)
