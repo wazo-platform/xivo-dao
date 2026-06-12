@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import literal_column, text
@@ -177,8 +177,8 @@ SELECT stat_agent.id AS agent,
   GROUP BY stat_agent.id, unpauseall
 '''
 
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
+    formatted_start = start.strftime(_STR_TIME_FMT)
+    formatted_end = end.strftime(_STR_TIME_FMT)
 
     rows = (
         session.query(
@@ -187,19 +187,53 @@ SELECT stat_agent.id AS agent,
             literal_column('unpauseall'),
         )
         .from_statement(text(pause_in_range))
-        .params(start=start, end=end)
+        .params(start=formatted_start, end=formatted_end)
     )
 
     results = {}
+    pauseall_by_agent = {}
 
     for row in rows.all():
-        agent_id = row.agent
-        if agent_id not in results:
-            results[agent_id] = []
+        key = (row.agent, None)
+        if key not in results:
+            results[key] = []
 
-        results[agent_id].append((row.pauseall, row.unpauseall))
+        results[key].append((row.pauseall, row.unpauseall))
+        pauseall_by_agent.setdefault(row.agent, []).append(
+            (row.pauseall, row.unpauseall)
+        )
+
+    per_queue = _get_per_queue_pause_intervals(session, start, end)
+
+    membership = _get_agent_queue_membership_intervals(session, start, end)
+    for (agent_id, queue_name), member_intervals in membership.items():
+        for pa_start, pa_end in pauseall_by_agent.get(agent_id, []):
+            pa_end_eff = pa_end if pa_end is not None else end
+            for m_start, m_end in member_intervals:
+                overlap_start = max(pa_start, m_start)
+                overlap_end = min(pa_end_eff, m_end)
+                if overlap_end > overlap_start:
+                    per_queue.setdefault((agent_id, queue_name), []).append(
+                        (overlap_start, overlap_end)
+                    )
+
+    for key, intervals in per_queue.items():
+        if len(intervals) > 1:
+            results[key] = _filter_overlap(intervals)
+        else:
+            results[key] = intervals
 
     return results
+
+
+def _get_per_queue_pause_intervals(session, start, end):
+    return _get_open_close_intervals_by_queue(
+        session,
+        start,
+        end,
+        open_event='PAUSE',
+        close_event='UNPAUSE',
+    )
 
 
 def get_login_intervals_in_range(session, start, end):
@@ -211,13 +245,101 @@ def get_login_intervals_in_range(session, start, end):
         ongoing_logins,
     )
 
-    unique_result = {}
-
+    output = {}
     for agent, logins in results.items():
         logins = _pick_longest_with_same_end(logins)
-        unique_result[agent] = sorted(list(set(logins)))
+        output[(agent, None)] = sorted(list(set(logins)))
 
-    return unique_result
+    membership = _get_agent_queue_membership_intervals(session, start, end)
+    for (agent_id, queue_name), intervals in membership.items():
+        logged_in = _intersect_intervals(output.get((agent_id, None), []), intervals)
+        if logged_in:
+            output[(agent_id, queue_name)] = logged_in
+
+    return output
+
+
+def _get_agent_queue_membership_intervals(session, start, end):
+    return _get_open_close_intervals_by_queue(
+        session,
+        start,
+        end,
+        open_event='ADDMEMBER',
+        close_event='REMOVEMEMBER',
+    )
+
+
+def _get_open_close_intervals_by_queue(session, start, end, open_event, close_event):
+    open_at_start_query = '''\
+SELECT
+    agent_id,
+    queue_name,
+    MAX(CASE WHEN event_type = :open_event THEN event_time END) AS last_open,
+    MAX(CASE WHEN event_type = :close_event THEN event_time END) AS last_close
+FROM (
+    SELECT
+        stat_agent.id AS agent_id,
+        queue_log.queuename AS queue_name,
+        queue_log.time AS event_time,
+        queue_log.event AS event_type
+    FROM queue_log
+    JOIN stat_agent ON (
+        stat_agent.name = queue_log.agent
+        OR stat_agent.agent_id = CAST(
+            substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
+        )
+    )
+    WHERE queue_log.event IN (:open_event, :close_event)
+    AND queue_log.time < :start
+) past_events
+GROUP BY agent_id, queue_name
+'''
+    in_range_query = '''\
+SELECT
+    stat_agent.id AS agent_id,
+    queue_log.queuename AS queue_name,
+    queue_log.time AS event_time,
+    queue_log.event AS event_type
+FROM queue_log
+JOIN stat_agent ON (
+    stat_agent.name = queue_log.agent
+    OR stat_agent.agent_id = CAST(
+        substring(queue_log.agent FROM '^Local/id-([0-9]+)@agentcallback') AS INTEGER
+    )
+)
+WHERE queue_log.event IN (:open_event, :close_event)
+AND queue_log.time >= :start
+AND queue_log.time < :end
+ORDER BY stat_agent.id, queue_log.queuename, queue_log.time
+'''
+    state_params = {
+        'start': start.strftime(_STR_TIME_FMT),
+        'open_event': open_event,
+        'close_event': close_event,
+    }
+    range_params = {**state_params, 'end': end.strftime(_STR_TIME_FMT)}
+
+    open_since = {}
+    for row in session.execute(text(open_at_start_query), state_params):
+        if row.queue_name is None or row.last_open is None:
+            continue
+        if row.last_close is None or row.last_close < row.last_open:
+            open_since[(row.agent_id, row.queue_name)] = start
+
+    intervals = {}
+    for row in session.execute(text(in_range_query), range_params):
+        if row.queue_name is None:
+            continue
+        key = (row.agent_id, row.queue_name)
+        if row.event_type == open_event:
+            open_since.setdefault(key, row.event_time)
+        elif key in open_since:
+            opened_at = open_since.pop(key)
+            if opened_at < row.event_time:
+                intervals.setdefault(key, []).append((opened_at, row.event_time))
+    for key, opened_at in open_since.items():
+        intervals.setdefault(key, []).append((opened_at, end))
+    return intervals
 
 
 def _merge_agent_statistics(*args):
@@ -263,6 +385,23 @@ def _filter_overlap(items):
             if not stack:
                 result.append((start, end))
 
+    return result
+
+
+def _intersect_intervals(first, second):
+    first = sorted(first)
+    second = sorted(second)
+    result = []
+    i = j = 0
+    while i < len(first) and j < len(second):
+        start = max(first[i][0], second[j][0])
+        end = min(first[i][1], second[j][1])
+        if start < end:
+            result.append((start, end))
+        if first[i][1] < second[j][1]:
+            i += 1
+        else:
+            j += 1
     return result
 
 

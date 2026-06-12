@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -23,6 +23,7 @@ def get_wrapup_times(session, start, end, interval):
 SELECT
     queue_log.time AS start,
     (queue_log.time + (queue_log.data1 || ' seconds')::INTERVAL) AS end,
+    queue_log.queuename AS queue_name,
     stat_agent.id AS agent_id
 FROM
     queue_log
@@ -40,7 +41,10 @@ AND
 
     rows = (
         session.query(
-            literal_column('start'), literal_column('end'), literal_column('agent_id')
+            literal_column('start'),
+            literal_column('end'),
+            literal_column('queue_name'),
+            literal_column('agent_id'),
         )
         .from_statement(text(wrapup_times_query))
         .params(start=formatted_start, end=formatted_end)
@@ -48,7 +52,15 @@ AND
 
     results = {}
     for row in rows.all():
-        agent_id, wstart, wend = row.agent_id, row.start, row.end
+        agent_id, queue_name, wstart, wend = (
+            row.agent_id,
+            row.queue_name,
+            row.start,
+            row.end,
+        )
+        # a set: when queue_name is NULL both keys collapse to (agent_id, None),
+        # which must only be accumulated once
+        keys = {(agent_id, None), (agent_id, queue_name)}
 
         starting_period = _find_including_period(periods, wstart)
         ending_period = _find_including_period(periods, wend)
@@ -62,19 +74,21 @@ AND
             range_end = starting_period + interval
             wend_in_start = wend if wend < range_end else range_end
             time_in_period = wend_in_start - wstart
-            if agent_id not in results[starting_period]:
-                results[starting_period][agent_id] = {
-                    'wrapup_time': timedelta(seconds=0)
-                }
-            results[starting_period][agent_id]['wrapup_time'] += time_in_period
+            for key in keys:
+                if key not in results[starting_period]:
+                    results[starting_period][key] = {
+                        'wrapup_time': timedelta(seconds=0)
+                    }
+                results[starting_period][key]['wrapup_time'] += time_in_period
 
         if ending_period == starting_period:
             continue
 
         time_in_period = wend - ending_period
-        if agent_id not in results[ending_period]:
-            results[ending_period][agent_id] = {'wrapup_time': timedelta(seconds=0)}
-        results[ending_period][agent_id]['wrapup_time'] += time_in_period
+        for key in keys:
+            if key not in results[ending_period]:
+                results[ending_period][key] = {'wrapup_time': timedelta(seconds=0)}
+            results[ending_period][key]['wrapup_time'] += time_in_period
 
     return results
 
