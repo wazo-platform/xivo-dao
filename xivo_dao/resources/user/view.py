@@ -130,7 +130,7 @@ class SummaryView(View):
 
 class LinePresenceView(View):
     def query(self, session):
-        line_obj = func.json_build_object(
+        line_obj = func.jsonb_build_object(
             'id',
             Line.id,
             'name',
@@ -139,26 +139,27 @@ class LinePresenceView(View):
             Line.protocol,
         )
         lines = (
-            select(func.json_agg(aggregate_order_by(line_obj, Line.id)))
+            select(
+                UserLine.user_id.label('user_id'),
+                func.jsonb_agg(aggregate_order_by(line_obj, Line.id)).label('lines'),
+            )
             .select_from(UserLine)
             .join(Line, Line.id == UserLine.line_id)
-            .where(UserLine.user_id == User.id)
             .where(Line.commented == 0)
-            .correlate(User)
-            .scalar_subquery()
-            .label('lines')
+            .group_by(UserLine.user_id)
+            .subquery()
         )
         return (
             session.query(
                 User.uuid.label('uuid'),
                 User.tenant_uuid.label('tenant_uuid'),
                 User.dnd_enabled.label('dnd_enabled'),
-                lines,
+                lines.c.lines.label('lines'),
                 User.firstname.label('firstname'),
                 User.lastname.label('lastname'),
             )
             .select_from(User)
-            .group_by(User.id)
+            .outerjoin(lines, lines.c.user_id == User.id)
         )
 
     def convert(self, row):

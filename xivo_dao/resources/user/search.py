@@ -62,6 +62,9 @@ config = SearchConfig(
 
 class UserSearchSystem(SearchSystem):
     def search_from_query(self, query, parameters):
+        line_presence_view = parameters.get('view') == 'line_presence'
+        searching = bool(parameters.get('search') or parameters.get('exten'))
+
         if 'uuid' in parameters and isinstance(parameters['uuid'], str):
             uuids = parameters.pop('uuid').split(',')
             query = self._filter_exact_match_uuids(query, uuids)
@@ -76,7 +79,10 @@ class UserSearchSystem(SearchSystem):
             extens = parameters.pop('mobile_phone_number').split(',')
             query = self._filter_exact_match_mobile_phone_numbers(query, extens)
 
-        query = self._search_on_extension(query)
+        if not line_presence_view or searching:
+            query = self._search_on_extension(query)
+            if line_presence_view:
+                query = query.distinct()
         return super().search_from_query(query, parameters)
 
     def _filter_exact_match_uuids(self, query, uuids):
