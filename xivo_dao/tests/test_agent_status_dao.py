@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import namedtuple
@@ -756,12 +756,31 @@ class TestAgentStatusDao(DAOTestCase):
 
     def test_get_agent_login_status_by_id_for_logoff(self):
         agent = self.add_agent()
-        self._insert_agent_login_status(agent.id, agent.number)
+        queue = self.add_queuefeatures(name='queue1')
+        login_status = self._insert_agent_login_status(agent.id, agent.number)
+        self._insert_agent_membership(agent.id, queue.id, queue.name, queue_penalty=42)
 
         agent_login_status = agent_status_dao.get_agent_login_status_by_id_for_logoff(
             agent.id
         )
-        assert_that(agent_login_status, has_properties(agent_id=agent.id))
+        assert_that(
+            agent_login_status,
+            has_properties(
+                agent_id=agent.id,
+                queues=contains_exactly(
+                    has_properties(
+                        id=queue.id,
+                        name=queue.name,
+                        display_name=queue.displayname,
+                        penalty=42,
+                        logged=True,
+                        paused=login_status.paused,
+                        paused_reason=login_status.paused_reason,
+                        login_at=login_status.login_at,
+                    ),
+                ),
+            ),
+        )
 
         agent_status_dao.log_off_agent(agent.id)
 

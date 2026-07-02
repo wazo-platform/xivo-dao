@@ -1,4 +1,4 @@
-# Copyright 2007-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -105,12 +105,25 @@ def get_agent_login_status_by_id_for_logoff(
     )
     if not status:
         return None
-    queues = (
-        session.query(QueueFeatures)
+    memberships = (
+        session.query(QueueFeatures, AgentMembershipStatus.penalty)
         .join(AgentMembershipStatus, AgentMembershipStatus.queue_id == QueueFeatures.id)
         .filter(AgentMembershipStatus.agent_id == agent_id)
         .all()
     )
+    queues = [
+        _Queue(
+            id=queue.id,
+            name=queue.name,
+            display_name=queue.displayname,
+            penalty=penalty,
+            logged=True,
+            paused=status.paused,
+            paused_reason=status.paused_reason,
+            login_at=status.login_at,
+        )
+        for queue, penalty in memberships
+    ]
     agent = status.agent
     user_ids = [user.id for user in agent.users] if agent else []
     return _AgentStatus(
