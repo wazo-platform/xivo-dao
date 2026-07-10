@@ -13,6 +13,7 @@ DEFAULT_DB_URI = (
     'postgresql://asterisk:proformatique@localhost/asterisk?application_name=xivo-dao'
 )
 DEFAULT_POOL_SIZE = 16
+DB_POOL_SPARE_CONN = 10
 
 logger = logging.getLogger(__name__)
 Session = scoped_session(sessionmaker())
@@ -108,7 +109,11 @@ def init_db_from_config(config=None):
     # Dynamic HTTP thread pool: retain connections only for the always-alive
     # threads. Bursts borrow overflow connections, which SQLAlchemy closes on
     # return — mirroring the thread pool shrinking back after the burst.
-    init_db(url, pool_size=min_threads, max_overflow=max_threads - min_threads)
+    init_db(
+        url,
+        pool_size=min_threads,
+        max_overflow=max_threads - min_threads + DB_POOL_SPARE_CONN,
+    )
 
 
 def default_config():
