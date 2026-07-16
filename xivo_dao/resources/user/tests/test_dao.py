@@ -702,6 +702,83 @@ class TestLinePresenceView(TestSearch):
 
         self.assert_search_returns_result(expected, view='line_presence')
 
+    def test_given_user_with_multiple_lines_then_all_non_commented_lines_are_returned(
+        self,
+    ):
+        sip_1 = self.add_endpoint_sip()
+        sip_2 = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_exten(
+            firstname='bob', endpoint_sip_uuid=sip_1.uuid
+        )
+        second_line = self.add_line(commented=0, endpoint_sip_uuid=sip_2.uuid)
+        self.add_user_line(
+            user_id=user_line.user.id, line_id=second_line.id, main_line=False
+        )
+
+        expected_lines = sorted(
+            [
+                {
+                    'id': user_line.line_id,
+                    'name': user_line.line.name,
+                    'protocol': 'sip',
+                },
+                {
+                    'id': second_line.id,
+                    'name': second_line.name,
+                    'protocol': 'sip',
+                },
+            ],
+            key=lambda line: line['id'],
+        )
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user_line.user.uuid,
+                    tenant_uuid=user_line.user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=expected_lines,
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='line_presence')
+
+    def test_given_exten_filter_with_line_presence_view_then_returns_one_result(self):
+        sip = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_exten(
+            firstname='bob', endpoint_sip_uuid=sip.uuid
+        )
+        second_extension = self.add_extension()
+        self.add_line_extension(
+            line_id=user_line.line_id,
+            extension_id=second_extension.id,
+            main_extension=False,
+        )
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user_line.user.uuid,
+                    tenant_uuid=user_line.user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[
+                        {
+                            'id': user_line.line_id,
+                            'name': user_line.line.name,
+                            'protocol': 'sip',
+                        }
+                    ],
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(
+            expected, view='line_presence', exten=user_line.extension.exten
+        )
+
 
 class TestSearchGivenMultipleUsers(TestSearch):
     def setUp(self):
