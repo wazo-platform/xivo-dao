@@ -779,6 +779,93 @@ class TestLinePresenceView(TestSearch):
             expected, view='line_presence', exten=user_line.extension.exten
         )
 
+    def test_given_context_filter_with_line_presence_view_then_raises_error(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'context': 'default' is not valid",
+            view='line_presence',
+            context='default',
+        )
+
+    def test_given_extension_filter_with_line_presence_view_then_raises_error(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'extension': '1000' is not valid",
+            view='line_presence',
+            extension='1000',
+        )
+
+    def test_given_provisioning_code_filter_with_line_presence_view_then_raises_error(
+        self,
+    ):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'provisioning_code': '123456' is not valid",
+            view='line_presence',
+            provisioning_code='123456',
+        )
+
+    def test_given_voicemail_number_filter_with_line_presence_view_then_raises_error(
+        self,
+    ):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'voicemail_number': '1000' is not valid",
+            view='line_presence',
+            voicemail_number='1000',
+        )
+
+    def test_given_order_by_context_with_line_presence_view_then_raises_error(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'order': 'context' is not valid",
+            view='line_presence',
+            order='context',
+        )
+
+    def test_given_order_by_exten_with_line_presence_view_then_raises_error(self):
+        # unlike an `exten` exact-match filter, sorting by `exten` does not
+        # force the join itself, so it needs the same rejection
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'order': 'exten' is not valid",
+            view='line_presence',
+            order='exten',
+        )
+
+    def test_given_fullname_filter_with_line_presence_view_then_still_works(self):
+        user = self.add_user(firstname='alice', lastname='wonderland')
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user.uuid,
+                    tenant_uuid=user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[],
+                )
+            ],
+        )
+
+        # `fullname` is a composite expression (firstname + lastname), not a
+        # plain Column, and must not crash the join-requirement check
+        self.assert_search_returns_result(
+            expected, view='line_presence', fullname='alice wonderland'
+        )
+
+    def test_given_context_filter_with_directory_view_then_still_works(self):
+        user_line = self.add_user_line_with_exten(firstname='alice')
+
+        result = user_dao.search(
+            view='directory',
+            context=user_line.extension.context,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
+
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items[0].uuid, equal_to(user_line.user.uuid))
+
 
 class TestSearchGivenMultipleUsers(TestSearch):
     def setUp(self):
