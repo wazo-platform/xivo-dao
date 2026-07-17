@@ -1,4 +1,4 @@
-# Copyright 2013-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -65,6 +65,17 @@ class UserSummary:
         self.context = context
         self.subscription_type = subscription_type
         self.is_webrtc = is_webrtc
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
+class UserLinePresence:
+    def __init__(self, uuid, tenant_uuid, dnd_enabled, lines):
+        self.uuid = uuid
+        self.tenant_uuid = tenant_uuid
+        self.dnd_enabled = dnd_enabled
+        self.lines = lines
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__

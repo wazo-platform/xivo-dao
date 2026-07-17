@@ -1,6 +1,8 @@
 # Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import and_, case, func
 
@@ -11,7 +13,7 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.helpers import errors
-from xivo_dao.resources.user.model import UserDirectory, UserSummary
+from xivo_dao.resources.user.model import UserDirectory, UserLinePresence, UserSummary
 from xivo_dao.resources.utils.view import View, ViewSelector
 
 
@@ -126,6 +128,49 @@ class SummaryView(View):
         )
 
 
+class LinePresenceView(View):
+    def query(self, session):
+        line_obj = func.jsonb_build_object(
+            'id',
+            Line.id,
+            'name',
+            Line.name,
+            'protocol',
+            Line.protocol,
+        )
+        lines = (
+            select(
+                UserLine.user_id.label('user_id'),
+                func.jsonb_agg(aggregate_order_by(line_obj, Line.id)).label('lines'),
+            )
+            .select_from(UserLine)
+            .join(Line, Line.id == UserLine.line_id)
+            .where(Line.commented == 0)
+            .group_by(UserLine.user_id)
+            .subquery()
+        )
+        return (
+            session.query(
+                User.uuid.label('uuid'),
+                User.tenant_uuid.label('tenant_uuid'),
+                User.dnd_enabled.label('dnd_enabled'),
+                lines.c.lines.label('lines'),
+                User.firstname.label('firstname'),
+                User.lastname.label('lastname'),
+            )
+            .select_from(User)
+            .outerjoin(lines, lines.c.user_id == User.id)
+        )
+
+    def convert(self, row):
+        return UserLinePresence(
+            uuid=row.uuid,
+            tenant_uuid=row.tenant_uuid,
+            dnd_enabled=row.dnd_enabled,
+            lines=row.lines or [],
+        )
+
+
 class UserViewSelector(ViewSelector):
     def select(self, name=None, default_query=None):
         if not name:
@@ -139,5 +184,8 @@ class UserViewSelector(ViewSelector):
 
 
 user_view = UserViewSelector(
-    default=DefaultView(), directory=DirectoryView(), summary=SummaryView()
+    default=DefaultView(),
+    directory=DirectoryView(),
+    summary=SummaryView(),
+    line_presence=LinePresenceView(),
 )

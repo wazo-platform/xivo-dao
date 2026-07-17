@@ -32,7 +32,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.resources.user import dao as user_dao
-from xivo_dao.resources.user.model import UserDirectory, UserSummary
+from xivo_dao.resources.user.model import UserDirectory, UserLinePresence, UserSummary
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -586,6 +586,297 @@ class TestSimpleSearch(TestSearch):
         )
 
         self.assert_search_returns_result(expected, view='directory')
+
+
+class TestLinePresenceView(TestSearch):
+    def test_given_user_without_line_then_returns_empty_lines(self):
+        user = self.add_user(firstname='alice')
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user.uuid,
+                    tenant_uuid=user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[],
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='line_presence')
+
+    def test_given_user_with_dnd_enabled_then_dnd_enabled_is_true(self):
+        user = self.add_user(firstname='alice', enablednd=1)
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user.uuid,
+                    tenant_uuid=user.tenant_uuid,
+                    dnd_enabled=True,
+                    lines=[],
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='line_presence')
+
+    def test_given_main_line_with_multiple_extensions_then_returns_one_result(self):
+        sip = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_exten(
+            firstname='bob', endpoint_sip_uuid=sip.uuid
+        )
+        second_extension = self.add_extension()
+        self.add_line_extension(
+            line_id=user_line.line_id,
+            extension_id=second_extension.id,
+            main_extension=False,
+        )
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user_line.user.uuid,
+                    tenant_uuid=user_line.user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[
+                        {
+                            'id': user_line.line_id,
+                            'name': user_line.line.name,
+                            'protocol': 'sip',
+                        }
+                    ],
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='line_presence')
+
+    def test_collated_search_orders_by_requested_field(self):
+        user_c = self.add_user(firstname='charlie', lastname='aaa')
+        user_a = self.add_user(firstname='alice', lastname='bbb')
+        user_b = self.add_user(firstname='bob', lastname='ccc')
+
+        result = user_dao.search_collated(
+            view='line_presence',
+            order='firstname',
+            direction='asc',
+            tenant_uuids=[self.default_tenant.uuid],
+        )
+
+        assert_that(
+            [item.uuid for item in result.items],
+            equal_to([user_a.uuid, user_b.uuid, user_c.uuid]),
+        )
+
+    def test_given_commented_line_then_excluded_from_lines(self):
+        sip = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_exten(
+            firstname='bob', endpoint_sip_uuid=sip.uuid
+        )
+        commented_line = self.add_line(commented=1)
+        self.add_user_line(
+            user_id=user_line.user.id, line_id=commented_line.id, main_line=False
+        )
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user_line.user.uuid,
+                    tenant_uuid=user_line.user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[
+                        {
+                            'id': user_line.line_id,
+                            'name': user_line.line.name,
+                            'protocol': 'sip',
+                        }
+                    ],
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='line_presence')
+
+    def test_given_user_with_multiple_lines_then_all_non_commented_lines_are_returned(
+        self,
+    ):
+        sip_1 = self.add_endpoint_sip()
+        sip_2 = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_exten(
+            firstname='bob', endpoint_sip_uuid=sip_1.uuid
+        )
+        second_line = self.add_line(commented=0, endpoint_sip_uuid=sip_2.uuid)
+        self.add_user_line(
+            user_id=user_line.user.id, line_id=second_line.id, main_line=False
+        )
+
+        expected_lines = sorted(
+            [
+                {
+                    'id': user_line.line_id,
+                    'name': user_line.line.name,
+                    'protocol': 'sip',
+                },
+                {
+                    'id': second_line.id,
+                    'name': second_line.name,
+                    'protocol': 'sip',
+                },
+            ],
+            key=lambda line: line['id'],
+        )
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user_line.user.uuid,
+                    tenant_uuid=user_line.user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=expected_lines,
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(expected, view='line_presence')
+
+    def test_given_exten_filter_with_line_presence_view_then_returns_one_result(self):
+        sip = self.add_endpoint_sip()
+        user_line = self.add_user_line_with_exten(
+            firstname='bob', endpoint_sip_uuid=sip.uuid
+        )
+        second_extension = self.add_extension()
+        self.add_line_extension(
+            line_id=user_line.line_id,
+            extension_id=second_extension.id,
+            main_extension=False,
+        )
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user_line.user.uuid,
+                    tenant_uuid=user_line.user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[
+                        {
+                            'id': user_line.line_id,
+                            'name': user_line.line.name,
+                            'protocol': 'sip',
+                        }
+                    ],
+                )
+            ],
+        )
+
+        self.assert_search_returns_result(
+            expected, view='line_presence', exten=user_line.extension.exten
+        )
+
+    def test_given_context_filter_with_line_presence_view_then_raises_error(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'context': 'default' is not valid",
+            view='line_presence',
+            context='default',
+        )
+
+    def test_given_extension_filter_with_line_presence_view_then_raises_error(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'extension': '1000' is not valid",
+            view='line_presence',
+            extension='1000',
+        )
+
+    def test_given_provisioning_code_filter_with_line_presence_view_then_raises_error(
+        self,
+    ):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'provisioning_code': '123456' is not valid",
+            view='line_presence',
+            provisioning_code='123456',
+        )
+
+    def test_given_voicemail_number_filter_with_line_presence_view_then_raises_error(
+        self,
+    ):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'voicemail_number': '1000' is not valid",
+            view='line_presence',
+            voicemail_number='1000',
+        )
+
+    def test_given_order_by_context_with_line_presence_view_then_raises_error(self):
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'order': 'context' is not valid",
+            view='line_presence',
+            order='context',
+        )
+
+    def test_given_order_by_exten_with_line_presence_view_then_raises_error(self):
+        # unlike an `exten` exact-match filter, sorting by `exten` does not
+        # force the join itself, so it needs the same rejection
+        self.assert_search_raises_exception(
+            InputError,
+            "Input Error - parameter 'order': 'exten' is not valid",
+            view='line_presence',
+            order='exten',
+        )
+
+    def test_given_order_by_context_with_line_presence_collated_view_then_raises_error(
+        self,
+    ):
+        # search_collated() pops `order` before calling search_from_query,
+        # so this must be checked independently of the plain search() path
+        self.assert_search_collated_raises_exception(
+            InputError,
+            "Input Error - parameter 'order': 'context' is not valid",
+            view='line_presence',
+            order='context',
+        )
+
+    def test_given_fullname_filter_with_line_presence_view_then_still_works(self):
+        user = self.add_user(firstname='alice', lastname='wonderland')
+
+        expected = SearchResult(
+            1,
+            [
+                UserLinePresence(
+                    uuid=user.uuid,
+                    tenant_uuid=user.tenant_uuid,
+                    dnd_enabled=False,
+                    lines=[],
+                )
+            ],
+        )
+
+        # `fullname` is a composite expression (firstname + lastname), not a
+        # plain Column, and must not crash the join-requirement check
+        self.assert_search_returns_result(
+            expected, view='line_presence', fullname='alice wonderland'
+        )
+
+    def test_given_context_filter_with_directory_view_then_still_works(self):
+        user_line = self.add_user_line_with_exten(firstname='alice')
+
+        result = user_dao.search(
+            view='directory',
+            context=user_line.extension.context,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
+
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items[0].uuid, equal_to(user_line.user.uuid))
 
 
 class TestSearchGivenMultipleUsers(TestSearch):
