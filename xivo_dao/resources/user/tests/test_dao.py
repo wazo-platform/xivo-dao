@@ -833,6 +833,18 @@ class TestLinePresenceView(TestSearch):
             order='exten',
         )
 
+    def test_given_order_by_context_with_line_presence_collated_view_then_raises_error(
+        self,
+    ):
+        # search_collated() pops `order` before calling search_from_query,
+        # so this must be checked independently of the plain search() path
+        self.assert_search_collated_raises_exception(
+            InputError,
+            "Input Error - parameter 'order': 'context' is not valid",
+            view='line_presence',
+            order='context',
+        )
+
     def test_given_fullname_filter_with_line_presence_view_then_still_works(self):
         user = self.add_user(firstname='alice', lastname='wonderland')
 

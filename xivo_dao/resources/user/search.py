@@ -63,6 +63,14 @@ config = SearchConfig(
 
 
 class UserSearchSystem(SearchSystem):
+    def search_from_query_collated(self, query, parameters):
+        # `search_from_query_collated` pops `order` off `parameters` before
+        # calling `search_from_query`, so the line_presence check there never
+        # sees it for this path. Run it here first, on the untouched params.
+        if parameters.get('view') == 'line_presence':
+            self._reject_unsupported_line_presence_params(parameters)
+        return super().search_from_query_collated(query, parameters)
+
     def search_from_query(self, query, parameters):
         line_presence_view = parameters.get('view') == 'line_presence'
         searching = bool(parameters.get('search') or parameters.get('exten'))
