@@ -1,4 +1,4 @@
-# Copyright 2012-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -13,6 +13,7 @@ DEFAULT_DB_URI = (
     'postgresql://asterisk:proformatique@localhost/asterisk?application_name=xivo-dao'
 )
 DEFAULT_POOL_SIZE = 16
+DB_POOL_SPARE_CONN = 10
 
 logger = logging.getLogger(__name__)
 Session = scoped_session(sessionmaker())
@@ -86,8 +87,10 @@ def daosession(func):
     return wrapped
 
 
-def init_db(db_uri, pool_size=DEFAULT_POOL_SIZE):
-    engine = create_engine(db_uri, pool_size=pool_size, pool_pre_ping=True)
+def init_db(db_uri, pool_size=DEFAULT_POOL_SIZE, max_overflow=10):
+    engine = create_engine(
+        db_uri, pool_size=pool_size, max_overflow=max_overflow, pool_pre_ping=True
+    )
     Session.configure(bind=engine)
     Base.metadata.bind = engine
 
@@ -96,10 +99,21 @@ def init_db_from_config(config=None):
     config = config or default_config()
     url = config.get('db_uri', DEFAULT_DB_URI)
     try:
-        pool_size = config['rest_api']['max_threads']
+        min_threads = config['rest_api']['min_threads']
+        max_threads = config['rest_api']['max_threads']
     except KeyError:
-        pool_size = DEFAULT_POOL_SIZE
-    init_db(url, pool_size=pool_size)
+        # Consumers without a REST API (agid, purge-db, ...)
+        init_db(url)
+        return
+
+    # Dynamic HTTP thread pool: retain connections only for the always-alive
+    # threads. Bursts borrow overflow connections, which SQLAlchemy closes on
+    # return — mirroring the thread pool shrinking back after the burst.
+    init_db(
+        url,
+        pool_size=min_threads,
+        max_overflow=max_threads - min_threads + DB_POOL_SPARE_CONN,
+    )
 
 
 def default_config():
