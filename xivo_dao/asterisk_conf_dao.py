@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import annotations
@@ -781,6 +781,16 @@ class _EndpointSIPLineResolver(_SIPEndpointResolver):
             if user.enableonlinerec:
                 options.append(('set_var', 'WAZO_USER_DTMF_RECORD_TOGGLE_ENABLED=1'))
             options.append(('set_var', f'WAZO_CALLER_SIMULTCALLS={user.simultcalls}'))
+        if self._line.users:
+            main_user = self._line.users[0]
+            tenant_uuid = self._endpoint_config.tenant_uuid
+            options.append(
+                (
+                    'set_var',
+                    'CHANNEL(hangup_handler_push)=wazo-stamp-cel-participant,s,1'
+                    f'({main_user.uuid},{tenant_uuid},{self._line.id})',
+                )
+            )
 
         if self._line.extensions:
             for extension in self._line.extensions:

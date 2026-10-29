@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -1924,6 +1924,42 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 )
             ),
         )
+
+    def test_that_the_cel_participant_hangup_handler_is_pushed_once_for_main_user(self):
+        secondary_user = self.add_user()
+        main_user = self.add_user()
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=secondary_user.id, line_id=line.id, main_user=False)
+        self.add_user_line(user_id=main_user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+
+        hangup_handlers = [
+            value
+            for key, value in result[0]['endpoint_section_options']
+            if key == 'set_var' and value.startswith('CHANNEL(hangup_handler_push)=')
+        ]
+        assert_that(
+            hangup_handlers,
+            contains_exactly(
+                'CHANNEL(hangup_handler_push)=wazo-stamp-cel-participant,s,1'
+                f'({main_user.uuid},{endpoint.tenant_uuid},{line.id})'
+            ),
+        )
+
+    def test_that_the_cel_participant_hangup_handler_is_not_pushed_without_user(self):
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+
+        hangup_handlers = [
+            value
+            for key, value in result[0]['endpoint_section_options']
+            if key == 'set_var' and value.startswith('CHANNEL(hangup_handler_push)=')
+        ]
+        assert_that(hangup_handlers, empty())
 
     def test_that_all_section_reference_are_added(self):
         endpoint = self.add_endpoint_sip(
