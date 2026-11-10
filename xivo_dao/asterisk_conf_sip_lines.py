@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import NamedTuple
 from uuid import UUID
 
+from sqlalchemy.sql.expression import or_
+
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
@@ -81,17 +83,28 @@ def find_sip_lines(session):
 
 def _find_endpoints(session):
     endpoints = {}
+    line_endpoint_uuids = session.query(LineFeatures.endpoint_sip_uuid).filter(
+        LineFeatures.endpoint_sip_uuid.isnot(None)
+    )
+    used_by_lines = or_(
+        EndpointSIP.template.is_(True),
+        EndpointSIP.uuid.in_(line_endpoint_uuids),
+    )
 
-    endpoint_rows = session.query(
-        EndpointSIP.uuid,
-        EndpointSIP.name,
-        EndpointSIP.label,
-        EndpointSIP.template,
-        EndpointSIP.asterisk_id,
-        EndpointSIP.tenant_uuid,
-        EndpointSIP.transport_uuid,
-        PJSIPTransport.name.label('transport_name'),
-    ).outerjoin(PJSIPTransport, PJSIPTransport.uuid == EndpointSIP.transport_uuid)
+    endpoint_rows = (
+        session.query(
+            EndpointSIP.uuid,
+            EndpointSIP.name,
+            EndpointSIP.label,
+            EndpointSIP.template,
+            EndpointSIP.asterisk_id,
+            EndpointSIP.tenant_uuid,
+            EndpointSIP.transport_uuid,
+            PJSIPTransport.name.label('transport_name'),
+        )
+        .outerjoin(PJSIPTransport, PJSIPTransport.uuid == EndpointSIP.transport_uuid)
+        .filter(used_by_lines)
+    )
     for row in endpoint_rows:
         endpoints[row.uuid] = SIPEndpoint(
             uuid=row.uuid,
@@ -104,14 +117,20 @@ def _find_endpoints(session):
             transport=SIPTransport(name=row.transport_name),
         )
 
-    option_rows = session.query(
-        EndpointSIPSection.endpoint_sip_uuid,
-        EndpointSIPSection.type,
-        EndpointSIPSectionOption.key,
-        EndpointSIPSectionOption.value,
-    ).join(
-        EndpointSIPSectionOption,
-        EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+    option_rows = (
+        session.query(
+            EndpointSIPSection.endpoint_sip_uuid,
+            EndpointSIPSection.type,
+            EndpointSIPSectionOption.key,
+            EndpointSIPSectionOption.value,
+        )
+        .join(
+            EndpointSIPSectionOption,
+            EndpointSIPSectionOption.endpoint_sip_section_uuid
+            == EndpointSIPSection.uuid,
+        )
+        .join(EndpointSIP, EndpointSIP.uuid == EndpointSIPSection.endpoint_sip_uuid)
+        .filter(used_by_lines)
     )
     for row in option_rows:
         # Rows committed between queries may reference records earlier queries missed
@@ -121,10 +140,15 @@ def _find_endpoints(session):
         section_options = getattr(endpoint, f'{row.type}_section_options')
         section_options.append((row.key, row.value))
 
-    template_rows = session.query(
-        EndpointSIPTemplate.child_uuid,
-        EndpointSIPTemplate.parent_uuid,
-    ).order_by(EndpointSIPTemplate.priority)
+    template_rows = (
+        session.query(
+            EndpointSIPTemplate.child_uuid,
+            EndpointSIPTemplate.parent_uuid,
+        )
+        .join(EndpointSIP, EndpointSIP.uuid == EndpointSIPTemplate.child_uuid)
+        .filter(used_by_lines)
+        .order_by(EndpointSIPTemplate.priority)
+    )
     for row in template_rows:
         child = endpoints.get(row.child_uuid)
         parent = endpoints.get(row.parent_uuid)
@@ -168,6 +192,8 @@ def _add_users(session, lines):
         )
         .join(UserFeatures, UserFeatures.id == UserLine.user_id)
         .outerjoin(Voicemail, Voicemail.uniqueid == UserFeatures.voicemailid)
+        .join(LineFeatures, LineFeatures.id == UserLine.line_id)
+        .filter(LineFeatures.endpoint_sip_uuid.isnot(None))
         .order_by(UserLine.main_user.desc())
     )
     for row in user_rows:
@@ -198,6 +224,8 @@ def _add_extensions(session, lines):
             Extension.context,
         )
         .join(Extension, Extension.id == LineExtension.extension_id)
+        .join(LineFeatures, LineFeatures.id == LineExtension.line_id)
+        .filter(LineFeatures.endpoint_sip_uuid.isnot(None))
         .order_by(LineExtension.main_extension.desc())
     )
     for row in extension_rows:
