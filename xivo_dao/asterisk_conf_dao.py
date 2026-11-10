@@ -46,6 +46,7 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.asterisk_conf_sip_lines import find_sip_lines
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -909,66 +910,8 @@ def find_sip_meeting_guests_settings(session):
 def find_sip_user_settings(session):
     pickup_members = find_pickup_members('sip')
     tenant_settings = find_tenant_settings()
-    query = (
-        session.query(
-            LineFeatures,
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip)
-            .joinedload(EndpointSIP.template_relations)
-            .joinedload(EndpointSIPTemplate.parent),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(EndpointSIP._aor_section),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(EndpointSIP._auth_section),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(
-                EndpointSIP._endpoint_section
-            ),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(
-                EndpointSIP._registration_section
-            ),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(
-                EndpointSIP._registration_outbound_auth_section
-            ),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(
-                EndpointSIP._identify_section
-            ),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(
-                EndpointSIP._outbound_auth_section
-            ),
-        )
-        .options(
-            joinedload(LineFeatures.endpoint_sip).joinedload(EndpointSIP.transport),
-        )
-        .options(
-            joinedload(LineFeatures.user_lines)
-            .joinedload(UserLine.user)
-            .joinedload(UserFeatures.voicemail),
-        )
-        .options(
-            joinedload(LineFeatures.line_extensions).joinedload(
-                LineExtension.extension
-            ),
-        )
-        .filter(
-            LineFeatures.endpoint_sip_uuid.isnot(None),
-        )
-    )
-
     return merge_endpoints_and_template(
-        query.all(),
+        find_sip_lines(session),
         _EndpointSIPLineResolver,
         'endpoint_sip',
         pickup_members,
