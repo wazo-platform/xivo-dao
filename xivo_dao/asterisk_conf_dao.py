@@ -410,10 +410,11 @@ exten_settings_query += lambda q: q.filter(Extension.context == bindparam('conte
 
 @daosession
 def find_exten_settings(session, context_name):
+    tenant_uuid = (
+        session.query(Context.tenant_uuid).filter(Context.name == context_name).scalar()
+    )
     rows = exten_settings_query(session).params(context=context_name).all()
-    return [
-        dict(tenant_uuid=row.context_rel.tenant_uuid, **row.todict()) for row in rows
-    ]
+    return [dict(tenant_uuid=tenant_uuid, **row.todict()) for row in rows]
 
 
 @daosession
