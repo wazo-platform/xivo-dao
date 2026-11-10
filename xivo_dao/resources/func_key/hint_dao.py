@@ -1,11 +1,11 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import defaultdict
 
 from sqlalchemy import Integer, Unicode, and_, bindparam, literal_column, sql
 from sqlalchemy.ext import baked
-from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.orm import aliased
 from sqlalchemy.sql.expression import true
 from xivo.xivo_helpers import clean_extension
 
@@ -425,28 +425,40 @@ def user_hints(session):
 
 @daosession
 def user_shared_hints(session):
-    query = session.query(UserFeatures).options(
-        joinedload(UserFeatures.user_lines).joinedload(UserLine.line)
+    query = (
+        session.query(
+            UserFeatures.id.label('user_id'),
+            UserFeatures.uuid.label('user_uuid'),
+            UserLine.line_id,
+            LineFeatures.name,
+            LineFeatures.endpoint_custom_id,
+            LineFeatures.endpoint_sip_uuid,
+            LineFeatures.endpoint_sccp_id,
+        )
+        .outerjoin(UserLine, UserLine.user_id == UserFeatures.id)
+        .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
+        .order_by(UserFeatures.id, UserLine.main_line.desc(), UserLine.line_id)
     )
-    hints = []
-    for user in query.all():
-        ifaces = [f'Custom:{user.uuid}-mobile']
-        for line in user.lines:
-            if line.endpoint_custom_id:
-                ifaces.append(line.name)
-            elif line.endpoint_sip_uuid:
-                ifaces.append(f'PJSIP/{line.name}')
-            elif line.endpoint_sccp_id:
-                ifaces.append(f'SCCP/{line.name}')
-            else:
-                ifaces.append(f'CUSTOM/{line.name}')
-
-        if not ifaces:
+    ifaces_by_user = {}
+    for row in query:
+        ifaces = ifaces_by_user.setdefault(
+            (row.user_id, row.user_uuid), [f'Custom:{row.user_uuid}-mobile']
+        )
+        if row.line_id is None:
             continue
-        argument = '&'.join(ifaces)
-        hint = Hint(user_id=user.id, extension=user.uuid, argument=argument)
-        hints.append(hint)
-    return hints
+        if row.endpoint_custom_id:
+            ifaces.append(row.name)
+        elif row.endpoint_sip_uuid:
+            ifaces.append(f'PJSIP/{row.name}')
+        elif row.endpoint_sccp_id:
+            ifaces.append(f'SCCP/{row.name}')
+        else:
+            ifaces.append(f'CUSTOM/{row.name}')
+
+    return [
+        Hint(user_id=user_id, extension=user_uuid, argument='&'.join(ifaces))
+        for (user_id, user_uuid), ifaces in ifaces_by_user.items()
+    ]
 
 
 def _list_user_extensions(session):

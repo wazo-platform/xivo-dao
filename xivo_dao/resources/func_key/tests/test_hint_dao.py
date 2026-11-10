@@ -1,4 +1,4 @@
-# Copyright 2014-2025 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -828,3 +828,27 @@ class TestUserSharedHints(TestHints):
         results = hint_dao.user_shared_hints()
 
         assert_that(results[0].argument, equal_to(f'Custom:{user.uuid}-mobile'))
+
+    def test_lines_of_each_user(self):
+        user_1 = self.add_user()
+        user_2 = self.add_user()
+        line_1 = self.add_line(endpoint_sip_uuid=self.add_endpoint_sip().uuid)
+        line_2 = self.add_line(endpoint_sip_uuid=self.add_endpoint_sip().uuid)
+        self.add_user_line(user_id=user_1.id, line_id=line_1.id, main_line=True)
+        self.add_user_line(user_id=user_2.id, line_id=line_2.id, main_line=True)
+
+        results = hint_dao.user_shared_hints()
+
+        assert_that(
+            results,
+            contains_inanyorder(
+                has_properties(
+                    user_id=user_1.id,
+                    argument=f'Custom:{user_1.uuid}-mobile&PJSIP/{line_1.name}',
+                ),
+                has_properties(
+                    user_id=user_2.id,
+                    argument=f'Custom:{user_2.uuid}-mobile&PJSIP/{line_2.name}',
+                ),
+            ),
+        )
