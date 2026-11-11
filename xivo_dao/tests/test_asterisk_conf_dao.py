@@ -1503,6 +1503,137 @@ class TestFindSipMeetingGuestsSettings(BaseFindSIPSettings):
             ),
         )
 
+    def test_that_templates_of_templates_are_included(self):
+        grandparent = self.add_endpoint_sip(
+            template=True,
+            aor_section_options=[['max_contacts', '1']],
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+        )
+        parent = self.add_endpoint_sip(
+            template=True,
+            templates=[grandparent],
+            endpoint_section_options=[
+                ['allow', '!all,opus'],
+                ['webrtc', 'yes'],
+            ],
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False,
+            templates=[parent],
+            endpoint_section_options=[['webrtc', 'no']],
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    aor_section_options=contains_inanyorder(
+                        contains_exactly('max_contacts', '1'),
+                        contains_exactly('type', 'aor'),
+                    ),
+                    endpoint_section_options=all_of(
+                        has_items(
+                            contains_exactly('dtmf_mode', 'rfc4733'),
+                            contains_exactly('allow', '!all,opus'),
+                            contains_exactly('webrtc', 'no'),
+                        ),
+                        not_(has_items(contains_exactly('allow', '!all,ulaw'))),
+                        not_(has_items(contains_exactly('webrtc', 'yes'))),
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_last_template_overrides_the_previous_ones(self):
+        first_template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+        )
+        last_template = self.add_endpoint_sip(
+            template=True, endpoint_section_options=[['allow', '!all,opus']]
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False, templates=[first_template, last_template]
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=endpoint.uuid)
+        reversed_endpoint = self.add_endpoint_sip(
+            template=False, templates=[last_template, first_template]
+        )
+        self.add_meeting(guest_endpoint_sip_uuid=reversed_endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+        assert_that(
+            result,
+            contains_inanyorder(
+                has_entries(
+                    name=endpoint.name,
+                    endpoint_section_options=has_items(
+                        contains_exactly('allow', '!all,opus'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                    ),
+                ),
+                has_entries(
+                    name=reversed_endpoint.name,
+                    endpoint_section_options=has_items(
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                    ),
+                ),
+            ),
+        )
+
+    def test_that_each_meeting_has_its_own_settings(self):
+        meetings = []
+        for language in ('en_US', 'fr_FR'):
+            tenant = self.add_tenant()
+            template = self.add_endpoint_sip(
+                template=True,
+                tenant_uuid=tenant.uuid,
+                endpoint_section_options=[['language', language]],
+            )
+            endpoint = self.add_endpoint_sip(
+                template=False,
+                tenant_uuid=tenant.uuid,
+                templates=[template],
+                auth_section_options=[['username', f'guest-{language}']],
+            )
+            meeting = self.add_meeting(
+                tenant_uuid=tenant.uuid, guest_endpoint_sip_uuid=endpoint.uuid
+            )
+            meetings.append((endpoint, meeting, language))
+
+        result = asterisk_conf_dao.find_sip_meeting_guests_settings()
+
+        configs = {config['name']: config for config in result}
+        assert_that(configs, has_length(2))
+        for endpoint, meeting, language in meetings:
+            assert_that(
+                configs[endpoint.name],
+                has_entries(
+                    auth_section_options=contains_inanyorder(
+                        contains_exactly('username', f'guest-{language}'),
+                        contains_exactly('type', 'auth'),
+                    ),
+                    endpoint_section_options=has_items(
+                        contains_exactly('language', language),
+                        contains_exactly(
+                            'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
+                        ),
+                        contains_exactly(
+                            'set_var', f'WAZO_MEETING_UUID={meeting.uuid}'
+                        ),
+                    ),
+                ),
+            )
+
 
 class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
     def setUp(self):
@@ -2963,3 +3094,143 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 ),
             ),
         )
+
+    def test_that_templates_of_templates_are_included(self):
+        grandparent = self.add_endpoint_sip(
+            template=True,
+            aor_section_options=[['max_contacts', '1']],
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+        )
+        parent = self.add_endpoint_sip(
+            template=True,
+            templates=[grandparent],
+            endpoint_section_options=[
+                ['allow', '!all,opus'],
+                ['send_rpid', 'yes'],
+            ],
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False,
+            templates=[parent],
+            endpoint_section_options=[['send_rpid', 'no']],
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    aor_section_options=contains_inanyorder(
+                        contains_exactly('max_contacts', '1'),
+                        contains_exactly('type', 'aor'),
+                    ),
+                    endpoint_section_options=all_of(
+                        has_items(
+                            contains_exactly('dtmf_mode', 'rfc4733'),
+                            contains_exactly('allow', '!all,opus'),
+                            contains_exactly('send_rpid', 'no'),
+                        ),
+                        not_(has_items(contains_exactly('allow', '!all,ulaw'))),
+                        not_(has_items(contains_exactly('send_rpid', 'yes'))),
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_last_template_overrides_the_previous_ones(self):
+        first_template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+        )
+        last_template = self.add_endpoint_sip(
+            template=True, endpoint_section_options=[['allow', '!all,opus']]
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False, templates=[first_template, last_template]
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+        reversed_endpoint = self.add_endpoint_sip(
+            template=False, templates=[last_template, first_template]
+        )
+        self.add_trunk(endpoint_sip_uuid=reversed_endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains_inanyorder(
+                has_entries(
+                    name=endpoint.name,
+                    endpoint_section_options=has_items(
+                        contains_exactly('allow', '!all,opus'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                    ),
+                ),
+                has_entries(
+                    name=reversed_endpoint.name,
+                    endpoint_section_options=has_items(
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                    ),
+                ),
+            ),
+        )
+
+    def test_that_each_trunk_has_its_own_settings(self):
+        trunks = []
+        for retry_interval in ('20', '60'):
+            tenant = self.add_tenant()
+            context = self.add_context(tenant_uuid=tenant.uuid)
+            template = self.add_endpoint_sip(
+                template=True,
+                tenant_uuid=tenant.uuid,
+                registration_section_options=[['retry_interval', retry_interval]],
+            )
+            endpoint = self.add_endpoint_sip(
+                template=False,
+                tenant_uuid=tenant.uuid,
+                templates=[template],
+                auth_section_options=[['username', f'trunk-{retry_interval}']],
+            )
+            self.add_trunk(
+                tenant_uuid=tenant.uuid,
+                endpoint_sip_uuid=endpoint.uuid,
+                context=context.name,
+            )
+            trunks.append((endpoint, context, retry_interval))
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+
+        configs = {config['name']: config for config in result}
+        assert_that(configs, has_length(2))
+        for endpoint, context, retry_interval in trunks:
+            assert_that(
+                configs[endpoint.name],
+                has_entries(
+                    auth_section_options=contains_inanyorder(
+                        contains_exactly('username', f'trunk-{retry_interval}'),
+                        contains_exactly('type', 'auth'),
+                    ),
+                    registration_section_options=has_items(
+                        contains_exactly('retry_interval', retry_interval),
+                    ),
+                    endpoint_section_options=has_items(
+                        contains_exactly('context', context.name),
+                        contains_exactly(
+                            'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
+                        ),
+                    ),
+                ),
+            )
+
+    def test_that_trunks_without_sip_endpoint_are_ignored(self):
+        self.add_trunk()
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(result, contains_exactly())
