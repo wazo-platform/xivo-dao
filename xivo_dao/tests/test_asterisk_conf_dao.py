@@ -15,6 +15,7 @@ from hamcrest import (
     equal_to,
     has_entries,
     has_items,
+    has_length,
     has_properties,
     not_,
 )
@@ -2110,6 +2111,402 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 ),
             ),
         )
+
+    def test_that_the_main_user_vars_come_first(self):
+        secondary_user = self.add_user()
+        main_user = self.add_user()
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=secondary_user.id, line_id=line.id, main_user=False)
+        self.add_user_line(user_id=main_user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+
+        user_ids = [
+            value
+            for key, value in result[0]['endpoint_section_options']
+            if key == 'set_var' and value.startswith('WAZO_USERID=')
+        ]
+        assert_that(
+            user_ids,
+            contains_exactly(
+                f'WAZO_USERID={main_user.id}',
+                f'WAZO_USERID={secondary_user.id}',
+            ),
+        )
+
+    def test_that_mailboxes_list_the_main_user_voicemail_first(self):
+        secondary_user = self.add_user()
+        secondary_voicemail = self.add_voicemail()
+        self.link_user_and_voicemail(secondary_user, secondary_voicemail.uniqueid)
+        main_user = self.add_user()
+        main_voicemail = self.add_voicemail()
+        self.link_user_and_voicemail(main_user, main_voicemail.uniqueid)
+        user_without_voicemail = self.add_user()
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=secondary_user.id, line_id=line.id, main_user=False)
+        self.add_user_line(user_id=main_user.id, line_id=line.id)
+        self.add_user_line(
+            user_id=user_without_voicemail.id, line_id=line.id, main_user=False
+        )
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+
+        mailboxes = (
+            f'{main_voicemail.number}@{main_voicemail.context},'
+            f'{secondary_voicemail.number}@{secondary_voicemail.context}'
+        )
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    aor_section_options=has_items(
+                        contains_exactly('mailboxes', mailboxes),
+                    ),
+                    endpoint_section_options=has_items(
+                        contains_exactly('mailboxes', mailboxes),
+                    ),
+                )
+            ),
+        )
+
+    def test_that_only_the_main_extension_is_used_as_a_pickup_mark(self):
+        endpoint = self.add_endpoint_sip(template=False)
+        secondary_extension = self.add_extension()
+        main_extension = self.add_extension()
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_line_extension(
+            line_id=line.id,
+            extension_id=secondary_extension.id,
+            main_extension=False,
+        )
+        self.add_line_extension(line_id=line.id, extension_id=main_extension.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+
+        pickup_marks = [
+            value
+            for key, value in result[0]['endpoint_section_options']
+            if key == 'set_var' and value.startswith('PICKUPMARK=')
+        ]
+        assert_that(
+            pickup_marks,
+            contains_exactly(
+                f'PICKUPMARK={main_extension.exten}%{main_extension.context}'
+            ),
+        )
+
+    def test_that_the_dtmf_record_toggle_var_is_set(self):
+        user = self.add_user(enableonlinerec=1)
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=has_items(
+                        ['set_var', 'WAZO_USER_DTMF_RECORD_TOGGLE_ENABLED=1'],
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_dtmf_record_toggle_var_is_not_set_when_disabled(self):
+        user = self.add_user(enableonlinerec=0)
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    endpoint_section_options=not_(
+                        has_items(
+                            ['set_var', 'WAZO_USER_DTMF_RECORD_TOGGLE_ENABLED=1'],
+                        )
+                    ),
+                )
+            ),
+        )
+
+    def test_that_templates_of_templates_are_included(self):
+        grandparent = self.add_endpoint_sip(
+            template=True,
+            aor_section_options=[['max_contacts', '1']],
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+        )
+        parent = self.add_endpoint_sip(
+            template=True,
+            templates=[grandparent],
+            endpoint_section_options=[
+                ['allow', '!all,opus'],
+                ['webrtc', 'yes'],
+            ],
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False,
+            templates=[parent],
+            endpoint_section_options=[['webrtc', 'no']],
+        )
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    aor_section_options=contains_inanyorder(
+                        contains_exactly('max_contacts', '1'),
+                        contains_exactly('type', 'aor'),
+                    ),
+                    endpoint_section_options=all_of(
+                        has_items(
+                            contains_exactly('dtmf_mode', 'rfc4733'),
+                            contains_exactly('allow', '!all,opus'),
+                            contains_exactly('webrtc', 'no'),
+                        ),
+                        not_(has_items(contains_exactly('allow', '!all,ulaw'))),
+                        not_(has_items(contains_exactly('webrtc', 'yes'))),
+                    ),
+                )
+            ),
+        )
+
+    def test_that_the_last_template_overrides_the_previous_ones(self):
+        first_template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+        )
+        last_template = self.add_endpoint_sip(
+            template=True, endpoint_section_options=[['allow', '!all,opus']]
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False, templates=[first_template, last_template]
+        )
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        reversed_endpoint = self.add_endpoint_sip(
+            template=False, templates=[last_template, first_template]
+        )
+        self.add_line(endpoint_sip_uuid=reversed_endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_inanyorder(
+                has_entries(
+                    name=endpoint.name,
+                    endpoint_section_options=has_items(
+                        contains_exactly('allow', '!all,opus'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                    ),
+                ),
+                has_entries(
+                    name=reversed_endpoint.name,
+                    endpoint_section_options=has_items(
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                    ),
+                ),
+            ),
+        )
+
+    def test_that_all_sections_are_generated_and_cross_references(self):
+        endpoint = self.add_endpoint_sip(
+            label='my line',
+            template=False,
+            aor_section_options=[
+                ['contact', 'sip:name@proxy:port'],
+                ['max_contacts', '2'],
+            ],
+            auth_section_options=[
+                ['username', 'auth-username'],
+                ['password', 'auth-password'],
+            ],
+            endpoint_section_options=[
+                ['allow', '!all,ulaw'],
+                ['dtmf_mode', 'rfc4733'],
+            ],
+            identify_section_options=[
+                ['match', '54.172.60.0'],
+                ['match', '54.172.60.1'],
+            ],
+            registration_section_options=[
+                ['client_uri', 'sip:client@example.com'],
+                ['server_uri', 'sip:server.example.com'],
+            ],
+            registration_outbound_auth_section_options=[
+                ['username', 'registration-username'],
+                ['password', 'registration-password'],
+            ],
+            outbound_auth_section_options=[
+                ['username', 'outbound-username'],
+                ['password', 'outbound-password'],
+            ],
+        )
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid, context=self.context.name)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains_exactly(
+                has_entries(
+                    uuid=endpoint.uuid,
+                    name=endpoint.name,
+                    label='my line',
+                    template=False,
+                    asterisk_id=None,
+                    aor_section_options=contains_inanyorder(
+                        contains_exactly('contact', 'sip:name@proxy:port'),
+                        contains_exactly('max_contacts', '2'),
+                        contains_exactly('type', 'aor'),
+                    ),
+                    auth_section_options=contains_inanyorder(
+                        contains_exactly('username', 'auth-username'),
+                        contains_exactly('password', 'auth-password'),
+                        contains_exactly('type', 'auth'),
+                    ),
+                    endpoint_section_options=contains_inanyorder(
+                        contains_exactly(
+                            'set_var', f'__WAZO_TENANT_UUID={endpoint.tenant_uuid}'
+                        ),
+                        contains_exactly('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+                        contains_exactly('set_var', f'WAZO_LINE_ID={line.id}'),
+                        contains_exactly(
+                            'set_var', f'TRANSFER_CONTEXT={self.context.name}'
+                        ),
+                        contains_exactly('context', self.context.name),
+                        contains_exactly('allow', '!all,ulaw'),
+                        contains_exactly('dtmf_mode', 'rfc4733'),
+                        contains_exactly('aors', endpoint.name),
+                        contains_exactly('auth', endpoint.name),
+                        contains_exactly(
+                            'outbound_auth', f'outbound_auth_{endpoint.name}'
+                        ),
+                        contains_exactly('type', 'endpoint'),
+                    ),
+                    identify_section_options=contains_inanyorder(
+                        contains_exactly('match', '54.172.60.0'),
+                        contains_exactly('match', '54.172.60.1'),
+                        contains_exactly('endpoint', endpoint.name),
+                        contains_exactly('type', 'identify'),
+                    ),
+                    registration_section_options=contains_inanyorder(
+                        contains_exactly('client_uri', 'sip:client@example.com'),
+                        contains_exactly('server_uri', 'sip:server.example.com'),
+                        contains_exactly('endpoint', endpoint.name),
+                        contains_exactly('outbound_auth', f'auth_reg_{endpoint.name}'),
+                        contains_exactly('type', 'registration'),
+                    ),
+                    registration_outbound_auth_section_options=contains_inanyorder(
+                        contains_exactly('username', 'registration-username'),
+                        contains_exactly('password', 'registration-password'),
+                        contains_exactly('type', 'auth'),
+                    ),
+                    outbound_auth_section_options=contains_inanyorder(
+                        contains_exactly('username', 'outbound-username'),
+                        contains_exactly('password', 'outbound-password'),
+                        contains_exactly('type', 'auth'),
+                    ),
+                )
+            ),
+        )
+
+    def test_that_each_line_has_its_own_settings(self):
+        user_1 = self.add_user()
+        voicemail_1 = self.add_voicemail()
+        self.link_user_and_voicemail(user_1, voicemail_1.uniqueid)
+        extension_1 = self.add_extension()
+        endpoint_1 = self.add_endpoint_sip(
+            template=False,
+            templates=[self.general_config_template],
+            auth_section_options=[['username', 'user-1']],
+        )
+        line_1 = self.add_line(endpoint_sip_uuid=endpoint_1.uuid)
+        self.add_user_line(user_id=user_1.id, line_id=line_1.id)
+        self.add_line_extension(line_id=line_1.id, extension_id=extension_1.id)
+
+        user_2 = self.add_user()
+        extension_2 = self.add_extension()
+        endpoint_2 = self.add_endpoint_sip(
+            template=False,
+            templates=[self.general_config_template],
+            auth_section_options=[['username', 'user-2']],
+        )
+        line_2 = self.add_line(endpoint_sip_uuid=endpoint_2.uuid)
+        self.add_user_line(user_id=user_2.id, line_id=line_2.id)
+        self.add_line_extension(line_id=line_2.id, extension_id=extension_2.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+
+        configs = {config['name']: config for config in result}
+        assert_that(configs, has_length(2))
+        for endpoint, line, user, extension, username in [
+            (endpoint_1, line_1, user_1, extension_1, 'user-1'),
+            (endpoint_2, line_2, user_2, extension_2, 'user-2'),
+        ]:
+            config = configs[endpoint.name]
+            assert_that(
+                config['auth_section_options'],
+                contains_inanyorder(
+                    contains_exactly('username', username),
+                    contains_exactly('type', 'auth'),
+                ),
+            )
+            user_and_line_vars = [
+                value
+                for key, value in config['endpoint_section_options']
+                if key == 'set_var'
+                and value.startswith(('WAZO_USERID=', 'WAZO_LINE_ID=', 'PICKUPMARK='))
+            ]
+            assert_that(
+                user_and_line_vars,
+                contains_inanyorder(
+                    f'WAZO_USERID={user.id}',
+                    f'WAZO_LINE_ID={line.id}',
+                    f'PICKUPMARK={extension.exten}%{extension.context}',
+                ),
+            )
+            assert_that(
+                config['endpoint_section_options'],
+                has_items(contains_exactly('callerid', 'wazo')),
+            )
+
+        mailboxes = [
+            [
+                value
+                for key, value in config['aor_section_options']
+                if key == 'mailboxes'
+            ]
+            for config in (configs[endpoint_1.name], configs[endpoint_2.name])
+        ]
+        assert_that(
+            mailboxes,
+            contains_exactly(
+                contains_exactly(f'{voicemail_1.number}@{voicemail_1.context}'),
+                empty(),
+            ),
+        )
+
+    def test_that_lines_without_sip_endpoint_are_ignored(self):
+        user = self.add_user()
+        sccp_line = self.add_sccpline()
+        line = self.add_line(endpoint_sccp_id=sccp_line.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(result, contains_exactly())
 
 
 class TestFindSipTrunkSettings(BaseFindSIPSettings):
