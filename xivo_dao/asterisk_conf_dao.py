@@ -16,7 +16,6 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.feature_extension import FeatureExtension
 from xivo_dao.alchemy.features import Features
@@ -26,7 +25,6 @@ from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.meeting import Meeting
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queue import Queue
@@ -41,12 +39,13 @@ from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.tenant import Tenant
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.asterisk_conf_sip_lines import find_sip_lines
+from xivo_dao.asterisk_conf_sip_meetings import find_sip_meetings
+from xivo_dao.asterisk_conf_sip_trunks import find_sip_trunks
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -853,56 +852,11 @@ def merge_endpoints_and_template(items, Klass, endpoint_field, *args):
 @daosession
 def find_sip_meeting_guests_settings(session):
     tenant_settings = find_tenant_settings()
-    query = (
-        session.query(
-            Meeting,
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip)
-            .joinedload(EndpointSIP.template_relations)
-            .joinedload(EndpointSIPTemplate.parent),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(EndpointSIP._aor_section),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(
-                EndpointSIP._auth_section
-            ),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(
-                EndpointSIP._endpoint_section
-            ),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(
-                EndpointSIP._registration_section
-            ),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(
-                EndpointSIP._registration_outbound_auth_section
-            ),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(
-                EndpointSIP._identify_section
-            ),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(
-                EndpointSIP._outbound_auth_section
-            ),
-        )
-        .options(
-            joinedload(Meeting.guest_endpoint_sip).joinedload(EndpointSIP.transport),
-        )
-        .filter(Meeting.guest_endpoint_sip_uuid.isnot(None))
-    )
-
     return merge_endpoints_and_template(
-        query.all(), _EndpointSIPMeetingResolver, 'guest_endpoint_sip', tenant_settings
+        find_sip_meetings(session),
+        _EndpointSIPMeetingResolver,
+        'guest_endpoint_sip',
+        tenant_settings,
     )
 
 
@@ -922,58 +876,11 @@ def find_sip_user_settings(session):
 @daosession
 def find_sip_trunk_settings(session):
     tenant_settings = find_tenant_settings()
-    query = (
-        session.query(
-            TrunkFeatures,
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip)
-            .joinedload(EndpointSIP.template_relations)
-            .joinedload(EndpointSIPTemplate.parent),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(EndpointSIP._aor_section),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(
-                EndpointSIP._auth_section
-            ),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(
-                EndpointSIP._endpoint_section
-            ),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(
-                EndpointSIP._registration_section
-            ),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(
-                EndpointSIP._registration_outbound_auth_section
-            ),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(
-                EndpointSIP._identify_section
-            ),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(
-                EndpointSIP._outbound_auth_section
-            ),
-        )
-        .options(
-            joinedload(TrunkFeatures.endpoint_sip).joinedload(EndpointSIP.transport),
-        )
-        .filter(
-            TrunkFeatures.endpoint_sip_uuid.isnot(None),
-        )
-    )
-
     return merge_endpoints_and_template(
-        query.all(), _EndpointSIPTrunkResolver, 'endpoint_sip', tenant_settings
+        find_sip_trunks(session),
+        _EndpointSIPTrunkResolver,
+        'endpoint_sip',
+        tenant_settings,
     )
 
 
