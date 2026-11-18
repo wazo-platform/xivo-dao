@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import NamedTuple
 from uuid import UUID
 
+from sqlalchemy import String, cast
+
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
@@ -91,9 +93,14 @@ def _find_endpoints(session, reachable_uuids):
 
 
 def _add_options(session, endpoints, reachable_uuids):
+    endpoints_by_uuid_text = {
+        str(uuid): endpoint for uuid, endpoint in endpoints.items()
+    }
     option_rows = (
         session.query(
-            EndpointSIPSection.endpoint_sip_uuid,
+            cast(EndpointSIPSection.endpoint_sip_uuid, String).label(
+                'endpoint_sip_uuid'
+            ),
             EndpointSIPSection.type,
             EndpointSIPSectionOption.key,
             EndpointSIPSectionOption.value,
@@ -107,7 +114,7 @@ def _add_options(session, endpoints, reachable_uuids):
     )
     for row in option_rows:
         # Rows committed between queries may reference records earlier queries missed
-        endpoint = endpoints.get(row.endpoint_sip_uuid)
+        endpoint = endpoints_by_uuid_text.get(row.endpoint_sip_uuid)
         if not endpoint:
             continue
         section_options = getattr(endpoint, f'{row.type}_section_options')
