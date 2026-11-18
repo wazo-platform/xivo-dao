@@ -1,6 +1,8 @@
 # Copyright 2020-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import unittest
+
 import pytest
 from hamcrest import (
     assert_that,
@@ -580,3 +582,15 @@ class TestCallerId(DAOTestCase):
         )
         assert result == 'template2'
         assert sip.caller_id == 'template2'
+
+
+class TestBuildSIPOptionSubqueryCacheKey(unittest.TestCase):
+    def test_cache_key_is_stable_across_calls(self):
+        first = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
+        second = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
+
+        first_key = first._generate_cache_key().key
+        second_key = second._generate_cache_key().key
+
+        assert first_key == second_key
+        assert hash(first_key) == hash(second_key)

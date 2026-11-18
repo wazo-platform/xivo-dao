@@ -448,7 +448,8 @@ class EndpointSIP(Base):
         recursive = select(
             template.parent_uuid.label('uuid'),
             anchor.c.root.label('root'),
-            anchor.c.path.op('||')(
+            # .op('||') hashes by identity and would defeat the compiled cache
+            anchor.c.path.concat(
                 sql_func.row_number().over(
                     partition_by=anchor.c.root, order_by=template.priority
                 )
