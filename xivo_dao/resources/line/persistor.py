@@ -40,13 +40,15 @@ class LinePersistor(CriteriaBuilderMixin, BasePersistor):
             .options(joinedload(Line.endpoint_sccp))
             .options(joinedload(Line.endpoint_sip))
             .options(
-                joinedload(Line.endpoint_sip).joinedload(EndpointSIP._auth_section)
+                joinedload(Line.endpoint_sip).selectinload(EndpointSIP._auth_section)
             )
             .options(
-                joinedload(Line.endpoint_sip).joinedload(EndpointSIP._endpoint_section)
+                joinedload(Line.endpoint_sip).selectinload(
+                    EndpointSIP._endpoint_section
+                )
             )
             .options(
-                joinedload(Line.endpoint_sip).joinedload(EndpointSIP._all_sections)
+                joinedload(Line.endpoint_sip).selectinload(EndpointSIP._all_sections)
             )
             .options(joinedload(Line.endpoint_custom))
             .options(
