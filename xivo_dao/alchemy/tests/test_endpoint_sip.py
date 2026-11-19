@@ -585,6 +585,8 @@ class TestCallerId(DAOTestCase):
 
 
 class TestBuildSIPOptionSubqueryCacheKey(unittest.TestCase):
+    # Unstable keys miss SQLAlchemy's compiled cache: each line query is
+    # recompiled and hundreds of copies stay cached, costing CPU and memory.
     def test_cache_key_is_stable_across_calls(self):
         first = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
         second = EndpointSIP.build_sip_option_subquery('webrtc', 'endpoint')
